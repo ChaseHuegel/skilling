@@ -10,9 +10,9 @@ import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.incendo.cloud.bukkit.parser.PlayerParser;
 import org.incendo.cloud.execution.ExecutionCoordinator;
 import org.incendo.cloud.paper.PaperCommandManager;
 import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
@@ -79,38 +79,38 @@ public final class SkillsCommand {
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("setlevel")
                 .permission("skilling.admin")
-                .required("player", StringParser.stringParser())
+                .required("player", PlayerParser.playerParser())
                 .required("skill", StringParser.stringParser())
                 .required("level", IntegerParser.integerParser())
                 .handler(ctx -> {
-                    String playerName = ctx.get("player");
+                    Player target = ctx.get("player");
                     String skillId = ctx.get("skill");
                     int level = ctx.get("level");
-                    setLevel(ctx.sender().source(), playerName, skillId, level);
+                    setLevel(ctx.sender().source(), target, skillId, level);
                 }));
 
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("addxp")
                 .permission("skilling.admin")
-                .required("player", StringParser.stringParser())
+                .required("player", PlayerParser.playerParser())
                 .required("skill", StringParser.stringParser())
                 .required("amount", IntegerParser.integerParser())
                 .handler(ctx -> {
-                    String playerName = ctx.get("player");
+                    Player target = ctx.get("player");
                     String skillId = ctx.get("skill");
                     int amount = ctx.get("amount");
-                    addXp(ctx.sender().source(), playerName, skillId, amount);
+                    addXp(ctx.sender().source(), target, skillId, amount);
                 }));
 
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("reset")
                 .permission("skilling.admin")
-                .required("player", StringParser.stringParser())
+                .required("player", PlayerParser.playerParser())
                 .optional("skill", StringParser.stringParser())
                 .handler(ctx -> {
-                    String playerName = ctx.get("player");
+                    Player target = ctx.get("player");
                     String skillId = ctx.getOrDefault("skill", null);
-                    reset(ctx.sender().source(), playerName, skillId);
+                    reset(ctx.sender().source(), target, skillId);
                 }));
     }
 
@@ -151,64 +151,57 @@ public final class SkillsCommand {
         }
     }
 
-    private void setLevel(CommandSender sender, String playerName, String skillId, int level) {
-        Player target = Bukkit.getPlayerExact(playerName);
-        if (target != null && target.isOnline()) {
-            PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
-            if (profile == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + playerName + "."));
-                return;
-            }
-            SkillDefinition def = skillManager.getSkill(skillId);
-            if (def == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
-                return;
-            }
-            long xp = 0;
-            for (int i = 1; i <= level; i++) {
-                xp += (long) def.progression().evaluator().evaluate(i, 0);
-            }
-            profile.setXp(skillId, xp);
-            sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + level + "."));
-        } else {
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Player not found: " + playerName));
+    private static final String USAGE_SETLEVEL = "<yellow>Usage: /skills setlevel <player> <skill> <level></yellow>";
+    private static final String USAGE_ADDXP = "<yellow>Usage: /skills addxp <player> <skill> <amount></yellow>";
+    private static final String USAGE_RESET = "<yellow>Usage: /skills reset <player> [<skill>]</yellow>";
+
+    private void setLevel(CommandSender sender, Player target, String skillId, int level) {
+        PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
+        if (profile == null) {
+            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_SETLEVEL));
+            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + target.getName() + "."));
+            return;
         }
+        SkillDefinition def = skillManager.getSkill(skillId);
+        if (def == null) {
+            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_SETLEVEL));
+            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
+            return;
+        }
+        long xp = 0;
+        for (int i = 1; i <= level; i++) {
+            xp += (long) def.progression().evaluator().evaluate(i, 0);
+        }
+        profile.setXp(skillId, xp);
+        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + target.getName() + "'s " + skillId + " to level " + level + "."));
     }
 
-    private void addXp(CommandSender sender, String playerName, String skillId, int amount) {
-        Player target = Bukkit.getPlayerExact(playerName);
-        if (target != null && target.isOnline()) {
-            PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
-            if (profile == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + playerName + "."));
-                return;
-            }
-            profile.addXp(skillId, amount);
-            sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + "."));
-        } else {
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Player not found: " + playerName));
+    private void addXp(CommandSender sender, Player target, String skillId, int amount) {
+        PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
+        if (profile == null) {
+            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_ADDXP));
+            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + target.getName() + "."));
+            return;
         }
+        profile.addXp(skillId, amount);
+        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + target.getName() + "'s " + skillId + "."));
     }
 
-    private void reset(CommandSender sender, String playerName, String skillId) {
-        Player target = Bukkit.getPlayerExact(playerName);
-        if (target != null && target.isOnline()) {
-            PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
-            if (profile == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + playerName + "."));
-                return;
-            }
-            if (skillId != null) {
-                profile.setXp(skillId, 0);
-                sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset " + playerName + "'s " + skillId + "."));
-            } else {
-                for (String id : new HashSet<>(profile.getXpMap().keySet())) {
-                    profile.setXp(id, 0);
-                }
-                sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset all skills for " + playerName + "."));
-            }
+    private void reset(CommandSender sender, Player target, String skillId) {
+        PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
+        if (profile == null) {
+            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_RESET));
+            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + target.getName() + "."));
+            return;
+        }
+        if (skillId != null) {
+            profile.setXp(skillId, 0);
+            sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset " + target.getName() + "'s " + skillId + "."));
         } else {
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Player not found: " + playerName));
+            for (String id : new HashSet<>(profile.getXpMap().keySet())) {
+                profile.setXp(id, 0);
+            }
+            sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset all skills for " + target.getName() + "."));
         }
     }
 

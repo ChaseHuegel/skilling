@@ -4,12 +4,12 @@
   - [x] The subtitle should be "{skill} increased to {level}"
 - [x] Players can break blocks they've placed for XP
 - [x] Abilities and their bonuses aren't displayed in the lore of skills in the skills menu
-- [ ] The `/skills addxp` command doesn't autocomplete player names
+- [x] The `/skills addxp` command doesn't autocomplete player names
 - [ ] The `/skills addxp` command doesn't autocomplete skills
-- [ ] The `/skills addxp` command doesn't give usage guidance when it fails
-- [ ] The `/skills setlevel` command doesn't autocomplete player names
+- [x] The `/skills addxp` command doesn't give usage guidance when it fails
+- [x] The `/skills setlevel` command doesn't autocomplete player names
 - [ ] The `/skills setlevel` command doesn't autocomplete skills
-- [ ] The `/skills setlevel` command doesn't give usage guidance when it fails
+- [x] The `/skills setlevel` command doesn't give usage guidance when it fails
 - [ ] The XP bossbar is showing current out of total needed XP instead of the relative XP needed for the current level
 
 # Improvements
