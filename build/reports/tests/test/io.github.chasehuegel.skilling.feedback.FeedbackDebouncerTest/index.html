@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=edge"/>
-<title>Test results - io.github.chasehuegel.skilling.evaluator.ConstantEvaluatorTest</title>
+<title>Test results - io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest</title>
 <link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
 <link href="../css/style.css" rel="stylesheet" type="text/css"/>
 <script src="../js/report.js" type="text/javascript"></script>
@@ -12,7 +12,7 @@
 <div id="content">
 <div class="breadcrumbs">
 <a class="breadcrumb" href="../index.html">all</a> &gt; 
-<span class="breadcrumb">io.github.chasehuegel.skilling.evaluator.ConstantEvaluatorTest</span>
+<span class="breadcrumb">io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest</span>
 </div>
 <div class="tab-container">
 <ul class="tabLinks">
@@ -22,7 +22,7 @@
 </ul>
 <div class="tab">
 <h2>Gradle Test Run :test</h2>
-<h1>ConstantEvaluatorTest</h1>
+<h1>FeedbackDebouncerTest</h1>
 <div class="tab-container">
 <ul class="tabLinks">
 <li>
@@ -41,7 +41,7 @@
 <tr>
 <td>
 <div class="infoBox">
-<div class="counter">3</div>
+<div class="counter">6</div>
 <p>tests</p>
 </div>
 </td>
@@ -59,7 +59,7 @@
 </td>
 <td>
 <div class="infoBox duration">
-<div class="counter">0.036s</div>
+<div class="counter">0.007s</div>
 <p>duration</p>
 </div>
 </td>
@@ -90,17 +90,8 @@
 </thead>
 <tbody>
 <tr>
-<td class="success">negativeValue()</td>
-<td class="path" hidden="">negativeValue()</td>
-<td>1</td>
-<td>0</td>
-<td>0</td>
-<td data-sort-value="16">0.016s</td>
-<td class="success" data-sort-value="100">100%</td>
-</tr>
-<tr>
-<td class="success">returnsFixedValue()</td>
-<td class="path" hidden="">returnsFixedValue()</td>
+<td class="success">clearRemovesPlayerState()</td>
+<td class="path" hidden="">clearRemovesPlayerState()</td>
 <td>1</td>
 <td>0</td>
 <td>0</td>
@@ -108,8 +99,44 @@
 <td class="success" data-sort-value="100">100%</td>
 </tr>
 <tr>
-<td class="success">zeroValue()</td>
-<td class="path" hidden="">zeroValue()</td>
+<td class="success">differentAbilitiesNotDebounced()</td>
+<td class="path" hidden="">differentAbilitiesNotDebounced()</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td data-sort-value="0">0s</td>
+<td class="success" data-sort-value="100">100%</td>
+</tr>
+<tr>
+<td class="success">differentPlayersNotDebounced()</td>
+<td class="path" hidden="">differentPlayersNotDebounced()</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td data-sort-value="0">0s</td>
+<td class="success" data-sort-value="100">100%</td>
+</tr>
+<tr>
+<td class="success">firstCallReturnsTrue()</td>
+<td class="path" hidden="">firstCallReturnsTrue()</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td data-sort-value="3">0.003s</td>
+<td class="success" data-sort-value="100">100%</td>
+</tr>
+<tr>
+<td class="success">secondCallWithinIntervalReturnsFalse()</td>
+<td class="path" hidden="">secondCallWithinIntervalReturnsFalse()</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td data-sort-value="0">0s</td>
+<td class="success" data-sort-value="100">100%</td>
+</tr>
+<tr>
+<td class="success">zeroIntervalAllowsAll()</td>
+<td class="path" hidden="">zeroIntervalAllowsAll()</td>
 <td>1</td>
 <td>0</td>
 <td>0</td>

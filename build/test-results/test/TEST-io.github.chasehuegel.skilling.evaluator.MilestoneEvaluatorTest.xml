@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:01:02.262Z" hostname="chase-desktop-linux" time="0.007">
+<testsuite name="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:02:16.753Z" hostname="chase-desktop-linux" time="0.007">
   <properties/>
-  <testcase name="emptyMilestones()" classname="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" time="0.001"/>
+  <testcase name="emptyMilestones()" classname="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" time="0.0"/>
   <testcase name="returnsValueForExactLevel()" classname="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" time="0.001"/>
   <testcase name="belowFirstMilestoneReturnsZero()" classname="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" time="0.001"/>
-  <testcase name="aboveHighestMilestone()" classname="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" time="0.0"/>
-  <testcase name="floorKeyBetweenMilestones()" classname="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" time="0.0"/>
+  <testcase name="aboveHighestMilestone()" classname="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" time="0.001"/>
+  <testcase name="floorKeyBetweenMilestones()" classname="io.github.chasehuegel.skilling.evaluator.MilestoneEvaluatorTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
