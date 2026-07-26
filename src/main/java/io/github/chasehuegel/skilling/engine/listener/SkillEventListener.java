@@ -220,17 +220,32 @@ public final class SkillEventListener implements Listener {
     }
 
     private void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
+        debug("fireAbilities for " + player.getName() + " on " + triggerKey);
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             for (SkillDefinition.Ability ability : skill.abilities()) {
-                if (getLevelForXp(skill, profile.getXp(skill.id())) < ability.unlockLevel()) continue;
+                int skillLevel = getLevelForXp(skill, profile.getXp(skill.id()));
+                debug("  ability=" + ability.id() + " skillLevel=" + skillLevel
+                        + " unlockLevel=" + ability.unlockLevel());
+                if (skillLevel < ability.unlockLevel()) {
+                    debug("    -> locked, skipping");
+                    continue;
+                }
 
                 for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
+                    debug("    mechanic=" + entry.type() + " skill=" + skill.id());
                     Object raw = mechanicRegistry.create(entry.type());
-                    if (!(raw instanceof SkillMechanic mechanic)) continue;
+                    if (!(raw instanceof SkillMechanic mechanic)) {
+                        debug("    -> mechanic not found in registry, skipping");
+                        continue;
+                    }
 
-                    if (!matchesFilters(player, event, entry.filters())) continue;
+                    if (!matchesFilters(player, event, entry.filters())) {
+                        debug("    -> filters failed, skipping");
+                        continue;
+                    }
 
                     RequirementResult check = requirementEngine.check(player, ability.requirements());
+                    debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
                     if (!check.success()) {
                         if (feedbackDebouncer.tryDebounce(player, ability.id())) {
                             var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());
@@ -241,8 +256,8 @@ public final class SkillEventListener implements Listener {
                         continue;
                     }
 
-                    int level = getLevelForXp(skill, profile.getXp(skill.id()));
-                    Map<String, Object> evaluatedParams = evaluateParams(entry, level, ability.unlockLevel());
+                    Map<String, Object> evaluatedParams = evaluateParams(entry, skillLevel, ability.unlockLevel());
+                    debug("    executing mechanic with params=" + evaluatedParams);
                     mechanic.execute(player, evaluatedParams, event);
                     requirementEngine.consume(player, ability.requirements());
 
@@ -258,6 +273,7 @@ public final class SkillEventListener implements Listener {
                     if (!ability.feedback().sounds().isEmpty()) {
                         FanfareDispatcher.dispatchSounds(player, ability.feedback().sounds());
                     }
+                    debug("    -> done");
                 }
             }
         }

@@ -18,8 +18,8 @@
   - [x] Auto complete will prefer display names but fallback to ids for any skills that have a null or empty display name
 - [x] Abilities that haven't been unlocked are displaying raw styling codes in the skill menu item's lore
   - [x] This appears to be because unlocked abilities are forced to appear as a dark grey and the style-codes written into the config file are being ignored
-- [ ] The sneak mine trigger for the template mining skill is not having any effect
-  - [ ] Introduce logging for the ability pipeline similar to the logging that was added for the XP pipeline
+- [x] The sneak mine trigger for the template mining skill is not having any effect
+  - [x] Introduce logging for the ability pipeline similar to the logging that was added for the XP pipeline
 - [x] The `saveResource("tags.yml", false)` and `saveResource("template-skill.yml", false)` calls in `onEnable()` log spurious warnings on every startup when the files already exist. Flip to log an info message only when files don't exist (i.e. when they are first generated fresh).
 
 # Improvements

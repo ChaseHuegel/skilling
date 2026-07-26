@@ -1,6 +1,8 @@
 package io.github.chasehuegel.skilling.engine.requirements;
 
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
+import io.github.chasehuegel.skilling.engine.tag.TagResolver;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
@@ -20,6 +22,11 @@ import java.util.Map;
 public final class RequirementEngine {
 
     private final Map<String, Map<String, Long>> cooldowns = new HashMap<>();
+    private final TagResolver tagResolver;
+
+    public RequirementEngine(TagResolver tagResolver) {
+        this.tagResolver = tagResolver;
+    }
 
     /**
      * Evaluates all requirements for an ability without side effects.
@@ -102,11 +109,13 @@ public final class RequirementEngine {
     }
 
     private boolean hasItem(Player player, String tag, String slot) {
-        // Simplified check: scan inventory for matching items
         for (ItemStack item : player.getInventory().getContents()) {
-            if (item != null && item.getType().name().equalsIgnoreCase(
-                    tag.replace("minecraft:", ""))) {
-                return true;
+            if (item == null) continue;
+            if (tag.startsWith("#")) {
+                if (tagResolver.resolve(tag).contains(item.getType())) return true;
+            } else {
+                Material mat = Material.matchMaterial(tag);
+                if (mat != null && item.getType() == mat) return true;
             }
         }
         return false;
@@ -114,8 +123,15 @@ public final class RequirementEngine {
 
     private void removeItems(Player player, String tag, int amount) {
         for (ItemStack item : player.getInventory().getContents()) {
-            if (item != null && amount > 0 && item.getType().name().equalsIgnoreCase(
-                    tag.replace("minecraft:", ""))) {
+            if (item == null || amount <= 0) continue;
+            boolean match;
+            if (tag.startsWith("#")) {
+                match = tagResolver.resolve(tag).contains(item.getType());
+            } else {
+                Material mat = Material.matchMaterial(tag);
+                match = mat != null && item.getType() == mat;
+            }
+            if (match) {
                 int toRemove = Math.min(amount, item.getAmount());
                 item.setAmount(item.getAmount() - toRemove);
                 amount -= toRemove;
