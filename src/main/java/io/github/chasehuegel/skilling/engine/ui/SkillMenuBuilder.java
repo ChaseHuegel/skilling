@@ -3,15 +3,20 @@ package io.github.chasehuegel.skilling.engine.ui;
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
+import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -78,12 +83,34 @@ public final class SkillMenuBuilder {
             meta.displayName(MINI_MESSAGE.deserialize("<bold>" + skill.display().name() + "</bold>"));
 
             long currentXp = profile.getXp(skill.id());
-            // Build lore showing current level info
+            int level = getLevelForXp(skill, currentXp);
 
-            var lore = new java.util.ArrayList<Component>();
-            lore.add(Component.text("Level: " + getLevelForXp(skill, currentXp)));
-            lore.add(Component.text("XP: " + currentXp));
-            lore.add(Component.text("Max Level: " + skill.maxLevel()));
+            var lore = new ArrayList<Component>();
+            lore.add(Component.text("Level: " + level + " / " + skill.maxLevel(), NamedTextColor.GREEN));
+            lore.add(Component.text("XP: " + currentXp, NamedTextColor.AQUA));
+
+            for (SkillDefinition.Ability ability : skill.abilities()) {
+                boolean unlocked = level >= ability.unlockLevel();
+                lore.add(Component.empty());
+                lore.add(Component.text(
+                        (unlocked ? "✔ " : "✗ ") + ability.displayName(),
+                        unlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY
+                ));
+
+                Map<String, ParameterEvaluator> allParams = new HashMap<>();
+                for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
+                    allParams.putAll(me.parameters());
+                }
+                int unlockLevel = ability.unlockLevel();
+                List<String> resolved = LoreResolver.resolveAll(ability.display().lore(), allParams, level, unlockLevel);
+                for (String line : resolved) {
+                    if (unlocked) {
+                        lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(line));
+                    } else {
+                        lore.add(Component.text(line, NamedTextColor.DARK_GRAY));
+                    }
+                }
+            }
 
             meta.lore(lore);
 
