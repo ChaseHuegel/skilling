@@ -24,6 +24,15 @@
 - [x] The cooldown action bar message is not formatting correctly. It all reads in unstyled plain text without any of the string replacements.
 - [x] The vein miner ability is firing on left clicking a block instead of on breaking it
 - [x] The action bar message for ability activation is not applying the style characters, they are appearing inline in the message
+- [ ] The template skill has "passive ability" line baked into its description that should be removed, it is now redundant with the active/passive display baked into lore
+- [ ] The template skill states an exhaustion cost but it actually has a coal cost. It should have both costs and update its description appropriately.
+- [ ] Vein mining has regressed, it reports the following output for the vein_miner ability activation
+  ```
+  [18:57:21 INFO]: [Skilling] [DEBUG]   ability=vein_miner skillLevel=24 unlockLevel=15
+  [18:57:21 INFO]: [Skilling] [DEBUG]     mechanic=core:chain_break skill=mining
+  [18:57:21 INFO]: [Skilling] [DEBUG]     -> mechanic not found in registry, skipping
+  ```
+- [ ] The fireworks from levelup fanfare are dealing damage and causing knockback. These should be visual only.
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -53,6 +62,11 @@
   - [x] Indicate how many custom tags are loaded
   - [x] Anything else that seems useful for identifying if everything has loaded & started up correctly
   - [x] Anything else that seems useful for troubleshooting startup issues off of just logs
+- [ ] In skill lore, the line noting whether an ability is active or passive will appear on the same line appending to the ability name in dark grey and separated by a dot
+- [ ] The fireworks fanfare from leveling up should be random, bright colors
+- [ ] The level up title should show the display name of newly unlocked abilities under the subtitle, if any
+- [ ] The green check next to the name of unlocked skills should be removed
+  - [ ] The grey crossed-out mark next to the name of locked skills should be replaced by a tag on the same line appended to the skill name in dark grey and separated by a dot
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
@@ -75,3 +89,8 @@
     - [ ] After applying changes, the user is prompted with an optional reload button
       - [ ] The button will execute a reload of the plugin (ie. `skills reload`)
 - [ ] An in-game way to open up and view the skills GUI that feels vanilla+ as an alternative to the `/skills` command
+- [ ] A config section for setting a global XP modifier. Default is `1.0`
+- [ ] Commands to modify config values at runtime (`/skills set <config key> <value>`)
+  - [ ] These will apply immediately
+  - [ ] These will save to the config file
+- [ ] Show skill item icons in the bossbar for XP gains
