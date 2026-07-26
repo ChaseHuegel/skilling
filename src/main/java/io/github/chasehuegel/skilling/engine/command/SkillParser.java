@@ -14,14 +14,23 @@ import java.util.List;
 public final class SkillParser<C> implements ArgumentParser<C, String>, BlockingSuggestionProvider<C> {
 
     private final SkillManager skillManager;
+    private final boolean acceptAll;
 
     public SkillParser(SkillManager skillManager) {
+        this(skillManager, false);
+    }
+
+    public SkillParser(SkillManager skillManager, boolean acceptAll) {
         this.skillManager = skillManager;
+        this.acceptAll = acceptAll;
     }
 
     @Override
     public ArgumentParseResult<String> parse(CommandContext<C> ctx, CommandInput input) {
         String value = input.readString();
+        if (acceptAll && value.equalsIgnoreCase("all")) {
+            return ArgumentParseResult.success("all");
+        }
         SkillDefinition def = resolve(value);
         if (def != null) {
             return ArgumentParseResult.success(def.id());
@@ -32,13 +41,17 @@ public final class SkillParser<C> implements ArgumentParser<C, String>, Blocking
     @Override
     public Iterable<Suggestion> suggestions(CommandContext<C> ctx, CommandInput input) {
         String prefix = input.peekString().toLowerCase();
-        return skillManager.getSkills().values().stream()
+        var stream = skillManager.getSkills().values().stream()
                 .flatMap(def -> {
                     if (def.display() != null && def.display().name() != null) {
                         return java.util.stream.Stream.of(def.display().name(), def.id());
                     }
                     return java.util.stream.Stream.of(def.id());
-                })
+                });
+        if (acceptAll) {
+            stream = java.util.stream.Stream.concat(stream, java.util.stream.Stream.of("all"));
+        }
+        return stream
                 .distinct()
                 .filter(name -> name.toLowerCase().startsWith(prefix))
                 .map(Suggestion::suggestion)
@@ -61,5 +74,10 @@ public final class SkillParser<C> implements ArgumentParser<C, String>, Blocking
     @SuppressWarnings("unchecked")
     public static <C> ParserDescriptor<C, String> skillParser(SkillManager skillManager) {
         return ParserDescriptor.of(new SkillParser<>(skillManager), (Class<String>) (Class<?>) String.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <C> ParserDescriptor<C, String> skillParserAllowingAll(SkillManager skillManager) {
+        return ParserDescriptor.of(new SkillParser<>(skillManager, true), (Class<String>) (Class<?>) String.class);
     }
 }

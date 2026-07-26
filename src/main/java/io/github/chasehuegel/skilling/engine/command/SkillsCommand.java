@@ -155,10 +155,11 @@ public final class SkillsCommand {
                 .literal("reset")
                 .permission("skilling.admin")
                 .required("player", PlayerParser.playerParser())
-                .optional("skill", SkillParser.skillParser(skillManager))
+                .optional("skill", SkillParser.skillParserAllowingAll(skillManager))
                 .handler(ctx -> {
                     Player target = ctx.get("player");
                     String skillId = ctx.getOrDefault("skill", null);
+                    if ("all".equals(skillId)) skillId = null;
                     reset(ctx.sender().source(), target, skillId);
                 }));
     }
