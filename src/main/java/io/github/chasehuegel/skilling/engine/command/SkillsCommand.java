@@ -94,6 +94,29 @@ public final class SkillsCommand {
                 }));
 
         commandManager.command(commandManager.commandBuilder("skills")
+                .literal("help")
+                .permission("skilling.use")
+                .handler(ctx -> {
+                    CommandSender sender = ctx.sender().source();
+                    sender.sendMessage(Component.empty());
+                    sender.sendMessage(Component.text("=== Skills Commands ===", NamedTextColor.GOLD));
+                    sender.sendMessage(Component.text("/skills", NamedTextColor.YELLOW)
+                            .append(Component.text(" - Open the skill overview menu, or show skill progress with a skill name", NamedTextColor.WHITE)));
+                    sender.sendMessage(Component.text("/skills help", NamedTextColor.YELLOW)
+                            .append(Component.text(" - Show this help", NamedTextColor.WHITE)));
+                    if (sender.hasPermission("skilling.admin")) {
+                        sender.sendMessage(Component.text("/skills reload", NamedTextColor.YELLOW)
+                                .append(Component.text(" - Reload the plugin configuration and skills", NamedTextColor.WHITE)));
+                        sender.sendMessage(Component.text("/skills setlevel <player> <skill> <level>", NamedTextColor.YELLOW)
+                                .append(Component.text(" - Set a player's skill level", NamedTextColor.WHITE)));
+                        sender.sendMessage(Component.text("/skills addxp <player> <skill> <amount>", NamedTextColor.YELLOW)
+                                .append(Component.text(" - Add XP to a player's skill", NamedTextColor.WHITE)));
+                        sender.sendMessage(Component.text("/skills reset <player> [skill]", NamedTextColor.YELLOW)
+                                .append(Component.text(" - Reset a player's skill(s). Omit skill to reset all.", NamedTextColor.WHITE)));
+                    }
+                }));
+
+        commandManager.command(commandManager.commandBuilder("skills")
                 .literal("reload")
                 .permission("skilling.admin")
                 .handler(ctx -> {
