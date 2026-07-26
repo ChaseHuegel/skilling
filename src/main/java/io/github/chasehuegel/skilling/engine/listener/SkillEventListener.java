@@ -425,8 +425,10 @@ public final class SkillEventListener implements Listener {
 
     private static void spawnFirework(org.bukkit.Location location, org.bukkit.Color color,
                                        org.bukkit.FireworkEffect.Type type, int count) {
+        var fwLoc = location.clone().add(
+                (Math.random() - 0.5) * 2, 3, (Math.random() - 0.5) * 2);
         for (int i = 0; i < count; i++) {
-            org.bukkit.entity.Firework fw = location.getWorld().spawn(location,
+            org.bukkit.entity.Firework fw = fwLoc.getWorld().spawn(fwLoc,
                     org.bukkit.entity.Firework.class);
             org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
             meta.addEffect(org.bukkit.FireworkEffect.builder()
