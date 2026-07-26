@@ -13,9 +13,9 @@
 - [x] The commands to addxp and setlevel don't trigger any fanfare. These should be effectively go through the same pipeline as any other XP gain to trigger all side-effects of a levelup.
 - [x] The XP bossbar is showing current out of total needed XP instead of the relative XP needed for the current level
 - [x] The XP bossbar is going into negative values when nearing a level-up
-- [ ] Skills commands autocomplete display names but actually require IDs (ex: `mining` works but `Mining` is autocompleted and doesn't work)
-  - [ ] ID and display names should both be valid
-  - [ ] Auto complete will prefer display names but fallback to ids for any skills that have a null or empty display name
+- [x] Skills commands autocomplete display names but actually require IDs (ex: `mining` works but `Mining` is autocompleted and doesn't work)
+  - [x] ID and display names should both be valid
+  - [x] Auto complete will prefer display names but fallback to ids for any skills that have a null or empty display name
 - [ ] Abilities that haven't been unlocked are displaying raw styling codes in the skill menu item's lore
   - [ ] This appears to be because unlocked abilities are forced to appear as a dark grey and the style-codes written into the config file are being ignored
 

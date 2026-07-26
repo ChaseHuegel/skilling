@@ -22,23 +22,25 @@ public final class SkillParser<C> implements ArgumentParser<C, String>, Blocking
     @Override
     public ArgumentParseResult<String> parse(CommandContext<C> ctx, CommandInput input) {
         String value = input.readString();
-        if (resolve(value) != null) {
-            return ArgumentParseResult.success(value);
+        SkillDefinition def = resolve(value);
+        if (def != null) {
+            return ArgumentParseResult.success(def.id());
         }
         return ArgumentParseResult.failure(new IllegalArgumentException("Unknown skill: " + value));
     }
 
     @Override
     public Iterable<Suggestion> suggestions(CommandContext<C> ctx, CommandInput input) {
-        String prefix = input.peekString();
+        String prefix = input.peekString().toLowerCase();
         return skillManager.getSkills().values().stream()
-                .map(def -> {
+                .flatMap(def -> {
                     if (def.display() != null && def.display().name() != null) {
-                        return def.display().name();
+                        return java.util.stream.Stream.of(def.display().name(), def.id());
                     }
-                    return def.id();
+                    return java.util.stream.Stream.of(def.id());
                 })
-                .filter(name -> name.startsWith(prefix))
+                .distinct()
+                .filter(name -> name.toLowerCase().startsWith(prefix))
                 .map(Suggestion::suggestion)
                 .toList();
     }
