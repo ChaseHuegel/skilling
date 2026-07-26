@@ -18,6 +18,7 @@
   - [x] Auto complete will prefer display names but fallback to ids for any skills that have a null or empty display name
 - [x] Abilities that haven't been unlocked are displaying raw styling codes in the skill menu item's lore
   - [x] This appears to be because unlocked abilities are forced to appear as a dark grey and the style-codes written into the config file are being ignored
+- [ ] The sneak mine trigger for the template mining skill is not having any effect
 
 # Improvements
 - [ ] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -47,3 +48,19 @@
   - [ ] Indicate how many custom tags are loaded
   - [ ] Anything else that seems useful for identifying if everything has loaded & started up correctly
   - [ ] Anything else that seems useful for troubleshooting startup issues off of just logs
+
+# Ideas
+- [ ] Web GUI that is hosted on the server
+  - [ ] Can be used to view:
+    - [ ] Skills
+    - [ ] Tags
+    - [ ] Config
+  - [ ] Can be used to edit and stage changes for:
+    - [ ] Skills
+    - [ ] Tags
+    - [ ] Config
+  - [ ] Changes aren't applied automatically:
+    - [ ] User must click an apply button which will save the changes
+    - [ ] After applying changes, the user is prompted with an optional reload button
+      - [ ] The button will execute a reload of the plugin (ie. `skills reload`)
+- [ ] An in-game way to open up and view the skills GUI that feels vanilla+ as an alternative to the `/skills` command
