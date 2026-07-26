@@ -31,6 +31,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.title.Title;
 import org.bukkit.inventory.ItemStack;
 import java.util.*;
 import java.util.logging.Level;
@@ -328,15 +329,17 @@ public final class SkillEventListener implements Listener {
     private void broadcastLevelUp(Player player, SkillDefinition skill, int newLevel) {
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skill.id();
-        String message = "<gradient:gold:yellow>✦ " + displayName + " Level " + newLevel + "! ✦";
-        player.sendMessage(MiniMessage.miniMessage().deserialize(message));
+        player.showTitle(Title.title(
+                MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
+                MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
+                Title.Times.times(
+                        java.time.Duration.ofMillis(500),
+                        java.time.Duration.ofMillis(3500),
+                        java.time.Duration.ofMillis(1000)
+                )
+        ));
         player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
                 org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
-        BossBar bar = bossBarPool.getOrCreate(player, skill.id() + "_levelup");
-        bar.setTitle(displayName + " - Level " + newLevel);
-        bar.setColor(BarColor.YELLOW);
-        bar.setStyle(BarStyle.SOLID);
-        bar.setProgress(1.0);
         plugin.getLogger().info(player.getName() + " reached " + skill.id() + " level " + newLevel);
     }
 
