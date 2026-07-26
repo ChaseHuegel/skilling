@@ -104,11 +104,8 @@ public final class SkillMenuBuilder {
                 int unlockLevel = ability.unlockLevel();
                 List<String> resolved = LoreResolver.resolveAll(ability.display().lore(), allParams, level, unlockLevel);
                 for (String line : resolved) {
-                    if (unlocked) {
-                        lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(line));
-                    } else {
-                        lore.add(Component.text(line, NamedTextColor.DARK_GRAY));
-                    }
+                    Component deserialized = LegacyComponentSerializer.legacyAmpersand().deserialize(line);
+                    lore.add(unlocked ? deserialized : deserialized.colorIfAbsent(NamedTextColor.DARK_GRAY));
                 }
             }
 

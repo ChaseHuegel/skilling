@@ -16,8 +16,8 @@
 - [x] Skills commands autocomplete display names but actually require IDs (ex: `mining` works but `Mining` is autocompleted and doesn't work)
   - [x] ID and display names should both be valid
   - [x] Auto complete will prefer display names but fallback to ids for any skills that have a null or empty display name
-- [ ] Abilities that haven't been unlocked are displaying raw styling codes in the skill menu item's lore
-  - [ ] This appears to be because unlocked abilities are forced to appear as a dark grey and the style-codes written into the config file are being ignored
+- [x] Abilities that haven't been unlocked are displaying raw styling codes in the skill menu item's lore
+  - [x] This appears to be because unlocked abilities are forced to appear as a dark grey and the style-codes written into the config file are being ignored
 
 # Improvements
 - [ ] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
