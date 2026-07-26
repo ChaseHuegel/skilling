@@ -335,13 +335,44 @@ public final class SkillsCommand {
     private void broadcastLevelUp(Player player, SkillDefinition skill, int newLevel) {
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skill.id();
+        boolean major = isMajorLevelUp(skill, newLevel);
         player.showTitle(Title.title(
                 MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
                 MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
                 Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
         ));
-        player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
-                org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
+        if (major) {
+            player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                    org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
+            spawnFirework(player.getLocation(), org.bukkit.Color.ORANGE,
+                    org.bukkit.FireworkEffect.Type.BURST, 3);
+            spawnFirework(player.getLocation(), org.bukkit.Color.AQUA,
+                    org.bukkit.FireworkEffect.Type.STAR, 2);
+        } else {
+            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP,
+                    org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.0f);
+            spawnFirework(player.getLocation(), org.bukkit.Color.WHITE,
+                    org.bukkit.FireworkEffect.Type.BURST, 1);
+        }
         plugin.getLogger().info("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel + "!");
+    }
+
+    private static boolean isMajorLevelUp(SkillDefinition skill, int newLevel) {
+        return skill.abilities().stream().anyMatch(a -> a.unlockLevel() == newLevel);
+    }
+
+    private static void spawnFirework(org.bukkit.Location location, org.bukkit.Color color,
+                                       org.bukkit.FireworkEffect.Type type, int count) {
+        for (int i = 0; i < count; i++) {
+            org.bukkit.entity.Firework fw = location.getWorld().spawn(location,
+                    org.bukkit.entity.Firework.class);
+            org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
+            meta.addEffect(org.bukkit.FireworkEffect.builder()
+                    .withColor(color)
+                    .with(type)
+                    .build());
+            meta.setPower(1);
+            fw.setFireworkMeta(meta);
+        }
     }
 }
