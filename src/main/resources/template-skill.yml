@@ -54,8 +54,6 @@ abilities:
       # {yield_chance} is injected dynamically by the ParameterEvaluator during UI generation
       lore:
         - "&7Increases raw ore yield by &a{yield_chance}%&7."
-        - ""
-        - "&8(Passive Ability)"
 
     mechanics:
       - type: "core:yield_multiplier"
