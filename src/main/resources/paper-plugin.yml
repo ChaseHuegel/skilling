@@ -1,0 +1,12 @@
+name: Skilling
+version: ${version}
+main: io.github.chasehuegel.skilling.Skilling
+api-version: '1.21'
+authors: [ChaseHuegel]
+description: A high-performance, data-driven RPG skills engine for PaperMC
+website: https://github.com/chasehuegel/skilling
+
+permissions:
+  skilling.admin:
+    description: Access to administrative /skills commands
+    default: op
