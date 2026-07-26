@@ -140,9 +140,12 @@ public final class Skilling extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker), this);
         Bukkit.getPluginManager().registerEvents(
                 new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
-                        registries.getMechanicRegistry(), feedbackDebouncer),
+                        registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool),
                 this
         );
+
+        // BossBar TTL tick loop (every tick so fadeTicks config is in game ticks)
+        Bukkit.getScheduler().runTaskTimer(this, bossBarPool::tickAll, 1L, 1L);
 
         // API service
         Bukkit.getServicesManager().register(

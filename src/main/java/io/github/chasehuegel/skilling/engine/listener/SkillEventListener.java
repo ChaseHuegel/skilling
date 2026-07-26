@@ -10,9 +10,13 @@ import io.github.chasehuegel.skilling.engine.registry.MechanicRegistry;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementResult;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
+import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
 import io.github.chasehuegel.skilling.engine.feedback.FanfareDispatcher;
 import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -26,6 +30,7 @@ import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.inventory.ItemStack;
 import java.util.*;
 import java.util.logging.Level;
@@ -39,10 +44,12 @@ public final class SkillEventListener implements Listener {
     private final RequirementEngine requirementEngine;
     private final MechanicRegistry mechanicRegistry;
     private final FeedbackDebouncer feedbackDebouncer;
+    private final BossBarPool bossBarPool;
 
     public SkillEventListener(Skilling plugin, SkillManager skillManager, ProfileManager profileManager,
                               TagResolver tagResolver, RequirementEngine requirementEngine,
-                              MechanicRegistry mechanicRegistry, FeedbackDebouncer feedbackDebouncer) {
+                              MechanicRegistry mechanicRegistry, FeedbackDebouncer feedbackDebouncer,
+                              BossBarPool bossBarPool) {
         this.plugin = plugin;
         this.skillManager = skillManager;
         this.profileManager = profileManager;
@@ -50,6 +57,7 @@ public final class SkillEventListener implements Listener {
         this.requirementEngine = requirementEngine;
         this.mechanicRegistry = mechanicRegistry;
         this.feedbackDebouncer = feedbackDebouncer;
+        this.bossBarPool = bossBarPool;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -160,12 +168,49 @@ public final class SkillEventListener implements Listener {
                 double xp = source.reward().evaluate(1, 1);
                 if (xp > 0) {
                     long rounded = Math.round(xp);
+                    int oldLevel = getLevelForXp(skill, profile.getXp(skill.id()));
                     profile.addXp(skill.id(), rounded);
+                    int newLevel = getLevelForXp(skill, profile.getXp(skill.id()));
+                    showXpBossBar(player, skill, profile);
+                    if (newLevel > oldLevel) {
+                        broadcastLevelUp(player, skill, newLevel);
+                    }
                     debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey + ")");
                     plugin.getLogger().info(player.getName() + " earned " + rounded
                             + " XP in " + skill.id() + " (" + triggerKey + ")");
                 }
             }
+        }
+    }
+
+    private void showXpBossBar(Player player, SkillDefinition skill, PlayerProfile profile) {
+        String skillId = skill.id();
+        long totalXp = profile.getXp(skillId);
+        int level = getLevelForXp(skill, totalXp);
+        int maxLevel = skill.maxLevel();
+        String displayName = skill.display() != null && skill.display().name() != null
+                ? skill.display().name() : skillId;
+
+        BossBar bar = bossBarPool.getOrCreate(player, skillId);
+
+        if (level >= maxLevel) {
+            bar.setTitle(displayName + " - Maxed!");
+            bar.setProgress(1.0);
+        } else {
+            double current = totalXp;
+            double next = skill.progression().evaluator().evaluate(level + 1, 0);
+            double progress = next > 0 ? Math.min(current / next, 1.0) : 0;
+            bar.setTitle(displayName + " Lv." + level + " (" + (long) current + "/" + (long) next + ")");
+            bar.setProgress(progress);
+        }
+
+        if (skill.display() != null) {
+            try {
+                bar.setColor(BarColor.valueOf(skill.display().color()));
+            } catch (IllegalArgumentException ignored) {}
+            try {
+                bar.setStyle(BarStyle.valueOf(skill.display().style()));
+            } catch (IllegalArgumentException ignored) {}
         }
     }
 
@@ -278,6 +323,21 @@ public final class SkillEventListener implements Listener {
         }
 
         return true;
+    }
+
+    private void broadcastLevelUp(Player player, SkillDefinition skill, int newLevel) {
+        String displayName = skill.display() != null && skill.display().name() != null
+                ? skill.display().name() : skill.id();
+        String message = "<gradient:gold:yellow>✦ " + displayName + " Level " + newLevel + "! ✦";
+        player.sendMessage(MiniMessage.miniMessage().deserialize(message));
+        player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
+        BossBar bar = bossBarPool.getOrCreate(player, skill.id() + "_levelup");
+        bar.setTitle(displayName + " - Level " + newLevel);
+        bar.setColor(BarColor.YELLOW);
+        bar.setStyle(BarStyle.SOLID);
+        bar.setProgress(1.0);
+        plugin.getLogger().info(player.getName() + " reached " + skill.id() + " level " + newLevel);
     }
 
     private Material resolveEventMaterial(Event event) {

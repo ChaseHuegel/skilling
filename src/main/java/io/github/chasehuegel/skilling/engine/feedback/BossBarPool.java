@@ -20,6 +20,7 @@ import java.util.*;
 public final class BossBarPool {
 
     private final int maxActive;
+    private final int fadeTicks;
     private final Map<String, BossBar> cache;
     private final Map<String, Long> ttlMap;
 
@@ -27,10 +28,11 @@ public final class BossBarPool {
      * Constructs a new BossBar pool.
      *
      * @param maxActive maximum number of active Boss Bars per player
-     * @param fadeTicks tick duration for the fade-out animation
+     * @param fadeTicks tick duration for the fade-out animation (TTL)
      */
     public BossBarPool(int maxActive, int fadeTicks) {
         this.maxActive = maxActive;
+        this.fadeTicks = fadeTicks;
         this.cache = new LinkedHashMap<>(16, 0.75f, true);
         this.ttlMap = new HashMap<>();
     }
@@ -48,17 +50,22 @@ public final class BossBarPool {
         // Evict LRU entry if at capacity
         if (!cache.containsKey(key) && cache.size() >= maxActive) {
             var eldest = cache.entrySet().iterator().next();
-            eldest.getValue().removeAll();
+            hideBar(eldest.getValue());
             cache.remove(eldest.getKey());
             ttlMap.remove(eldest.getKey());
         }
 
-        return cache.computeIfAbsent(key, k -> {
-            BossBar bar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.WHITE, org.bukkit.boss.BarStyle.SOLID);
-            bar.addPlayer(player);
-            ttlMap.put(k, 2400L); // 2 minutes at 20 TPS
+        BossBar bar = cache.get(key);
+        if (bar != null) {
+            ttlMap.put(key, (long) fadeTicks);
             return bar;
-        });
+        }
+
+        bar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.WHITE, org.bukkit.boss.BarStyle.SOLID);
+        bar.addPlayer(player);
+        cache.put(key, bar);
+        ttlMap.put(key, (long) fadeTicks);
+        return bar;
     }
 
     /**
@@ -72,7 +79,7 @@ public final class BossBarPool {
         String key = key(player, skillId);
         BossBar bar = cache.get(key);
         if (bar != null) {
-            ttlMap.put(key, 2400L); // reset TTL on access
+            ttlMap.put(key, (long) fadeTicks); // reset TTL on access
         }
         return bar;
     }
@@ -88,7 +95,7 @@ public final class BossBarPool {
         BossBar bar = cache.remove(key);
         ttlMap.remove(key);
         if (bar != null) {
-            bar.removeAll();
+            hideBar(bar);
         }
     }
 
@@ -102,7 +109,7 @@ public final class BossBarPool {
         cache.entrySet().removeIf(e -> {
             if (e.getKey().startsWith(prefix)) {
                 ttlMap.remove(e.getKey());
-                e.getValue().removeAll();
+                hideBar(e.getValue());
                 return true;
             }
             return false;
@@ -121,13 +128,18 @@ public final class BossBarPool {
             long ttl = ttlMap.getOrDefault(key, 0L) - 1;
 
             if (ttl <= 0) {
-                entry.getValue().removeAll();
+                hideBar(entry.getValue());
                 iterator.remove();
                 ttlMap.remove(key);
             } else {
                 ttlMap.put(key, ttl);
             }
         }
+    }
+
+    private static void hideBar(BossBar bar) {
+        bar.setVisible(false);
+        bar.removeAll();
     }
 
     /**
