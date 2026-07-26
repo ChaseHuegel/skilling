@@ -28,18 +28,18 @@
 # Improvements
 - [ ] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
 - [ ] Add a `/skills help` command to details the commands and briefly how to use them
-- [ ] Improve the styling of skills in the menu
-  - [ ] Skill names will display without any styling (no bold, no italics)
-  - [ ] Skill names will be colored to match the skill color
-  - [ ] Skill icons will use stack size to reflect the skill's current level
-    - [ ] Skill icons will show a barrier block instead of their normal icon if they are level 0
-  - [ ] A line noting whether an ability is active or passive will appear the line after the ability name
-  - [ ] ASCII text will be used to create a styled XP bar for the current level
-  - [ ] A number will indicate the total XP the player has for the skill
-  - [ ] A red crossed-out mark will indicate that a skill isn't unlocked
-    - [ ] The skill name will appear light grey
-  - [ ] A green check will indicate a skill is unlocked
-    - [ ] The skill name will appear green
+- [x] Improve the styling of skills in the menu
+  - [x] Skill names will display without any styling (no bold, no italics)
+  - [x] Skill names will be colored to match the skill color
+  - [x] Skill icons will use stack size to reflect the skill's current level
+    - [x] Skill icons will show a barrier block instead of their normal icon if they are level 0
+  - [x] A line noting whether an ability is active or passive will appear the line after the ability name
+  - [x] ASCII text will be used to create a styled XP bar for the current level
+  - [x] A number will indicate the total XP the player has for the skill
+  - [x] A red crossed-out mark will indicate that a skill isn't unlocked
+    - [x] The skill name will appear light grey
+  - [x] A green check will indicate a skill is unlocked
+    - [x] The skill name will appear green
 - [ ] `all` will be added as a tab completion option to `/skills reset <player> <skill>` which will instead reset ALL skill data for a player rather than a specific skill.
 - [ ] Adjust the fanfare chat log for level ups to be formatted as "Level up! {skill} increased to {level}!" without changing the current styling
 - [ ] Adjust the xp bossbar to be formatted as "<skill color>{skill} <light grey>- <white>{level}"
