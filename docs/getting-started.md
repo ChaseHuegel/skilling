@@ -22,9 +22,9 @@ plugins/Skilling/
 ## Basic Commands
 
 | Command | Permission | Description |
-|---|---|---|
+|---|---|---|---|
 | `/skills` | `skilling.use` | Opens the skill overview GUI |
-| `/skills progress` | `skilling.use` | Shows XP and level progress in chat |
+| `/skills <skill>` | `skilling.use` | Shows XP and level progress for a skill |
 
 ## Creating Your First Skill
 

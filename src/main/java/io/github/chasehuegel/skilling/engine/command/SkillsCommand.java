@@ -8,6 +8,7 @@ import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -45,41 +46,29 @@ public final class SkillsCommand {
         ).executionCoordinator(ExecutionCoordinator.<Source>simpleCoordinator())
          .buildOnEnable(plugin);
 
-        commandManager.command(commandManager.commandBuilder("skills")
+        var skills = commandManager.commandBuilder("skills");
+
+        commandManager.command(skills
                 .permission("skilling.use")
+                .optional("skill", StringParser.stringParser())
                 .handler(ctx -> {
                     Source sender = ctx.sender();
                     CommandSender commandSender = sender.source();
-                    if (commandSender instanceof Player player) {
+                    String skillId = ctx.getOrDefault("skill", null);
+                    if (!(commandSender instanceof Player player)) {
+                        commandSender.sendMessage(MINI_MESSAGE.deserialize("<red>Only players can use this command."));
+                        return;
+                    }
+                    if (skillId == null) {
                         PlayerProfile profile = profileManager.getOrCreate(player);
                         player.openInventory(skillMenuBuilder.buildOverview(profile));
                     } else {
-                        commandSender.sendMessage(MINI_MESSAGE.deserialize("<red>Only players can use this command."));
+                        showProgress(player, skillId);
                     }
                 }));
 
-        commandManager.command(commandManager.commandBuilder("skills", "progress")
-                .permission("skilling.use")
-                .handler(ctx -> {
-                    Source sender = ctx.sender();
-                    CommandSender commandSender = sender.source();
-                    if (!(commandSender instanceof Player player)) return;
-                    PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
-                    if (profile == null) {
-                        commandSender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded."));
-                        return;
-                    }
-                    commandSender.sendMessage(MINI_MESSAGE.deserialize("<gold>=== Skill Progress ==="));
-                    for (var entry : profile.getXpMap().entrySet()) {
-                        String skillId = entry.getKey();
-                        long xp = entry.getValue();
-                        SkillDefinition def = skillManager.getSkill(skillId);
-                        int level = def != null ? getLevelForXp(def, xp) : 0;
-                        commandSender.sendMessage(Component.text(skillId + ": Level " + level + " (XP: " + xp + ")"));
-                    }
-                }));
-
-        commandManager.command(commandManager.commandBuilder("skills", "reload")
+        commandManager.command(commandManager.commandBuilder("skills")
+                .literal("reload")
                 .permission("skilling.admin")
                 .handler(ctx -> {
                     ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize("<yellow>Reloading Skilling..."));
@@ -87,7 +76,8 @@ public final class SkillsCommand {
                     ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize("<green>Skilling reloaded."));
                 }));
 
-        commandManager.command(commandManager.commandBuilder("skills", "setlevel")
+        commandManager.command(commandManager.commandBuilder("skills")
+                .literal("setlevel")
                 .permission("skilling.admin")
                 .required("player", StringParser.stringParser())
                 .required("skill", StringParser.stringParser())
@@ -99,7 +89,8 @@ public final class SkillsCommand {
                     setLevel(ctx.sender().source(), playerName, skillId, level);
                 }));
 
-        commandManager.command(commandManager.commandBuilder("skills", "addxp")
+        commandManager.command(commandManager.commandBuilder("skills")
+                .literal("addxp")
                 .permission("skilling.admin")
                 .required("player", StringParser.stringParser())
                 .required("skill", StringParser.stringParser())
@@ -111,7 +102,8 @@ public final class SkillsCommand {
                     addXp(ctx.sender().source(), playerName, skillId, amount);
                 }));
 
-        commandManager.command(commandManager.commandBuilder("skills", "reset")
+        commandManager.command(commandManager.commandBuilder("skills")
+                .literal("reset")
                 .permission("skilling.admin")
                 .required("player", StringParser.stringParser())
                 .optional("skill", StringParser.stringParser())
@@ -120,6 +112,43 @@ public final class SkillsCommand {
                     String skillId = ctx.getOrDefault("skill", null);
                     reset(ctx.sender().source(), playerName, skillId);
                 }));
+    }
+
+    private void showProgress(Player player, String input) {
+        SkillDefinition def = skillManager.getSkill(input);
+        if (def == null) {
+            def = skillManager.getSkills().values().stream()
+                    .filter(s -> s.id().equalsIgnoreCase(input)
+                            || (s.display() != null && s.display().name() != null
+                            && s.display().name().equalsIgnoreCase(input)))
+                    .findFirst()
+                    .orElse(null);
+        }
+        if (def == null) {
+            player.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: <white>" + input));
+            return;
+        }
+        PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
+        if (profile == null) {
+            player.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded."));
+            return;
+        }
+        long xp = profile.getXpMap().getOrDefault(def.id(), 0L);
+        int level = getLevelForXp(def, xp);
+        int maxLevel = def.maxLevel();
+        long nextLevelXp = level < maxLevel
+                ? (long) def.progression().evaluator().evaluate(level + 1, 0) : 0;
+        String name = def.display() != null && def.display().name() != null
+                ? def.display().name() : def.id();
+        player.sendMessage(Component.empty());
+        player.sendMessage(Component.text("=== " + name + " ===", NamedTextColor.GOLD));
+        player.sendMessage(Component.text("Level: " + level + " / " + maxLevel, NamedTextColor.GREEN));
+        player.sendMessage(Component.text("Total XP: " + xp, NamedTextColor.AQUA));
+        if (level < maxLevel) {
+            player.sendMessage(Component.text("XP to next level: " + nextLevelXp, NamedTextColor.GRAY));
+        } else {
+            player.sendMessage(Component.text("Mastered!", NamedTextColor.YELLOW));
+        }
     }
 
     private void setLevel(CommandSender sender, String playerName, String skillId, int level) {
