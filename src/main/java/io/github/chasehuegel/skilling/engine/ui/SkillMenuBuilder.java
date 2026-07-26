@@ -139,10 +139,13 @@ public final class SkillMenuBuilder {
 
         item.editMeta(meta -> {
             TextColor skillColor = resolveColor(skill.display().color());
-            NamedTextColor nameColor = unlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY;
-            meta.displayName(Component.text(
-                    (unlocked ? "✔ " : "✗ ") + (skill.display().name() != null ? skill.display().name() : skill.id()),
-                    nameColor));
+            String skillName = skill.display().name() != null ? skill.display().name() : skill.id();
+            if (unlocked) {
+                meta.displayName(Component.text(skillName, NamedTextColor.GREEN));
+            } else {
+                meta.displayName(Component.text(skillName, NamedTextColor.GRAY)
+                        .append(Component.text(" · Locked", NamedTextColor.DARK_GRAY)));
+            }
 
             meta.lore(buildSkillLore(skill, profile));
 
