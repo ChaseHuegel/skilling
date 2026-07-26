@@ -74,8 +74,15 @@ public final class Skilling extends JavaPlugin {
 
         saveDefaultConfig();
         reloadConfig();
-        saveResource("tags.yml", false);
-        saveResource("template-skill.yml", false);
+
+        if (!new File(getDataFolder(), "tags.yml").exists()) {
+            getLogger().info("Generating default tags.yml...");
+            saveResource("tags.yml", false);
+        }
+        if (!new File(getDataFolder(), "template-skill.yml").exists()) {
+            getLogger().info("Generating default template-skill.yml...");
+            saveResource("template-skill.yml", false);
+        }
 
         var config = (YamlConfiguration) getConfig();
         this.debugLogging = config.getBoolean("debug_logging", false);

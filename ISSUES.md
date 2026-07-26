@@ -19,6 +19,7 @@
 - [x] Abilities that haven't been unlocked are displaying raw styling codes in the skill menu item's lore
   - [x] This appears to be because unlocked abilities are forced to appear as a dark grey and the style-codes written into the config file are being ignored
 - [x] The sneak mine trigger for the template mining skill is not having any effect
+- [x] The `saveResource("tags.yml", false)` and `saveResource("template-skill.yml", false)` calls in `onEnable()` log spurious warnings on every startup when the files already exist. Flip to log an info message only when files don't exist (i.e. when they are first generated fresh).
 
 # Improvements
 - [ ] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
