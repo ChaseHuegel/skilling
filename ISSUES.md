@@ -10,7 +10,7 @@
 - [x] The `/skills setlevel` command doesn't autocomplete player names
 - [ ] The `/skills setlevel` command doesn't autocomplete skills
 - [x] The `/skills setlevel` command doesn't give usage guidance when it fails
-- [ ] The XP bossbar is showing current out of total needed XP instead of the relative XP needed for the current level
+- [x] The XP bossbar is showing current out of total needed XP instead of the relative XP needed for the current level
 
 # Improvements
 - [ ] Add a `/skills help` command to details the commands and briefly how to use them
