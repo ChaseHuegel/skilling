@@ -13,8 +13,14 @@
 - [x] The commands to addxp and setlevel don't trigger any fanfare. These should be effectively go through the same pipeline as any other XP gain to trigger all side-effects of a levelup.
 - [x] The XP bossbar is showing current out of total needed XP instead of the relative XP needed for the current level
 - [x] The XP bossbar is going into negative values when nearing a level-up
+- [ ] Skills commands autocomplete display names but actually require IDs (ex: `mining` works but `Mining` is autocompleted and doesn't work)
+  - [ ] ID and display names should both be valid
+  - [ ] Auto complete will prefer display names but fallback to ids for any skills that have a null or empty display name
+- [ ] Abilities that haven't been unlocked are displaying raw styling codes in the skill menu item's lore
+  - [ ] This appears to be because unlocked abilities are forced to appear as a dark grey and the style-codes written into the config file are being ignored
 
 # Improvements
+- [ ] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
 - [ ] Add a `/skills help` command to details the commands and briefly how to use them
 - [ ] Improve the styling of skills in the menu
   - [ ] Skill names will display without any styling (no bold, no italics)
@@ -28,10 +34,16 @@
     - [ ] The skill name will appear light grey
   - [ ] A green check will indicate a skill is unlocked
     - [ ] The skill name will appear green
-- [ ] Add a `/skills reset`
+- [ ] `all` will be added as a tab completion option to `/skills reset <player> <skill>` which will instead reset ALL skill data for a player rather than a specific skill.
 - [ ] Adjust the fanfare chat log for level ups to be formatted as "Level up! {skill} increased to {level}!" without changing the current styling
 - [ ] Adjust the xp bossbar to be formatted as "<skill color>{skill} <light grey>- <white>{level}"
   - [ ] The XP number display will only appear in debug is enabled in the plugin config
 - [ ] Level up fanfare should be reduced for levelups that don't unlock anything new
   - [ ] These minor level ups will use the default minecraft level sound and a small firework display
   - [ ] Major level ups, where something is unlocked, will use the current fanfare and additional fireworks
+- [ ] Add some information logging to the startup of the plugin, such as:
+  - [ ] Indicate how many entries are in each registry
+  - [ ] Indicate how many skills are loaded
+  - [ ] Indicate how many custom tags are loaded
+  - [ ] Anything else that seems useful for identifying if everything has loaded & started up correctly
+  - [ ] Anything else that seems useful for troubleshooting startup issues off of just logs
