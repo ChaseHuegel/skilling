@@ -1,0 +1,6 @@
+name: skilling
+version: '${version}'
+
+main: io.github.chasehuegel.skilling.Skilling
+api-version: '1.21.8'
+load: POSTWORLD
