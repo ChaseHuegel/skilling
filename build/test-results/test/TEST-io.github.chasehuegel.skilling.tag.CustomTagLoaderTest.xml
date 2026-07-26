@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:02:16.785Z" hostname="chase-desktop-linux" time="0.304">
+<testsuite name="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:03:26.541Z" hostname="chase-desktop-linux" time="0.286">
   <properties/>
-  <testcase name="clearEmptiesKeys()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.012"/>
-  <testcase name="handlesMissingFile()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.243"/>
+  <testcase name="clearEmptiesKeys()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.011"/>
+  <testcase name="handlesMissingFile()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.224"/>
   <testcase name="emptyConfig()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.041"/>
-  <testcase name="unknownTagReturnsEmpty()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.002"/>
-  <testcase name="parsesTagKeys()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.002"/>
+  <testcase name="unknownTagReturnsEmpty()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.004"/>
+  <testcase name="parsesTagKeys()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.003"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

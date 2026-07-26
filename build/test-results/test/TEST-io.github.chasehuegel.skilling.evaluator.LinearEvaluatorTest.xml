@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:02:16.746Z" hostname="chase-desktop-linux" time="0.006">
+<testsuite name="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:03:26.496Z" hostname="chase-desktop-linux" time="0.008">
   <properties/>
   <testcase name="levelZero()" classname="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" time="0.001"/>
   <testcase name="baseValueAtUnlockLevel()" classname="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" time="0.001"/>
-  <testcase name="scalesLinearly()" classname="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" time="0.0"/>
+  <testcase name="scalesLinearly()" classname="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" time="0.002"/>
   <testcase name="noClampWithInfinity()" classname="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" time="0.001"/>
-  <testcase name="clampedToMax()" classname="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" time="0.0"/>
+  <testcase name="clampedToMax()" classname="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" time="0.001"/>
   <testcase name="clampedToMin()" classname="io.github.chasehuegel.skilling.evaluator.LinearEvaluatorTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
