@@ -24,7 +24,6 @@ import org.incendo.cloud.paper.PaperCommandManager;
 import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
 import org.incendo.cloud.paper.util.sender.Source;
 import org.incendo.cloud.parser.standard.IntegerParser;
-import org.incendo.cloud.parser.standard.StringParser;
 import java.time.Duration;
 import java.util.HashSet;
 
@@ -60,7 +59,7 @@ public final class SkillsCommand {
 
         commandManager.command(skills
                 .permission("skilling.use")
-                .optional("skill", StringParser.stringParser())
+                .optional("skill", SkillParser.skillParser(skillManager))
                 .handler(ctx -> {
                     Source sender = ctx.sender();
                     CommandSender commandSender = sender.source();
@@ -90,7 +89,7 @@ public final class SkillsCommand {
                 .literal("setlevel")
                 .permission("skilling.admin")
                 .required("player", PlayerParser.playerParser())
-                .required("skill", StringParser.stringParser())
+                .required("skill", SkillParser.skillParser(skillManager))
                 .required("level", IntegerParser.integerParser())
                 .handler(ctx -> {
                     Player target = ctx.get("player");
@@ -103,7 +102,7 @@ public final class SkillsCommand {
                 .literal("addxp")
                 .permission("skilling.admin")
                 .required("player", PlayerParser.playerParser())
-                .required("skill", StringParser.stringParser())
+                .required("skill", SkillParser.skillParser(skillManager))
                 .required("amount", IntegerParser.integerParser())
                 .handler(ctx -> {
                     Player target = ctx.get("player");
@@ -116,7 +115,7 @@ public final class SkillsCommand {
                 .literal("reset")
                 .permission("skilling.admin")
                 .required("player", PlayerParser.playerParser())
-                .optional("skill", StringParser.stringParser())
+                .optional("skill", SkillParser.skillParser(skillManager))
                 .handler(ctx -> {
                     Player target = ctx.get("player");
                     String skillId = ctx.getOrDefault("skill", null);
