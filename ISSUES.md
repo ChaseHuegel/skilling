@@ -56,6 +56,12 @@
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
+  - [ ] Configurable port from the plugin config
+    - [ ] Defaults to 8082
+  - [ ] Can be disabled from the plugin config
+    - [ ] Disabled by default
+  - [ ] Requires authentication to access
+    - [ ] Basic auth is configurable with a username and password in the plugin config
   - [ ] Can be used to view:
     - [ ] Skills
     - [ ] Tags
