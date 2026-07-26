@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.github.chasehuegel.skilling.evaluator.PolynomialEvaluatorTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:04:23.210Z" hostname="chase-desktop-linux" time="0.009">
+<testsuite name="io.github.chasehuegel.skilling.evaluator.PolynomialEvaluatorTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:05:08.148Z" hostname="chase-desktop-linux" time="0.005">
   <properties/>
   <testcase name="levelZeroReturnsZero()" classname="io.github.chasehuegel.skilling.evaluator.PolynomialEvaluatorTest" time="0.001"/>
   <testcase name="levelOneReturnsBaseXp()" classname="io.github.chasehuegel.skilling.evaluator.PolynomialEvaluatorTest" time="0.001"/>
   <testcase name="evaluateUsesCurrentLevelOnly()" classname="io.github.chasehuegel.skilling.evaluator.PolynomialEvaluatorTest" time="0.0"/>
-  <testcase name="computesCorrectTotalXp()" classname="io.github.chasehuegel.skilling.evaluator.PolynomialEvaluatorTest" time="0.001"/>
+  <testcase name="computesCorrectTotalXp()" classname="io.github.chasehuegel.skilling.evaluator.PolynomialEvaluatorTest" time="0.0"/>
   <testcase name="highLevelScaling()" classname="io.github.chasehuegel.skilling.evaluator.PolynomialEvaluatorTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>

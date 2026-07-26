@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:04:23.220Z" hostname="chase-desktop-linux" time="0.008">
+<testsuite name="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:05:08.154Z" hostname="chase-desktop-linux" time="0.01">
   <properties/>
-  <testcase name="firstCallReturnsTrue()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.003"/>
-  <testcase name="clearRemovesPlayerState()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.001"/>
-  <testcase name="zeroIntervalAllowsAll()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.0"/>
-  <testcase name="secondCallWithinIntervalReturnsFalse()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.0"/>
-  <testcase name="differentAbilitiesNotDebounced()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.0"/>
-  <testcase name="differentPlayersNotDebounced()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.001"/>
+  <testcase name="firstCallReturnsTrue()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.002"/>
+  <testcase name="clearRemovesPlayerState()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.002"/>
+  <testcase name="zeroIntervalAllowsAll()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.001"/>
+  <testcase name="secondCallWithinIntervalReturnsFalse()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.001"/>
+  <testcase name="differentAbilitiesNotDebounced()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.001"/>
+  <testcase name="differentPlayersNotDebounced()" classname="io.github.chasehuegel.skilling.feedback.FeedbackDebouncerTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
