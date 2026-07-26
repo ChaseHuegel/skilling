@@ -22,6 +22,14 @@ dependencies {
     implementation("org.incendo:cloud-minecraft-extras:2.0.0")
     implementation("org.incendo:cloud-annotations:2.0.0")
     annotationProcessor("org.incendo:cloud-annotations:2.0.0")
+
+    // Testing
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 java {
@@ -43,7 +51,7 @@ tasks {
 
     processResources {
         val props = mapOf("version" to version)
-        filesMatching("plugin.yml") {
+        filesMatching("paper-plugin.yml") {
             expand(props)
         }
     }

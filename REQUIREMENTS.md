@@ -89,3 +89,14 @@ Administrative commands must execute safely without corrupting the async data pi
 * **Dynamic Tab Completion:** Skill ID arguments must auto-complete by querying the live `SkillRegistry`, ensuring custom YAML skills appear instantly.
 * **Offline Player Handling:** Admin commands targeting offline players must execute directly against the database and flag the row to trigger UI fanfare upon their next login.
 * **Deterministic Reloads:** The `/skills reload` command must follow a strict lockdown sequence: freeze interactions, close active GUIs, flush the database, rebuild registries, invalidate UI caches, and unlock interactions.
+
+---
+
+## 7. Testing Requirements
+
+| Requirement | Details |
+|---|---|
+| **Framework** | JUnit 5 with `./gradlew test` invocation |
+| **Coverage targets** | All `ParameterEvaluator` implementations, `RequirementEngine` lifecycle, `TagResolver` resolution, `LoreResolver` placeholder injection |
+| **Validation gate** | `./gradlew test` must pass alongside `./gradlew build` at the end of each development phase |
+| **Test location** | `src/test/java/io/github/chasehuegel/skilling/` mirroring the main source tree |

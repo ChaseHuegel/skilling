@@ -178,7 +178,23 @@ Admin commands operating on offline players execute directly against SQLite. The
 
 ---
 
-## 7. Vanilla+ Content Blueprint (The Configurations)
+## 7. Testing Strategy
+
+All non-Bukkit logic must be covered by JUnit 5 unit tests.
+
+| Component | What to Test |
+|---|---|
+| `ParameterEvaluator` implementations | Boundary values, edge cases (level=0, level=max), min/max clamping |
+| `RequirementEngine` | Check returns `RequirementResult` on pass/fail; Consume deducts items correctly; Consume fails when inventory lacks items |
+| `TagResolver` | Vanilla `#minecraft:` resolution, custom `#c:` tag resolution, fallback behavior |
+| `LoreResolver` | `{placeholder}` injection matches evaluator output, missing placeholder handling |
+| `ConfigurationParser` / `SkillManager` | Malformed YAML throws `IllegalArgumentException`, well-formed YAML produces correct `SkillDefinition` tree |
+
+Tests run via `./gradlew test` and must pass before each phase is considered complete.
+
+---
+
+## 8. Vanilla+ Content Blueprint (The Configurations)
 
 The engine will ship with default YAML configurations mapping out a 32-skill web. These designs serve as the template for utilizing the engine's default mechanics.
 

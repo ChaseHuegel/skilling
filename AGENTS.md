@@ -63,6 +63,11 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 
 ---
 
+## Testing & Validation
+* **Test Framework:** Use JUnit 5 for unit testing all non-Bukkit logic (evaluators, parsers, requirements engine).
+* **What to Test:** Every `ParameterEvaluator` implementation, the `RequirementEngine` check/consume lifecycle, `TagResolver` resolution, and `LoreResolver` placeholder injection must have unit tests.
+* **Phase Validation:** After each development phase, run `./gradlew test` in addition to `./gradlew build`. All tests must pass before proceeding.
+
 ## Coding Style & Conventions
 * **Fail-Fast:** Throw `IllegalArgumentException` during YAML parsing if a config is malformed. Do not let bad configs silently fail at runtime.
 * **Performance:** Avoid regex compilation inside loops or high-frequency events.
