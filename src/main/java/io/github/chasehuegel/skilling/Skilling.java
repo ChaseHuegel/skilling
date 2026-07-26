@@ -27,6 +27,7 @@ import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import io.github.chasehuegel.skilling.engine.ui.UIProtectionListener;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -44,6 +45,10 @@ import java.util.logging.Level;
 public final class Skilling extends JavaPlugin {
 
     private static Skilling instance;
+
+    /** Key used to tag fireworks spawned by Skilling for visual-only damage suppression. */
+    public static final NamespacedKey FIREWORK_KEY = NamespacedKey.fromString("skilling:visual_firework");
+
     private Registries registries;
     private DatabaseManager databaseManager;
     private ProfileManager profileManager;

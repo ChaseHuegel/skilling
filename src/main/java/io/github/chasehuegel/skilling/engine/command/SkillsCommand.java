@@ -17,6 +17,7 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
@@ -386,6 +387,7 @@ public final class SkillsCommand {
         for (int i = 0; i < count; i++) {
             org.bukkit.entity.Firework fw = fwLoc.getWorld().spawn(fwLoc,
                     org.bukkit.entity.Firework.class);
+            fw.getPersistentDataContainer().set(Skilling.FIREWORK_KEY, PersistentDataType.BOOLEAN, true);
             org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
             meta.addEffect(org.bukkit.FireworkEffect.builder()
                     .withColor(color)

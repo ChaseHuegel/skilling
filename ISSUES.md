@@ -41,7 +41,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   [18:57:21 INFO]: [Skilling] [DEBUG]     mechanic=core:chain_break skill=mining
   [18:57:21 INFO]: [Skilling] [DEBUG]     -> mechanic not found in registry, skipping
   ```
-- [ ] The fireworks from levelup fanfare are dealing damage. These should deal 0 damage to any entities.
+- [x] The fireworks from levelup fanfare are dealing damage. These should deal 0 damage to any entities.
   - Preferrably, this should be accomplished via some already available API
   - We can explore some external plugin library/API to use for this, but if that is the alternative then lets pause and discuss options.
   - If absolutely necessary, this may be accomplished via some damage event listener and tagging the entities but that feels like too much. A library is likely preferrable. Again, lets pause and discuss if this isn't achievable as-is with the paper/bukkit APIs.

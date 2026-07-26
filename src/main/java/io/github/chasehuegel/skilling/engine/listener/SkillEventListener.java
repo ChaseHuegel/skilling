@@ -30,6 +30,7 @@ import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.persistence.PersistentDataType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -390,6 +391,14 @@ public final class SkillEventListener implements Listener {
         return true;
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityDamageByFirework(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof org.bukkit.entity.Firework fw
+                && fw.getPersistentDataContainer().has(Skilling.FIREWORK_KEY, PersistentDataType.BOOLEAN)) {
+            event.setCancelled(true);
+        }
+    }
+
     private static final org.bukkit.Color[] BRIGHT_COLORS = {
             org.bukkit.Color.RED, org.bukkit.Color.ORANGE, org.bukkit.Color.YELLOW,
             org.bukkit.Color.LIME, org.bukkit.Color.GREEN, org.bukkit.Color.AQUA,
@@ -448,6 +457,7 @@ public final class SkillEventListener implements Listener {
         for (int i = 0; i < count; i++) {
             org.bukkit.entity.Firework fw = fwLoc.getWorld().spawn(fwLoc,
                     org.bukkit.entity.Firework.class);
+            fw.getPersistentDataContainer().set(Skilling.FIREWORK_KEY, PersistentDataType.BOOLEAN, true);
             org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
             meta.addEffect(org.bukkit.FireworkEffect.builder()
                     .withColor(color)
