@@ -63,4 +63,13 @@ public final class TriggerRegistry {
     public void clear() {
         registry.clear();
     }
+
+    /**
+     * Returns the number of registered triggers.
+     *
+     * @return the number of triggers
+     */
+    public int size() {
+        return registry.size();
+    }
 }

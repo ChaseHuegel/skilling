@@ -55,6 +55,7 @@ public final class Skilling extends JavaPlugin {
     private BossBarPool bossBarPool;
     private LockdownManager lockdownManager;
     private SkillsCommand skillsCommand;
+    private CustomTagLoader customTagLoader;
     private volatile boolean reloading;
     private volatile boolean debugLogging;
 
@@ -110,7 +111,7 @@ public final class Skilling extends JavaPlugin {
         this.asyncBatchWorker.start();
 
         // Load skill definitions from YAML
-        var customTagLoader = new CustomTagLoader();
+        this.customTagLoader = new CustomTagLoader();
         customTagLoader.load(new File(getDataFolder(), "tags.yml"));
         var tagResolver = new TagResolver(customTagLoader);
         this.skillManager = new SkillManager(
@@ -162,6 +163,14 @@ public final class Skilling extends JavaPlugin {
                 ServicePriority.Normal
         );
 
+        var mechCount = registries.getMechanicRegistry().size();
+        var trigCount = registries.getTriggerRegistry().size();
+        var evalCount = registries.getEvaluatorRegistry().size();
+        var skillCount = skillManager.getSkills().size();
+        var tagCount = customTagLoader.getKeys().size();
+        getLogger().info("Loaded " + skillCount + " skill(s) | " + mechCount + " mechanic(s) | "
+                + trigCount + " trigger(s) | " + evalCount + " evaluator(s) | "
+                + tagCount + " custom tag(s)");
         getLogger().info("Skilling v" + getPluginMeta().getVersion() + " enabled.");
     }
 

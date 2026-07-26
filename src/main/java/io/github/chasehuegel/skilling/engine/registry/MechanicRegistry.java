@@ -63,4 +63,13 @@ public final class MechanicRegistry {
     public void clear() {
         registry.clear();
     }
+
+    /**
+     * Returns the number of registered mechanics.
+     *
+     * @return the number of mechanics
+     */
+    public int size() {
+        return registry.size();
+    }
 }

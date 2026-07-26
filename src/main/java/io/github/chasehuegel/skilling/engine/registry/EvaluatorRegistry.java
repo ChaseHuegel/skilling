@@ -55,4 +55,13 @@ public final class EvaluatorRegistry {
     public void clear() {
         registry.clear();
     }
+
+    /**
+     * Returns the number of registered evaluators.
+     *
+     * @return the number of evaluators
+     */
+    public int size() {
+        return registry.size();
+    }
 }

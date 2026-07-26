@@ -47,12 +47,12 @@
 - [ ] Level up fanfare should be reduced for levelups that don't unlock anything new
   - [ ] These minor level ups will use the default minecraft level sound and a small firework display
   - [ ] Major level ups, where something is unlocked, will use the current fanfare and additional fireworks
-- [ ] Add some information logging to the startup of the plugin, such as:
-  - [ ] Indicate how many entries are in each registry
-  - [ ] Indicate how many skills are loaded
-  - [ ] Indicate how many custom tags are loaded
-  - [ ] Anything else that seems useful for identifying if everything has loaded & started up correctly
-  - [ ] Anything else that seems useful for troubleshooting startup issues off of just logs
+- [x] Add some information logging to the startup of the plugin, such as:
+  - [x] Indicate how many entries are in each registry
+  - [x] Indicate how many skills are loaded
+  - [x] Indicate how many custom tags are loaded
+  - [x] Anything else that seems useful for identifying if everything has loaded & started up correctly
+  - [x] Anything else that seems useful for troubleshooting startup issues off of just logs
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
