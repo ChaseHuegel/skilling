@@ -26,7 +26,7 @@
 - [x] The action bar message for ability activation is not applying the style characters, they are appearing inline in the message
 
 # Improvements
-- [ ] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
+- [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
 - [ ] Add a `/skills help` command to details the commands and briefly how to use them
 - [x] Improve the styling of skills in the menu
   - [x] Skill names will display without any styling (no bold, no italics)

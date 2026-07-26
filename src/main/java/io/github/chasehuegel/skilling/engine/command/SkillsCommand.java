@@ -157,24 +157,12 @@ public final class SkillsCommand {
             player.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded."));
             return;
         }
-        long xp = profile.getXpMap().getOrDefault(def.id(), 0L);
-        int level = getLevelForXp(def, xp);
-        int maxLevel = def.maxLevel();
-        long xpForCurrent = level > 0
-                ? (long) def.progression().evaluator().evaluate(level, 0) : 0;
-        long xpForNext = level < maxLevel
-                ? (long) def.progression().evaluator().evaluate(level + 1, 0) : 0;
-        long xpNeeded = xpForNext - xpForCurrent;
         String name = def.display() != null && def.display().name() != null
                 ? def.display().name() : def.id();
         player.sendMessage(Component.empty());
         player.sendMessage(Component.text("=== " + name + " ===", NamedTextColor.GOLD));
-        player.sendMessage(Component.text("Level: " + level + " / " + maxLevel, NamedTextColor.GREEN));
-        player.sendMessage(Component.text("Total XP: " + xp, NamedTextColor.AQUA));
-        if (level < maxLevel) {
-            player.sendMessage(Component.text("XP to next level: " + xpNeeded, NamedTextColor.GRAY));
-        } else {
-            player.sendMessage(Component.text("Mastered!", NamedTextColor.YELLOW));
+        for (Component line : skillMenuBuilder.buildSkillLore(def, profile)) {
+            player.sendMessage(line);
         }
     }
 

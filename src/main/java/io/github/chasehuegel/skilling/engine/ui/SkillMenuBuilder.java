@@ -53,99 +53,98 @@ public final class SkillMenuBuilder {
         return inventory;
     }
 
+    public List<Component> buildSkillLore(SkillDefinition skill, PlayerProfile profile) {
+        long currentXp = profile.getXp(skill.id());
+        int level = getLevelForXp(skill, currentXp);
+        var lore = new ArrayList<Component>();
+        TextColor skillColor = resolveColor(skill.display().color());
+
+        lore.add(Component.text("Level " + level + " / " + skill.maxLevel(),
+                skillColor != null ? skillColor : NamedTextColor.GREEN));
+
+        long xpForCurrent = level > 0
+                ? (long) skill.progression().evaluator().evaluate(level, 0) : 0;
+        long xpForNext = level < skill.maxLevel()
+                ? (long) skill.progression().evaluator().evaluate(level + 1, 0) : 0;
+        int barWidth = 20;
+        double progress = xpForNext > xpForCurrent
+                ? (double) (currentXp - xpForCurrent) / (xpForNext - xpForCurrent) : 0;
+        progress = Math.min(Math.max(progress, 0), 1);
+        int filled = (int) Math.round(progress * barWidth);
+        StringBuilder barStr = new StringBuilder().append('[');
+        for (int i = 0; i < barWidth; i++) {
+            barStr.append(i < filled ? '|' : '.');
+        }
+        barStr.append(']');
+        Component barFull;
+        if (filled > 0) {
+            Component filledPart = Component.text(barStr.substring(1, 1 + filled), NamedTextColor.GREEN);
+            barFull = Component.text("[").color(NamedTextColor.GRAY)
+                    .append(filledPart)
+                    .append(Component.text(barStr.substring(1 + filled), NamedTextColor.GRAY));
+        } else {
+            barFull = Component.text(barStr.toString(), NamedTextColor.GRAY);
+        }
+        lore.add(barFull);
+
+        if (level >= skill.maxLevel()) {
+            lore.add(Component.text("Total XP: " + currentXp + " (Maxed)", NamedTextColor.AQUA));
+        } else {
+            long xpInto = currentXp - xpForCurrent;
+            long xpNeeded = xpForNext - xpForCurrent;
+            lore.add(Component.text("XP: " + xpInto + " / " + xpNeeded, NamedTextColor.AQUA));
+        }
+
+        for (SkillDefinition.Ability ability : skill.abilities()) {
+            boolean abilityUnlocked = level >= ability.unlockLevel();
+            lore.add(Component.empty());
+            lore.add(Component.text(
+                    (abilityUnlocked ? "✔ " : "✗ ") + ability.displayName(),
+                    abilityUnlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY));
+
+            boolean isActive = ability.requirements().cooldown() > 0
+                    || !ability.requirements().state().isEmpty()
+                    || !ability.requirements().items().isEmpty();
+            lore.add(Component.text(
+                    isActive ? "  Active Ability" : "  Passive Ability",
+                    NamedTextColor.DARK_GRAY));
+
+            Map<String, ParameterEvaluator> allParams = new HashMap<>();
+            for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
+                allParams.putAll(me.parameters());
+            }
+            List<String> resolved = LoreResolver.resolveAll(
+                    ability.display().lore(), allParams, level, ability.unlockLevel());
+            for (String line : resolved) {
+                Component deserialized = LegacyComponentSerializer.legacyAmpersand().deserialize(line);
+                lore.add(abilityUnlocked ? deserialized : deserialized.colorIfAbsent(NamedTextColor.DARK_GRAY));
+            }
+        }
+
+        return lore;
+    }
+
     private ItemStack buildSkillIcon(SkillDefinition skill, PlayerProfile profile) {
         long currentXp = profile.getXp(skill.id());
         int level = getLevelForXp(skill, currentXp);
         boolean unlocked = level > 0;
 
-        // Icon: barrier at level 0
         Material material = Material.matchMaterial(skill.display().icon());
         if (material == null || level == 0) {
             material = Material.BARRIER;
         }
 
         ItemStack item = new ItemStack(material);
-        // Stack size reflects level (clamped to 99)
         item.setAmount(Math.max(1, Math.min(level, 99)));
 
         item.editMeta(meta -> {
             TextColor skillColor = resolveColor(skill.display().color());
-            NamedTextColor nameColor = unlocked
-                    ? (skillColor != null ? NamedTextColor.GREEN : NamedTextColor.GREEN)
-                    : NamedTextColor.GRAY;
+            NamedTextColor nameColor = unlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY;
             meta.displayName(Component.text(
                     (unlocked ? "✔ " : "✗ ") + (skill.display().name() != null ? skill.display().name() : skill.id()),
                     nameColor));
 
-            var lore = new ArrayList<Component>();
-
-            // Level line
-            lore.add(Component.text("Level " + level + " / " + skill.maxLevel(),
-                    skillColor != null ? skillColor : NamedTextColor.GREEN));
-
-            // ASCII XP bar
-            long xpForCurrent = level > 0
-                    ? (long) skill.progression().evaluator().evaluate(level, 0) : 0;
-            long xpForNext = level < skill.maxLevel()
-                    ? (long) skill.progression().evaluator().evaluate(level + 1, 0) : 0;
-            int barWidth = 20;
-            double progress = xpForNext > xpForCurrent
-                    ? (double) (currentXp - xpForCurrent) / (xpForNext - xpForCurrent) : 0;
-            progress = Math.min(Math.max(progress, 0), 1);
-            int filled = (int) Math.round(progress * barWidth);
-            StringBuilder barStr = new StringBuilder().append('[');
-            for (int i = 0; i < barWidth; i++) {
-                barStr.append(i < filled ? '|' : '.');
-            }
-            barStr.append(']');
-            Component barFull = Component.text(barStr.toString(), NamedTextColor.GRAY);
-            // Color filled portion green
-            if (filled > 0) {
-                Component filledPart = Component.text(barStr.substring(1, 1 + filled), NamedTextColor.GREEN);
-                barFull = Component.text("[").color(NamedTextColor.GRAY)
-                        .append(filledPart)
-                        .append(Component.text(barStr.substring(1 + filled), NamedTextColor.GRAY));
-            }
-            lore.add(barFull);
-
-            // XP number
-            if (level >= skill.maxLevel()) {
-                lore.add(Component.text("Total XP: " + currentXp + " (Maxed)", NamedTextColor.AQUA));
-            } else {
-                long xpInto = currentXp - xpForCurrent;
-                long xpNeeded = xpForNext - xpForCurrent;
-                lore.add(Component.text("XP: " + xpInto + " / " + xpNeeded, NamedTextColor.AQUA));
-            }
-
-            // Abilities
-            for (SkillDefinition.Ability ability : skill.abilities()) {
-                boolean abilityUnlocked = level >= ability.unlockLevel();
-                lore.add(Component.empty());
-                lore.add(Component.text(
-                        (abilityUnlocked ? "✔ " : "✗ ") + ability.displayName(),
-                        abilityUnlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY));
-
-                // Active / Passive label
-                boolean isActive = ability.requirements().cooldown() > 0
-                        || !ability.requirements().state().isEmpty()
-                        || !ability.requirements().items().isEmpty();
-                lore.add(Component.text(
-                        isActive ? "  Active Ability" : "  Passive Ability",
-                        NamedTextColor.DARK_GRAY));
-
-                Map<String, ParameterEvaluator> allParams = new HashMap<>();
-                for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
-                    allParams.putAll(me.parameters());
-                }
-                List<String> resolved = LoreResolver.resolveAll(
-                        ability.display().lore(), allParams, level, ability.unlockLevel());
-                for (String line : resolved) {
-                    Component deserialized = LegacyComponentSerializer.legacyAmpersand().deserialize(line);
-                    lore.add(abilityUnlocked ? deserialized : deserialized.colorIfAbsent(NamedTextColor.DARK_GRAY));
-                }
-            }
-
-            meta.lore(lore);
+            meta.lore(buildSkillLore(skill, profile));
 
             if (skill.display().customModelData() > 0) {
                 meta.setCustomModelData(skill.display().customModelData());
