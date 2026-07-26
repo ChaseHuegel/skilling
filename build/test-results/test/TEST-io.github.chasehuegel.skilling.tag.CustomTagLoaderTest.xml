@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:01:02.277Z" hostname="chase-desktop-linux" time="0.296">
+  <properties/>
+  <testcase name="clearEmptiesKeys()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.012"/>
+  <testcase name="handlesMissingFile()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.232"/>
+  <testcase name="emptyConfig()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.044"/>
+  <testcase name="unknownTagReturnsEmpty()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.001"/>
+  <testcase name="parsesTagKeys()" classname="io.github.chasehuegel.skilling.tag.CustomTagLoaderTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

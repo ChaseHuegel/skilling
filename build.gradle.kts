@@ -24,6 +24,7 @@ dependencies {
     annotationProcessor("org.incendo:cloud-annotations:2.0.0")
 
     // Testing
+    testImplementation("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.chasehuegel.skilling.evaluator.ConstantEvaluatorTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:01:02.213Z" hostname="chase-desktop-linux" time="0.039">
+  <properties/>
+  <testcase name="negativeValue()" classname="io.github.chasehuegel.skilling.evaluator.ConstantEvaluatorTest" time="0.02"/>
+  <testcase name="zeroValue()" classname="io.github.chasehuegel.skilling.evaluator.ConstantEvaluatorTest" time="0.001"/>
+  <testcase name="returnsFixedValue()" classname="io.github.chasehuegel.skilling.evaluator.ConstantEvaluatorTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
