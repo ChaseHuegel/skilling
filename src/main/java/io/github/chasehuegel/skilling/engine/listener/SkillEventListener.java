@@ -400,9 +400,17 @@ public final class SkillEventListener implements Listener {
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skill.id();
         boolean major = isMajorLevelUp(skill, newLevel);
+        var newlyUnlocked = skill.abilities().stream()
+                .filter(a -> a.unlockLevel() == newLevel)
+                .map(SkillDefinition.Ability::displayName)
+                .collect(java.util.stream.Collectors.joining(", "));
+        String subtitle = displayName + " increased to " + newLevel;
+        if (!newlyUnlocked.isEmpty()) {
+            subtitle += "\n" + newlyUnlocked + " unlocked!";
+        }
         player.showTitle(Title.title(
                 MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
-                MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
+                MiniMessage.miniMessage().deserialize("<yellow>" + subtitle + "</yellow>"),
                 Title.Times.times(
                         java.time.Duration.ofMillis(500),
                         java.time.Duration.ofMillis(3500),
