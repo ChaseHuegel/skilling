@@ -3,6 +3,8 @@ package io.github.chasehuegel.skilling.engine.command;
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
+import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
+import io.github.chasehuegel.skilling.engine.feedback.FanfareDispatcher;
 import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
@@ -10,6 +12,10 @@ import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.title.Title;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
@@ -19,6 +25,7 @@ import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
 import org.incendo.cloud.paper.util.sender.Source;
 import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.parser.standard.StringParser;
+import java.time.Duration;
 import java.util.HashSet;
 
 public final class SkillsCommand {
@@ -30,14 +37,17 @@ public final class SkillsCommand {
     private final ProfileManager profileManager;
     private final SkillMenuBuilder skillMenuBuilder;
     private final LockdownManager lockdownManager;
+    private final BossBarPool bossBarPool;
 
     public SkillsCommand(Skilling plugin, SkillManager skillManager, ProfileManager profileManager,
-                         SkillMenuBuilder skillMenuBuilder, LockdownManager lockdownManager) {
+                         SkillMenuBuilder skillMenuBuilder, LockdownManager lockdownManager,
+                         BossBarPool bossBarPool) {
         this.plugin = plugin;
         this.skillManager = skillManager;
         this.profileManager = profileManager;
         this.skillMenuBuilder = skillMenuBuilder;
         this.lockdownManager = lockdownManager;
+        this.bossBarPool = bossBarPool;
     }
 
     public void register() {
@@ -171,9 +181,14 @@ public final class SkillsCommand {
             sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
             return;
         }
+        int oldLevel = getLevelForXp(def, profile.getXp(skillId));
         long xp = (long) def.progression().evaluator().evaluate(level, 0);
         profile.setXp(skillId, xp);
         sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + target.getName() + "'s " + skillId + " to level " + level + "."));
+        showXpBossBar(target, def, profile);
+        if (level > oldLevel) {
+            broadcastLevelUp(target, def, level);
+        }
     }
 
     private void addXp(CommandSender sender, Player target, String skillId, int amount) {
@@ -183,8 +198,20 @@ public final class SkillsCommand {
             sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + target.getName() + "."));
             return;
         }
+        SkillDefinition def = skillManager.getSkill(skillId);
+        if (def == null) {
+            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_ADDXP));
+            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
+            return;
+        }
+        int oldLevel = getLevelForXp(def, profile.getXp(skillId));
         profile.addXp(skillId, amount);
+        int newLevel = getLevelForXp(def, profile.getXp(skillId));
         sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + target.getName() + "'s " + skillId + "."));
+        showXpBossBar(target, def, profile);
+        if (newLevel > oldLevel) {
+            broadcastLevelUp(target, def, newLevel);
+        }
     }
 
     private void reset(CommandSender sender, Player target, String skillId) {
@@ -211,5 +238,50 @@ public final class SkillsCommand {
             if (xp < required) return level - 1;
         }
         return skill.maxLevel();
+    }
+
+    private void showXpBossBar(Player player, SkillDefinition skill, PlayerProfile profile) {
+        String skillId = skill.id();
+        long totalXp = profile.getXp(skillId);
+        int level = getLevelForXp(skill, totalXp);
+        int maxLevel = skill.maxLevel();
+        String displayName = skill.display() != null && skill.display().name() != null
+                ? skill.display().name() : skillId;
+
+        BossBar bar = bossBarPool.getOrCreate(player, skillId);
+
+        if (level >= maxLevel) {
+            bar.setTitle(displayName + " - Maxed!");
+            bar.setProgress(1.0);
+        } else {
+            long xpForCurrent = (long) skill.progression().evaluator().evaluate(level, 0);
+            long xpForNext = (long) skill.progression().evaluator().evaluate(level + 1, 0);
+            long intoLevel = totalXp - xpForCurrent;
+            long needed = xpForNext - xpForCurrent;
+            double progress = needed > 0 ? Math.min((double) intoLevel / needed, 1.0) : 0;
+            bar.setTitle(displayName + " Lv." + level + " (" + intoLevel + "/" + needed + ")");
+            bar.setProgress(progress);
+        }
+
+        if (skill.display() != null) {
+            try {
+                bar.setColor(BarColor.valueOf(skill.display().color()));
+            } catch (IllegalArgumentException ignored) {}
+            try {
+                bar.setStyle(BarStyle.valueOf(skill.display().style()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+    }
+
+    private void broadcastLevelUp(Player player, SkillDefinition skill, int newLevel) {
+        String displayName = skill.display() != null && skill.display().name() != null
+                ? skill.display().name() : skill.id();
+        player.showTitle(Title.title(
+                MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
+                MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
+                Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
+        ));
+        player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
     }
 }

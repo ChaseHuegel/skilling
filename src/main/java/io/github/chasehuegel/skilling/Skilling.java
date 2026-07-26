@@ -132,7 +132,7 @@ public final class Skilling extends JavaPlugin {
 
         // Commands
         this.skillsCommand = new SkillsCommand(this, skillManager, profileManager, skillMenuBuilder,
-                lockdownManager);
+                lockdownManager, bossBarPool);
         this.skillsCommand.register();
 
         // Event listeners

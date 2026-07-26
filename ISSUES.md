@@ -10,7 +10,7 @@
 - [x] The `/skills setlevel <player> <skill>` command doesn't autocomplete player names
 - [ ] The `/skills setlevel <player> <skill>` command doesn't autocomplete skill names
 - [ ] The `/skills setlevel <player> <skill>` command doesn't give usage guidance when it fails. It just shows "Unknown or incomplete command, see below for error" and doesn't clarify the error or show the user the intended usage.
-- [ ] The commands to addxp and setlevel don't trigger any fanfare. These should be effectively go through the same pipeline as any other XP gain to trigger all side-effects of a levelup.
+- [x] The commands to addxp and setlevel don't trigger any fanfare. These should be effectively go through the same pipeline as any other XP gain to trigger all side-effects of a levelup.
 - [x] The XP bossbar is showing current out of total needed XP instead of the relative XP needed for the current level
 - [x] The XP bossbar is going into negative values when nearing a level-up
 
