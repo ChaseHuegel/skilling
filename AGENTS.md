@@ -9,11 +9,15 @@ Skilling is a high-performance, data-driven RPG skills engine for PaperMC (Minec
 * Content is constructed entirely via YAML configurations by the end-user.
 * The system is designed to maintain 20 TPS under heavy load.
 
+## Package Base
+All code lives under `io.github.chasehuegel.skilling`.
+
 ## Tech Stack
-* **Target API:** Paper API (Latest)
-* **Language:** Java 21 (LTS) - *Use modern features: Records, Switch Expressions, Pattern Matching.*
+* **Target API:** Paper API (Latest release)
+* **Language:** Java 21 (LTS) — *Use modern features: Records, Switch Expressions, Pattern Matching.*
 * **Build System:** Gradle (Kotlin DSL)
 * **Database:** Embedded SQLite (WAL mode) with HikariCP pooling.
+* **Command Framework:** Incendo Cloud (with `cloud-paper` and `cloud-annotations`)
 
 ---
 
@@ -44,9 +48,18 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 * **Anti-Dupe (Poison Pill):** Every UI `ItemStack` must be tagged with a hidden byte via Paper's `PersistentDataContainer`. The global inventory listener must `setCancelled(true)` on all clicks/drags in custom holders and vaporize any tagged item found outside the UI.
 
 ### 5. Configs & Tags
+* **Plugin Config:** Global settings (`config.yml`) govern database pool size, boss bar pool capacity, and debounce intervals.
 * When writing block or item filters, support Vanilla namespaces (e.g., `#minecraft:logs`).
 * Always route tag checks through the custom `TagResolver` to support user-defined custom tags in `tags.yml`.
 * Flatten tag resolution into `EnumSet<Material>` or `EnumSet<EntityType>` during plugin load to keep event listener lookups at O(1) complexity.
+
+### 6. Command & Administration
+* Use Incendo Cloud for command registration, argument casting, and permission routing.
+* All functionality lives under a single `/skills` command tree — no separate `/skillsadmin`.
+* A bare `/skills` (no arguments) opens the player's skill overview UI.
+* Skill IDs auto-complete by querying the live `SkillRegistry`.
+* Admin commands targeting offline players must execute directly against the database and flag the row for fanfare on next login.
+* `/skills reload` follows a strict lockdown sequence: freeze interactions, close GUIs, flush DB, rebuild registries, invalidate UI caches, unlock.
 
 ---
 

@@ -11,9 +11,92 @@ All logic is abstracted into independent, reusable modules registered during plu
 * **Triggers:** Hooks into Spigot/Paper events (e.g., `block_break`, `entity_damage`).
 * **Mechanics (Effects):** The executable logic (e.g., `yield_multiplier`, `apply_status`, `chain_break`).
 * **Filters (Tags):** Conditional gates leveraging vanilla and custom namespaces (e.g., `#minecraft:logs`, `is_sneaking`).
-* **Parameter Evaluators:** Polymorphic math processors (Linear, Milestone, Constant, Random) that calculate dynamic values based on the player's current level versus the ability's unlock level.
+* **Parameter Evaluators:** Polymorphic math processors that calculate dynamic values based on the player's current level versus the ability's unlock level. Registered under kebab-case keys (`linear`, `milestone`, `constant`, `random`, `polynomial`).
 
-## 2. State Management & Data Persistence
+### Package / Module Structure
+
+All code lives under `io.github.chasehuegel.skilling`. The module layout is:
+
+```
+io.github.chasehuegel.skilling
+  Skilling.java               # Main class (extends JavaPlugin)
+  api/
+    SkillingAPI.java          # Bukkit ServicesManager API for addons
+    Registries.java           # Container for MechanicRegistry, TriggerRegistry, EvaluatorRegistry
+  engine/
+    SkillManager.java         # Parses YAML → SkillDefinition records
+    registry/
+      MechanicRegistry.java   # Map<String, Supplier<SkillMechanic>>
+      TriggerRegistry.java    # Map<String, EventExecutor>
+      EvaluatorRegistry.java  # Map<String, ParameterEvaluator>
+    profile/
+      PlayerProfile.java      # In-memory player state, isDirty flag
+      ProfileManager.java     # ConcurrentHashMap<UUID, PlayerProfile>
+    db/
+      DatabaseManager.java    # HikariCP pool, WAL init, schema creation
+      AsyncBatchWorker.java   # Scheduled async UPSERT draining
+    requirements/
+      RequirementResult.java  # Record: success, FailureReason, placeholders
+      RequirementEngine.java  # Check → Execute → Consume pipeline
+    mechanic/
+      SkillMechanic.java      # Interface: execute(Player, int, int, Event)
+      impl/                   # YieldMultiplierMechanic, ChainBreakMechanic, etc.
+    trigger/
+      SkillTrigger.java       # Interface binding events to YAML trigger IDs
+      impl/                   # BlockBreakTrigger, EntityDamageTrigger, etc.
+    evaluator/
+      ParameterEvaluator.java # Interface: evaluate(int currentLevel, int unlockLevel) → double
+      impl/                   # LinearEvaluator, MilestoneEvaluator, ConstantEvaluator, PolynomialEvaluator
+    tag/
+      TagResolver.java        # Resolves #minecraft: and #c: tags into EnumSet
+      CustomTagLoader.java    # Reads tags.yml
+    ui/
+      SkillMenuBuilder.java   # Lazy-builds Inventory from SkillDefinition
+      LoreResolver.java       # Injects {placeholder} → evaluator output
+      UIProtectionListener.java # Anti-dupe, shift-click denial, poison pill
+      PoisonPillTag.java      # NamespacedKey constant for PDC
+    feedback/
+      FeedbackDebouncer.java  # 500ms throttle per player-ability key
+      BossBarPool.java        # LRU LinkedHashMap with configurable capacity
+      FanfareDispatcher.java  # Particles, sounds, action bar on level-up/activate
+    command/
+      SkillsCommand.java      # /skills command tree (player + admin subcommands)
+```
+
+## 2. Configuration Templates
+
+The plugin ships with two default config files generated on first run.
+
+### config.yml (Global Settings)
+
+```yaml
+database:
+  pool_size: 10
+  wal_mode: true
+bossbar:
+  max_active: 2
+  fade_ticks: 40
+debouncer:
+  interval_ms: 500
+```
+
+### tags.yml (Custom Tag Definitions)
+
+```yaml
+custom_tags:
+  c:ores:
+    - "minecraft:coal_ore"
+    - "minecraft:iron_ore"
+    - "minecraft:gold_ore"
+    - "#minecraft:copper_ores"    # vanilla tags can be cross-referenced
+  c:logs:
+    - "#minecraft:logs"
+  c:gems:
+    - "minecraft:diamond"
+    - "minecraft:emerald"
+```
+
+## 3. State Management & Data Persistence
 
 To maintain maximum server tick rates under heavy I/O loads, the system decouples gameplay state from the database using asynchronous batching.
 
@@ -28,7 +111,7 @@ To maintain maximum server tick rates under heavy I/O loads, the system decouple
 * **WAL Mode:** Write-Ahead Logging allows concurrent reads alongside a single asynchronous writer.
 * **Event Queue:** A scheduled async Bukkit task periodically drains the dirty cache and executes a batched `UPSERT` transaction, ensuring zero main-thread blocking.
 
-## 3. The Execution Pipeline
+## 4. The Execution Pipeline
 
 When a player performs an action, the engine processes it through a strict, deterministic pipeline.
 
@@ -47,7 +130,7 @@ Post-execution, the engine parses the YAML `feedback` node to dispatch visual an
 * **Level Ups:** Triggered by a central dispatcher checking XP thresholds. Broadcasts a Title to the player and a permanent log to the chat. Milestone levels dynamically append unlocked ability names.
 * **Ability Activations:** Dispatches configured particles, sounds, and action bar text targeted at the player or the affected entity.
 
-## 4. User Interface Architecture
+## 5. User Interface Architecture
 
 The UI is dynamically generated from the YAML files and heavily protected against client-server desyncs.
 
@@ -65,7 +148,37 @@ The UI is dynamically generated from the YAML files and heavily protected agains
 
 ---
 
-## 5. Vanilla+ Content Blueprint (The Configurations)
+## 6. Command & Administration
+
+All commands use Incendo Cloud for registration, argument parsing, and permission routing under a single `/skills` root.
+
+| Command | Permission | Description |
+|---|---|---|
+| `/skills` | — | Opens the player's skill overview UI (lazy-built from YAML configs) |
+| `/skills progress [skill]` | — | Shows current level, XP, and next-level progress in chat |
+| `/skills reload` | `skilling.admin` | Full lockdown reload (see below) |
+| `/skills setlevel <player> <skill> <level>` | `skilling.admin` | Override a player's level |
+| `/skills addxp <player> <skill> <amount>` | `skilling.admin` | Grant XP to a player |
+| `/skills reset <player> [skill]` | `skilling.admin` | Reset a player entirely or per skill |
+
+### Reload Lockdown Sequence
+
+The `/skills reload` command follows a deterministic six-phase sequence:
+
+1. **Freeze** — Set an atomic `reloading` flag. All event listeners check this flag and short-circuit interactions.
+2. **Close GUIs** — Force-close all open skill menus for online players.
+3. **Flush DB** — Synchronously drain the dirty profile cache to SQLite.
+4. **Rebuild Registries** — Clear and re-parse all YAML skill definitions, evaluators, and tag maps.
+5. **Invalidate Caches** — Clear all `PlayerProfile` UI inventory caches.
+6. **Unlock** — Clear the `reloading` flag to resume normal operation.
+
+### Offline Player Targeting
+
+Admin commands operating on offline players execute directly against SQLite. The affected row is flagged (`fanfare_pending = 1`) so the next time that player logs in, the login listener triggers the appropriate level-up fanfare.
+
+---
+
+## 7. Vanilla+ Content Blueprint (The Configurations)
 
 The engine will ship with default YAML configurations mapping out a 32-skill web. These designs serve as the template for utilizing the engine's default mechanics.
 

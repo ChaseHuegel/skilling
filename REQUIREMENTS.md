@@ -8,9 +8,10 @@ The plugin will be built as a modern, high-performance rules engine designed exc
 | --- | --- |
 | **Target API** | Paper API (Latest Release) |
 | **Language** | Java 21 (LTS) |
-| **Build System** | Gradle (Kotlin DSL recommended for modern tooling) |
+| **Build System** | Gradle (Kotlin DSL) |
 | **Database** | SQLite (Local, file-based) |
 | **Connection Pool** | HikariCP (Shaded into the plugin jar) |
+| **Command Framework** | Incendo Cloud (cloud-paper, cloud-annotations) |
 | **Config Format** | YAML (Bukkit native `YamlConfiguration`) |
 
 ---
@@ -48,9 +49,10 @@ Database operations must be designed to maintain 20 TPS (Ticks Per Second) under
 
 The engine acts as a parser mapping YAML definitions to executable Java interfaces.
 
+* **Plugin Config:** A global `config.yml` must be generated on first run, governing database pool size, boss bar pool capacity (default: 2), and debounce intervals (default: 500ms).
 * **Parameter Evaluators:** All numeric configurations must be parsed into polymorphic evaluators (`LinearEvaluator`, `MilestoneEvaluator`, `ConstantEvaluator`) that dynamically calculate outputs based on a player's effective level.
 * **Vanilla Tag Resolution:** String filters beginning with `#` must query the Bukkit `Tag` API.
-* **Custom Tag Registry:** The engine must parse a localized `tags.yml` to support custom item/block groupings before falling back to vanilla namespaces.
+* **Custom Tag Registry:** The engine must parse a localized `tags.yml` (generated on first run) to support custom item/block groupings before falling back to vanilla namespaces. The `tags.yml` format must support both raw material lists and cross-references to vanilla `#` tags.
 * **O(1) Execution:** Tags and filters must be flattened into `EnumSet<Material>` or `EnumSet<EntityType>` during plugin load to guarantee fast event routing.
 
 ---
@@ -82,7 +84,8 @@ User interfaces must be dynamically generated, performant, and cryptographically
 
 Administrative commands must execute safely without corrupting the async data pipeline.
 
-* **Subcommand Routing:** Utilize a robust command framework (e.g., Incendo Cloud) to handle argument casting and permission nodes automatically.
+* **Subcommand Routing:** Use Incendo Cloud's annotation-driven command builder with `cloud-paper` for argument casting and permission node routing.
+* **Single Command Tree:** All functionality lives under `/skills` — no separate `/skillsadmin` root. A bare `/skills` opens the player's skill overview UI.
 * **Dynamic Tab Completion:** Skill ID arguments must auto-complete by querying the live `SkillRegistry`, ensuring custom YAML skills appear instantly.
 * **Offline Player Handling:** Admin commands targeting offline players must execute directly against the database and flag the row to trigger UI fanfare upon their next login.
-* **Deterministic Reloads:** The `/skillsadmin reload` command must follow a strict lockdown sequence: freeze interactions, close active GUIs, flush the database, rebuild registries, invalidate UI caches, and unlock interactions.
+* **Deterministic Reloads:** The `/skills reload` command must follow a strict lockdown sequence: freeze interactions, close active GUIs, flush the database, rebuild registries, invalidate UI caches, and unlock interactions.

@@ -83,6 +83,6 @@ Once registered, server owners can immediately use `type: "myaddon:lifesteal"` i
 
 ## ⚙️ Technical Requirements
 
-* **Target API:** Paper 1.20.5+ (Utilizes native component APIs for UI max-stack sizes and custom model data).
+* **Target API:** Latest Paper API (Utilizes native component APIs for UI max-stack sizes and custom model data).
 * **Java:** Java 21 LTS
 * **Database:** SQLite (embedded, no external SQL server required).
