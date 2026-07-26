@@ -9,10 +9,11 @@ import java.util.Map;
 public final class ModifyDamageMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return false;
         double multiplier = ((Number) params.getOrDefault("multiplier", 1.0)).doubleValue();
-        if (multiplier <= 0) return;
+        if (multiplier <= 0) return false;
         damageEvent.setDamage(damageEvent.getDamage() * multiplier);
+        return true;
     }
 }

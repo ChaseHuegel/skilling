@@ -10,18 +10,19 @@ import java.util.Map;
 public final class ModifyCraftOutputMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof CraftItemEvent craftEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof CraftItemEvent craftEvent)) return false;
         double multiplier = ((Number) params.getOrDefault("multiplier", 1.0)).doubleValue();
-        if (multiplier <= 1.0) return;
+        if (multiplier <= 1.0) return false;
 
         ItemStack result = craftEvent.getCurrentItem();
-        if (result == null || result.isEmpty()) return;
+        if (result == null || result.isEmpty()) return false;
 
         int bonus = (int) Math.round(result.getAmount() * (multiplier - 1));
         if (bonus > 0) {
             result.setAmount(result.getAmount() + bonus);
             craftEvent.setCurrentItem(result);
         }
+        return true;
     }
 }

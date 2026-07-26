@@ -9,10 +9,10 @@ import java.util.Map;
 public final class ModifyFurnaceOutputMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof FurnaceExtractEvent extractEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof FurnaceExtractEvent extractEvent)) return false;
         double multiplier = ((Number) params.getOrDefault("multiplier", 1.0)).doubleValue();
-        if (multiplier <= 1.0) return;
+        if (multiplier <= 1.0) return false;
 
         int original = extractEvent.getItemAmount();
         int bonus = (int) Math.round(original * (multiplier - 1));
@@ -21,5 +21,6 @@ public final class ModifyFurnaceOutputMechanic implements SkillMechanic {
                     extractEvent.getBlock().getDrops().iterator().next().asQuantity(bonus)
             );
         }
+        return true;
     }
 }

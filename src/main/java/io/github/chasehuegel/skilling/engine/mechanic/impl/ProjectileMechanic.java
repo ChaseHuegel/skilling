@@ -12,8 +12,8 @@ import java.util.Map;
 public final class ProjectileMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof PlayerInteractEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof PlayerInteractEvent)) return false;
         double speed = ((Number) params.getOrDefault("speed", 1.5)).doubleValue();
         double damage = ((Number) params.getOrDefault("damage", 4.0)).doubleValue();
 
@@ -23,5 +23,6 @@ public final class ProjectileMechanic implements SkillMechanic {
                 new FixedMetadataValue(JavaPlugin.getPlugin(
                         io.github.chasehuegel.skilling.Skilling.class
                 ), damage));
+        return true;
     }
 }

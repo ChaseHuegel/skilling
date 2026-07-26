@@ -12,21 +12,21 @@ import java.util.UUID;
 public final class ModifyAttributeMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
         String attrName = (String) params.getOrDefault("attribute", "");
-        if (attrName.isBlank()) return;
+        if (attrName.isBlank()) return false;
         Attribute attribute;
         try {
             attribute = Attribute.valueOf(attrName.toUpperCase());
         } catch (IllegalArgumentException e) {
-            return;
+            return false;
         }
         double amount = ((Number) params.getOrDefault("amount", 0.0)).doubleValue();
         int duration = ((Number) params.getOrDefault("duration", 5.0)).intValue();
-        if (amount == 0) return;
+        if (amount == 0) return false;
 
         AttributeInstance instance = player.getAttribute(attribute);
-        if (instance == null) return;
+        if (instance == null) return false;
 
         var modifier = new AttributeModifier(
                 UUID.randomUUID(),
@@ -43,5 +43,6 @@ public final class ModifyAttributeMechanic implements SkillMechanic {
                 null,
                 duration * 20L
         );
+        return true;
     }
 }

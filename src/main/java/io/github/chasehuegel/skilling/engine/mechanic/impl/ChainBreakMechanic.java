@@ -26,10 +26,10 @@ public final class ChainBreakMechanic implements SkillMechanic {
     };
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof BlockBreakEvent breakEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof BlockBreakEvent breakEvent)) return false;
         int limit = ((Number) params.getOrDefault("chain_limit", 0.0)).intValue();
-        if (limit <= 0) return;
+        if (limit <= 0) return false;
 
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();
@@ -55,5 +55,7 @@ public final class ChainBreakMechanic implements SkillMechanic {
                 }
             }
         }
+
+        return true;
     }
 }

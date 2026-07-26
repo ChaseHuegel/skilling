@@ -11,11 +11,11 @@ import java.util.Map;
 public final class AoeEffectMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
         String effectName = (String) params.getOrDefault("effect", "");
-        if (effectName.isBlank()) return;
+        if (effectName.isBlank()) return false;
         PotionEffectType type = PotionEffectType.getByName(effectName.toUpperCase());
-        if (type == null) return;
+        if (type == null) return false;
 
         double radius = ((Number) params.getOrDefault("radius", 5.0)).doubleValue();
         int duration = ((Number) params.getOrDefault("duration", 5.0)).intValue() * 20;
@@ -26,5 +26,6 @@ public final class AoeEffectMechanic implements SkillMechanic {
                 target.addPotionEffect(new PotionEffect(type, duration, amplifier));
             }
         }
+        return true;
     }
 }

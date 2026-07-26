@@ -9,10 +9,11 @@ import java.util.Map;
 public final class SaturationInjectMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof PlayerItemConsumeEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof PlayerItemConsumeEvent)) return false;
         double saturation = ((Number) params.getOrDefault("saturation", 0.0)).doubleValue();
-        if (saturation <= 0) return;
+        if (saturation <= 0) return false;
         player.setSaturation(player.getSaturation() + (float) saturation);
+        return true;
     }
 }

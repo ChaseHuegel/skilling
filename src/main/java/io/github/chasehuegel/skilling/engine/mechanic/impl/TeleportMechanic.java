@@ -11,10 +11,10 @@ import java.util.Map;
 public final class TeleportMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof PlayerInteractEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof PlayerInteractEvent)) return false;
         double range = ((Number) params.getOrDefault("range", 10.0)).doubleValue();
-        if (range <= 0) return;
+        if (range <= 0) return false;
 
         Location target;
         Block targetBlock = player.getTargetBlockExact((int) range);
@@ -29,6 +29,7 @@ public final class TeleportMechanic implements SkillMechanic {
         if (safeTarget != null) {
             player.teleport(safeTarget);
         }
+        return true;
     }
 
     private Location findSafeLocation(Location loc) {

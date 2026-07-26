@@ -31,6 +31,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.inventory.ItemStack;
@@ -250,7 +251,11 @@ public final class SkillEventListener implements Listener {
                         if (feedbackDebouncer.tryDebounce(player, ability.id())) {
                             var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());
                             if (failure != null && !failure.actionBar().isBlank()) {
-                                FanfareDispatcher.sendActionBar(player, failure.actionBar());
+                                String msg = failure.actionBar();
+                                for (var ph : check.placeholders().entrySet()) {
+                                    msg = msg.replace("{" + ph.getKey() + "}", ph.getValue());
+                                }
+                                player.sendActionBar(LegacyComponentSerializer.legacyAmpersand().deserialize(msg));
                             }
                         }
                         continue;
@@ -258,7 +263,11 @@ public final class SkillEventListener implements Listener {
 
                     Map<String, Object> evaluatedParams = evaluateParams(entry, skillLevel, ability.unlockLevel());
                     debug("    executing mechanic with params=" + evaluatedParams);
-                    mechanic.execute(player, evaluatedParams, event);
+                    boolean executed = mechanic.execute(player, evaluatedParams, event);
+                    if (!executed) {
+                        debug("    -> mechanic returned false (no-op), skipping consume and feedback");
+                        continue;
+                    }
                     requirementEngine.consume(player, ability.requirements());
 
                     if (ability.feedback().actionBar() && !ability.feedback().message().isBlank()) {

@@ -20,5 +20,14 @@ import java.util.Map;
 @FunctionalInterface
 public interface SkillMechanic {
 
-    void execute(Player player, Map<String, Object> params, Event event);
+    /**
+     * Executes the mechanic action.
+     *
+     * @param player the player activating the ability
+     * @param params pre-evaluated parameters
+     * @param event the original triggering event
+     * @return true if the mechanic performed an action; false if it was a no-op
+     *         (e.g. wrong event type). Resources are only consumed on true.
+     */
+    boolean execute(Player player, Map<String, Object> params, Event event);
 }

@@ -12,10 +12,10 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class YieldMultiplierMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof BlockBreakEvent breakEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof BlockBreakEvent breakEvent)) return false;
         double chance = ((Number) params.getOrDefault("yield_chance", 0.0)).doubleValue();
-        if (chance <= 0) return;
+        if (chance <= 0) return false;
 
         if (ThreadLocalRandom.current().nextDouble(100) < chance) {
             Collection<ItemStack> drops = breakEvent.getBlock().getDrops(player.getInventory().getItemInMainHand());
@@ -29,5 +29,7 @@ public final class YieldMultiplierMechanic implements SkillMechanic {
                 }
             }
         }
+
+        return true;
     }
 }

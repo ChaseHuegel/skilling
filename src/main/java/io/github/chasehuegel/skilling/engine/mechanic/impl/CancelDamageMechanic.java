@@ -10,12 +10,13 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class CancelDamageMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof EntityDamageEvent damageEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof EntityDamageEvent damageEvent)) return false;
         double chance = ((Number) params.getOrDefault("chance", 0.0)).doubleValue();
-        if (chance <= 0) return;
+        if (chance <= 0) return false;
         if (ThreadLocalRandom.current().nextDouble(100) < chance) {
             damageEvent.setCancelled(true);
         }
+        return true;
     }
 }

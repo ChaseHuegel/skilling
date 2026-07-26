@@ -12,17 +12,18 @@ import java.util.Map;
 public final class ApplyStatusMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return;
-        if (!(damageEvent.getEntity() instanceof LivingEntity target)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return false;
+        if (!(damageEvent.getEntity() instanceof LivingEntity target)) return false;
 
         String effectName = (String) params.getOrDefault("effect", "");
-        if (effectName.isBlank()) return;
+        if (effectName.isBlank()) return false;
         PotionEffectType type = PotionEffectType.getByName(effectName.toUpperCase());
-        if (type == null) return;
+        if (type == null) return false;
 
         int duration = ((Number) params.getOrDefault("duration", 3.0)).intValue() * 20;
         int amplifier = ((Number) params.getOrDefault("amplifier", 0.0)).intValue();
         target.addPotionEffect(new PotionEffect(type, duration, amplifier));
+        return true;
     }
 }

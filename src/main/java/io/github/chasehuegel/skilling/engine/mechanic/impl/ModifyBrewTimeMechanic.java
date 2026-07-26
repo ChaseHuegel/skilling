@@ -8,6 +8,7 @@ import java.util.Map;
 public final class ModifyBrewTimeMechanic implements SkillMechanic {
 
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        return true;
     }
 }
