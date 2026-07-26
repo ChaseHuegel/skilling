@@ -222,7 +222,7 @@ public final class SkillEventListener implements Listener {
     private void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             for (SkillDefinition.Ability ability : skill.abilities()) {
-                if (player.getLevel() < ability.unlockLevel()) continue;
+                if (getLevelForXp(skill, profile.getXp(skill.id())) < ability.unlockLevel()) continue;
 
                 for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
                     Object raw = mechanicRegistry.create(entry.type());

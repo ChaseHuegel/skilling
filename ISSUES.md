@@ -18,7 +18,7 @@
   - [x] Auto complete will prefer display names but fallback to ids for any skills that have a null or empty display name
 - [x] Abilities that haven't been unlocked are displaying raw styling codes in the skill menu item's lore
   - [x] This appears to be because unlocked abilities are forced to appear as a dark grey and the style-codes written into the config file are being ignored
-- [ ] The sneak mine trigger for the template mining skill is not having any effect
+- [x] The sneak mine trigger for the template mining skill is not having any effect
 
 # Improvements
 - [ ] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
