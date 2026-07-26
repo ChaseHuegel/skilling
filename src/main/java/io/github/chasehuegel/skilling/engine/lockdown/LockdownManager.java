@@ -65,15 +65,15 @@ public final class LockdownManager {
 
         // Phase 4: Rebuild
         try {
+            plugin.getRegistries().getEvaluatorRegistry().clear();
+            plugin.getRegistries().getMechanicRegistry().clear();
+            plugin.getRegistries().getTriggerRegistry().clear();
+            plugin.registerBuiltins();
             var customTagLoader = new CustomTagLoader();
             customTagLoader.load(new File(plugin.getDataFolder(), "tags.yml"));
             var tagResolver = new TagResolver(customTagLoader);
             skillManager.clear();
             skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
-            plugin.getRegistries().getEvaluatorRegistry().clear();
-            plugin.getRegistries().getMechanicRegistry().clear();
-            plugin.getRegistries().getTriggerRegistry().clear();
-            plugin.getSkillManager().loadSkills(new File(plugin.getDataFolder(), "skills"));
             plugin.getLogger().info("Phase 4/6: Registries rebuilt.");
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to rebuild registries during reload", e);

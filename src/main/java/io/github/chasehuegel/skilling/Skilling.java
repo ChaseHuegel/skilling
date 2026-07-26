@@ -174,7 +174,7 @@ public final class Skilling extends JavaPlugin {
         getLogger().info("Skilling v" + getPluginMeta().getVersion() + " enabled.");
     }
 
-    private void registerBuiltins() {
+    public void registerBuiltins() {
         var evalReg = registries.getEvaluatorRegistry();
         evalReg.register("linear", new LinearEvaluator(0, 1, 0, Double.MAX_VALUE));
         evalReg.register("constant", new ConstantEvaluator(0));
