@@ -32,6 +32,7 @@ import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.inventory.ItemStack;
 import java.util.*;
 import java.util.logging.Level;
@@ -70,6 +71,7 @@ public final class SkillEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
+        event.getBlockPlaced().setMetadata("player_placed", new FixedMetadataValue(plugin, true));
         dispatch(event.getPlayer(), event, "block_place");
     }
 

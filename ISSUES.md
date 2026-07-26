@@ -2,7 +2,7 @@
 - [x] Level up fanfare uses a bossbar instead of a titlebar
   - [x] The title should be "Level up!"
   - [x] The subtitle should be "{skill} increased to {level}"
-- [ ] Players can break blocks they've placed for XP
+- [x] Players can break blocks they've placed for XP
 - [ ] Abilities and their bonuses aren't displayed in the lore of skills in the skills menu
 - [ ] The `/skills addxp` command doesn't autocomplete player names
 - [ ] The `/skills addxp` command doesn't autocomplete skills
