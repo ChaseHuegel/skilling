@@ -4,7 +4,6 @@ import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
-import io.github.chasehuegel.skilling.engine.feedback.FanfareDispatcher;
 import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
@@ -19,6 +18,8 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
+import org.incendo.cloud.exception.ArgumentParseException;
+import org.incendo.cloud.exception.InvalidSyntaxException;
 import org.incendo.cloud.execution.ExecutionCoordinator;
 import org.incendo.cloud.paper.PaperCommandManager;
 import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
@@ -54,6 +55,20 @@ public final class SkillsCommand {
                 PaperSimpleSenderMapper.simpleSenderMapper()
         ).executionCoordinator(ExecutionCoordinator.<Source>simpleCoordinator())
          .buildOnEnable(plugin);
+
+        commandManager.exceptionController().registerHandler(
+                InvalidSyntaxException.class,
+                ctx -> ctx.context().sender().source().sendMessage(
+                        MINI_MESSAGE.deserialize("<red>Invalid syntax. Usage: <yellow>/skills <command> [arguments]")));
+        commandManager.exceptionController().registerHandler(
+                ArgumentParseException.class,
+                ctx -> {
+                    String msg = ctx.exception().getCause() != null
+                            ? ctx.exception().getCause().getMessage()
+                            : ctx.exception().getMessage();
+                    ctx.context().sender().source().sendMessage(
+                            MINI_MESSAGE.deserialize("<red>" + (msg != null ? msg : "Invalid argument")));
+                });
 
         var skills = commandManager.commandBuilder("skills");
 
