@@ -56,6 +56,7 @@ public final class Skilling extends JavaPlugin {
     private LockdownManager lockdownManager;
     private SkillsCommand skillsCommand;
     private volatile boolean reloading;
+    private volatile boolean debugLogging;
 
     /**
      * Returns the plugin singleton instance.
@@ -77,6 +78,10 @@ public final class Skilling extends JavaPlugin {
         saveResource("template-skill.yml", false);
 
         var config = (YamlConfiguration) getConfig();
+        this.debugLogging = config.getBoolean("debug_logging", false);
+        if (debugLogging) {
+            getLogger().info("Debug logging enabled.");
+        }
 
         this.registries = new Registries(
                 new MechanicRegistry(),
@@ -256,5 +261,13 @@ public final class Skilling extends JavaPlugin {
 
     public void setReloading(boolean reloading) {
         this.reloading = reloading;
+    }
+
+    public boolean isDebugLogging() {
+        return debugLogging;
+    }
+
+    public void setDebugLogging(boolean debugLogging) {
+        this.debugLogging = debugLogging;
     }
 }

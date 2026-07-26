@@ -26,7 +26,9 @@ import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.ItemStack;
 import java.util.*;
+import java.util.logging.Level;
 
 public final class SkillEventListener implements Listener {
 
@@ -52,6 +54,8 @@ public final class SkillEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
+        debug("block_break fired for " + event.getPlayer().getName()
+                + " breaking " + event.getBlock().getType());
         dispatch(event.getPlayer(), event, "block_break");
     }
 
@@ -144,18 +148,28 @@ public final class SkillEventListener implements Listener {
     private void grantXp(Player player, PlayerProfile profile, Event event, String triggerKey) {
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             for (SkillDefinition.XpSource source : skill.xpSources()) {
-                if (!source.trigger().equals(triggerKey)) continue;
-                if (!matchesFilters(player, event, source.filters())) continue;
+                if (!source.trigger().equals(triggerKey)) {
+                    debug("  [" + skill.id() + "] XP source trigger '" + source.trigger()
+                            + "' != '" + triggerKey + "', skipping");
+                    continue;
+                }
+                if (!matchesFilters(player, event, source.filters())) {
+                    debug("  [" + skill.id() + "] XP source filters failed, skipping");
+                    continue;
+                }
                 double xp = source.reward().evaluate(1, 1);
                 if (xp > 0) {
-                    profile.addXp(skill.id(), Math.round(xp));
+                    long rounded = Math.round(xp);
+                    profile.addXp(skill.id(), rounded);
+                    debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey + ")");
+                    plugin.getLogger().info(player.getName() + " earned " + rounded
+                            + " XP in " + skill.id() + " (" + triggerKey + ")");
                 }
             }
         }
     }
 
     private void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
-        int currentLevel = 0;
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             for (SkillDefinition.Ability ability : skill.abilities()) {
                 if (player.getLevel() < ability.unlockLevel()) continue;
@@ -202,21 +216,34 @@ public final class SkillEventListener implements Listener {
     private boolean matchesFilters(Player player, Event event, List<SkillDefinition.Filter> filters) {
         if (filters == null || filters.isEmpty()) return true;
         for (SkillDefinition.Filter filter : filters) {
-            if (!matchFilter(player, event, filter)) return false;
+            boolean passed = matchFilter(player, event, filter);
+            debug("  filter target=" + filter.target() + " state=" + filter.state()
+                    + " tool=" + filter.tool() + " -> " + (passed ? "PASS" : "FAIL"));
+            if (!passed) return false;
         }
         return true;
     }
 
     private boolean matchFilter(Player player, Event event, SkillDefinition.Filter filter) {
         if (filter.target() != null && !filter.target().isBlank()) {
+            Material targetMaterial = resolveEventMaterial(event);
+            if (targetMaterial == null) return false;
+            boolean matched;
             if (filter.target().startsWith("#")) {
-                Material targetMaterial = resolveEventMaterial(event);
-                if (targetMaterial == null) return false;
-                if (!tagResolver.resolve(filter.target()).contains(targetMaterial)) return false;
+                matched = tagResolver.resolve(filter.target()).contains(targetMaterial);
+            } else {
+                Material filterMat = Material.matchMaterial(filter.target());
+                if (filterMat == null) {
+                    plugin.getLogger().warning("Unknown material in filter target: " + filter.target());
+                    return false;
+                }
+                matched = targetMaterial == filterMat;
             }
+            if (!matched) return false;
         }
+
         if (filter.state() != null && !filter.state().isBlank()) {
-            return switch (filter.state()) {
+            boolean passed = switch (filter.state()) {
                 case "is_sneaking" -> player.isSneaking();
                 case "is_sprinting" -> player.isSprinting();
                 case "is_in_water" -> player.isInWater();
@@ -229,7 +256,27 @@ public final class SkillEventListener implements Listener {
                 }
                 default -> true;
             };
+            if (!passed) return false;
         }
+
+        if (filter.tool() != null && !filter.tool().isBlank()) {
+            ItemStack hand = player.getInventory().getItemInMainHand();
+            Material handType = hand.getType();
+            if (handType == Material.AIR) return false;
+            boolean toolMatch;
+            if (filter.tool().startsWith("#")) {
+                toolMatch = tagResolver.resolve(filter.tool()).contains(handType);
+            } else {
+                Material toolMat = Material.matchMaterial(filter.tool());
+                if (toolMat == null) {
+                    plugin.getLogger().warning("Unknown material in filter tool: " + filter.tool());
+                    return false;
+                }
+                toolMatch = handType == toolMat;
+            }
+            if (!toolMatch) return false;
+        }
+
         return true;
     }
 
@@ -258,5 +305,11 @@ public final class SkillEventListener implements Listener {
             if (xp < required) return level - 1;
         }
         return skill.maxLevel();
+    }
+
+    private void debug(String msg) {
+        if (plugin.isDebugLogging()) {
+            plugin.getLogger().info("[DEBUG] " + msg);
+        }
     }
 }

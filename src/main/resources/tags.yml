@@ -10,7 +10,9 @@
 # ==========================================
 
 custom_tags:
-  c:ores:
+  # The "c:" prefix is automatically added by the loader.
+  # Use keys matching what you write after "#c:" in skill YAML.
+  ores:
     - "minecraft:coal_ore"
     - "minecraft:iron_ore"
     - "minecraft:gold_ore"
@@ -30,15 +32,15 @@ custom_tags:
     - "minecraft:nether_gold_ore"
     - "minecraft:nether_quartz_ore"
 
-  c:logs:
+  logs:
     - "#minecraft:logs"
 
-  c:gems:
+  gems:
     - "minecraft:diamond"
     - "minecraft:emerald"
     - "minecraft:amethyst_shard"
 
-  c:stone:
+  stone:
     - "#minecraft:stone_crafting_materials"
     - "#minecraft:base_stone_overworld"
     - "#minecraft:base_stone_nether"

@@ -159,7 +159,8 @@ public final class SkillManager {
                         Map<String, Object> filterMap = castMap(fm);
                         String target = (String) filterMap.get("target");
                         String state = (String) filterMap.get("state");
-                        filters.add(new SkillDefinition.Filter(target, state));
+                        String tool = (String) filterMap.get("tool");
+                        filters.add(new SkillDefinition.Filter(target, state, tool));
                     }
                 }
             }
@@ -264,7 +265,7 @@ public final class SkillManager {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> filtersRaw = (List<Map<String, Object>>) mechanicMap.getOrDefault("filters", List.of());
             List<SkillDefinition.Filter> filters = filtersRaw.stream()
-                    .map(fm -> new SkillDefinition.Filter((String) fm.get("target"), (String) fm.get("state")))
+                    .map(fm -> new SkillDefinition.Filter((String) fm.get("target"), (String) fm.get("state"), (String) fm.get("tool")))
                     .toList();
 
             entries.add(new SkillDefinition.MechanicEntry(type, filters, parameters));

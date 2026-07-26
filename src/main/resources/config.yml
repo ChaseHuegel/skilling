@@ -17,3 +17,7 @@ bossbar:
 debouncer:
   # Minimum interval (ms) between repeated failure feedback messages per player-ability
   interval_ms: 500
+
+# Enable verbose console logging for runtime troubleshooting
+# WARNING: Will produce significant log output; use only for debugging
+debug_logging: false

@@ -24,6 +24,12 @@ Global settings for the Skilling engine.
 |---|---|---|---|
 | `debouncer.interval_ms` | int | `500` | Minimum ms between repeated failure feedback per player-ability |
 
+### debug_logging (global)
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `debug_logging` | bool | `false` | Verbose console logging for runtime troubleshooting (XP grants, filter passes/fails, trigger dispatch) |
+
 ## tags.yml
 
 Defines custom namespaced tag groups referenced in skill YAML files.
@@ -34,7 +40,7 @@ Tags use the `#c:` prefix and can contain:
 
 ```yaml
 custom_tags:
-  c:ores:
+  ores:
     - "minecraft:iron_ore"
     - "minecraft:gold_ore"
     - "#minecraft:coal_ores"

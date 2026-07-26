@@ -35,7 +35,7 @@ xp_sources:
 
   - trigger: "block_break"
     filters:
-      - target: "#minecraft:stone_crafting_materials"
+      - target: "#c:stone"                       # c:stone includes base_stone_overworld + stone_crafting_materials
       - state: "player_placed:false"
     reward:
       constant: 2.0

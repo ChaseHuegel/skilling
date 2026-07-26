@@ -75,12 +75,14 @@ public record SkillDefinition(
     /**
      * A filter condition for XP sources and mechanics.
      *
-     * @param target material/tag filter string
-     * @param state  state condition string
+     * @param target material/tag filter string (e.g. {@code #c:ores} or {@code minecraft:stone})
+     * @param state  player state condition (e.g. {@code is_sneaking})
+     * @param tool   required held-item tag or material (e.g. {@code #minecraft:pickaxes})
      */
     public record Filter(
             String target,
-            String state
+            String state,
+            String tool
     ) {}
 
     /**
