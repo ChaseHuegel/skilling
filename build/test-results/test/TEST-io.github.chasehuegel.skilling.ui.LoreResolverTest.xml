@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.chasehuegel.skilling.ui.LoreResolverTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-07-26T19:04:23.536Z" hostname="chase-desktop-linux" time="0.016">
+  <properties/>
+  <testcase name="replacesPlaceholderWithEvaluatorOutput()" classname="io.github.chasehuegel.skilling.ui.LoreResolverTest" time="0.001"/>
+  <testcase name="multiplePlaceholders()" classname="io.github.chasehuegel.skilling.ui.LoreResolverTest" time="0.001"/>
+  <testcase name="integerOutputForWholeValues()" classname="io.github.chasehuegel.skilling.ui.LoreResolverTest" time="0.0"/>
+  <testcase name="resolveAllLines()" classname="io.github.chasehuegel.skilling.ui.LoreResolverTest" time="0.002"/>
+  <testcase name="missingPlaceholderLeftUntouched()" classname="io.github.chasehuegel.skilling.ui.LoreResolverTest" time="0.005"/>
+  <testcase name="linearEvaluatorOutput()" classname="io.github.chasehuegel.skilling.ui.LoreResolverTest" time="0.001"/>
+  <testcase name="decimalOutputForFractionalValues()" classname="io.github.chasehuegel.skilling.ui.LoreResolverTest" time="0.001"/>
+  <testcase name="nullOrBlankLine()" classname="io.github.chasehuegel.skilling.ui.LoreResolverTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
