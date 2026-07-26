@@ -2,17 +2,37 @@ package io.github.chasehuegel.skilling;
 
 import io.github.chasehuegel.skilling.api.Registries;
 import io.github.chasehuegel.skilling.api.SkillingAPI;
+import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.db.DatabaseManager;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.LinearEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.MilestoneEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.PolynomialEvaluator;
+import io.github.chasehuegel.skilling.engine.mechanic.impl.*;
+import io.github.chasehuegel.skilling.engine.trigger.impl.*;
+import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
+import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
+import io.github.chasehuegel.skilling.engine.command.SkillsCommand;
+import io.github.chasehuegel.skilling.engine.listener.PlayerListener;
+import io.github.chasehuegel.skilling.engine.listener.SkillEventListener;
+import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.registry.EvaluatorRegistry;
 import io.github.chasehuegel.skilling.engine.registry.MechanicRegistry;
 import io.github.chasehuegel.skilling.engine.registry.TriggerRegistry;
+import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
+import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
+import io.github.chasehuegel.skilling.engine.tag.TagResolver;
+import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
+import io.github.chasehuegel.skilling.engine.ui.UIProtectionListener;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import java.io.File;
 import java.sql.SQLException;
+import java.util.TreeMap;
 import java.util.logging.Level;
 
 /**
@@ -28,7 +48,14 @@ public final class Skilling extends JavaPlugin {
     private DatabaseManager databaseManager;
     private ProfileManager profileManager;
     private AsyncBatchWorker asyncBatchWorker;
-    private boolean reloading;
+    private SkillManager skillManager;
+    private SkillMenuBuilder skillMenuBuilder;
+    private RequirementEngine requirementEngine;
+    private FeedbackDebouncer feedbackDebouncer;
+    private BossBarPool bossBarPool;
+    private LockdownManager lockdownManager;
+    private SkillsCommand skillsCommand;
+    private volatile boolean reloading;
 
     /**
      * Returns the plugin singleton instance.
@@ -45,17 +72,21 @@ public final class Skilling extends JavaPlugin {
         this.reloading = false;
 
         saveDefaultConfig();
+        reloadConfig();
         saveResource("tags.yml", false);
+        saveResource("template-skill.yml", false);
+
+        var config = (YamlConfiguration) getConfig();
 
         this.registries = new Registries(
                 new MechanicRegistry(),
                 new TriggerRegistry(),
                 new EvaluatorRegistry()
         );
+        registerBuiltins();
 
         // Initialize database
         this.databaseManager = new DatabaseManager(getDataFolder());
-        YamlConfiguration config = (YamlConfiguration) getConfig();
         try {
             databaseManager.initialize(config);
         } catch (SQLException e) {
@@ -66,9 +97,108 @@ public final class Skilling extends JavaPlugin {
         this.asyncBatchWorker = new AsyncBatchWorker(this, databaseManager, profileManager);
         this.asyncBatchWorker.start();
 
-        Bukkit.getServicesManager().register(SkillingAPI.class, new SkillingAPI(registries, profileManager), this, ServicePriority.Normal);
+        // Load skill definitions from YAML
+        var customTagLoader = new CustomTagLoader();
+        customTagLoader.load(new File(getDataFolder(), "tags.yml"));
+        var tagResolver = new TagResolver(customTagLoader);
+        this.skillManager = new SkillManager(
+                registries.getEvaluatorRegistry(),
+                registries.getMechanicRegistry(),
+                registries.getTriggerRegistry(),
+                tagResolver
+        );
+        loadSkills();
+
+        // UI
+        this.skillMenuBuilder = new SkillMenuBuilder(skillManager);
+
+        // Feedback systems
+        int debounceMs = config.getInt("debouncer.interval_ms", 500);
+        this.feedbackDebouncer = new FeedbackDebouncer(debounceMs);
+        int maxBars = config.getInt("bossbar.max_active", 2);
+        int fadeTicks = config.getInt("bossbar.fade_ticks", 40);
+        this.bossBarPool = new BossBarPool(maxBars, fadeTicks);
+
+        // Requirements engine
+        this.requirementEngine = new RequirementEngine();
+
+        // Lockdown / reload manager
+        this.lockdownManager = new LockdownManager(this, profileManager, asyncBatchWorker, skillManager);
+
+        // Commands
+        this.skillsCommand = new SkillsCommand(this, skillManager, profileManager, skillMenuBuilder,
+                lockdownManager);
+        this.skillsCommand.register();
+
+        // Event listeners
+        Bukkit.getPluginManager().registerEvents(new UIProtectionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker), this);
+        Bukkit.getPluginManager().registerEvents(
+                new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
+                        registries.getMechanicRegistry(), feedbackDebouncer),
+                this
+        );
+
+        // API service
+        Bukkit.getServicesManager().register(
+                SkillingAPI.class,
+                new SkillingAPI(registries, profileManager, skillManager, skillMenuBuilder, requirementEngine, feedbackDebouncer, bossBarPool),
+                this,
+                ServicePriority.Normal
+        );
 
         getLogger().info("Skilling v" + getPluginMeta().getVersion() + " enabled.");
+    }
+
+    private void registerBuiltins() {
+        var evalReg = registries.getEvaluatorRegistry();
+        evalReg.register("linear", new LinearEvaluator(0, 1, 0, Double.MAX_VALUE));
+        evalReg.register("constant", new ConstantEvaluator(0));
+        evalReg.register("milestone", new MilestoneEvaluator(new TreeMap<>()));
+        evalReg.register("polynomial", new PolynomialEvaluator(50, 2.5));
+
+        var mechReg = registries.getMechanicRegistry();
+        mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class);
+        mechReg.register("core:chain_break", ChainBreakMechanic.class);
+        mechReg.register("core:modify_damage", ModifyDamageMechanic.class);
+        mechReg.register("core:apply_status", ApplyStatusMechanic.class);
+        mechReg.register("core:cancel_damage", CancelDamageMechanic.class);
+        mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class);
+        mechReg.register("core:modify_craft_output", ModifyCraftOutputMechanic.class);
+        mechReg.register("core:modify_furnace_output", ModifyFurnaceOutputMechanic.class);
+        mechReg.register("core:saturation_inject", SaturationInjectMechanic.class);
+        mechReg.register("core:modify_brew_time", ModifyBrewTimeMechanic.class);
+        mechReg.register("core:modify_potion_duration", ModifyPotionDurationMechanic.class);
+        mechReg.register("core:aoe_effect", AoeEffectMechanic.class);
+        mechReg.register("core:projectile", ProjectileMechanic.class);
+        mechReg.register("core:teleport", TeleportMechanic.class);
+
+        var trigReg = registries.getTriggerRegistry();
+        trigReg.register("block_break", BlockBreakTrigger.class);
+        trigReg.register("block_place", BlockPlaceTrigger.class);
+        trigReg.register("entity_damage", EntityDamageTrigger.class);
+        trigReg.register("entity_damage_taken", EntityDamageTakenTrigger.class);
+        trigReg.register("entity_kill", EntityKillTrigger.class);
+        trigReg.register("craft_item", CraftItemTrigger.class);
+        trigReg.register("furnace_extract", FurnaceExtractTrigger.class);
+        trigReg.register("brew_potion", BrewPotionTrigger.class);
+        trigReg.register("player_interact", PlayerInteractTrigger.class);
+        trigReg.register("consume_item", ConsumeItemTrigger.class);
+        trigReg.register("fishing", FishingTrigger.class);
+        trigReg.register("crop_grow", CropGrowTrigger.class);
+        trigReg.register("breed_animals", BreedAnimalsTrigger.class);
+    }
+
+    private void loadSkills() {
+        File skillsDir = new File(getDataFolder(), "skills");
+        if (!skillsDir.exists()) {
+            skillsDir.mkdirs();
+        }
+        skillManager.loadSkills(skillsDir);
+        int count = skillManager.getSkills().size();
+        if (count > 0) {
+            getLogger().info("Loaded " + count + " skill definition(s).");
+        }
     }
 
     @Override
@@ -84,47 +214,46 @@ public final class Skilling extends JavaPlugin {
         getLogger().info("Skilling disabled.");
     }
 
-    /**
-     * Returns the combined registries container.
-     *
-     * @return the registries container
-     */
     public Registries getRegistries() {
         return registries;
     }
 
-    /**
-     * Returns the database manager.
-     *
-     * @return the database manager
-     */
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
     }
 
-    /**
-     * Returns the profile manager.
-     *
-     * @return the profile manager
-     */
     public ProfileManager getProfileManager() {
         return profileManager;
     }
 
-    /**
-     * Whether the plugin is currently in a reload lockdown.
-     *
-     * @return true if a reload is in progress
-     */
+    public SkillManager getSkillManager() {
+        return skillManager;
+    }
+
+    public SkillMenuBuilder getSkillMenuBuilder() {
+        return skillMenuBuilder;
+    }
+
+    public RequirementEngine getRequirementEngine() {
+        return requirementEngine;
+    }
+
+    public FeedbackDebouncer getFeedbackDebouncer() {
+        return feedbackDebouncer;
+    }
+
+    public BossBarPool getBossBarPool() {
+        return bossBarPool;
+    }
+
+    public LockdownManager getLockdownManager() {
+        return lockdownManager;
+    }
+
     public boolean isReloading() {
         return reloading;
     }
 
-    /**
-     * Sets the reload lockdown flag.
-     *
-     * @param reloading the new reload state
-     */
     public void setReloading(boolean reloading) {
         this.reloading = reloading;
     }

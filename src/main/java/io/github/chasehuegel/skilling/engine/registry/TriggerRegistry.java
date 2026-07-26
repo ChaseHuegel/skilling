@@ -24,6 +24,9 @@ public final class TriggerRegistry {
      * @param clazz the trigger class; must have a no-arg constructor
      */
     public void register(String key, Class<?> clazz) {
+        if (registry.containsKey(key)) {
+            throw new IllegalArgumentException("Trigger already registered: " + key);
+        }
         registry.put(key, () -> {
             try {
                 return clazz.getDeclaredConstructor().newInstance();

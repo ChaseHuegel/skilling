@@ -50,11 +50,6 @@ public final class DatabaseManager {
         hikariConfig.setConnectionTestQuery("SELECT 1");
         hikariConfig.setPoolName("skilling-pool");
 
-        // SQLite-specific optimizations
-        hikariConfig.addDataSourceProperty("journal_mode", walMode ? "WAL" : "DELETE");
-        hikariConfig.addDataSourceProperty("synchronous", "NORMAL");
-        hikariConfig.addDataSourceProperty("foreign_keys", "ON");
-
         this.dataSource = new HikariDataSource(hikariConfig);
 
         try (Connection conn = getConnection()) {

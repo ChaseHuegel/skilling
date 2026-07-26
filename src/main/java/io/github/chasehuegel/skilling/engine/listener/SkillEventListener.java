@@ -1,0 +1,262 @@
+package io.github.chasehuegel.skilling.engine.listener;
+
+import io.github.chasehuegel.skilling.Skilling;
+import io.github.chasehuegel.skilling.engine.SkillDefinition;
+import io.github.chasehuegel.skilling.engine.SkillManager;
+import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
+import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
+import io.github.chasehuegel.skilling.engine.registry.MechanicRegistry;
+import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
+import io.github.chasehuegel.skilling.engine.requirements.RequirementResult;
+import io.github.chasehuegel.skilling.engine.tag.TagResolver;
+import io.github.chasehuegel.skilling.engine.feedback.FanfareDispatcher;
+import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockGrowEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.BrewEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.FurnaceExtractEvent;
+import org.bukkit.event.player.*;
+import java.util.*;
+
+public final class SkillEventListener implements Listener {
+
+    private final Skilling plugin;
+    private final SkillManager skillManager;
+    private final ProfileManager profileManager;
+    private final TagResolver tagResolver;
+    private final RequirementEngine requirementEngine;
+    private final MechanicRegistry mechanicRegistry;
+    private final FeedbackDebouncer feedbackDebouncer;
+
+    public SkillEventListener(Skilling plugin, SkillManager skillManager, ProfileManager profileManager,
+                              TagResolver tagResolver, RequirementEngine requirementEngine,
+                              MechanicRegistry mechanicRegistry, FeedbackDebouncer feedbackDebouncer) {
+        this.plugin = plugin;
+        this.skillManager = skillManager;
+        this.profileManager = profileManager;
+        this.tagResolver = tagResolver;
+        this.requirementEngine = requirementEngine;
+        this.mechanicRegistry = mechanicRegistry;
+        this.feedbackDebouncer = feedbackDebouncer;
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockBreak(BlockBreakEvent event) {
+        dispatch(event.getPlayer(), event, "block_break");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        dispatch(event.getPlayer(), event, "block_place");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityDamage(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player player) {
+            dispatch(player, event, "entity_damage");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityDamageTaken(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            dispatch(player, event, "entity_damage_taken");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityKill(EntityDeathEvent event) {
+        if (event.getEntity().getKiller() instanceof Player player) {
+            dispatch(player, event, "entity_kill");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCraftItem(CraftItemEvent event) {
+        if (event.getWhoClicked() instanceof Player player) {
+            dispatch(player, event, "craft_item");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFurnaceExtract(FurnaceExtractEvent event) {
+        dispatch(event.getPlayer(), event, "furnace_extract");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBrewPotion(BrewEvent event) {
+        if (event.getContents().getHolder() instanceof org.bukkit.block.BrewingStand stand) {
+            var location = stand.getLocation();
+            if (location.getWorld() != null) {
+                var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
+                for (Player player : players) {
+                    dispatch(player, event, "brew_potion");
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        dispatch(event.getPlayer(), event, "player_interact");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onConsumeItem(PlayerItemConsumeEvent event) {
+        dispatch(event.getPlayer(), event, "consume_item");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFish(PlayerFishEvent event) {
+        dispatch(event.getPlayer(), event, "fishing");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCropGrow(BlockGrowEvent event) {
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBreedAnimals(EntityBreedEvent event) {
+        if (event.getBreeder() instanceof Player player) {
+            dispatch(player, event, "breed_animals");
+        }
+    }
+
+    private void dispatch(Player player, Event event, String triggerKey) {
+        if (plugin.isReloading()) return;
+        PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
+        if (profile == null) return;
+
+        grantXp(player, profile, event, triggerKey);
+        fireAbilities(player, profile, event, triggerKey);
+    }
+
+    private void grantXp(Player player, PlayerProfile profile, Event event, String triggerKey) {
+        for (SkillDefinition skill : skillManager.getSkills().values()) {
+            for (SkillDefinition.XpSource source : skill.xpSources()) {
+                if (!source.trigger().equals(triggerKey)) continue;
+                if (!matchesFilters(player, event, source.filters())) continue;
+                double xp = source.reward().evaluate(1, 1);
+                if (xp > 0) {
+                    profile.addXp(skill.id(), Math.round(xp));
+                }
+            }
+        }
+    }
+
+    private void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
+        int currentLevel = 0;
+        for (SkillDefinition skill : skillManager.getSkills().values()) {
+            for (SkillDefinition.Ability ability : skill.abilities()) {
+                if (player.getLevel() < ability.unlockLevel()) continue;
+
+                for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
+                    Object raw = mechanicRegistry.create(entry.type());
+                    if (!(raw instanceof SkillMechanic mechanic)) continue;
+
+                    if (!matchesFilters(player, event, entry.filters())) continue;
+
+                    RequirementResult check = requirementEngine.check(player, ability.requirements());
+                    if (!check.success()) {
+                        if (feedbackDebouncer.tryDebounce(player, ability.id())) {
+                            var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());
+                            if (failure != null && !failure.actionBar().isBlank()) {
+                                FanfareDispatcher.sendActionBar(player, failure.actionBar());
+                            }
+                        }
+                        continue;
+                    }
+
+                    int level = getLevelForXp(skill, profile.getXp(skill.id()));
+                    Map<String, Object> evaluatedParams = evaluateParams(entry, level, ability.unlockLevel());
+                    mechanic.execute(player, evaluatedParams, event);
+                    requirementEngine.consume(player, ability.requirements());
+
+                    if (ability.feedback().actionBar() && !ability.feedback().message().isBlank()) {
+                        FanfareDispatcher.sendActionBar(player, ability.feedback().message());
+                    }
+                    if (ability.feedback().chat() && !ability.feedback().message().isBlank()) {
+                        player.sendMessage(ability.feedback().message());
+                    }
+                    if (!ability.feedback().particles().isEmpty()) {
+                        FanfareDispatcher.dispatchParticles(player, null, ability.feedback().particles());
+                    }
+                    if (!ability.feedback().sounds().isEmpty()) {
+                        FanfareDispatcher.dispatchSounds(player, ability.feedback().sounds());
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean matchesFilters(Player player, Event event, List<SkillDefinition.Filter> filters) {
+        if (filters == null || filters.isEmpty()) return true;
+        for (SkillDefinition.Filter filter : filters) {
+            if (!matchFilter(player, event, filter)) return false;
+        }
+        return true;
+    }
+
+    private boolean matchFilter(Player player, Event event, SkillDefinition.Filter filter) {
+        if (filter.target() != null && !filter.target().isBlank()) {
+            if (filter.target().startsWith("#")) {
+                Material targetMaterial = resolveEventMaterial(event);
+                if (targetMaterial == null) return false;
+                if (!tagResolver.resolve(filter.target()).contains(targetMaterial)) return false;
+            }
+        }
+        if (filter.state() != null && !filter.state().isBlank()) {
+            return switch (filter.state()) {
+                case "is_sneaking" -> player.isSneaking();
+                case "is_sprinting" -> player.isSprinting();
+                case "is_in_water" -> player.isInWater();
+                case "is_on_ground" -> player.isOnGround();
+                case "player_placed:false" -> {
+                    if (event instanceof BlockBreakEvent be) {
+                        yield !be.getBlock().hasMetadata("player_placed");
+                    }
+                    yield true;
+                }
+                default -> true;
+            };
+        }
+        return true;
+    }
+
+    private Material resolveEventMaterial(Event event) {
+        if (event instanceof BlockBreakEvent be) return be.getBlock().getType();
+        if (event instanceof BlockPlaceEvent pe) return pe.getBlockPlaced().getType();
+        if (event instanceof EntityDamageByEntityEvent de) {
+            if (de.getEntity() instanceof org.bukkit.entity.LivingEntity le) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private Map<String, Object> evaluateParams(SkillDefinition.MechanicEntry entry, int level, int unlockLevel) {
+        Map<String, Object> result = new HashMap<>();
+        for (var paramEntry : entry.parameters().entrySet()) {
+            result.put(paramEntry.getKey(), paramEntry.getValue().evaluate(level, unlockLevel));
+        }
+        return result;
+    }
+
+    private int getLevelForXp(SkillDefinition skill, long xp) {
+        for (int level = 1; level <= skill.maxLevel(); level++) {
+            double required = skill.progression().evaluator().evaluate(level, 0);
+            if (xp < required) return level - 1;
+        }
+        return skill.maxLevel();
+    }
+}

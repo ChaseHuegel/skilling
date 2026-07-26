@@ -2,20 +2,27 @@ package io.github.chasehuegel.skilling.engine.profile;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * In-memory representation of a player's skill state.
  *
  * <p>Holds raw XP values per skill in a {@link ConcurrentHashMap} and
- * an {@code isDirty} flag for the write-behind cache. Instances are
- * <b>not</b> thread-safe for the dirty flag itself — the
- * {@code AsyncBatchWorker} owns the drain lifecycle.
+ * tracks modification count for the write-behind cache. The dirty
+ * state is derived by comparing the current modCount against the
+ * last-saved modCount, eliminating the race between marking dirty
+ * in the main thread and clearing it in the batch worker.
+ *
+ * <p><b>Thread safety:</b> {@link #addXp} and {@link #setXp} are safe
+ * to call from any thread. The {@link #getXpMap()} raw map should only
+ * be used for read-only access or bulk loading during profile hydration.
  */
 public final class PlayerProfile {
 
     private final UUID playerId;
     private final ConcurrentHashMap<String, Long> xpMap;
-    private volatile boolean dirty;
+    private final AtomicLong modCount;
+    private volatile long savedModCount;
 
     /**
      * Constructs a new player profile.
@@ -25,7 +32,8 @@ public final class PlayerProfile {
     public PlayerProfile(UUID playerId) {
         this.playerId = playerId;
         this.xpMap = new ConcurrentHashMap<>();
-        this.dirty = false;
+        this.modCount = new AtomicLong(0);
+        this.savedModCount = 0;
     }
 
     /**
@@ -55,7 +63,7 @@ public final class PlayerProfile {
      */
     public void setXp(String skillId, long xp) {
         xpMap.put(skillId, xp);
-        this.dirty = true;
+        modCount.incrementAndGet();
     }
 
     /**
@@ -66,11 +74,15 @@ public final class PlayerProfile {
      */
     public void addXp(String skillId, long amount) {
         xpMap.merge(skillId, amount, Long::sum);
-        this.dirty = true;
+        modCount.incrementAndGet();
     }
 
     /**
      * Returns the underlying XP map for batch operations.
+     *
+     * <p>Mutating the returned map directly bypasses dirty tracking.
+     * Only use this for read-only access or bulk loading during
+     * profile hydration from the database.
      *
      * @return the XP map
      */
@@ -79,18 +91,24 @@ public final class PlayerProfile {
     }
 
     /**
-     * Whether the profile has unsaved changes.
+     * Whether the profile has unsaved changes since the last database flush.
      *
      * @return true if dirty
      */
     public boolean isDirty() {
-        return dirty;
+        return modCount.get() != savedModCount;
     }
 
     /**
-     * Marks the profile as clean after a successful database flush.
+     * Records the current modCount as saved, making the profile appear
+     * clean if no further modifications have occurred.
+     *
+     * <p>This should only be called by the {@code AsyncBatchWorker}
+     * after a successful database flush. If modifications occurred
+     * between the snapshot and this call, the profile will correctly
+     * remain dirty.
      */
-    public void markClean() {
-        this.dirty = false;
+    public void markSaved() {
+        this.savedModCount = modCount.get();
     }
 }

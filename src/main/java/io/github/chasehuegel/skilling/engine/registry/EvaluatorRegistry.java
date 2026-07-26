@@ -23,6 +23,9 @@ public final class EvaluatorRegistry {
      * @param evaluator the evaluator instance
      */
     public void register(String key, Object evaluator) {
+        if (registry.containsKey(key)) {
+            throw new IllegalArgumentException("Evaluator already registered: " + key);
+        }
         registry.put(key, evaluator);
     }
 

@@ -1,21 +1,8 @@
-# API Integration
+# API Integration Guide
 
-Skilling exposes a public API for addon developers to register custom mechanics, triggers, and parameter evaluators.
+Skilling exposes a Bukkit `ServicesManager` API for addon plugins to register custom mechanics, triggers, and evaluators.
 
-## Dependency Setup
-
-### Gradle (Kotlin DSL)
-
-```kotlin
-repositories {
-    maven("https://repo.papermc.io/repository/maven-public/")
-}
-
-dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
-    compileOnly("io.github.chasehuegel:skilling:1.0.0")
-}
-```
+## Adding Skilling as a Dependency
 
 ### Maven
 
@@ -33,80 +20,104 @@ dependencies {
 </dependency>
 ```
 
+### Gradle
+
+```kotlin
+repositories {
+    maven("https://repo.papermc.io/repository/maven-public/")
+}
+
+dependencies {
+    compileOnly("io.github.chasehuegel:skilling:1.0.0")
+}
+```
+
 ## Accessing the API
 
 ```java
-import io.github.chasehuegel.skilling.api.SkillingAPI;
-
 SkillingAPI api = Bukkit.getServicesManager().load(SkillingAPI.class);
+Registries registries = api.getRegistries();
 ```
 
 ## Registering a Custom Mechanic
 
 ```java
 public class LifestealMechanic implements SkillMechanic {
-    private final double percentage;
-
-    public LifestealMechanic(ConfigurationSection config) {
-        this.percentage = config.getDouble("percentage");
-    }
-
     @Override
-    public void execute(Player player, int currentLevel, int unlockLevel, @Nullable Event event) {
-        // Custom logic: heal for a percentage of damage dealt
+    public void execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return;
+        double percentage = ((Number) params.getOrDefault("percentage", 0.1)).doubleValue();
+        double heal = damageEvent.getDamage() * percentage;
+        player.setHealth(Math.min(player.getHealth() + heal, player.getMaxHealth()));
     }
 }
 
-// Register in your plugin's onEnable():
+// In your plugin's onEnable():
+SkillingAPI api = Bukkit.getServicesManager().load(SkillingAPI.class);
 api.getRegistries().registerMechanic("myaddon:lifesteal", LifestealMechanic.class);
 ```
 
-Server owners can then use `type: "myaddon:lifesteal"` in their skill YAML.
+Server owners can now use `type: "myaddon:lifesteal"` in their YAML.
 
 ## Registering a Custom Trigger
 
 ```java
-public class CustomTrigger implements SkillTrigger {
+public record MyCustomTrigger() implements SkillTrigger {
     @Override
-    public void register(SkillManager manager) {
-        // Register event listeners
-    }
+    public String getKey() { return "my_custom_event"; }
+    @Override
+    public Class<? extends Event> getEventClass() { return MyCustomEvent.class; }
 }
 
-api.getRegistries().registerTrigger("myaddon:custom_event", CustomTrigger.class);
+SkillingAPI api = Bukkit.getServicesManager().load(SkillingAPI.class);
+api.getRegistries().registerTrigger("my_custom_event", MyCustomTrigger.class);
 ```
 
 ## Registering a Custom Evaluator
 
 ```java
 public class LogisticEvaluator implements ParameterEvaluator {
+    private final double midpoint;
+    private final double steepness;
+
+    public LogisticEvaluator(double midpoint, double steepness) {
+        this.midpoint = midpoint;
+        this.steepness = steepness;
+    }
+
     @Override
     public double evaluate(int currentLevel, int unlockLevel) {
-        // S-curve growth
-        return 100.0 / (1.0 + Math.exp(-0.1 * (currentLevel - unlockLevel)));
+        double x = currentLevel - unlockLevel;
+        return 1.0 / (1.0 + Math.exp(-steepness * (x - midpoint)));
     }
 }
 
-api.getRegistries().registerEvaluator("logistic", LogisticEvaluator.class);
+SkillingAPI api = Bukkit.getServicesManager().load(SkillingAPI.class);
+api.getRegistries().registerEvaluator("logistic", new LogisticEvaluator(10, 0.5));
 ```
 
-## API Interface
+## API Reference
 
-```java
-public interface SkillingAPI {
-    Registries getRegistries();
-    ProfileManager getProfileManager();
-    // Query player data
-    CompletableFuture<PlayerProfile> getProfile(UUID playerId);
-}
-```
+### SkillingAPI
 
-## Plugin.yml Setup
+| Method | Returns | Description |
+|---|---|---|
+| `getRegistries()` | `Registries` | Access to all three registries |
+| `getProfileManager()` | `ProfileManager` | Player profile cache |
+| `getSkillManager()` | `SkillManager` | Loaded skill definitions |
+| `getSkillMenuBuilder()` | `SkillMenuBuilder` | GUI inventory builder |
+| `getRequirementEngine()` | `RequirementEngine` | Check/consume pipeline |
+| `getFeedbackDebouncer()` | `FeedbackDebouncer` | Spam throttle |
+| `getBossBarPool()` | `BossBarPool` | LRU Boss Bar cache |
+| `getProfile(UUID)` | `CompletableFuture<PlayerProfile>` | Player's skill data |
 
-```yaml
-name: MySkillingAddon
-version: 1.0.0
-main: com.example.MyAddon
-depend: [skilling]
-api-version: '1.21'
-```
+### Registries
+
+| Method | Description |
+|---|---|
+| `registerMechanic(String, Class<?>)` | Register a SkillMechanic implementation |
+| `registerTrigger(String, Class<?>)` | Register a SkillTrigger implementation |
+| `registerEvaluator(String, Object)` | Register a ParameterEvaluator instance |
+| `getMechanicRegistry()` | Direct access to mechanic registry |
+| `getTriggerRegistry()` | Direct access to trigger registry |
+| `getEvaluatorRegistry()` | Direct access to evaluator registry |

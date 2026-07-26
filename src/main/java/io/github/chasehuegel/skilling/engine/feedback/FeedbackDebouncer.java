@@ -69,4 +69,16 @@ public final class FeedbackDebouncer {
     public void clear(Player player) {
         lastFeedback.remove(player.getUniqueId());
     }
+
+    /**
+     * Clears all cached timestamps for a player UUID.
+     *
+     * <p>Call this from a {@code PlayerQuitEvent} handler to prevent
+     * the map from growing unboundedly with disconnected players.
+     *
+     * @param playerUuid the player's UUID
+     */
+    public void clear(UUID playerUuid) {
+        lastFeedback.remove(playerUuid);
+    }
 }

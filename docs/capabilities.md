@@ -1,116 +1,178 @@
 # Capabilities Catalog
 
-This documents every built-in trigger, mechanic, and parameter evaluator shipped with Skilling.
+## Built-In Mechanics
 
----
+### core:yield_multiplier
 
-## Triggers
-
-Triggers hook into Paper events to grant XP or activate mechanics.
-
-| ID | Event | Description |
-|---|---|---|
-| `block_break` | `BlockBreakEvent` | Player breaks a block |
-| `block_place` | `BlockPlaceEvent` | Player places a block |
-| `entity_damage` | `EntityDamageByEntityEvent` | Player damages an entity |
-| `entity_kill` | `EntityDeathEvent` | Player kills an entity |
-| `craft_item` | `CraftItemEvent` | Player crafts an item |
-| `furnace_smelt` | `FurnaceExtractEvent` | Player collects smelted output |
-| `fish_catch` | `PlayerFishEvent` | Player catches something |
-| `crop_grow` | `BlockGrowEvent` | A crop grows (triggered by Farm/Herbalism skills) |
-| `breed_mobs` | `EntityBreedEvent` | Player breeds animals |
-| `enchant_item` | `EnchantItemEvent` | Player enchants an item |
-| `consume_item` | `PlayerItemConsumeEvent` | Player eats or drinks |
-
-### Trigger Configuration
-
-```yaml
-xp_sources:
-  - trigger: "block_break"
-    filters:
-      - target: "#c:ores"         # Material/tag filter
-      - state: "player_placed:false"  # State condition
-    reward:
-      constant: 15.0
-```
-
----
-
-## Mechanics
-
-Mechanics are the executable effects triggered by abilities.
-
-### `core:yield_multiplier`
-
-Multiplies item drops from block break events.
+Multiplies block drops by a percentage chance on each break.
 
 **Parameters:**
 
-| Parameter | Evaluator | Description |
-|---|---|---|
-| `yield_chance` | linear, milestone, constant | Extra yield percentage |
-
-**Filters:**
-
-| Filter | Description |
-|---|---|
-| `target` | Block types affected |
-| `tool` | Required tool type |
-
-### `core:chain_break`
-
-Breaks connected blocks of the same type (vein miner).
-
-**Parameters:**
-
-| Parameter | Evaluator | Description |
-|---|---|---|
-| `chain_limit` | milestone, linear | Maximum blocks broken in a chain |
-| `exhaustion` | linear | Hunger cost per activation |
-
-### `core:modify_damage`
-
-Modifies outgoing damage with multipliers or flat additions.
-
-**Parameters:**
-
-| Parameter | Evaluator | Description |
-|---|---|---|
-| `multiplier` | linear, milestone | Damage multiplier |
-| `flat` | linear | Flat damage bonus |
-| `armor_pierce` | milestone | Armor penetration percentage |
-
-### `core:apply_status`
-
-Applies a potion effect to the player or target.
-
-**Parameters:**
-
-| Parameter | Evaluator | Description |
-|---|---|---|
-| `effect` | string constant | Effect type (e.g., `SPEED`, `SLOWNESS`) |
-| `duration` | linear | Duration in ticks |
-| `amplifier` | linear | Effect amplifier |
-| `target` | string constant | `self` or `target` |
-
-### `core:cancel_damage`
-
-Cancels incoming damage with a probability check.
-
-**Parameters:**
-
-| Parameter | Evaluator | Description |
-|---|---|---|
-| `chance` | linear, milestone | Evasion probability (0.0 - 1.0) |
-
----
-
-## Parameter Evaluators
-
-| Registry Key | Class | YAML Key | Description |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `constant` | `ConstantEvaluator` | `constant` | Fixed value |
-| `linear` | `LinearEvaluator` | `linear` | `base + step * (level - unlockLevel)`, clamped |
-| `milestone` | `MilestoneEvaluator` | `milestones` | TreeMap tiered lookup |
-| `random` | `RandomEvaluator` | `random` | Uniform random in [min, max] |
-| `polynomial` | `PolynomialEvaluator` | `polynomial` | `baseXp * (level ^ exponent)` for XP curves |
+| `yield_chance` | double | `0` | Probability (0-100%) of bonus drops |
+
+**Event:** `BlockBreakEvent`
+
+### core:chain_break
+
+Breaks connected blocks of the same type up to a limit (vein mining).
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chain_limit` | double | `0` | Maximum connected blocks to break |
+
+**Event:** `BlockBreakEvent`
+
+### core:modify_damage
+
+Multiplies outgoing entity damage.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Damage multiplier (1.5 = +50%) |
+
+**Event:** `EntityDamageByEntityEvent`
+
+### core:apply_status
+
+Applies a potion effect to the damaged entity on hit.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `effect` | string | — | Potion effect type (e.g., `SLOWNESS`, `POISON`) |
+| `duration` | double | `3` | Duration in seconds |
+| `amplifier` | double | `0` | Effect amplifier (0 = level I) |
+
+**Event:** `EntityDamageByEntityEvent`
+
+### core:cancel_damage
+
+Chance to completely cancel incoming damage (evasion/block).
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) to cancel damage |
+
+**Event:** `EntityDamageEvent`
+
+### core:modify_attribute
+
+Temporarily modifies a player attribute.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `attribute` | string | — | Attribute name (e.g., `GENERIC_MOVEMENT_SPEED`) |
+| `amount` | double | `0` | Modifier value |
+| `duration` | double | `5` | Duration in seconds |
+
+### core:modify_craft_output
+
+Multiplies the output of crafting recipes.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Output multiplier |
+
+**Event:** `CraftItemEvent`
+
+### core:modify_furnace_output
+
+Multiplies furnace extraction output.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Output multiplier |
+
+**Event:** `FurnaceExtractEvent`
+
+### core:saturation_inject
+
+Injects bonus saturation when consuming food.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `saturation` | double | `0` | Bonus saturation to add |
+
+**Event:** `PlayerItemConsumeEvent`
+
+### core:aoe_effect
+
+Applies a potion effect to all entities within a radius.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `effect` | string | — | Potion effect type |
+| `radius` | double | `5` | Effect radius in blocks |
+| `duration` | double | `5` | Duration in seconds |
+| `amplifier` | double | `0` | Effect amplifier |
+
+### core:projectile
+
+Launches a custom projectile from the player.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `speed` | double | `1.5` | Projectile velocity multiplier |
+| `damage` | double | `4` | Damage dealt on hit |
+
+**Event:** `PlayerInteractEvent`
+
+### core:teleport
+
+Short-range teleport in the player's looking direction.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `range` | double | `10` | Teleport distance in blocks |
+
+**Event:** `PlayerInteractEvent`
+
+## Built-In Triggers
+
+| Key | Event | Description |
+|---|---|---|
+| `block_break` | `BlockBreakEvent` | Breaking a block |
+| `block_place` | `BlockPlaceEvent` | Placing a block |
+| `entity_damage` | `EntityDamageByEntityEvent` | Damaging an entity |
+| `entity_damage_taken` | `EntityDamageEvent` | Taking damage |
+| `entity_kill` | `EntityDeathEvent` | Killing an entity |
+| `craft_item` | `CraftItemEvent` | Crafting an item |
+| `furnace_extract` | `FurnaceExtractEvent` | Extracting from a furnace |
+| `brew_potion` | `BrewEvent` | Brewing potions |
+| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) |
+| `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
+| `fishing` | `PlayerFishEvent` | Fishing |
+| `crop_grow` | `BlockGrowEvent` | Crop growth |
+| `breed_animals` | `EntityBreedEvent` | Breeding animals |
+
+## Built-In Evaluators
+
+| Key | Description |
+|---|---|
+| `constant` | Fixed value regardless of level |
+| `linear` | Scales linearly with level above unlock |
+| `milestone` | Tiered values at specific level thresholds |
+| `polynomial` | Power curve for XP progression |

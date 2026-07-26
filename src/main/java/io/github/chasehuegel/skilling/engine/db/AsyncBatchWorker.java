@@ -4,8 +4,11 @@ import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import org.bukkit.Bukkit;
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -68,6 +71,11 @@ public final class AsyncBatchWorker implements Runnable {
     /**
      * Performs a synchronous flush of all dirty profiles.
      * Called during {@code onDisable()} to prevent data loss.
+     *
+     * <p>Snapshots each profile's modCount before writing. After a successful
+     * batch write, each profile's saved modCount is updated only if no
+     * concurrent modifications occurred, preventing lost updates in the
+     * write-behind cache.
      */
     public void flushDirtyProfiles() {
         Map<UUID, PlayerProfile> dirty = profileManager.getDirtyProfiles();
@@ -94,9 +102,17 @@ public final class AsyncBatchWorker implements Runnable {
                 }
             }
 
-            stmt.executeBatch();
-            dirty.values().forEach(PlayerProfile::markClean);
+            int[] results = stmt.executeBatch();
+            for (int i = 0; i < results.length; i++) {
+                if (results[i] == Statement.EXECUTE_FAILED) {
+                    plugin.getLogger().warning("Batch entry " + i + " failed during flush");
+                    return;
+                }
+            }
+            dirty.values().forEach(PlayerProfile::markSaved);
 
+        } catch (BatchUpdateException e) {
+            plugin.getLogger().log(Level.SEVERE, "Batch flush partially failed", e);
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to flush dirty profiles", e);
         }

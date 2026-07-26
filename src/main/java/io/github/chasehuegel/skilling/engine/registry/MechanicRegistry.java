@@ -24,6 +24,9 @@ public final class MechanicRegistry {
      * @param clazz the mechanic class; must have a no-arg constructor
      */
     public void register(String key, Class<?> clazz) {
+        if (registry.containsKey(key)) {
+            throw new IllegalArgumentException("Mechanic already registered: " + key);
+        }
         registry.put(key, () -> {
             try {
                 return clazz.getDeclaredConstructor().newInstance();

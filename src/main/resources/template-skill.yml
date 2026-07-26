@@ -1,0 +1,145 @@
+# ==========================================
+# SKILL CONFIGURATION TEMPLATE
+# ==========================================
+id: "mining"
+max_level: 100
+
+# ----------------------------------------
+# UI & VISUAL IDENTITY
+# ----------------------------------------
+display:
+  name: "Mining"
+  icon: "minecraft:iron_pickaxe"
+  custom_model_data: 1001       # Maps to the server's custom resource pack
+  color: "GREEN"                # Spigot BossBar Color (GREEN, RED, BLUE, etc.)
+  style: "SEGMENTED_10"         # Spigot BossBar Style
+
+# ----------------------------------------
+# MATH & PROGRESSION
+# ----------------------------------------
+progression:
+  curve: "polynomial"           # Evaluator type for the overall curve
+  base_xp: 50
+  exponent: 2.5
+
+# ----------------------------------------
+# EXPERIENCE SOURCES
+# ----------------------------------------
+xp_sources:
+  - trigger: "block_break"
+    filters:
+      - target: "#c:ores"                    # Uses the Tag Resolver
+      - state: "player_placed:false"         # Checks the PDC anti-exploit flag
+    reward:
+      constant: 15.0
+
+  - trigger: "block_break"
+    filters:
+      - target: "#minecraft:stone_crafting_materials"
+      - state: "player_placed:false"
+    reward:
+      constant: 2.0
+
+# ----------------------------------------
+# ABILITIES & MECHANICS
+# ----------------------------------------
+abilities:
+
+  # -- ABILITY 1: The Core Passive (Linear Scaling) --
+  - id: "geologist"
+    display_name: "Geologist"
+    unlock_level: 1
+
+    display:
+      # {yield_chance} is injected dynamically by the ParameterEvaluator during UI generation
+      lore:
+        - "&7Increases raw ore yield by &a{yield_chance}%&7."
+        - ""
+        - "&8(Passive Ability)"
+
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#c:ores"
+          - tool: "#minecraft:pickaxes"
+        parameters:
+          yield_chance:                        # Maps directly to the placeholder in the lore
+            linear:
+              base: 0.5                        # Value at unlock_level
+              step: 0.5                        # Amount added per level
+              max: 50.0                        # Hard clamp
+
+    feedback:
+      notify:
+        action_bar: false                      # Suppress passive spam
+        chat: false
+
+
+  # -- ABILITY 2: The Gated Active (Requirements & Milestones) --
+  - id: "vein_miner"
+    display_name: "Vein Miner"
+    unlock_level: 15
+
+    display:
+      lore:
+        - "&7Sneak-mine to break up to &a{chain_limit} &7connected ores."
+        - "&7Exhaustion cost: &c{exhaustion} &7hunger."
+        - ""
+        - "&8Requires: Sneaking"
+
+    # Requirements must all return TRUE before mechanics execute
+    requirements:
+      cooldown: 5.0
+      state:
+        - "is_sneaking"
+      items:
+        - action: "possession"
+          tag: "#minecraft:pickaxes"
+          slot: "MAIN_HAND"
+        - action: "cost"
+          tag: "minecraft:coal"
+          amount: 1                             # Example of consuming an item fuel source
+          item_cooldown: 0.0                    # Optional visual vanilla sweep cooldown
+
+    # Result Object Pattern feedback overrides
+    on_failure:
+      cooldown:
+        action_bar: "&cVein Miner cooling down: {time}s"
+        sounds:
+          - type: "BLOCK_NOTE_BLOCK_BASS"
+            volume: 1.0
+            pitch: 0.5
+      missing_item:
+        action_bar: "&cRequires {amount}x {item} to power Vein Miner!"
+
+    mechanics:
+      - type: "core:chain_break"
+        parameters:
+          chain_limit:
+            milestones:                        # O(log N) TreeMap lookup for tiered upgrades
+              15: 3
+              40: 8
+              80: 16
+          exhaustion:
+            linear:                            # Scaling cost reduction
+              base: 2.0
+              step: -0.05
+              min: 0.5
+
+    # Executed strictly after successful requirements consumption
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&b✦ Vein Miner Activated! ✦"
+      particles:
+        - type: "BLOCK_CRACK"
+          count: 15
+          offset: [0.5, 0.5, 0.5]
+          speed: 0.1
+          target: "target"                     # Spawns at the block location
+      sounds:
+        - type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR"
+          volume: 0.5
+          pitch: 1.2
+          target: "self"                       # Plays at the player location
