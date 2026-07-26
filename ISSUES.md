@@ -27,7 +27,7 @@
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
-- [ ] Add a `/skills help` command to details the commands and briefly how to use them
+- [x] Add a `/skills help` command to details the commands and briefly how to use them
 - [x] Improve the styling of skills in the menu
   - [x] Skill names will display without any styling (no bold, no italics)
   - [x] Skill names will be colored to match the skill color
@@ -40,13 +40,13 @@
     - [x] The skill name will appear light grey
   - [x] A green check will indicate a skill is unlocked
     - [x] The skill name will appear green
-- [ ] `all` will be added as a tab completion option to `/skills reset <player> <skill>` which will instead reset ALL skill data for a player rather than a specific skill.
-- [ ] Adjust the fanfare chat log for level ups to be formatted as "Level up! {skill} increased to {level}!" without changing the current styling
+- [x] `all` will be added as a tab completion option to `/skills reset <player> <skill>` which will instead reset ALL skill data for a player rather than a specific skill.
+- [x] Adjust the fanfare chat log for level ups to be formatted as "Level up! {skill} increased to {level}!" without changing the current styling
 - [x] Adjust the xp bossbar to be formatted as "<skill color>{skill} <light grey>- <white>{level}"
   - [x] The XP number display will only appear in debug is enabled in the plugin config
-- [ ] Level up fanfare should be reduced for levelups that don't unlock anything new
-  - [ ] These minor level ups will use the default minecraft level sound and a small firework display
-  - [ ] Major level ups, where something is unlocked, will use the current fanfare and additional fireworks
+- [x] Level up fanfare should be reduced for levelups that don't unlock anything new
+  - [x] These minor level ups will use the default minecraft level sound and a small firework display
+  - [x] Major level ups, where something is unlocked, will use the current fanfare and additional fireworks
 - [x] Add some information logging to the startup of the plugin, such as:
   - [x] Indicate how many entries are in each registry
   - [x] Indicate how many skills are loaded
