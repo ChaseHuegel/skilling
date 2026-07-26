@@ -81,7 +81,7 @@ abilities:
     display:
       lore:
         - "&7Sneak-mine to break up to &a{chain_limit} &7connected ores."
-        - "&7Exhaustion cost: &c{exhaustion} &7hunger."
+        - "&7Costs: &c{exhaustion} &7hunger &8+ &71 &7Coal"
         - ""
         - "&8Requires: Sneaking"
 
