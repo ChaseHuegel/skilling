@@ -404,7 +404,7 @@ public final class SkillEventListener implements Listener {
         ));
         player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
                 org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
-        plugin.getLogger().info(player.getName() + " reached " + skill.id() + " level " + newLevel);
+        plugin.getLogger().info("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel + "!");
     }
 
     private Material resolveEventMaterial(Event event) {

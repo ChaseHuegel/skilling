@@ -342,5 +342,6 @@ public final class SkillsCommand {
         ));
         player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
                 org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
+        plugin.getLogger().info("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel + "!");
     }
 }
