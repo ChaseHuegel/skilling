@@ -65,6 +65,19 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 
 ---
 
+## Issue Resolution Workflow
+
+When resolving items from `ISSUES.md`, follow this strict sequence:
+
+1. **One issue at a time** — Tackle one issue (including all its sub-bullets) completely before starting the next.
+2. **Plan first (if complex)** — For issues with sub-bullets or non-trivial scope, write a brief development plan before writing any code.
+3. **Build** — After making changes, run `./gradlew build`. Fix any compiler errors before continuing.
+4. **Test** — Run `./gradlew test`. Fix any test failures introduced by the changes.
+5. **Self-review** — Read the diff (`git diff`) to verify correctness, style, and adherence to conventions.
+6. **Mark complete** — Check off the resolved bullet(s) in `ISSUES.md`.
+7. **Commit** — `git add -A && git commit -m "..."` with a descriptive message.
+8. **Next issue** — Repeat from step 1 for the next unchecked item.
+
 ## Testing & Validation
 * **Test Framework:** Use JUnit 5 for unit testing all non-Bukkit logic (evaluators, parsers, requirements engine).
 * **What to Test:** Every `ParameterEvaluator` implementation, the `RequirementEngine` check/consume lifecycle, `TagResolver` resolution, and `LoreResolver` placeholder injection must have unit tests.
