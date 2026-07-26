@@ -30,6 +30,9 @@ import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
@@ -197,18 +200,35 @@ public final class SkillEventListener implements Listener {
 
         BossBar bar = bossBarPool.getOrCreate(player, skillId);
 
+        TextColor textColor = resolveBarColor(skill.display() != null ? skill.display().color() : null);
+        Component title;
+
         if (level >= maxLevel) {
-            bar.setTitle(displayName + " - Maxed!");
-            bar.setProgress(1.0);
+            title = Component.text(displayName + " - Maxed!", NamedTextColor.GOLD);
         } else {
             long xpForCurrent = (long) skill.progression().evaluator().evaluate(level, 0);
             long xpForNext = (long) skill.progression().evaluator().evaluate(level + 1, 0);
             long intoLevel = totalXp - xpForCurrent;
             long needed = xpForNext - xpForCurrent;
             double progress = needed > 0 ? Math.min((double) intoLevel / needed, 1.0) : 0;
-            bar.setTitle(displayName + " Lv." + level + " (" + intoLevel + "/" + needed + ")");
             bar.setProgress(progress);
+
+            Component nameComp = Component.text(displayName,
+                    textColor != null ? textColor : NamedTextColor.WHITE);
+            title = nameComp
+                    .append(Component.text(" - ", NamedTextColor.GRAY))
+                    .append(Component.text(String.valueOf(level), NamedTextColor.WHITE));
+            if (plugin.isDebugLogging()) {
+                title = title
+                        .append(Component.text(" (", NamedTextColor.GRAY))
+                        .append(Component.text(String.valueOf(intoLevel), NamedTextColor.WHITE))
+                        .append(Component.text("/", NamedTextColor.GRAY))
+                        .append(Component.text(String.valueOf(needed), NamedTextColor.WHITE))
+                        .append(Component.text(")", NamedTextColor.GRAY));
+            }
         }
+
+        bar.setTitle(LegacyComponentSerializer.legacySection().serialize(title));
 
         if (skill.display() != null) {
             try {
@@ -218,6 +238,20 @@ public final class SkillEventListener implements Listener {
                 bar.setStyle(BarStyle.valueOf(skill.display().style()));
             } catch (IllegalArgumentException ignored) {}
         }
+    }
+
+    private static TextColor resolveBarColor(String colorName) {
+        if (colorName == null || colorName.isBlank()) return null;
+        return switch (colorName.toUpperCase()) {
+            case "PINK" -> NamedTextColor.LIGHT_PURPLE;
+            case "PURPLE" -> NamedTextColor.DARK_PURPLE;
+            case "RED" -> NamedTextColor.RED;
+            case "GREEN" -> NamedTextColor.GREEN;
+            case "BLUE" -> NamedTextColor.BLUE;
+            case "WHITE" -> NamedTextColor.WHITE;
+            case "YELLOW" -> NamedTextColor.YELLOW;
+            default -> null;
+        };
     }
 
     private void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {

@@ -42,8 +42,8 @@
     - [x] The skill name will appear green
 - [ ] `all` will be added as a tab completion option to `/skills reset <player> <skill>` which will instead reset ALL skill data for a player rather than a specific skill.
 - [ ] Adjust the fanfare chat log for level ups to be formatted as "Level up! {skill} increased to {level}!" without changing the current styling
-- [ ] Adjust the xp bossbar to be formatted as "<skill color>{skill} <light grey>- <white>{level}"
-  - [ ] The XP number display will only appear in debug is enabled in the plugin config
+- [x] Adjust the xp bossbar to be formatted as "<skill color>{skill} <light grey>- <white>{level}"
+  - [x] The XP number display will only appear in debug is enabled in the plugin config
 - [ ] Level up fanfare should be reduced for levelups that don't unlock anything new
   - [ ] These minor level ups will use the default minecraft level sound and a small firework display
   - [ ] Major level ups, where something is unlocked, will use the current fanfare and additional fireworks
