@@ -390,6 +390,12 @@ public final class SkillEventListener implements Listener {
         return true;
     }
 
+    private static final org.bukkit.Color[] BRIGHT_COLORS = {
+            org.bukkit.Color.RED, org.bukkit.Color.ORANGE, org.bukkit.Color.YELLOW,
+            org.bukkit.Color.LIME, org.bukkit.Color.GREEN, org.bukkit.Color.AQUA,
+            org.bukkit.Color.BLUE, org.bukkit.Color.PURPLE, org.bukkit.Color.FUCHSIA
+    };
+
     private void broadcastLevelUp(Player player, SkillDefinition skill, int newLevel) {
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skill.id();
@@ -406,14 +412,14 @@ public final class SkillEventListener implements Listener {
         if (major) {
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
                     org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
-            spawnFirework(player.getLocation(), org.bukkit.Color.ORANGE,
+            spawnFirework(player.getLocation(), randomBrightColor(),
                     org.bukkit.FireworkEffect.Type.BURST, 3);
-            spawnFirework(player.getLocation(), org.bukkit.Color.AQUA,
+            spawnFirework(player.getLocation(), randomBrightColor(),
                     org.bukkit.FireworkEffect.Type.STAR, 2);
         } else {
             player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP,
                     org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.0f);
-            spawnFirework(player.getLocation(), org.bukkit.Color.WHITE,
+            spawnFirework(player.getLocation(), randomBrightColor(),
                     org.bukkit.FireworkEffect.Type.BURST, 1);
         }
         plugin.getLogger().info("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel + "!");
@@ -421,6 +427,10 @@ public final class SkillEventListener implements Listener {
 
     private static boolean isMajorLevelUp(SkillDefinition skill, int newLevel) {
         return skill.abilities().stream().anyMatch(a -> a.unlockLevel() == newLevel);
+    }
+
+    private static org.bukkit.Color randomBrightColor() {
+        return BRIGHT_COLORS[(int) (Math.random() * BRIGHT_COLORS.length)];
     }
 
     private static void spawnFirework(org.bukkit.Location location, org.bukkit.Color color,
