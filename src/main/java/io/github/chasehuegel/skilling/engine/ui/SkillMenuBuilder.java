@@ -98,16 +98,15 @@ public final class SkillMenuBuilder {
         for (SkillDefinition.Ability ability : skill.abilities()) {
             boolean abilityUnlocked = level >= ability.unlockLevel();
             lore.add(Component.empty());
-            lore.add(Component.text(
+            Component abilityName = Component.text(
                     (abilityUnlocked ? "✔ " : "✗ ") + ability.displayName(),
-                    abilityUnlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY));
-
+                    abilityUnlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY);
             boolean isActive = ability.requirements().cooldown() > 0
                     || !ability.requirements().state().isEmpty()
                     || !ability.requirements().items().isEmpty();
-            lore.add(Component.text(
-                    isActive ? "  Active Ability" : "  Passive Ability",
-                    NamedTextColor.DARK_GRAY));
+            lore.add(abilityName.append(Component.text(
+                    isActive ? " · Active" : " · Passive",
+                    NamedTextColor.DARK_GRAY)));
 
             Map<String, ParameterEvaluator> allParams = new HashMap<>();
             for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
