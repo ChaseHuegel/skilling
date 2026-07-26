@@ -32,7 +32,23 @@
   [18:57:21 INFO]: [Skilling] [DEBUG]     mechanic=core:chain_break skill=mining
   [18:57:21 INFO]: [Skilling] [DEBUG]     -> mechanic not found in registry, skipping
   ```
-- [x] The fireworks from levelup fanfare are dealing damage and causing knockback. These should be visual only.
+- [ ] The fireworks from levelup fanfare are dealing damage. These should deal 0 damage to any entities.
+  - Preferrably, this should be accomplished via some already available API
+  - We can explore some external plugin library/API to use for this, but if that is the alternative then lets pause and discuss options.
+  - If absolutely necessary, this may be accomplished via some damage event listener and tagging the entities but that feels like too much. A library is likely preferrable. Again, lets pause and discuss if this isn't achievable as-is with the paper/bukkit APIs.
+- [ ] The level-up title listing unlocked abilities isn't displaying content on a newline; the there is an `LF` character displayed by minecraft
+  - This may not be possible, but from some light research tellraw supports displaying newline characters so this may be possible in some fashion via a plugin.
+  - Perform some research on this topic if necessary, and if it doesn't look possible then lets pause and discuss instead of just trying something hoping that it might work.
+- [ ] When using `/skills setlevel 7_eleven mining 15` there is an off-by-one error that becomes apparent. The following is observed:
+  - It plays the level up fanfare for lvl 15
+  - It shows the level up title for lvl 15 and the new ability unlock
+  - The bossbar still shows 14 with a full bar
+  - The skill menu doesn't show vein miner (the lvl 15 ability) is unlocked
+  - The skill menu shows the same as the bossbar; level 14 with a full bar
+  - Gaining any amount of XP triggers the level-up fanfare again
+  - It appears that level ups aren't occuring when the required XP is reached, but rather when it is exceeded.
+  - It appears that the setlevel command is invoking fanfare directly instead of going thru the xp pipeline? I have not confirmed this, but seems likely based off the behavior. At the least, there is some mismatch in the source of truth for level ups it appears.
+- 
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -67,6 +83,11 @@
 - [x] The level up title should show the display name of newly unlocked abilities under the subtitle, if any
 - [x] The green check next to the name of unlocked skills should be removed
   - [x] The grey crossed-out mark next to the name of locked skills should be replaced by a tag on the same line appended to the skill name in dark grey and separated by a dot
+- [ ] The subtitle text for unlocked abilities should be formatted the exact same as they are displayed in the lore
+  - [ ] Format: `<light green>{check mark} {ability display name} <dark grey>{dot} {Active/Passive}`
+    - [ ] Use a shared utility for determining this display, which the lore and subtitle will both utilize to reduce code duplication. This is likely to be needed elsewhere as well later.
+  - [ ] If there are multiple unlocks for the level, ensure each is on a new line.
+- [ ] Remove the built-in default italics styling from skill menu item lore
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
