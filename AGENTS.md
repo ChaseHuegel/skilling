@@ -68,6 +68,27 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 * **What to Test:** Every `ParameterEvaluator` implementation, the `RequirementEngine` check/consume lifecycle, `TagResolver` resolution, and `LoreResolver` placeholder injection must have unit tests.
 * **Phase Validation:** After each development phase, run `./gradlew test` in addition to `./gradlew build`. All tests must pass before proceeding.
 
+## Documentation & Self-Documenting Code
+
+### Java Code Documentation
+* **Javadoc is required** on all public API methods, interfaces, abstract classes, and non-trivial overrides. Keep it concise: explain *what* and *why*, not *how*.
+* **Avoid inline comments that restate the code.** Bad: `x += 1; // increment x by 1`. Good: `x += 1; // shift window start to exclude the just-consumed entry`.
+* **Use inline comments only** to explain non-obvious edge cases, performance considerations, or why a seemingly wrong approach was chosen.
+* Every `SkillMechanic`, `SkillTrigger`, and `ParameterEvaluator` implementation must have a class-level Javadoc explaining its purpose, YAML key, and required/optional parameters.
+
+### YAML Template Documentation
+* Every configurable YAML file (`config.yml`, `tags.yml`, skill definitions) must include commented documentation for each key: supported values, defaults, and a brief description.
+* Include commented-out examples showing configuration possibilities inline in templates.
+
+### External Documentation
+* A `docs/` directory must exist at project root containing markdown files for end-users and addon developers:
+  * `docs/getting-started.md` — Installation, first run, basic usage (`/skills` commands).
+  * `docs/configuration.md` — Reference for `config.yml` and `tags.yml` with all supported keys.
+  * `docs/creating-skills.md` — Full YAML schema for skill definitions, abilities, XP sources, and requirements, with annotated examples.
+  * `docs/api-integration.md` — How to register custom mechanics, triggers, and evaluators via the API. Maven/Gradle coordinates, code samples.
+  * `docs/capabilities.md` — Catalog of every built-in mechanic, trigger, and evaluator with their parameters and YAML usage.
+* These docs are **user-facing** and must use clear language free of implementation jargon.
+
 ## Coding Style & Conventions
 * **Fail-Fast:** Throw `IllegalArgumentException` during YAML parsing if a config is malformed. Do not let bad configs silently fail at runtime.
 * **Performance:** Avoid regex compilation inside loops or high-frequency events.
