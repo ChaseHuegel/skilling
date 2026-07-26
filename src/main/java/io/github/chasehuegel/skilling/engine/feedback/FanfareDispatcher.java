@@ -1,7 +1,7 @@
 package io.github.chasehuegel.skilling.engine.feedback;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -19,11 +19,9 @@ import java.util.Map;
  *   <li><b>Sounds</b> — sound effects played at {@code self} or {@code target} location</li>
  * </ul>
  *
- * <p>Uses Adventure's {@link MiniMessage} for text formatting.
+ * <p>Uses legacy {@code &} ampersand codes for text formatting.
  */
 public final class FanfareDispatcher {
-
-    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     private FanfareDispatcher() {}
 
@@ -31,11 +29,11 @@ public final class FanfareDispatcher {
      * Sends an action bar message to the player.
      *
      * @param player  the target player
-     * @param message the message text (MiniMessage format)
+     * @param message the message text (legacy {@code &} ampersand format)
      */
     public static void sendActionBar(Player player, String message) {
         if (message == null || message.isBlank()) return;
-        player.sendActionBar(MINI_MESSAGE.deserialize(message));
+        player.sendActionBar(LegacyComponentSerializer.legacyAmpersand().deserialize(message));
     }
 
     /**

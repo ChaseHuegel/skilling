@@ -23,7 +23,7 @@
 - [x] The `saveResource("tags.yml", false)` and `saveResource("template-skill.yml", false)` calls in `onEnable()` log spurious warnings on every startup when the files already exist. Flip to log an info message only when files don't exist (i.e. when they are first generated fresh).
 - [x] The cooldown action bar message is not formatting correctly. It all reads in unstyled plain text without any of the string replacements.
 - [x] The vein miner ability is firing on left clicking a block instead of on breaking it
-- [ ] The action bar message for ability activation is not applying the style characters, they are appearing inline in the message
+- [x] The action bar message for ability activation is not applying the style characters, they are appearing inline in the message
 
 # Improvements
 - [ ] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.

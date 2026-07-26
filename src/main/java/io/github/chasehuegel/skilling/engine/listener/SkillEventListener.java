@@ -274,7 +274,8 @@ public final class SkillEventListener implements Listener {
                         FanfareDispatcher.sendActionBar(player, ability.feedback().message());
                     }
                     if (ability.feedback().chat() && !ability.feedback().message().isBlank()) {
-                        player.sendMessage(ability.feedback().message());
+                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize(ability.feedback().message()));
                     }
                     if (!ability.feedback().particles().isEmpty()) {
                         FanfareDispatcher.dispatchParticles(player, null, ability.feedback().particles());
