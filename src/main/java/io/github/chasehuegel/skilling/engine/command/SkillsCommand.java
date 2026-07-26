@@ -136,8 +136,11 @@ public final class SkillsCommand {
         long xp = profile.getXpMap().getOrDefault(def.id(), 0L);
         int level = getLevelForXp(def, xp);
         int maxLevel = def.maxLevel();
-        long nextLevelXp = level < maxLevel
+        long xpForCurrent = level > 0
+                ? (long) def.progression().evaluator().evaluate(level, 0) : 0;
+        long xpForNext = level < maxLevel
                 ? (long) def.progression().evaluator().evaluate(level + 1, 0) : 0;
+        long xpNeeded = xpForNext - xpForCurrent;
         String name = def.display() != null && def.display().name() != null
                 ? def.display().name() : def.id();
         player.sendMessage(Component.empty());
@@ -145,7 +148,7 @@ public final class SkillsCommand {
         player.sendMessage(Component.text("Level: " + level + " / " + maxLevel, NamedTextColor.GREEN));
         player.sendMessage(Component.text("Total XP: " + xp, NamedTextColor.AQUA));
         if (level < maxLevel) {
-            player.sendMessage(Component.text("XP to next level: " + nextLevelXp, NamedTextColor.GRAY));
+            player.sendMessage(Component.text("XP to next level: " + xpNeeded, NamedTextColor.GRAY));
         } else {
             player.sendMessage(Component.text("Mastered!", NamedTextColor.YELLOW));
         }
@@ -168,10 +171,7 @@ public final class SkillsCommand {
             sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
             return;
         }
-        long xp = 0;
-        for (int i = 1; i <= level; i++) {
-            xp += (long) def.progression().evaluator().evaluate(i, 0);
-        }
+        long xp = (long) def.progression().evaluator().evaluate(level, 0);
         profile.setXp(skillId, xp);
         sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + target.getName() + "'s " + skillId + " to level " + level + "."));
     }

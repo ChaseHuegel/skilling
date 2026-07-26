@@ -200,8 +200,8 @@ public final class SkillEventListener implements Listener {
             bar.setTitle(displayName + " - Maxed!");
             bar.setProgress(1.0);
         } else {
-            long xpForCurrent = cumulativeXpForLevel(skill, level);
-            long xpForNext = cumulativeXpForLevel(skill, level + 1);
+            long xpForCurrent = (long) skill.progression().evaluator().evaluate(level, 0);
+            long xpForNext = (long) skill.progression().evaluator().evaluate(level + 1, 0);
             long intoLevel = totalXp - xpForCurrent;
             long needed = xpForNext - xpForCurrent;
             double progress = needed > 0 ? Math.min((double) intoLevel / needed, 1.0) : 0;
@@ -217,14 +217,6 @@ public final class SkillEventListener implements Listener {
                 bar.setStyle(BarStyle.valueOf(skill.display().style()));
             } catch (IllegalArgumentException ignored) {}
         }
-    }
-
-    private long cumulativeXpForLevel(SkillDefinition skill, int level) {
-        long total = 0;
-        for (int i = 1; i <= level; i++) {
-            total += (long) skill.progression().evaluator().evaluate(i, 0);
-        }
-        return total;
     }
 
     private void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
