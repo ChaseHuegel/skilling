@@ -5,18 +5,33 @@
 - [x] Players can break blocks they've placed for XP
 - [x] Abilities and their bonuses aren't displayed in the lore of skills in the skills menu
 - [x] The `/skills addxp` command doesn't autocomplete player names
-- [ ] The `/skills addxp` command doesn't autocomplete skills
-- [x] The `/skills addxp` command doesn't give usage guidance when it fails
-- [x] The `/skills setlevel` command doesn't autocomplete player names
-- [ ] The `/skills setlevel` command doesn't autocomplete skills
-- [x] The `/skills setlevel` command doesn't give usage guidance when it fails
+- [ ] The `/skills addxp <player> <skill>` command doesn't autocomplete skill names
+- [ ] The `/skills addxp <player> <skill>` command doesn't give usage guidance when it fails. It just shows "Unknown or incomplete command, see below for error" and doesn't clarify the error or show the user the intended usage.
+- [x] The `/skills setlevel <player> <skill>` command doesn't autocomplete player names
+- [ ] The `/skills setlevel <player> <skill>` command doesn't autocomplete skill names
+- [ ] The `/skills setlevel <player> <skill>` command doesn't give usage guidance when it fails. It just shows "Unknown or incomplete command, see below for error" and doesn't clarify the error or show the user the intended usage.
+- [ ] The commands to addxp and setlevel don't trigger any fanfare. These should be effectively go through the same pipeline as any other XP gain to trigger all side-effects of a levelup.
 - [x] The XP bossbar is showing current out of total needed XP instead of the relative XP needed for the current level
+- [ ] The XP bossbar is going into negative values when nearing a level-up
 
 # Improvements
 - [ ] Add a `/skills help` command to details the commands and briefly how to use them
 - [ ] Improve the styling of skills in the menu
-  - [ ] By default, skill names will not be styled. Currently they appear as bold and italic.
-  - [ ] Display names in the config should support color and styling encoding (ex: `&aMining`)
+  - [ ] Skill names will display without any styling (no bold, no italics)
+  - [ ] Skill names will be colored to match the skill color
+  - [ ] Skill icons will use stack size to reflect the skill's current level
+    - [ ] Skill icons will show a barrier block instead of their normal icon if they are level 0
+  - [ ] A line noting whether an ability is active or passive will appear the line after the ability name
+  - [ ] ASCII text will be used to create a styled XP bar for the current level
+  - [ ] A number will indicate the total XP the player has for the skill
+  - [ ] A red crossed-out mark will indicate that a skill isn't unlocked
+    - [ ] The skill name will appear light grey
+  - [ ] A green check will indicate a skill is unlocked
+    - [ ] The skill name will appear green
 - [ ] Add a `/skills reset`
 - [ ] Adjust the fanfare chat log for level ups to be formatted as "Level up! {skill} increased to {level}!" without changing the current styling
 - [ ] Adjust the xp bossbar to be formatted as "<skill color>{skill} <light grey>- <white>{level}"
+  - [ ] The XP number display will only appear in debug is enabled in the plugin config
+- [ ] Level up fanfare should be reduced for levelups that don't unlock anything new
+  - [ ] These minor level ups will use the default minecraft level sound and a small firework display
+  - [ ] Major level ups, where something is unlocked, will use the current fanfare and additional fireworks
