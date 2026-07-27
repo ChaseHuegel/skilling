@@ -68,7 +68,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - Vein miner can be activated even if the player has no coal
 - [x] The exhaustion parameter of vein miner is not actually reducing the player's hunger
   - Ensure this also prevents activating the skill if it isn't met
-- [ ] The color format tags aren't being displayed correctly for level 100 fanfare level ups
+- [x] The color format tags aren't being displayed correctly for level 100 fanfare level ups
   - This affects the subtitle and the chat message
 - [ ] The chain_break mechanic currently affects all blocks
   - [ ] Add a parameter to specify a tag for the blocks which should be affected by it

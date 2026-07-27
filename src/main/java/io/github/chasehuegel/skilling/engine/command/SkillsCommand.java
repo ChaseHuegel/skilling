@@ -384,7 +384,7 @@ public final class SkillsCommand {
                     org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
 
             String skillColorName = skill.display() != null && skill.display().color() != null
-                    ? skill.display().color().toLowerCase() : "green";
+                    ? mmColorName(skill.display().color()) : "green";
             String maxSubMsg = "<light green>" + player.getName() + " </light green><yellow>reached </yellow>"
                     + "<light green>" + newLevel + " </light green>"
                     + "<" + skillColorName + ">"
@@ -460,5 +460,13 @@ public final class SkillsCommand {
             meta.setPower(1);
             fw.setFireworkMeta(meta);
         }
+    }
+
+    private static String mmColorName(String barColorName) {
+        return switch (barColorName.toUpperCase()) {
+            case "PINK" -> "light_purple";
+            case "PURPLE" -> "dark_purple";
+            default -> barColorName.toLowerCase();
+        };
     }
 }
