@@ -1,9 +1,13 @@
 package io.github.chasehuegel.skilling.web;
 
 import io.github.chasehuegel.skilling.Skilling;
+import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.web.auth.BasicAuthenticator;
 import io.github.chasehuegel.skilling.web.config.WebConfig;
+import io.github.chasehuegel.skilling.web.handler.SkillHandler;
+import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.Javalin;
+import java.io.File;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -12,11 +16,15 @@ public final class WebServer {
     private final Skilling plugin;
     private final WebConfig config;
     private final BasicAuthenticator authenticator;
+    private final SkillManager skillManager;
+    private final StagingManager stagingManager;
     private Javalin app;
 
-    public WebServer(Skilling plugin, WebConfig config) {
+    public WebServer(Skilling plugin, WebConfig config, SkillManager skillManager, StagingManager stagingManager) {
         this.plugin = plugin;
         this.config = config;
+        this.skillManager = skillManager;
+        this.stagingManager = stagingManager;
         this.authenticator = new BasicAuthenticator(config);
     }
 
@@ -32,6 +40,8 @@ public final class WebServer {
             });
 
             var routes = app.unsafe.routes;
+            File skillsDir = new File(plugin.getDataFolder(), "skills");
+            var skillHandler = new SkillHandler(skillManager, stagingManager, skillsDir);
 
             routes.before(ctx -> {
                 ctx.res().setHeader("Access-Control-Allow-Origin", "*");
@@ -69,6 +79,29 @@ public final class WebServer {
                         "user", config.username()
                     ));
                 }
+            });
+
+            // Phase 2: Skills CRUD
+            routes.get("/api/skills", skillHandler::list);
+            routes.get("/api/skills/{id}", skillHandler::get);
+            routes.post("/api/skills", skillHandler::create);
+            routes.put("/api/skills/{id}", skillHandler::update);
+            routes.delete("/api/skills/{id}", skillHandler::delete);
+
+            // Phase 3: Staging endpoints
+            routes.get("/api/staging/status", ctx -> {
+                var status = stagingManager.status();
+                ctx.json(Map.of(
+                    "hasPendingChanges", status.hasPendingChanges(),
+                    "fileCount", status.fileCount(),
+                    "files", status.files(),
+                    "lastModified", status.lastModified()
+                ));
+            });
+
+            routes.delete("/api/staging", ctx -> {
+                stagingManager.clear();
+                ctx.json(Map.of("status", "ok"));
             });
 
             app.start(config.port());
