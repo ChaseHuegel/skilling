@@ -65,6 +65,7 @@ public final class LockdownManager {
 
         // Phase 4: Rebuild
         try {
+            plugin.reloadConfigSettings();
             plugin.getRegistries().getEvaluatorRegistry().clear();
             plugin.getRegistries().getMechanicRegistry().clear();
             plugin.getRegistries().getTriggerRegistry().clear();

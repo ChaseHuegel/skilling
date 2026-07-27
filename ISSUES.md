@@ -57,7 +57,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - Gaining any amount of XP triggers the level-up fanfare again
   - It appears that level ups aren't occuring when the required XP is reached, but rather when it is exceeded.
   - It appears that the setlevel command is invoking fanfare directly instead of going thru the xp pipeline? I have not confirmed this, but seems likely based off the behavior. At the least, there is some mismatch in the source of truth for level ups it appears.
-- [ ] The debug flag being disabled is not hiding the XP current/total count in the bossbar
+- [x] The debug flag being disabled is not hiding the XP current/total count in the bossbar
 - [ ] Level up notifications aren't being echoed in the chat
   - [ ] These should only be sent to the player that leveled up, not all players
   - [ ] This should be formatted similar to the vanilla minecraft achievement message

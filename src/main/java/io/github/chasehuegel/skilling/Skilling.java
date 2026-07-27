@@ -294,4 +294,10 @@ public final class Skilling extends JavaPlugin {
     public void setDebugLogging(boolean debugLogging) {
         this.debugLogging = debugLogging;
     }
+
+    public void reloadConfigSettings() {
+        reloadConfig();
+        var config = (YamlConfiguration) getConfig();
+        this.debugLogging = config.getBoolean("debug_logging", false);
+    }
 }
