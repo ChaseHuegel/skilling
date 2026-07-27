@@ -103,10 +103,10 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - [x] Use a shared utility for determining this display, which the lore and subtitle will both utilize to reduce code duplication. This is likely to be needed elsewhere as well later.
   - [x] If there are multiple unlocks for the level, ensure each is on a new line.
 - [x] Remove the built-in default italics styling from skill menu item lore
-- [ ] Adjust the sequential level up titles
-  - [ ] Their duration will be configurable in `config.yml` with a default `stay` duration of 5 seconds
-  - [ ] For unlocks, the main title will change to "New unlock!"
-  - [ ] Add a delay between sequential titles that is long enough to allow the fade in and out to play for a smooth transition between titles
+- [x] Adjust the sequential level up titles
+  - [x] Their duration will be configurable in `config.yml` with a default `stay` duration of 5 seconds
+  - [x] For unlocks, the main title will change to "New unlock!"
+  - [x] Add a delay between sequential titles that is long enough to allow the fade in and out to play for a smooth transition between titles
 - [ ] Increase the fanfare for reaching max level in a skill
   - [ ] Shoot off 10 fireworks for the player that leveled up
   - [ ] Play the major sound and fireworks fanfare for all other players on the server

@@ -63,6 +63,7 @@ public final class Skilling extends JavaPlugin {
     private CustomTagLoader customTagLoader;
     private volatile boolean reloading;
     private volatile boolean debugLogging;
+    private int titleStayDuration;
 
     /**
      * Returns the plugin singleton instance.
@@ -95,6 +96,7 @@ public final class Skilling extends JavaPlugin {
         if (debugLogging) {
             getLogger().info("Debug logging enabled.");
         }
+        this.titleStayDuration = config.getInt("titles.stay_duration", 5000);
 
         this.registries = new Registries(
                 new MechanicRegistry(),
@@ -295,9 +297,14 @@ public final class Skilling extends JavaPlugin {
         this.debugLogging = debugLogging;
     }
 
+    public int getTitleStayDuration() {
+        return titleStayDuration;
+    }
+
     public void reloadConfigSettings() {
         reloadConfig();
         var config = (YamlConfiguration) getConfig();
         this.debugLogging = config.getBoolean("debug_logging", false);
+        this.titleStayDuration = config.getInt("titles.stay_duration", 5000);
     }
 }

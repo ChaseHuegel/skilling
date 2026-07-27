@@ -350,12 +350,14 @@ public final class SkillsCommand {
 
         String levelUpMsg = "<gray>[</gray><gold>Level Up!</gold><gray>]</gray> <yellow>" + displayName + " increased to " + newLevel + "</yellow>";
         player.sendMessage(MiniMessage.miniMessage().deserialize(levelUpMsg));
+        int stayMs = plugin.getTitleStayDuration();
         player.showTitle(Title.title(
                 MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
                 MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
-                Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(2000), Duration.ofMillis(500))
+                Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(stayMs), Duration.ofMillis(500))
         ));
 
+        long firstDelay = Math.min(stayMs + 500L, 3000L) / 50L;
         for (int i = 0; i < unlockedAbilities.size(); i++) {
             int idx = i;
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
@@ -363,7 +365,7 @@ public final class SkillsCommand {
                 String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
                 player.sendMessage(MiniMessage.miniMessage().deserialize(unlockMsg).append(line));
                 player.showTitle(Title.title(
-                        MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
+                        MiniMessage.miniMessage().deserialize("<gold><bold>New unlock!</bold></gold>"),
                         line.colorIfAbsent(NamedTextColor.WHITE),
                         Title.Times.times(
                                 java.time.Duration.ZERO,
@@ -371,7 +373,7 @@ public final class SkillsCommand {
                                 java.time.Duration.ofMillis(500)
                         )
                 ));
-            }, 20L + idx * 30L);
+            }, firstDelay + idx * 40L);
         }
 
         if (major) {

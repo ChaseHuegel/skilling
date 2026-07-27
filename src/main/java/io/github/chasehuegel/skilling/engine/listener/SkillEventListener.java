@@ -416,16 +416,18 @@ public final class SkillEventListener implements Listener {
 
         String levelUpMsg = "<gray>[</gray><gold>Level Up!</gold><gray>]</gray> <yellow>" + displayName + " increased to " + newLevel + "</yellow>";
         player.sendMessage(MiniMessage.miniMessage().deserialize(levelUpMsg));
+        int stayMs = plugin.getTitleStayDuration();
         player.showTitle(Title.title(
                 MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
                 MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
                 Title.Times.times(
                         java.time.Duration.ofMillis(500),
-                        java.time.Duration.ofMillis(2000),
+                        java.time.Duration.ofMillis(stayMs),
                         java.time.Duration.ofMillis(500)
                 )
         ));
 
+        long firstDelay = Math.min(stayMs + 500L, 3000L) / 50L;
         for (int i = 0; i < unlockedAbilities.size(); i++) {
             int idx = i;
             org.bukkit.Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -433,7 +435,7 @@ public final class SkillEventListener implements Listener {
                 String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
                 player.sendMessage(MiniMessage.miniMessage().deserialize(unlockMsg).append(line));
                 player.showTitle(Title.title(
-                        MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
+                        MiniMessage.miniMessage().deserialize("<gold><bold>New unlock!</bold></gold>"),
                         line.colorIfAbsent(NamedTextColor.WHITE),
                         Title.Times.times(
                                 java.time.Duration.ZERO,
@@ -441,7 +443,7 @@ public final class SkillEventListener implements Listener {
                                 java.time.Duration.ofMillis(500)
                         )
                 ));
-            }, 20L + idx * 30L);
+            }, firstDelay + idx * 40L);
         }
 
         if (major) {

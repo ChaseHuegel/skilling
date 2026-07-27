@@ -21,3 +21,7 @@ debouncer:
 # Enable verbose console logging for runtime troubleshooting
 # WARNING: Will produce significant log output; use only for debugging
 debug_logging: false
+
+titles:
+  # Duration (ms) for the main level-up title's stay phase before fade-out
+  stay_duration: 5000
