@@ -64,6 +64,7 @@ public final class Skilling extends JavaPlugin {
     private volatile boolean reloading;
     private volatile boolean debugLogging;
     private int titleStayDuration;
+    private double globalXpModifier;
 
     /**
      * Returns the plugin singleton instance.
@@ -97,6 +98,7 @@ public final class Skilling extends JavaPlugin {
             getLogger().info("Debug logging enabled.");
         }
         this.titleStayDuration = config.getInt("titles.stay_duration", 5000);
+        this.globalXpModifier = config.getDouble("global_xp_modifier", 1.0);
 
         this.registries = new Registries(
                 new MechanicRegistry(),
@@ -301,10 +303,15 @@ public final class Skilling extends JavaPlugin {
         return titleStayDuration;
     }
 
+    public double getGlobalXpModifier() {
+        return globalXpModifier;
+    }
+
     public void reloadConfigSettings() {
         reloadConfig();
         var config = (YamlConfiguration) getConfig();
         this.debugLogging = config.getBoolean("debug_logging", false);
         this.titleStayDuration = config.getInt("titles.stay_duration", 5000);
+        this.globalXpModifier = config.getDouble("global_xp_modifier", 1.0);
     }
 }

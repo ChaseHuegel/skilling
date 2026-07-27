@@ -25,3 +25,6 @@ debug_logging: false
 titles:
   # Duration (ms) for the main level-up title's stay phase before fade-out
   stay_duration: 5000
+
+# Global XP multiplier applied to all XP gains. Default: 1.0
+global_xp_modifier: 1.0

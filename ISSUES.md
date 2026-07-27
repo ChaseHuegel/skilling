@@ -113,7 +113,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [x] Send a subtitle to all other players on the server: "<light green>{player} <yellow>reached <light green>{level} <skill color>{skill}!"
     - [x] If the debug config flag is enabled, also send this to the player that reached max level for testing purposes
   - [x] Send a server-wide chat message similar to the vanilla minecraft achievement message indicating the player's name, the level they reached, and the skill
-- [ ] A config section for setting a global XP modifier. Default is `1.0`
+- [x] A config section for setting a global XP modifier. Default is `1.0`
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
