@@ -139,6 +139,9 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [x] In a chat message to just that player
   - [x] In the action bar
 - [x] Send a chat message to players to log their ability activations in the same format as the action bar
+- [ ] Custom tags should be able to reference other custom tags
+  - [ ] Ignore recursive tags
+  - [ ] Use-case example is the `veinminer` custom tag which is combining two custom tags into one overarching tag
 
 # Ideas
 - [ ] Web GUI that is hosted on the server

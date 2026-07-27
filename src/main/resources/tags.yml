@@ -44,3 +44,7 @@ custom_tags:
     - "#minecraft:stone_crafting_materials"
     - "#minecraft:base_stone_overworld"
     - "#minecraft:base_stone_nether"
+
+  veinminer:
+    - "#c:stone"
+    - "#c:ores"
