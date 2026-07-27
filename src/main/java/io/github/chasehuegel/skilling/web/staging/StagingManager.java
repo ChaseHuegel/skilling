@@ -9,7 +9,9 @@ import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,16 +70,43 @@ public final class StagingManager {
     public void writeStatus(List<String> stagedFiles) {
         try {
             statusFile().getParentFile().mkdirs();
-            var map = new java.util.LinkedHashMap<String, Object>();
+            var map = new LinkedHashMap<String, Object>();
             map.put("hasPendingChanges", true);
             map.put("fileCount", stagedFiles.size());
             map.put("files", stagedFiles);
             map.put("lastModified", Instant.now().toString());
+            // Snapshot live file timestamps for conflict detection
+            Map<String, Long> timestamps = new LinkedHashMap<>();
+            for (String f : stagedFiles) {
+                File live = resolveLiveFile(f);
+                if (live.exists()) {
+                    timestamps.put(f, live.lastModified());
+                }
+            }
+            map.put("fileTimestamps", timestamps);
             String json = new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(map);
             Files.writeString(statusFile().toPath(), json, StandardCharsets.UTF_8);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to write staging status", e);
         }
+    }
+
+    public List<String> checkConflicts() {
+        List<String> conflicts = new ArrayList<>();
+        if (!statusFile().exists()) return conflicts;
+        try {
+            String json = Files.readString(statusFile().toPath(), StandardCharsets.UTF_8);
+            var map = new com.google.gson.Gson().fromJson(json, Map.class);
+            Map<String, Double> timestamps = (Map<String, Double>) map.get("fileTimestamps");
+            if (timestamps == null) return conflicts;
+            for (var entry : timestamps.entrySet()) {
+                File live = resolveLiveFile(entry.getKey());
+                if (live.exists() && live.lastModified() > entry.getValue().longValue()) {
+                    conflicts.add(entry.getKey());
+                }
+            }
+        } catch (Exception ignored) {}
+        return conflicts;
     }
 
     public void clear() {
@@ -93,8 +122,25 @@ public final class StagingManager {
         }
     }
 
+    private File resolveLiveFile(String stagedPath) {
+        if (stagedPath.equals("tags.yml")) return tagsFile;
+        if (stagedPath.equals("config.yml")) return configFile;
+        if (stagedPath.startsWith("skills/")) {
+            return new File(skillsDir, stagedPath.substring(7));
+        }
+        return new File(stagingDir, stagedPath);
+    }
+
     public List<String> applyAndBackup() {
         if (!hasPendingChanges()) return List.of();
+
+        // Check for conflicts first
+        List<String> conflicts = checkConflicts();
+        if (!conflicts.isEmpty()) {
+            LOGGER.warning("Conflict detected: live files modified since staging: " + conflicts);
+            return List.of(); // caller can check conflicts separately
+        }
+
         List<String> applied = new ArrayList<>();
         try {
             File backupDir = new File(stagingDir, "backup/" + java.time.LocalDateTime.now().toString()

@@ -21,6 +21,17 @@ public final class ReloadHandler {
         try {
             List<String> errors = new ArrayList<>();
 
+            // Check for conflicts first
+            List<String> conflicts = stagingManager.checkConflicts();
+            if (!conflicts.isEmpty()) {
+                ctx.status(409).json(Map.of(
+                    "success", false,
+                    "message", "Conflict detected: live files modified since staging",
+                    "errors", conflicts
+                ));
+                return;
+            }
+
             // Apply staged changes (backups created automatically by staging manager)
             List<String> applied = stagingManager.applyAndBackup();
             if (applied.isEmpty() && stagingManager.hasPendingChanges()) {

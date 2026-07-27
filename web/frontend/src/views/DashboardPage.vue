@@ -70,11 +70,24 @@ function createSkill() {
     cursor: pointer;
     font-size: 0.875rem;
 }
-.skill-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-}
+    .skill-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    @media (max-width: 640px) {
+        .skill-grid {
+            grid-template-columns: 1fr;
+        }
+        .dashboard-header {
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: stretch;
+        }
+        .dashboard-header h1 {
+            text-align: center;
+        }
+    }
 .loading, .error, .empty {
     text-align: center;
     padding: 2rem;
