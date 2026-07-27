@@ -66,7 +66,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [x] This should be formatted similar to the vanilla minecraft achievement message
 - [x] Missing ability costs aren't gating the ability activation
   - Vein miner can be activated even if the player has no coal
-- [ ] The exhaustion parameter of vein miner is not actually reducing the player's hunger
+- [x] The exhaustion parameter of vein miner is not actually reducing the player's hunger
   - Ensure this also prevents activating the skill if it isn't met
 - [ ] The color format tags aren't being displayed correctly for level 100 fanfare level ups
   - This affects the subtitle and the chat message
