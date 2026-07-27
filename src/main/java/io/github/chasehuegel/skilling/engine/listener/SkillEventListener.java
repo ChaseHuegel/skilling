@@ -12,6 +12,7 @@ import io.github.chasehuegel.skilling.engine.requirements.RequirementResult;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
 import io.github.chasehuegel.skilling.engine.feedback.FanfareDispatcher;
+import io.github.chasehuegel.skilling.engine.feedback.LevelUpDispatcher;
 import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import org.bukkit.Material;
@@ -201,69 +202,7 @@ public final class SkillEventListener implements Listener {
     }
 
     private void showXpBossBar(Player player, SkillDefinition skill, PlayerProfile profile) {
-        String skillId = skill.id();
-        long totalXp = profile.getXp(skillId);
-        int level = getLevelForXp(skill, totalXp);
-        int maxLevel = skill.maxLevel();
-
-        if (level >= maxLevel) {
-            bossBarPool.remove(player, skillId);
-            return;
-        }
-
-        String displayName = skill.display() != null && skill.display().name() != null
-                ? skill.display().name() : skillId;
-
-        BossBar bar = bossBarPool.getOrCreate(player, skillId);
-
-        TextColor textColor = resolveBarColor(skill.display() != null ? skill.display().color() : null);
-        Component title;
-
-            long xpForCurrent = (long) skill.progression().evaluator().evaluate(level, 0);
-            long xpForNext = (long) skill.progression().evaluator().evaluate(level + 1, 0);
-            long intoLevel = totalXp - xpForCurrent;
-            long needed = xpForNext - xpForCurrent;
-            double progress = needed > 0 ? Math.min((double) intoLevel / needed, 1.0) : 0;
-            bar.setProgress(progress);
-
-            Component nameComp = Component.text(displayName,
-                    textColor != null ? textColor : NamedTextColor.WHITE);
-            title = nameComp
-                    .append(Component.text(" - ", NamedTextColor.GRAY))
-                    .append(Component.text(String.valueOf(level), NamedTextColor.WHITE));
-            if (plugin.isDebugLogging()) {
-                title = title
-                        .append(Component.text(" (", NamedTextColor.GRAY))
-                        .append(Component.text(String.valueOf(intoLevel), NamedTextColor.WHITE))
-                        .append(Component.text("/", NamedTextColor.GRAY))
-                        .append(Component.text(String.valueOf(needed), NamedTextColor.WHITE))
-                        .append(Component.text(")", NamedTextColor.GRAY));
-            }
-
-        bar.setTitle(LegacyComponentSerializer.legacySection().serialize(title));
-
-        if (skill.display() != null) {
-            try {
-                bar.setColor(BarColor.valueOf(skill.display().color()));
-            } catch (IllegalArgumentException ignored) {}
-            try {
-                bar.setStyle(BarStyle.valueOf(skill.display().style()));
-            } catch (IllegalArgumentException ignored) {}
-        }
-    }
-
-    private static TextColor resolveBarColor(String colorName) {
-        if (colorName == null || colorName.isBlank()) return null;
-        return switch (colorName.toUpperCase()) {
-            case "PINK" -> NamedTextColor.LIGHT_PURPLE;
-            case "PURPLE" -> NamedTextColor.DARK_PURPLE;
-            case "RED" -> NamedTextColor.RED;
-            case "GREEN" -> NamedTextColor.GREEN;
-            case "BLUE" -> NamedTextColor.BLUE;
-            case "WHITE" -> NamedTextColor.WHITE;
-            case "YELLOW" -> NamedTextColor.YELLOW;
-            default -> null;
-        };
+        LevelUpDispatcher.showXpBossBar(player, skill, profile, bossBarPool, plugin);
     }
 
     private void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
@@ -442,136 +381,8 @@ public final class SkillEventListener implements Listener {
         }
     }
 
-    private static final org.bukkit.Color[] BRIGHT_COLORS = {
-            org.bukkit.Color.RED, org.bukkit.Color.ORANGE, org.bukkit.Color.YELLOW,
-            org.bukkit.Color.LIME, org.bukkit.Color.GREEN, org.bukkit.Color.AQUA,
-            org.bukkit.Color.BLUE, org.bukkit.Color.PURPLE, org.bukkit.Color.FUCHSIA
-    };
-
     private void broadcastLevelUp(Player player, SkillDefinition skill, int newLevel) {
-        String displayName = skill.display() != null && skill.display().name() != null
-                ? skill.display().name() : skill.id();
-        boolean major = isMajorLevelUp(skill, newLevel);
-        var unlockedAbilities = skill.abilities().stream()
-                .filter(a -> a.unlockLevel() == newLevel)
-                .toList();
-
-        String levelUpMsg = "<gray>[</gray><gold>Level Up!</gold><gray>]</gray> <yellow>" + displayName + " increased to " + newLevel + "</yellow>";
-        player.sendMessage(MiniMessage.miniMessage().deserialize(levelUpMsg));
-        int stayMs = plugin.getTitleStayDuration();
-        player.showTitle(Title.title(
-                MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
-                MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
-                Title.Times.times(
-                        java.time.Duration.ofMillis(500),
-                        java.time.Duration.ofMillis(stayMs),
-                        java.time.Duration.ofMillis(500)
-                )
-        ));
-
-        long firstDelay = Math.min(stayMs + 500L, 3000L) / 50L;
-        for (int i = 0; i < unlockedAbilities.size(); i++) {
-            int idx = i;
-            org.bukkit.Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                Component line = SkillMenuBuilder.formatAbilityLine(unlockedAbilities.get(idx), newLevel);
-                String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
-                player.sendMessage(MiniMessage.miniMessage().deserialize(unlockMsg).append(line));
-                player.showTitle(Title.title(
-                        MiniMessage.miniMessage().deserialize("<gold><bold>New unlock!</bold></gold>"),
-                        line.colorIfAbsent(NamedTextColor.WHITE),
-                        Title.Times.times(
-                                java.time.Duration.ZERO,
-                                java.time.Duration.ofMillis(1500),
-                                java.time.Duration.ofMillis(500)
-                        )
-                ));
-            }, firstDelay + idx * 40L);
-        }
-
-        boolean maxed = newLevel >= skill.maxLevel();
-        if (maxed) {
-            spawnFirework(player.getLocation(), randomBrightColor(),
-                    org.bukkit.FireworkEffect.Type.BURST, 10);
-            player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
-                    org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
-
-            String skillColorName = skill.display() != null && skill.display().color() != null
-                    ? mmColorName(skill.display().color()) : "green";
-            String maxSubMsg = "<light green>" + player.getName() + " </light green><yellow>reached </yellow>"
-                    + "<light green>" + newLevel + " </light green>"
-                    + "<" + skillColorName + ">"
-                    + displayName + "</" + skillColorName + ">";
-            for (org.bukkit.entity.Player online : org.bukkit.Bukkit.getOnlinePlayers()) {
-                if (!online.equals(player) || plugin.isDebugLogging()) {
-                    online.showTitle(Title.title(
-                            Component.empty(),
-                            MiniMessage.miniMessage().deserialize(maxSubMsg),
-                            Title.Times.times(
-                                    java.time.Duration.ofMillis(500),
-                                    java.time.Duration.ofMillis(3500),
-                                    java.time.Duration.ofMillis(1000)
-                            )
-                    ));
-                }
-                if (!online.equals(player)) {
-                    online.playSound(online.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
-                            org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
-                    spawnFirework(online.getLocation(), randomBrightColor(),
-                            org.bukkit.FireworkEffect.Type.BURST, 2);
-                }
-            }
-
-            String broadcastMsg = "<gray>[</gray><gold>Max Level!</gold><gray>]</gray> "
-                    + "<light green>" + player.getName() + " </light green><yellow>reached max "
-                    + "<light green>" + displayName + " </light green><yellow>level!</yellow>";
-            org.bukkit.Bukkit.broadcast(MiniMessage.miniMessage().deserialize(broadcastMsg));
-        } else if (major) {
-            player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
-                    org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
-            spawnFirework(player.getLocation(), randomBrightColor(),
-                    org.bukkit.FireworkEffect.Type.BURST, 3);
-            spawnFirework(player.getLocation(), randomBrightColor(),
-                    org.bukkit.FireworkEffect.Type.STAR, 2);
-        } else {
-            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP,
-                    org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.0f);
-            spawnFirework(player.getLocation(), randomBrightColor(),
-                    org.bukkit.FireworkEffect.Type.BURST, 1);
-        }
-
-        StringBuilder logMsg = new StringBuilder("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel);
-        for (SkillDefinition.Ability a : unlockedAbilities) {
-            logMsg.append("\n  ").append(
-                    LegacyComponentSerializer.legacySection().serialize(
-                            SkillMenuBuilder.formatAbilityLine(a, newLevel)));
-        }
-        plugin.getLogger().info(logMsg.toString());
-    }
-
-    private static boolean isMajorLevelUp(SkillDefinition skill, int newLevel) {
-        return skill.abilities().stream().anyMatch(a -> a.unlockLevel() == newLevel);
-    }
-
-    private static org.bukkit.Color randomBrightColor() {
-        return BRIGHT_COLORS[(int) (Math.random() * BRIGHT_COLORS.length)];
-    }
-
-    private static void spawnFirework(org.bukkit.Location location, org.bukkit.Color color,
-                                       org.bukkit.FireworkEffect.Type type, int count) {
-        var fwLoc = location.clone().add(
-                (Math.random() - 0.5) * 2, 3, (Math.random() - 0.5) * 2);
-        for (int i = 0; i < count; i++) {
-            org.bukkit.entity.Firework fw = fwLoc.getWorld().spawn(fwLoc,
-                    org.bukkit.entity.Firework.class);
-            fw.getPersistentDataContainer().set(Skilling.FIREWORK_KEY, PersistentDataType.BOOLEAN, true);
-            org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
-            meta.addEffect(org.bukkit.FireworkEffect.builder()
-                    .withColor(randomBrightColor())
-                    .with(type)
-                    .build());
-            meta.setPower(1);
-            fw.setFireworkMeta(meta);
-        }
+        LevelUpDispatcher.broadcastLevelUp(player, skill, newLevel, plugin, bossBarPool);
     }
 
     private Material resolveEventMaterial(Event event) {
@@ -607,11 +418,4 @@ public final class SkillEventListener implements Listener {
         }
     }
 
-    private static String mmColorName(String barColorName) {
-        return switch (barColorName.toUpperCase()) {
-            case "PINK" -> "light_purple";
-            case "PURPLE" -> "dark_purple";
-            default -> barColorName.toLowerCase();
-        };
-    }
 }
