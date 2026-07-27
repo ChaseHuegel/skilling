@@ -107,12 +107,12 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [x] Their duration will be configurable in `config.yml` with a default `stay` duration of 5 seconds
   - [x] For unlocks, the main title will change to "New unlock!"
   - [x] Add a delay between sequential titles that is long enough to allow the fade in and out to play for a smooth transition between titles
-- [ ] Increase the fanfare for reaching max level in a skill
-  - [ ] Shoot off 10 fireworks for the player that leveled up
-  - [ ] Play the major sound and fireworks fanfare for all other players on the server
-  - [ ] Send a subtitle to all other players on the server: "<light green>{player} <yellow>reached <light green>{level} <skill color>{skill}!"
-    - [ ] If the debug config flag is enabled, also send this to the player that reached max level for testing purposes
-  - [ ] Send a server-wide chat message similar to the vanilla minecraft achievement message indicating the player's name, the level they reached, and the skill
+- [x] Increase the fanfare for reaching max level in a skill
+  - [x] Shoot off 10 fireworks for the player that leveled up
+  - [x] Play the major sound and fireworks fanfare for all other players on the server
+  - [x] Send a subtitle to all other players on the server: "<light green>{player} <yellow>reached <light green>{level} <skill color>{skill}!"
+    - [x] If the debug config flag is enabled, also send this to the player that reached max level for testing purposes
+  - [x] Send a server-wide chat message similar to the vanilla minecraft achievement message indicating the player's name, the level they reached, and the skill
 - [ ] A config section for setting a global XP modifier. Default is `1.0`
 
 # Ideas

@@ -446,7 +446,44 @@ public final class SkillEventListener implements Listener {
             }, firstDelay + idx * 40L);
         }
 
-        if (major) {
+        boolean maxed = newLevel >= skill.maxLevel();
+        if (maxed) {
+            spawnFirework(player.getLocation(), randomBrightColor(),
+                    org.bukkit.FireworkEffect.Type.BURST, 10);
+            player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                    org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
+
+            String skillColorName = skill.display() != null && skill.display().color() != null
+                    ? skill.display().color().toLowerCase() : "green";
+            String maxSubMsg = "<light green>" + player.getName() + " </light green><yellow>reached </yellow>"
+                    + "<light green>" + newLevel + " </light green>"
+                    + "<" + skillColorName + ">"
+                    + displayName + "</" + skillColorName + ">";
+            for (org.bukkit.entity.Player online : org.bukkit.Bukkit.getOnlinePlayers()) {
+                if (!online.equals(player) || plugin.isDebugLogging()) {
+                    online.showTitle(Title.title(
+                            Component.empty(),
+                            MiniMessage.miniMessage().deserialize(maxSubMsg),
+                            Title.Times.times(
+                                    java.time.Duration.ofMillis(500),
+                                    java.time.Duration.ofMillis(3500),
+                                    java.time.Duration.ofMillis(1000)
+                            )
+                    ));
+                }
+                if (!online.equals(player)) {
+                    online.playSound(online.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                            org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
+                    spawnFirework(online.getLocation(), randomBrightColor(),
+                            org.bukkit.FireworkEffect.Type.BURST, 2);
+                }
+            }
+
+            String broadcastMsg = "<gray>[</gray><gold>Max Level!</gold><gray>]</gray> "
+                    + "<light green>" + player.getName() + " </light green><yellow>reached max "
+                    + "<light green>" + displayName + " </light green><yellow>level!</yellow>";
+            org.bukkit.Bukkit.broadcast(MiniMessage.miniMessage().deserialize(broadcastMsg));
+        } else if (major) {
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
                     org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
             spawnFirework(player.getLocation(), randomBrightColor(),
