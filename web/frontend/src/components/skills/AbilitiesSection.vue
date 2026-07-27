@@ -1,0 +1,1049 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import SectionToolbar from '../common/SectionToolbar.vue'
+import FilterBuilder from '../common/FilterBuilder.vue'
+import EvaluatorParameter from '../common/EvaluatorParameter.vue'
+
+interface FilterEntry {
+  target?: string
+  state?: string
+  tool?: string
+}
+
+interface RequirementItem {
+  action: string
+  tag: string
+  slot: string
+  amount: number
+  itemCooldown: number
+}
+
+interface MechanicEntry {
+  type: string
+  filters: FilterEntry[]
+  params: { name: string; evaluator: { type: string; params: Record<string, any> } }[]
+}
+
+interface ParticleConfig {
+  type: string
+  count: number
+  target: string
+  offsetX: number
+  offsetY: number
+  offsetZ: number
+  speed: number
+}
+
+interface SoundConfig {
+  type: string
+  volume: number
+  pitch: number
+  target: string
+}
+
+interface Ability {
+  id: string
+  displayName: string
+  unlockLevel: number
+  lore: string[]
+  requirements: {
+    cooldown: number
+    states: string[]
+    items: RequirementItem[]
+  }
+  mechanics: MechanicEntry[]
+  feedback: {
+    actionBar: boolean
+    chat: boolean
+    message: string
+    particles: ParticleConfig[]
+    sounds: SoundConfig[]
+  }
+}
+
+const props = defineProps<{
+  modelValue: Ability[]
+  tagSuggestions: string[]
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: Ability[]]
+}>()
+
+const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground'] as const
+
+const expanded = ref<Record<number, boolean>>({})
+
+function toggleExpand(idx: number) {
+  expanded.value[idx] = !expanded.value[idx]
+}
+
+function emptyAbility(): Ability {
+  return {
+    id: '',
+    displayName: '',
+    unlockLevel: 0,
+    lore: [],
+    requirements: {
+      cooldown: 0,
+      states: [],
+      items: [],
+    },
+    mechanics: [],
+    feedback: {
+      actionBar: false,
+      chat: false,
+      message: '',
+      particles: [],
+      sounds: [],
+    },
+  }
+}
+
+function updateAbility(index: number, patch: Partial<Ability>) {
+  const copy = [...props.modelValue]
+  copy[index] = { ...copy[index], ...patch }
+  emit('update:modelValue', copy)
+}
+
+function updateRequirement(index: number, patch: Partial<Ability['requirements']>) {
+  const ab = props.modelValue[index]
+  updateAbility(index, { requirements: { ...ab.requirements, ...patch } })
+}
+
+function updateFeedback(index: number, patch: Partial<Ability['feedback']>) {
+  const ab = props.modelValue[index]
+  updateAbility(index, { feedback: { ...ab.feedback, ...patch } })
+}
+
+function removeAbility(index: number) {
+  const copy = [...props.modelValue]
+  copy.splice(index, 1)
+  emit('update:modelValue', copy)
+}
+
+function addAbility() {
+  emit('update:modelValue', [...props.modelValue, emptyAbility()])
+}
+
+function duplicateAbility() {
+  if (props.modelValue.length === 0) {
+    addAbility()
+    return
+  }
+  const last = props.modelValue[props.modelValue.length - 1]
+  const cloned: Ability = {
+    ...JSON.parse(JSON.stringify(last)),
+    id: last.id ? last.id + '_copy' : '',
+  }
+  emit('update:modelValue', [...props.modelValue, cloned])
+}
+
+function addLoreLine(index: number) {
+  const ab = props.modelValue[index]
+  updateAbility(index, { lore: [...ab.lore, ''] })
+}
+
+function removeLoreLine(index: number, lineIdx: number) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.lore]
+  copy.splice(lineIdx, 1)
+  updateAbility(index, { lore: copy })
+}
+
+function updateLoreLine(index: number, lineIdx: number, val: string) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.lore]
+  copy[lineIdx] = val
+  updateAbility(index, { lore: copy })
+}
+
+function toggleState(index: number, state: string) {
+  const ab = props.modelValue[index]
+  const states = ab.requirements.states
+  const copy = states.includes(state) ? states.filter(s => s !== state) : [...states, state]
+  updateRequirement(index, { states: copy })
+}
+
+function addItem(index: number) {
+  const ab = props.modelValue[index]
+  updateRequirement(index, {
+    items: [
+      ...ab.requirements.items,
+      { action: 'possession', tag: '', slot: '', amount: 1, itemCooldown: 0 },
+    ],
+  })
+}
+
+function removeItem(index: number, itemIdx: number) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.requirements.items]
+  copy.splice(itemIdx, 1)
+  updateRequirement(index, { items: copy })
+}
+
+function updateItem(index: number, itemIdx: number, patch: Partial<RequirementItem>) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.requirements.items]
+  copy[itemIdx] = { ...copy[itemIdx], ...patch }
+  updateRequirement(index, { items: copy })
+}
+
+function addMechanic(index: number) {
+  const ab = props.modelValue[index]
+  updateAbility(index, {
+    mechanics: [
+      ...ab.mechanics,
+      { type: '', filters: [], params: [] },
+    ],
+  })
+}
+
+function removeMechanic(index: number, mechIdx: number) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.mechanics]
+  copy.splice(mechIdx, 1)
+  updateAbility(index, { mechanics: copy })
+}
+
+function updateMechanic(index: number, mechIdx: number, patch: Partial<MechanicEntry>) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.mechanics]
+  copy[mechIdx] = { ...copy[mechIdx], ...patch }
+  updateAbility(index, { mechanics: copy })
+}
+
+function addMechanicParam(index: number, mechIdx: number) {
+  const ab = props.modelValue[index]
+  const mech = ab.mechanics[mechIdx]
+  const copy = [...ab.mechanics]
+  copy[mechIdx] = {
+    ...mech,
+    params: [...mech.params, { name: '', evaluator: { type: 'constant', params: { value: 0 } } }],
+  }
+  updateAbility(index, { mechanics: copy })
+}
+
+function removeMechanicParam(index: number, mechIdx: number, paramIdx: number) {
+  const ab = props.modelValue[index]
+  const mech = ab.mechanics[mechIdx]
+  const copy = [...ab.mechanics]
+  const paramsCopy = [...mech.params]
+  paramsCopy.splice(paramIdx, 1)
+  copy[mechIdx] = { ...mech, params: paramsCopy }
+  updateAbility(index, { mechanics: copy })
+}
+
+function updateMechanicParamName(index: number, mechIdx: number, paramIdx: number, name: string) {
+  const ab = props.modelValue[index]
+  const mech = ab.mechanics[mechIdx]
+  const copy = [...ab.mechanics]
+  const paramsCopy = [...mech.params]
+  paramsCopy[paramIdx] = { ...paramsCopy[paramIdx], name }
+  copy[mechIdx] = { ...mech, params: paramsCopy }
+  updateAbility(index, { mechanics: copy })
+}
+
+function updateMechanicParamEvaluator(index: number, mechIdx: number, paramIdx: number, evaluator: MechanicEntry['params'][0]['evaluator']) {
+  const ab = props.modelValue[index]
+  const mech = ab.mechanics[mechIdx]
+  const copy = [...ab.mechanics]
+  const paramsCopy = [...mech.params]
+  paramsCopy[paramIdx] = { ...paramsCopy[paramIdx], evaluator }
+  copy[mechIdx] = { ...mech, params: paramsCopy }
+  updateAbility(index, { mechanics: copy })
+}
+
+function addParticle(index: number) {
+  const ab = props.modelValue[index]
+  updateFeedback(index, {
+    particles: [
+      ...ab.feedback.particles,
+      { type: '', count: 1, target: 'self', offsetX: 0, offsetY: 0, offsetZ: 0, speed: 0 },
+    ],
+  })
+}
+
+function removeParticle(index: number, pIdx: number) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.feedback.particles]
+  copy.splice(pIdx, 1)
+  updateFeedback(index, { particles: copy })
+}
+
+function updateParticle(index: number, pIdx: number, patch: Partial<ParticleConfig>) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.feedback.particles]
+  copy[pIdx] = { ...copy[pIdx], ...patch }
+  updateFeedback(index, { particles: copy })
+}
+
+function addSound(index: number) {
+  const ab = props.modelValue[index]
+  updateFeedback(index, {
+    sounds: [
+      ...ab.feedback.sounds,
+      { type: '', volume: 1, pitch: 1, target: 'self' },
+    ],
+  })
+}
+
+function removeSound(index: number, sIdx: number) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.feedback.sounds]
+  copy.splice(sIdx, 1)
+  updateFeedback(index, { sounds: copy })
+}
+
+function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.feedback.sounds]
+  copy[sIdx] = { ...copy[sIdx], ...patch }
+  updateFeedback(index, { sounds: copy })
+}
+</script>
+
+<template>
+  <div class="abilities-section">
+    <SectionToolbar
+      section-name="Ability"
+      :can-delete="false"
+      :can-duplicate="modelValue.length > 0"
+      @add="addAbility"
+      @duplicate="duplicateAbility"
+    />
+
+    <div
+      v-for="(ability, idx) in modelValue"
+      :key="idx"
+      class="ability-card"
+    >
+      <div
+        class="ability-header"
+        @click="toggleExpand(idx)"
+      >
+        <span class="ability-title">
+          {{ ability.id || 'Unnamed Ability' }}
+        </span>
+        <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
+        <button
+          class="btn-remove"
+          @click.stop="removeAbility(idx)"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div
+        v-if="expanded[idx]"
+        class="ability-body"
+      >
+        <div class="field-row">
+          <label class="field-label">ID</label>
+          <input
+            class="field-input"
+            type="text"
+            required
+            placeholder="e.g. vein_miner"
+            :value="ability.id"
+            @input="updateAbility(idx, { id: ($event.target as HTMLInputElement).value })"
+          />
+        </div>
+
+        <div class="field-row">
+          <label class="field-label">Display Name</label>
+          <input
+            class="field-input"
+            type="text"
+            placeholder="e.g. Vein Miner"
+            :value="ability.displayName"
+            @input="updateAbility(idx, { displayName: ($event.target as HTMLInputElement).value })"
+          />
+        </div>
+
+        <div class="field-row">
+          <label class="field-label">Unlock Level</label>
+          <input
+            class="field-input"
+            type="number"
+            min="0"
+            :value="ability.unlockLevel"
+            @input="updateAbility(idx, { unlockLevel: Number(($event.target as HTMLInputElement).value) })"
+          />
+        </div>
+
+        <div class="section-block">
+          <label class="section-label">Lore Lines</label>
+          <div
+            v-for="(line, lIdx) in ability.lore"
+            :key="lIdx"
+            class="lore-line-row"
+          >
+            <input
+              class="field-input"
+              type="text"
+              placeholder="Lore line text"
+              :value="line"
+              @input="updateLoreLine(idx, lIdx, ($event.target as HTMLInputElement).value)"
+            />
+            <button
+              class="btn-remove"
+              @click="removeLoreLine(idx, lIdx)"
+            >
+              &times;
+            </button>
+          </div>
+          <button
+            class="btn-add"
+            @click="addLoreLine(idx)"
+          >
+            + Add Lore Line
+          </button>
+        </div>
+
+        <div class="section-block">
+          <label class="section-label">Requirements</label>
+
+          <div class="field-row">
+            <label class="field-label">Cooldown (s)</label>
+            <input
+              class="field-input"
+              type="number"
+              step="any"
+              min="0"
+              :value="ability.requirements.cooldown"
+              @input="updateRequirement(idx, { cooldown: Number(($event.target as HTMLInputElement).value) })"
+            />
+          </div>
+
+          <div class="states-group">
+            <label class="field-label">States</label>
+            <div class="states-grid">
+              <label
+                v-for="state in STATE_OPTIONS"
+                :key="state"
+                class="state-check"
+              >
+                <input
+                  type="checkbox"
+                  :checked="ability.requirements.states.includes(state)"
+                  @change="toggleState(idx, state)"
+                />
+                {{ state }}
+              </label>
+            </div>
+          </div>
+
+          <div class="sub-section">
+            <label class="sub-label">Items</label>
+            <div
+              v-for="(item, iIdx) in ability.requirements.items"
+              :key="iIdx"
+              class="item-card"
+            >
+              <div class="item-fields">
+                <div class="item-field">
+                  <label class="field-label-sm">Action</label>
+                  <select
+                    class="field-input-sm"
+                    :value="item.action"
+                    @change="updateItem(idx, iIdx, { action: ($event.target as HTMLSelectElement).value })"
+                  >
+                    <option value="possession">possession</option>
+                    <option value="cost">cost</option>
+                  </select>
+                </div>
+                <div class="item-field">
+                  <label class="field-label-sm">Tag</label>
+                  <input
+                    class="field-input-sm"
+                    type="text"
+                    :value="item.tag"
+                    @input="updateItem(idx, iIdx, { tag: ($event.target as HTMLInputElement).value })"
+                  />
+                </div>
+                <div class="item-field">
+                  <label class="field-label-sm">Slot</label>
+                  <input
+                    class="field-input-sm"
+                    type="text"
+                    :value="item.slot"
+                    @input="updateItem(idx, iIdx, { slot: ($event.target as HTMLInputElement).value })"
+                  />
+                </div>
+                <div class="item-field">
+                  <label class="field-label-sm">Amount</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    min="1"
+                    :value="item.amount"
+                    @input="updateItem(idx, iIdx, { amount: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+                <div class="item-field">
+                  <label class="field-label-sm">Item Cooldown</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    step="any"
+                    min="0"
+                    :value="item.itemCooldown"
+                    @input="updateItem(idx, iIdx, { itemCooldown: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+              </div>
+              <button
+                class="btn-remove"
+                @click="removeItem(idx, iIdx)"
+              >
+                &times;
+              </button>
+            </div>
+            <button
+              class="btn-add"
+              @click="addItem(idx)"
+            >
+              + Add Item
+            </button>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <label class="section-label">Mechanics</label>
+          <div
+            v-for="(mech, mIdx) in ability.mechanics"
+            :key="mIdx"
+            class="mechanic-card"
+          >
+            <div class="mechanic-header">
+              <span class="mechanic-title">Mechanic #{{ mIdx + 1 }}</span>
+              <button
+                class="btn-remove"
+                @click="removeMechanic(idx, mIdx)"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div class="mechanic-body">
+              <div class="field-row">
+                <label class="field-label">Type</label>
+                <input
+                  class="field-input"
+                  type="text"
+                  placeholder="core:yield_multiplier"
+                  :value="mech.type"
+                  @input="updateMechanic(idx, mIdx, { type: ($event.target as HTMLInputElement).value })"
+                />
+              </div>
+
+              <div class="sub-section">
+                <label class="sub-label">Filters</label>
+                <FilterBuilder
+                  :model-value="mech.filters"
+                  :tag-suggestions="tagSuggestions"
+                  @update:model-value="updateMechanic(idx, mIdx, { filters: $event })"
+                />
+              </div>
+
+              <div class="sub-section">
+                <label class="sub-label">Parameters</label>
+                <div
+                  v-for="(param, pIdx) in mech.params"
+                  :key="pIdx"
+                  class="param-entry"
+                >
+                  <div class="param-header">
+                    <input
+                      class="field-input param-name-input"
+                      type="text"
+                      placeholder="Parameter name"
+                      :value="param.name"
+                      @input="updateMechanicParamName(idx, mIdx, pIdx, ($event.target as HTMLInputElement).value)"
+                    />
+                    <button
+                      class="btn-remove"
+                      @click="removeMechanicParam(idx, mIdx, pIdx)"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                  <EvaluatorParameter
+                    :model-value="param.evaluator"
+                    :label="param.name || 'param'"
+                    :name="param.name || 'param'"
+                    @update:model-value="updateMechanicParamEvaluator(idx, mIdx, pIdx, $event)"
+                  />
+                </div>
+                <button
+                  class="btn-add"
+                  @click="addMechanicParam(idx, mIdx)"
+                >
+                  + Add Parameter
+                </button>
+              </div>
+            </div>
+          </div>
+          <button
+            class="btn-add"
+            @click="addMechanic(idx)"
+          >
+            + Add Mechanic
+          </button>
+        </div>
+
+        <div class="section-block">
+          <label class="section-label">Feedback</label>
+
+          <div class="feedback-toggles">
+            <label class="toggle-check">
+              <input
+                type="checkbox"
+                :checked="ability.feedback.actionBar"
+                @change="updateFeedback(idx, { actionBar: ($event.target as HTMLInputElement).checked })"
+              />
+              Action Bar
+            </label>
+            <label class="toggle-check">
+              <input
+                type="checkbox"
+                :checked="ability.feedback.chat"
+                @change="updateFeedback(idx, { chat: ($event.target as HTMLInputElement).checked })"
+              />
+              Chat
+            </label>
+          </div>
+
+          <div class="field-row">
+            <label class="field-label">Message</label>
+            <input
+              class="field-input"
+              type="text"
+              placeholder="&aSkill activated!"
+              :value="ability.feedback.message"
+              @input="updateFeedback(idx, { message: ($event.target as HTMLInputElement).value })"
+            />
+          </div>
+
+          <div class="sub-section">
+            <label class="sub-label">Particles</label>
+            <div
+              v-for="(particle, pIdx) in ability.feedback.particles"
+              :key="pIdx"
+              class="particle-card"
+            >
+              <div class="particle-fields">
+                <div class="particle-field">
+                  <label class="field-label-sm">Type</label>
+                  <input
+                    class="field-input-sm"
+                    type="text"
+                    placeholder="minecraft:flame"
+                    :value="particle.type"
+                    @input="updateParticle(idx, pIdx, { type: ($event.target as HTMLInputElement).value })"
+                  />
+                </div>
+                <div class="particle-field">
+                  <label class="field-label-sm">Count</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    min="1"
+                    :value="particle.count"
+                    @input="updateParticle(idx, pIdx, { count: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+                <div class="particle-field">
+                  <label class="field-label-sm">Target</label>
+                  <select
+                    class="field-input-sm"
+                    :value="particle.target"
+                    @change="updateParticle(idx, pIdx, { target: ($event.target as HTMLSelectElement).value })"
+                  >
+                    <option value="self">self</option>
+                    <option value="target">target</option>
+                  </select>
+                </div>
+                <div class="particle-field">
+                  <label class="field-label-sm">Offset X</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    step="any"
+                    :value="particle.offsetX"
+                    @input="updateParticle(idx, pIdx, { offsetX: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+                <div class="particle-field">
+                  <label class="field-label-sm">Offset Y</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    step="any"
+                    :value="particle.offsetY"
+                    @input="updateParticle(idx, pIdx, { offsetY: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+                <div class="particle-field">
+                  <label class="field-label-sm">Offset Z</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    step="any"
+                    :value="particle.offsetZ"
+                    @input="updateParticle(idx, pIdx, { offsetZ: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+                <div class="particle-field">
+                  <label class="field-label-sm">Speed</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    step="any"
+                    :value="particle.speed"
+                    @input="updateParticle(idx, pIdx, { speed: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+              </div>
+              <button
+                class="btn-remove"
+                @click="removeParticle(idx, pIdx)"
+              >
+                &times;
+              </button>
+            </div>
+            <button
+              class="btn-add"
+              @click="addParticle(idx)"
+            >
+              + Add Particle
+            </button>
+          </div>
+
+          <div class="sub-section">
+            <label class="sub-label">Sounds</label>
+            <div
+              v-for="(sound, sIdx) in ability.feedback.sounds"
+              :key="sIdx"
+              class="sound-card"
+            >
+              <div class="sound-fields">
+                <div class="sound-field">
+                  <label class="field-label-sm">Type</label>
+                  <input
+                    class="field-input-sm"
+                    type="text"
+                    placeholder="minecraft:entity_experience_orb_pickup"
+                    :value="sound.type"
+                    @input="updateSound(idx, sIdx, { type: ($event.target as HTMLInputElement).value })"
+                  />
+                </div>
+                <div class="sound-field">
+                  <label class="field-label-sm">Volume</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    step="any"
+                    :value="sound.volume"
+                    @input="updateSound(idx, sIdx, { volume: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+                <div class="sound-field">
+                  <label class="field-label-sm">Pitch</label>
+                  <input
+                    class="field-input-sm"
+                    type="number"
+                    step="any"
+                    :value="sound.pitch"
+                    @input="updateSound(idx, sIdx, { pitch: Number(($event.target as HTMLInputElement).value) })"
+                  />
+                </div>
+                <div class="sound-field">
+                  <label class="field-label-sm">Target</label>
+                  <select
+                    class="field-input-sm"
+                    :value="sound.target"
+                    @change="updateSound(idx, sIdx, { target: ($event.target as HTMLSelectElement).value })"
+                  >
+                    <option value="self">self</option>
+                    <option value="target">target</option>
+                  </select>
+                </div>
+              </div>
+              <button
+                class="btn-remove"
+                @click="removeSound(idx, sIdx)"
+              >
+                &times;
+              </button>
+            </div>
+            <button
+              class="btn-add"
+              @click="addSound(idx)"
+            >
+              + Add Sound
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.abilities-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ability-card {
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #1e1e1e;
+  overflow: hidden;
+}
+
+.ability-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #252525;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ability-title {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ccc;
+}
+
+.expand-toggle {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.ability-body {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.field-label {
+  min-width: 6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.field-input {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a2a;
+  color: #e0e0e0;
+  font-size: 0.85rem;
+}
+
+.field-select {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a2a;
+  color: #e0e0e0;
+  font-size: 0.85rem;
+}
+
+.section-block {
+  border-top: 1px solid #333;
+  padding-top: 0.75rem;
+}
+
+.section-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sub-section {
+  margin-top: 0.5rem;
+}
+
+.sub-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #bbb;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.lore-line-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.states-group {
+  margin-top: 0.5rem;
+}
+
+.states-grid {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.state-check {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.item-card,
+.mechanic-card,
+.particle-card,
+.sound-card {
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: #1a1a1a;
+}
+
+.mechanic-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.mechanic-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #aaa;
+}
+
+.mechanic-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item-fields,
+.particle-fields,
+.sound-fields {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.item-field,
+.particle-field,
+.sound-field {
+  flex: 1;
+  min-width: 100px;
+}
+
+.field-label-sm {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #999;
+  margin-bottom: 0.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.field-input-sm {
+  width: 100%;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #2a2a2a;
+  color: #e0e0e0;
+  font-size: 0.8rem;
+  box-sizing: border-box;
+}
+
+.param-entry {
+  margin-bottom: 0.5rem;
+}
+
+.param-header {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.param-name-input {
+  flex: 1;
+}
+
+.feedback-toggles {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.toggle-check {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  color: #f87171;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.btn-remove:hover {
+  color: #ef4444;
+}
+
+.btn-add {
+  background: #1e3a5f;
+  color: #e0e0e0;
+  border: 1px solid #2a4a7f;
+  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 0.25rem;
+}
+
+.btn-add:hover {
+  background: #2a4a7f;
+}
+</style>
