@@ -275,6 +275,12 @@ public final class SkillsCommand {
         long totalXp = profile.getXp(skillId);
         int level = getLevelForXp(skill, totalXp);
         int maxLevel = skill.maxLevel();
+
+        if (level >= maxLevel) {
+            bossBarPool.remove(player, skillId);
+            return;
+        }
+
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skillId;
 
@@ -283,9 +289,6 @@ public final class SkillsCommand {
         TextColor textColor = resolveBarColor(skill.display() != null ? skill.display().color() : null);
         Component title;
 
-        if (level >= maxLevel) {
-            title = Component.text(displayName + " - Maxed!", NamedTextColor.GOLD);
-        } else {
             long xpForCurrent = (long) skill.progression().evaluator().evaluate(level, 0);
             long xpForNext = (long) skill.progression().evaluator().evaluate(level + 1, 0);
             long intoLevel = totalXp - xpForCurrent;
@@ -306,7 +309,6 @@ public final class SkillsCommand {
                         .append(Component.text(String.valueOf(needed), NamedTextColor.WHITE))
                         .append(Component.text(")", NamedTextColor.GRAY));
             }
-        }
 
         bar.setTitle(LegacyComponentSerializer.legacySection().serialize(title));
 
