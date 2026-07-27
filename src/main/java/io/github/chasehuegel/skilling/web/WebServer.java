@@ -2,9 +2,13 @@ package io.github.chasehuegel.skilling.web;
 
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillManager;
+import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
 import io.github.chasehuegel.skilling.web.auth.BasicAuthenticator;
 import io.github.chasehuegel.skilling.web.config.WebConfig;
+import io.github.chasehuegel.skilling.web.handler.ConfigHandler;
+import io.github.chasehuegel.skilling.web.handler.ReloadHandler;
 import io.github.chasehuegel.skilling.web.handler.SkillHandler;
+import io.github.chasehuegel.skilling.web.handler.TagHandler;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.Javalin;
 import java.io.File;
@@ -18,13 +22,15 @@ public final class WebServer {
     private final BasicAuthenticator authenticator;
     private final SkillManager skillManager;
     private final StagingManager stagingManager;
+    private final LockdownManager lockdownManager;
     private Javalin app;
 
-    public WebServer(Skilling plugin, WebConfig config, SkillManager skillManager, StagingManager stagingManager) {
+    public WebServer(Skilling plugin, WebConfig config, SkillManager skillManager, StagingManager stagingManager, LockdownManager lockdownManager) {
         this.plugin = plugin;
         this.config = config;
         this.skillManager = skillManager;
         this.stagingManager = stagingManager;
+        this.lockdownManager = lockdownManager;
         this.authenticator = new BasicAuthenticator(config);
     }
 
@@ -42,6 +48,9 @@ public final class WebServer {
             var routes = app.unsafe.routes;
             File skillsDir = new File(plugin.getDataFolder(), "skills");
             var skillHandler = new SkillHandler(skillManager, stagingManager, skillsDir);
+            var tagHandler = new TagHandler(stagingManager, new File(plugin.getDataFolder(), "tags.yml"));
+            var configHandler = new ConfigHandler(stagingManager, new File(plugin.getDataFolder(), "config.yml"));
+            var reloadHandler = new ReloadHandler(stagingManager, lockdownManager);
 
             routes.before(ctx -> {
                 ctx.res().setHeader("Access-Control-Allow-Origin", "*");
@@ -88,7 +97,14 @@ public final class WebServer {
             routes.put("/api/skills/{id}", skillHandler::update);
             routes.delete("/api/skills/{id}", skillHandler::delete);
 
-            // Phase 3: Staging endpoints
+            // Phase 3: Tags, Config, Reload
+            routes.get("/api/tags", tagHandler::get);
+            routes.put("/api/tags", tagHandler::update);
+            routes.get("/api/config", configHandler::get);
+            routes.put("/api/config", configHandler::update);
+            routes.post("/api/reload", reloadHandler::reload);
+
+            // Staging endpoints
             routes.get("/api/staging/status", ctx -> {
                 var status = stagingManager.status();
                 ctx.json(Map.of(

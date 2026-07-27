@@ -153,7 +153,7 @@ public final class Skilling extends JavaPlugin {
         // Web GUI
         WebConfig webConfig = WebConfig.load(config);
         var stagingManager = new io.github.chasehuegel.skilling.web.staging.StagingManager(getDataFolder());
-        this.webServer = new WebServer(this, webConfig, skillManager, stagingManager);
+        this.webServer = new WebServer(this, webConfig, skillManager, stagingManager, lockdownManager);
         this.webServer.start();
 
         // Commands
