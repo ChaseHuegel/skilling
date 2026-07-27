@@ -114,12 +114,12 @@ public final class WebServer {
             // Staging endpoints
             routes.get("/api/staging/status", ctx -> {
                 var status = stagingManager.status();
-                ctx.json(Map.of(
-                    "hasPendingChanges", status.hasPendingChanges(),
-                    "fileCount", status.fileCount(),
-                    "files", status.files(),
-                    "lastModified", status.lastModified()
-                ));
+                var result = new java.util.LinkedHashMap<String, Object>();
+                result.put("hasPendingChanges", status.hasPendingChanges());
+                result.put("fileCount", status.fileCount());
+                result.put("files", status.files());
+                result.put("lastModified", status.lastModified() != null ? status.lastModified() : "");
+                ctx.json(result);
             });
 
             routes.delete("/api/staging", ctx -> {
