@@ -97,17 +97,8 @@ public final class SkillMenuBuilder {
         }
 
         for (SkillDefinition.Ability ability : skill.abilities()) {
-            boolean abilityUnlocked = level >= ability.unlockLevel();
             lore.add(Component.empty());
-            Component abilityName = Component.text(
-                    (abilityUnlocked ? "✔ " : "✗ ") + ability.displayName(),
-                    abilityUnlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY);
-            boolean isActive = ability.requirements().cooldown() > 0
-                    || !ability.requirements().state().isEmpty()
-                    || !ability.requirements().items().isEmpty();
-            lore.add(abilityName.append(Component.text(
-                    isActive ? " · Active" : " · Passive",
-                    NamedTextColor.DARK_GRAY)));
+            lore.add(formatAbilityLine(ability, level));
 
             Map<String, ParameterEvaluator> allParams = new HashMap<>();
             for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
@@ -117,7 +108,7 @@ public final class SkillMenuBuilder {
                     ability.display().lore(), allParams, level, ability.unlockLevel());
             for (String line : resolved) {
                 Component deserialized = LegacyComponentSerializer.legacyAmpersand().deserialize(line);
-                lore.add(abilityUnlocked ? deserialized : deserialized.colorIfAbsent(NamedTextColor.DARK_GRAY));
+                lore.add(level >= ability.unlockLevel() ? deserialized : deserialized.colorIfAbsent(NamedTextColor.DARK_GRAY));
             }
         }
 
@@ -177,5 +168,19 @@ public final class SkillMenuBuilder {
             if (xp < (long) required) return level - 1;
         }
         return skill.maxLevel();
+    }
+
+    public static Component formatAbilityLine(SkillDefinition.Ability ability, int playerLevel) {
+        boolean unlocked = playerLevel >= ability.unlockLevel();
+        boolean isActive = ability.requirements().cooldown() > 0
+                || !ability.requirements().state().isEmpty()
+                || !ability.requirements().items().isEmpty();
+        Component abilityPart = Component.text(
+                (unlocked ? "✔ " : "✗ ") + ability.displayName(),
+                unlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY);
+        Component typePart = Component.text(
+                isActive ? " · Active" : " · Passive",
+                NamedTextColor.DARK_GRAY);
+        return abilityPart.append(typePart);
     }
 }

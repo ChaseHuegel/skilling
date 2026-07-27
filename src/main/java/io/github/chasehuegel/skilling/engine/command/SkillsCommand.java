@@ -344,11 +344,9 @@ public final class SkillsCommand {
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skill.id();
         boolean major = isMajorLevelUp(skill, newLevel);
-        var unlockNames = skill.abilities().stream()
+        var unlockedAbilities = skill.abilities().stream()
                 .filter(a -> a.unlockLevel() == newLevel)
-                .map(SkillDefinition.Ability::displayName)
                 .toList();
-        boolean hasUnlocks = !unlockNames.isEmpty();
 
         player.showTitle(Title.title(
                 MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
@@ -356,21 +354,20 @@ public final class SkillsCommand {
                 Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(2000), Duration.ofMillis(500))
         ));
 
-        if (hasUnlocks) {
-            String unlockLines = String.join(", ", unlockNames);
-            String unlockSubtitle = "<yellow>" + unlockLines + " unlocked!</yellow>";
-            plugin.getServer().getScheduler().runTaskLater(plugin, () ->
+        for (int i = 0; i < unlockedAbilities.size(); i++) {
+            int idx = i;
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                Component line = SkillMenuBuilder.formatAbilityLine(unlockedAbilities.get(idx), newLevel);
                 player.showTitle(Title.title(
                         MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
-                        MiniMessage.miniMessage().deserialize(unlockSubtitle),
+                        line.colorIfAbsent(NamedTextColor.WHITE),
                         Title.Times.times(
                                 java.time.Duration.ZERO,
                                 java.time.Duration.ofMillis(1500),
                                 java.time.Duration.ofMillis(500)
                         )
-                )),
-                20L
-            );
+                ));
+            }, 20L + idx * 30L);
         }
 
         if (major) {
@@ -388,10 +385,11 @@ public final class SkillsCommand {
         }
 
         StringBuilder logMsg = new StringBuilder("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel);
-        if (hasUnlocks) {
-            logMsg.append(" — Unlocked: ").append(String.join(", ", unlockNames));
+        for (SkillDefinition.Ability a : unlockedAbilities) {
+            logMsg.append("\n  ").append(
+                    LegacyComponentSerializer.legacySection().serialize(
+                            SkillMenuBuilder.formatAbilityLine(a, newLevel)));
         }
-        logMsg.append("!");
         plugin.getLogger().info(logMsg.toString());
     }
 

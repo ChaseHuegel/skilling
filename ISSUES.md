@@ -91,10 +91,10 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] The level up title should show the display name of newly unlocked abilities under the subtitle, if any
 - [x] The green check next to the name of unlocked skills should be removed
   - [x] The grey crossed-out mark next to the name of locked skills should be replaced by a tag on the same line appended to the skill name in dark grey and separated by a dot
-- [ ] The subtitle text for unlocked abilities should be formatted the exact same as they are displayed in the lore
-  - [ ] Format: `<light green>{check mark} {ability display name} <dark grey>{dot} {Active/Passive}`
-    - [ ] Use a shared utility for determining this display, which the lore and subtitle will both utilize to reduce code duplication. This is likely to be needed elsewhere as well later.
-  - [ ] If there are multiple unlocks for the level, ensure each is on a new line.
+- [x] The subtitle text for unlocked abilities should be formatted the exact same as they are displayed in the lore
+  - [x] Format: `<light green>{check mark} {ability display name} <dark grey>{dot} {Active/Passive}`
+    - [x] Use a shared utility for determining this display, which the lore and subtitle will both utilize to reduce code duplication. This is likely to be needed elsewhere as well later.
+  - [x] If there are multiple unlocks for the level, ensure each is on a new line.
 - [x] Remove the built-in default italics styling from skill menu item lore
 
 # Ideas

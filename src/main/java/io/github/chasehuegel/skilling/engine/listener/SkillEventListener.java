@@ -13,6 +13,7 @@ import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
 import io.github.chasehuegel.skilling.engine.feedback.FanfareDispatcher;
 import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
+import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import org.bukkit.Material;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -409,11 +410,9 @@ public final class SkillEventListener implements Listener {
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skill.id();
         boolean major = isMajorLevelUp(skill, newLevel);
-        var unlockNames = skill.abilities().stream()
+        var unlockedAbilities = skill.abilities().stream()
                 .filter(a -> a.unlockLevel() == newLevel)
-                .map(SkillDefinition.Ability::displayName)
                 .toList();
-        boolean hasUnlocks = !unlockNames.isEmpty();
 
         player.showTitle(Title.title(
                 MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
@@ -425,21 +424,20 @@ public final class SkillEventListener implements Listener {
                 )
         ));
 
-        if (hasUnlocks) {
-            String unlockLines = String.join(", ", unlockNames);
-            String unlockSubtitle = "<yellow>" + unlockLines + " unlocked!</yellow>";
-            org.bukkit.Bukkit.getScheduler().runTaskLater(plugin, () ->
+        for (int i = 0; i < unlockedAbilities.size(); i++) {
+            int idx = i;
+            org.bukkit.Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                Component line = SkillMenuBuilder.formatAbilityLine(unlockedAbilities.get(idx), newLevel);
                 player.showTitle(Title.title(
                         MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
-                        MiniMessage.miniMessage().deserialize(unlockSubtitle),
+                        line.colorIfAbsent(NamedTextColor.WHITE),
                         Title.Times.times(
                                 java.time.Duration.ZERO,
                                 java.time.Duration.ofMillis(1500),
                                 java.time.Duration.ofMillis(500)
                         )
-                )),
-                20L
-            );
+                ));
+            }, 20L + idx * 30L);
         }
 
         if (major) {
@@ -457,10 +455,11 @@ public final class SkillEventListener implements Listener {
         }
 
         StringBuilder logMsg = new StringBuilder("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel);
-        if (hasUnlocks) {
-            logMsg.append(" — Unlocked: ").append(String.join(", ", unlockNames));
+        for (SkillDefinition.Ability a : unlockedAbilities) {
+            logMsg.append("\n  ").append(
+                    LegacyComponentSerializer.legacySection().serialize(
+                            SkillMenuBuilder.formatAbilityLine(a, newLevel)));
         }
-        logMsg.append("!");
         plugin.getLogger().info(logMsg.toString());
     }
 
