@@ -57,6 +57,13 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - Gaining any amount of XP triggers the level-up fanfare again
   - It appears that level ups aren't occuring when the required XP is reached, but rather when it is exceeded.
   - It appears that the setlevel command is invoking fanfare directly instead of going thru the xp pipeline? I have not confirmed this, but seems likely based off the behavior. At the least, there is some mismatch in the source of truth for level ups it appears.
+- [ ] The debug flag being disabled is not hiding the XP current/total count in the bossbar
+- [ ] Level up notifications aren't being echoed in the chat
+  - [ ] These should only be sent to the player that leveled up, not all players
+  - [ ] This should be formatted similar to the vanilla minecraft achievement message
+- [ ] Level up unlocks aren't being echoed in the chat
+  - [ ] These should only be sent to the player that leveled up, not all players
+  - [ ] This should be formatted similar to the vanilla minecraft achievement message
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -96,6 +103,17 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - [x] Use a shared utility for determining this display, which the lore and subtitle will both utilize to reduce code duplication. This is likely to be needed elsewhere as well later.
   - [x] If there are multiple unlocks for the level, ensure each is on a new line.
 - [x] Remove the built-in default italics styling from skill menu item lore
+- [ ] Adjust the sequential level up titles
+  - [ ] Their duration will be configurable in `config.yml` with a default `stay` duration of 5 seconds
+  - [ ] For unlocks, the main title will change to "New unlock!"
+  - [ ] Add a delay between sequential titles that is long enough to allow the fade in and out to play for a smooth transition between titles
+- [ ] Increase the fanfare for reaching max level in a skill
+  - [ ] Shoot off 10 fireworks for the player that leveled up
+  - [ ] Play the major sound and fireworks fanfare for all other players on the server
+  - [ ] Send a subtitle to all other players on the server: "<light green>{player} <yellow>reached <light green>{level} <skill color>{skill}!"
+    - [ ] If the debug config flag is enabled, also send this to the player that reached max level for testing purposes
+  - [ ] Send a server-wide chat message similar to the vanilla minecraft achievement message indicating the player's name, the level they reached, and the skill
+- [ ] A config section for setting a global XP modifier. Default is `1.0`
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
@@ -118,7 +136,6 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - [ ] After applying changes, the user is prompted with an optional reload button
       - [ ] The button will execute a reload of the plugin (ie. `skills reload`)
 - [ ] An in-game way to open up and view the skills GUI that feels vanilla+ as an alternative to the `/skills` command
-- [ ] A config section for setting a global XP modifier. Default is `1.0`
 - [ ] Commands to modify config values at runtime (`/skills set <config key> <value>`)
   - [ ] These will apply immediately
   - [ ] These will save to the config file
