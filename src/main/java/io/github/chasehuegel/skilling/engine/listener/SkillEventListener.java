@@ -512,7 +512,7 @@ public final class SkillEventListener implements Listener {
     private int getLevelForXp(SkillDefinition skill, long xp) {
         for (int level = 1; level <= skill.maxLevel(); level++) {
             double required = skill.progression().evaluator().evaluate(level, 0);
-            if (xp < required) return level - 1;
+            if (xp < (long) required) return level - 1;
         }
         return skill.maxLevel();
     }

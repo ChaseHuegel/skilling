@@ -213,10 +213,11 @@ public final class SkillsCommand {
         int oldLevel = getLevelForXp(def, profile.getXp(skillId));
         long xp = (long) def.progression().evaluator().evaluate(level, 0);
         profile.setXp(skillId, xp);
-        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + target.getName() + "'s " + skillId + " to level " + level + "."));
+        int actualLevel = getLevelForXp(def, profile.getXp(skillId));
+        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + target.getName() + "'s " + skillId + " to level " + actualLevel + "."));
         showXpBossBar(target, def, profile);
-        if (level > oldLevel) {
-            broadcastLevelUp(target, def, level);
+        if (actualLevel > oldLevel) {
+            broadcastLevelUp(target, def, actualLevel);
         }
     }
 
@@ -264,7 +265,7 @@ public final class SkillsCommand {
     private int getLevelForXp(SkillDefinition skill, long xp) {
         for (int level = 1; level <= skill.maxLevel(); level++) {
             double required = skill.progression().evaluator().evaluate(level, 0);
-            if (xp < required) return level - 1;
+            if (xp < (long) required) return level - 1;
         }
         return skill.maxLevel();
     }

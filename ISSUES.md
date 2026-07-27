@@ -48,7 +48,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] The level-up title listing unlocked abilities isn't displaying content on a newline; the there is an `LF` character displayed by minecraft
   - This may not be possible, but from some light research tellraw supports displaying newline characters so this may be possible in some fashion via a plugin.
   - Perform some research on this topic if necessary, and if it doesn't look possible then lets pause and discuss instead of just trying something hoping that it might work.
-- [ ] When using `/skills setlevel 7_eleven mining 15` there is an off-by-one error that becomes apparent. The following is observed:
+- [x] When using `/skills setlevel 7_eleven mining 15` there is an off-by-one error that becomes apparent. The following is observed:
   - It plays the level up fanfare for lvl 15
   - It shows the level up title for lvl 15 and the new ability unlock
   - The bossbar still shows 14 with a full bar
@@ -57,7 +57,6 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - Gaining any amount of XP triggers the level-up fanfare again
   - It appears that level ups aren't occuring when the required XP is reached, but rather when it is exceeded.
   - It appears that the setlevel command is invoking fanfare directly instead of going thru the xp pipeline? I have not confirmed this, but seems likely based off the behavior. At the least, there is some mismatch in the source of truth for level ups it appears.
-- 
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
