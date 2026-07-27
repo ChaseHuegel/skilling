@@ -26,3 +26,6 @@ hs_err_pid*
 .gradle/
 build/
 run/
+web/frontend/node_modules/
+web/frontend/dist/
+web/frontend/tsconfig.tsbuildinfo
