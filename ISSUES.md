@@ -95,7 +95,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [ ] Format: `<light green>{check mark} {ability display name} <dark grey>{dot} {Active/Passive}`
     - [ ] Use a shared utility for determining this display, which the lore and subtitle will both utilize to reduce code duplication. This is likely to be needed elsewhere as well later.
   - [ ] If there are multiple unlocks for the level, ensure each is on a new line.
-- [ ] Remove the built-in default italics styling from skill menu item lore
+- [x] Remove the built-in default italics styling from skill menu item lore
 
 # Ideas
 - [ ] Web GUI that is hosted on the server

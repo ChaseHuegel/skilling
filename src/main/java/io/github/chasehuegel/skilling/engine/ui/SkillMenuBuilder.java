@@ -7,6 +7,7 @@ import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -120,6 +121,9 @@ public final class SkillMenuBuilder {
             }
         }
 
+        for (int i = 0; i < lore.size(); i++) {
+            lore.set(i, lore.get(i).decoration(TextDecoration.ITALIC, false));
+        }
         return lore;
     }
 
