@@ -41,11 +41,8 @@ public final class SkillHandler {
 
     public void get(Context ctx) {
         String id = ctx.pathParam("id");
-        File liveFile = new File(skillsDir, id + ".yml");
-        File stagedFile = stagingManager.stagedSkillFile(id);
-
-        File sourceFile = stagedFile.exists() ? stagedFile : liveFile;
-        if (!sourceFile.exists()) {
+        File sourceFile = resolveSkillFile(id);
+        if (sourceFile == null) {
             ctx.status(404).json(Map.of("status", "error", "message", "Skill not found: " + id));
             return;
         }
@@ -92,10 +89,10 @@ public final class SkillHandler {
 
     public void delete(Context ctx) {
         String id = ctx.pathParam("id");
-        File liveFile = new File(skillsDir, id + ".yml");
+        File liveFile = resolveSkillFile(id);
         File stagedFile = stagingManager.stagedSkillFile(id);
 
-        boolean liveDeleted = liveFile.exists() && liveFile.delete();
+        boolean liveDeleted = liveFile != null && liveFile.delete();
         boolean stagedDeleted = stagedFile.exists() && stagedFile.delete();
 
         if (liveDeleted || stagedDeleted) {
@@ -103,6 +100,29 @@ public final class SkillHandler {
         } else {
             ctx.status(404).json(Map.of("status", "error", "message", "Skill not found: " + id));
         }
+    }
+
+    private File resolveSkillFile(String id) {
+        // Fast path: check for file named exactly {id}.yml
+        File namedFile = new File(skillsDir, id + ".yml");
+        File stagedFile = stagingManager.stagedSkillFile(id);
+        if (stagedFile.exists()) return stagedFile;
+        if (namedFile.exists()) return namedFile;
+
+        // Fallback: scan all .yml files and match by parsed ID
+        // This handles cases where the filename differs from the skill ID
+        if (!skillsDir.exists() || !skillsDir.isDirectory()) return null;
+        File[] files = skillsDir.listFiles((d, name) -> name.endsWith(".yml"));
+        if (files == null) return null;
+        for (File f : files) {
+            try {
+                SkillDetailDTO dto = SkillSerializer.parseSkillFile(f);
+                if (dto.id().equals(id)) return f;
+            } catch (Exception ignored) {
+                // Skip files that can't be parsed
+            }
+        }
+        return null;
     }
 
     private static void validateSkill(SkillDetailDTO dto) {
