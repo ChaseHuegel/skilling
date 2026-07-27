@@ -308,12 +308,29 @@ public final class SkillEventListener implements Listener {
                     }
                     requirementEngine.consume(player, ability.requirements());
 
-                    if (ability.feedback().actionBar() && !ability.feedback().message().isBlank()) {
-                        FanfareDispatcher.sendActionBar(player, ability.feedback().message());
-                    }
-                    if (ability.feedback().chat() && !ability.feedback().message().isBlank()) {
+                    String abilityMsg = ability.feedback().message();
+                    boolean hasMsg = !abilityMsg.isBlank();
+                    if (ability.feedback().actionBar() && hasMsg) {
+                        FanfareDispatcher.sendActionBar(player, abilityMsg);
                         player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize(ability.feedback().message()));
+                                .deserialize(abilityMsg));
+                    }
+                    if (ability.feedback().chat() && hasMsg && !ability.feedback().actionBar()) {
+                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize(abilityMsg));
+                    }
+
+                    if (ability.requirements().cooldown() > 0) {
+                        long delayTicks = (long) (ability.requirements().cooldown() * 20);
+                        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                            if (player.isOnline()) {
+                                String readyMsg = "<green>✦ " + ability.displayName() + " is ready!</green>";
+                                player.sendMessage(MiniMessage.miniMessage().deserialize(readyMsg));
+                                player.sendActionBar(net.kyori.adventure.text.Component.text(
+                                        "✦ " + ability.displayName() + " is ready!",
+                                        NamedTextColor.GREEN));
+                            }
+                        }, delayTicks);
                     }
                     if (!ability.feedback().particles().isEmpty()) {
                         FanfareDispatcher.dispatchParticles(player, null, ability.feedback().particles());

@@ -127,10 +127,10 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - [x] If the debug config flag is enabled, also send this to the player that reached max level for testing purposes
   - [x] Send a server-wide chat message similar to the vanilla minecraft achievement message indicating the player's name, the level they reached, and the skill
 - [x] A config section for setting a global XP modifier. Default is `1.0`
-- [ ] Notify players when an ability is ready (comes off cooldown)
-  - [ ] In a chat message to just that player
-  - [ ] In the action bar
-- [ ] Send a chat message to players to log their ability activations in the same format as the action bar
+- [x] Notify players when an ability is ready (comes off cooldown)
+  - [x] In a chat message to just that player
+  - [x] In the action bar
+- [x] Send a chat message to players to log their ability activations in the same format as the action bar
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
