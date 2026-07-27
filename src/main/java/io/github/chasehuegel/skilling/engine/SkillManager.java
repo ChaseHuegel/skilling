@@ -63,6 +63,9 @@ public final class SkillManager {
 
         for (File file : files) {
             SkillDefinition def = parseSkill(file);
+            if (skills.containsKey(def.id())) {
+                throw new IllegalArgumentException("Duplicate skill ID '" + def.id() + "' in file: " + file.getName());
+            }
             skills.put(def.id(), def);
         }
     }
@@ -176,12 +179,16 @@ public final class SkillManager {
     private List<SkillDefinition.Ability> parseAbilities(List<?> list) {
         if (list == null) return List.of();
         List<SkillDefinition.Ability> abilities = new ArrayList<>();
+        Set<String> seenIds = new HashSet<>();
         for (Object raw : list) {
             if (!(raw instanceof Map<?, ?> map)) continue;
             Map<String, Object> abilityMap = castMap(map);
 
             String id = (String) abilityMap.get("id");
             if (id == null) throw new IllegalArgumentException("Ability missing 'id'");
+            if (!seenIds.add(id)) {
+                throw new IllegalArgumentException("Duplicate ability ID: " + id);
+            }
 
             String displayName = (String) abilityMap.getOrDefault("display_name", id);
             int unlockLevel = ((Number) abilityMap.getOrDefault("unlock_level", 1)).intValue();
@@ -265,7 +272,7 @@ public final class SkillManager {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> filtersRaw = (List<Map<String, Object>>) mechanicMap.getOrDefault("filters", List.of());
             List<SkillDefinition.Filter> filters = filtersRaw.stream()
-                    .map(fm -> new SkillDefinition.Filter((String) fm.get("target"), (String) fm.get("state"), (String) fm.get("tool")))
+                    .map(fm -> new SkillDefinition.Filter(String.valueOf(fm.get("target")), String.valueOf(fm.get("state")), String.valueOf(fm.get("tool"))))
                     .toList();
 
             entries.add(new SkillDefinition.MechanicEntry(type, filters, parameters));
@@ -337,7 +344,11 @@ public final class SkillManager {
             Map<String, Object> milestonesMap = castMap(map.get("milestones"));
             TreeMap<Integer, Double> milestones = new TreeMap<>();
             for (var entry : milestonesMap.entrySet()) {
-                milestones.put(Integer.parseInt(entry.getKey()), ((Number) entry.getValue()).doubleValue());
+                try {
+                    milestones.put(Integer.parseInt(entry.getKey()), ((Number) entry.getValue()).doubleValue());
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Invalid milestone level key: " + entry.getKey(), e);
+                }
             }
             return new MilestoneEvaluator(milestones);
         }

@@ -19,6 +19,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -144,6 +145,13 @@ public final class SkillEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCropGrow(BlockGrowEvent event) {
+        var location = event.getBlock().getLocation();
+        if (location.getWorld() != null) {
+            var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
+            for (Player player : players) {
+                dispatch(player, event, "crop_grow");
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -336,7 +344,7 @@ public final class SkillEventListener implements Listener {
                         FanfareDispatcher.dispatchParticles(player, null, ability.feedback().particles());
                     }
                     if (!ability.feedback().sounds().isEmpty()) {
-                        FanfareDispatcher.dispatchSounds(player, ability.feedback().sounds());
+                        FanfareDispatcher.dispatchSounds(player, null, ability.feedback().sounds());
                     }
                     debug("    -> done");
                 }
@@ -416,6 +424,21 @@ public final class SkillEventListener implements Listener {
         if (event.getDamager() instanceof org.bukkit.entity.Firework fw
                 && fw.getPersistentDataContainer().has(Skilling.FIREWORK_KEY, PersistentDataType.BOOLEAN)) {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onProjectileHit(org.bukkit.event.entity.ProjectileHitEvent event) {
+        if (event.getHitEntity() == null) return;
+        if (!(event.getEntity() instanceof Projectile projectile)) return;
+        if (!projectile.hasMetadata("skilling_damage")) return;
+        double damage = projectile.getMetadata("skilling_damage").get(0).asDouble();
+        if (damage <= 0) return;
+        org.bukkit.entity.LivingEntity target = (org.bukkit.entity.LivingEntity) event.getHitEntity();
+        if (projectile.getShooter() instanceof org.bukkit.entity.LivingEntity shooter) {
+            target.damage(damage, shooter);
+        } else {
+            target.damage(damage);
         }
     }
 

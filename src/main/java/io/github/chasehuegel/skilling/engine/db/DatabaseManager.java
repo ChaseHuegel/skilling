@@ -2,44 +2,23 @@ package io.github.chasehuegel.skilling.engine.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
 
-/**
- * Manages the HikariCP connection pool for SQLite persistence.
- *
- * <p>Initializes the database in WAL (Write-Ahead Logging) mode at
- * startup for concurrent read/write performance. Creates the required
- * schema tables if they do not exist.
- *
- * <p>YAML configuration keys:
- * <ul>
- *   <li>{@code database.pool_size} — max pool size (default: 10)</li>
- *   <li>{@code database.wal_mode} — enable WAL mode (default: true)</li>
- * </ul>
- */
 public final class DatabaseManager {
 
     private HikariDataSource dataSource;
     private final File dataFolder;
 
-    /**
-     * Constructs a new database manager.
-     *
-     * @param dataFolder the plugin's data folder for the SQLite file
-     */
     public DatabaseManager(File dataFolder) {
         this.dataFolder = dataFolder;
     }
 
-    /**
-     * Initializes the HikariCP pool and ensures the database schema exists.
-     *
-     * @param config the plugin config for pool settings
-     * @throws SQLException if pool initialization fails
-     */
     public void initialize(YamlConfiguration config) throws SQLException {
         int poolSize = config.getInt("database.pool_size", 10);
         boolean walMode = config.getBoolean("database.wal_mode", true);
@@ -56,6 +35,14 @@ public final class DatabaseManager {
             if (walMode) {
                 try (var stmt = conn.createStatement()) {
                     stmt.execute("PRAGMA journal_mode=WAL;");
+                    try (ResultSet rs = stmt.getResultSet()) {
+                        if (rs.next()) {
+                            String mode = rs.getString(1);
+                            if (!"wal".equalsIgnoreCase(mode)) {
+                                Bukkit.getLogger().warning("Failed to enable WAL mode, got: " + mode);
+                            }
+                        }
+                    }
                 }
             }
             createSchema(conn);
@@ -76,12 +63,6 @@ public final class DatabaseManager {
         }
     }
 
-    /**
-     * Returns a connection from the pool.
-     *
-     * @return a pooled connection
-     * @throws SQLException if a connection cannot be obtained
-     */
     public Connection getConnection() throws SQLException {
         if (dataSource == null || dataSource.isClosed()) {
             throw new SQLException("Database pool is not initialized");
@@ -89,20 +70,18 @@ public final class DatabaseManager {
         return dataSource.getConnection();
     }
 
-    /**
-     * Gracefully shuts down the connection pool.
-     */
     public void shutdown() {
         if (dataSource != null && !dataSource.isClosed()) {
+            try (Connection conn = getConnection();
+                 var stmt = conn.createStatement()) {
+                stmt.execute("PRAGMA wal_checkpoint(TRUNCATE);");
+            } catch (SQLException e) {
+                Bukkit.getLogger().log(Level.WARNING, "Failed to checkpoint WAL on shutdown", e);
+            }
             dataSource.close();
         }
     }
 
-    /**
-     * Whether the pool is initialized and open.
-     *
-     * @return true if the pool is active
-     */
     public boolean isInitialized() {
         return dataSource != null && !dataSource.isClosed();
     }

@@ -17,9 +17,10 @@ public final class ModifyFurnaceOutputMechanic implements SkillMechanic {
         int original = extractEvent.getItemAmount();
         int bonus = (int) Math.round(original * (multiplier - 1));
         if (bonus > 0) {
-            player.getInventory().addItem(
-                    extractEvent.getBlock().getDrops().iterator().next().asQuantity(bonus)
-            );
+            var drops = extractEvent.getBlock().getDrops();
+            if (!drops.isEmpty()) {
+                player.getInventory().addItem(drops.iterator().next().asQuantity(bonus));
+            }
         }
         return true;
     }

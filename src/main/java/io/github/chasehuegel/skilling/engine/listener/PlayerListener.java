@@ -9,14 +9,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
-/**
- * Handles player lifecycle events for profile hydration and cleanup.
- *
- * <p>On login, the profile is asynchronously loaded from the database
- * and cached in the {@link ProfileManager}. On quit, the profile is
- * synchronously flushed to the database and removed from the cache.
- */
 public final class PlayerListener implements Listener {
 
     private final ProfileManager profileManager;
@@ -37,7 +32,9 @@ public final class PlayerListener implements Listener {
         Player player = event.getPlayer();
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
         if (profile != null && profile.isDirty()) {
-            asyncBatchWorker.flushDirtyProfiles();
+            CompletableFuture.runAsync(() -> {
+                asyncBatchWorker.flushDirtyProfiles();
+            }).orTimeout(1, TimeUnit.SECONDS);
         }
         profileManager.unloadProfile(player.getUniqueId());
     }

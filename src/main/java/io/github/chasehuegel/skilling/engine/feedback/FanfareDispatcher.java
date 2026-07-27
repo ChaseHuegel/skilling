@@ -74,18 +74,20 @@ public final class FanfareDispatcher {
      * Dispatches all sound effects from a feedback configuration.
      *
      * @param player the player who activated the ability
+     * @param target the target location (block or entity), may be null
      * @param sounds list of sound configuration maps
      */
-    public static void dispatchSounds(Player player, List<Map<String, Object>> sounds) {
+    public static void dispatchSounds(Player player, Location target, List<Map<String, Object>> sounds) {
         if (sounds == null || sounds.isEmpty()) return;
 
         for (var soundConfig : sounds) {
             String type = (String) soundConfig.getOrDefault("type", "");
             float volume = ((Number) soundConfig.getOrDefault("volume", 1.0)).floatValue();
             float pitch = ((Number) soundConfig.getOrDefault("pitch", 1.0)).floatValue();
-            String target = (String) soundConfig.getOrDefault("target", "self");
+            String targetType = (String) soundConfig.getOrDefault("target", "self");
 
-            Location location = "target".equals(target) ? player.getLocation() : player.getLocation();
+            Location location = "target".equals(targetType) && target != null
+                    ? target : player.getLocation();
 
             try {
                 Sound sound = Sound.valueOf(type);

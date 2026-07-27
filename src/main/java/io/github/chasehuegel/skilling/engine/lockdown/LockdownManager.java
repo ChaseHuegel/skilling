@@ -53,7 +53,7 @@ public final class LockdownManager {
         // Phase 2: Close GUIs
         for (Player player : Bukkit.getOnlinePlayers()) {
             Inventory top = player.getOpenInventory().getTopInventory();
-            if (top != null && top.getHolder() == null) {
+            if (top != null && top.getHolder() instanceof io.github.chasehuegel.skilling.engine.ui.SkillInventoryHolder) {
                 player.closeInventory();
             }
         }

@@ -41,7 +41,7 @@ public final class SkillMenuBuilder {
 
     public Inventory buildOverview(PlayerProfile profile) {
         var player = Bukkit.getPlayer(profile.getPlayerId());
-        Inventory inventory = Bukkit.createInventory(null, MENU_SIZE,
+        Inventory inventory = Bukkit.createInventory(new SkillInventoryHolder(player), MENU_SIZE,
                 Component.text("Skills", NamedTextColor.GOLD));
 
         int slot = 0;

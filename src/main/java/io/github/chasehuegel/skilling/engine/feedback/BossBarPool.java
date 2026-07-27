@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A Least Recently Used (LRU) cache for player {@link BossBar} instances.
@@ -33,8 +34,8 @@ public final class BossBarPool {
     public BossBarPool(int maxActive, int fadeTicks) {
         this.maxActive = maxActive;
         this.fadeTicks = fadeTicks;
-        this.cache = new LinkedHashMap<>(16, 0.75f, true);
-        this.ttlMap = new HashMap<>();
+        this.cache = Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true));
+        this.ttlMap = new ConcurrentHashMap<>();
     }
 
     /**

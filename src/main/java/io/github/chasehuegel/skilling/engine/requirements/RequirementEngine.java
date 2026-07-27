@@ -5,8 +5,8 @@ import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The execution gate that enforces the <b>Check, Execute, Consume</b> lifecycle
@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class RequirementEngine {
 
-    private final Map<String, Map<String, Long>> cooldowns = new HashMap<>();
+    private final Map<String, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
     private final TagResolver tagResolver;
 
     public RequirementEngine(TagResolver tagResolver) {
@@ -175,7 +175,7 @@ public final class RequirementEngine {
     }
 
     private void applyCooldown(Player player, String abilityId, long durationMs) {
-        cooldowns.computeIfAbsent(player.getUniqueId().toString(), k -> new HashMap<>())
+        cooldowns.computeIfAbsent(player.getUniqueId().toString(), k -> new ConcurrentHashMap<>())
                 .put(abilityId, System.currentTimeMillis() + durationMs);
     }
 

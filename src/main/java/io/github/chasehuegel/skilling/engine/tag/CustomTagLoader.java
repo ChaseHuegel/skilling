@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * Loads and resolves custom tag definitions from {@code tags.yml}.
@@ -53,8 +54,8 @@ public final class CustomTagLoader {
             for (String key : rawEntries.keySet()) {
                 resolve(key, rawEntries, resolving);
             }
-        } catch (Exception ignored) {
-            // YAML parsing may fail in non-Bukkit environments
+        } catch (Exception e) {
+            Bukkit.getLogger().log(Level.WARNING, "Failed to load custom tags from tags.yml", e);
         }
     }
 
@@ -91,8 +92,11 @@ public final class CustomTagLoader {
                 Material material = Material.matchMaterial(entry);
                 if (material != null) {
                     target.add(material);
+                } else {
+                    Bukkit.getLogger().warning("Unknown material in custom tag: " + entry);
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                Bukkit.getLogger().log(Level.WARNING, "Failed to resolve entry: " + entry, e);
             }
         }
     }

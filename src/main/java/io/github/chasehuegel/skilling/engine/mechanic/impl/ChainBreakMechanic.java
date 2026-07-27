@@ -10,20 +10,11 @@ import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import java.util.*;
 
-/**
- * Breaks connected blocks of the same type up to a limit (vein mining).
- *
- * <p>YAML key: {@code core:chain_break}
- * <br>Parameters:
- * <ul>
- *   <li>{@code chain_limit} (double, cast to int) — maximum blocks to break</li>
- * </ul>
- * Filters: {@code target} material/tag
- */
 public final class ChainBreakMechanic implements SkillMechanic {
 
-    private static final Set<Location> PROCESSING = new HashSet<>();
-    private static boolean CHAINING = false;
+    private static final Set<UUID> CHAINING_PLAYERS = new HashSet<>();
+    private static final ThreadLocal<Set<Location>> PROCESSING =
+            ThreadLocal.withInitial(HashSet::new);
 
     private static final int[][] DIRECTIONS = {
         {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}
@@ -32,12 +23,18 @@ public final class ChainBreakMechanic implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof BlockBreakEvent breakEvent)) return false;
-        if (CHAINING) return false;
+        if (!CHAINING_PLAYERS.add(player.getUniqueId())) return false;
         int limit = ((Number) params.getOrDefault("chain_limit", 0.0)).intValue();
-        if (limit <= 0) return false;
+        if (limit <= 0) {
+            CHAINING_PLAYERS.remove(player.getUniqueId());
+            return false;
+        }
 
         double exhaustion = ((Number) params.getOrDefault("exhaustion", 0.0)).doubleValue();
-        if (exhaustion > 0 && player.getFoodLevel() < exhaustion) return false;
+        if (exhaustion > 0 && player.getFoodLevel() < exhaustion) {
+            CHAINING_PLAYERS.remove(player.getUniqueId());
+            return false;
+        }
 
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();
@@ -46,38 +43,40 @@ public final class ChainBreakMechanic implements SkillMechanic {
         queue.add(origin);
         visited.add(origin.getLocation());
 
-        CHAINING = true;
+        Set<Location> processing = PROCESSING.get();
         try {
-        int broken = 0;
-        while (!queue.isEmpty() && broken < limit) {
-            Block current = queue.poll();
-            for (int[] dir : DIRECTIONS) {
-                if (broken >= limit) break;
-                Block neighbor = current.getRelative(dir[0], dir[1], dir[2]);
-                Location loc = neighbor.getLocation();
-                if (neighbor.getType() == targetType && !visited.contains(loc)
-                        && !PROCESSING.contains(loc)) {
-                    visited.add(loc);
-                    PROCESSING.add(loc);
-                    try {
-                        BlockBreakEvent chainEvent = new BlockBreakEvent(neighbor, player);
-                        Bukkit.getPluginManager().callEvent(chainEvent);
-                        if (!chainEvent.isCancelled()) {
-                            neighbor.breakNaturally(player.getInventory().getItemInMainHand());
-                            broken++;
-                            if (broken < limit) {
-                                queue.add(neighbor);
+            int broken = 0;
+            while (!queue.isEmpty() && broken < limit) {
+                Block current = queue.poll();
+                for (int[] dir : DIRECTIONS) {
+                    if (broken >= limit) break;
+                    Block neighbor = current.getRelative(dir[0], dir[1], dir[2]);
+                    Location loc = neighbor.getLocation();
+                    if (neighbor.getType() == targetType && !visited.contains(loc)
+                            && !processing.contains(loc)) {
+                        visited.add(loc);
+                        processing.add(loc);
+                        try {
+                            BlockBreakEvent chainEvent = new BlockBreakEvent(neighbor, player);
+                            Bukkit.getPluginManager().callEvent(chainEvent);
+                            if (!chainEvent.isCancelled()) {
+                                neighbor.breakNaturally(player.getInventory().getItemInMainHand());
+                                broken++;
+                                if (broken < limit) {
+                                    queue.add(neighbor);
+                                }
                             }
+                        } finally {
+                            processing.remove(loc);
                         }
-                    } finally {
-                        PROCESSING.remove(loc);
                     }
                 }
             }
-        }
-
         } finally {
-            CHAINING = false;
+            CHAINING_PLAYERS.remove(player.getUniqueId());
+            if (processing.isEmpty()) {
+                PROCESSING.remove();
+            }
         }
 
         if (exhaustion > 0) {

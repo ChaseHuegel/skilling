@@ -28,11 +28,10 @@ public final class UIProtectionListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
         Inventory top = event.getView().getTopInventory();
-        if (top == null || top.getHolder() != null) return;
+        if (top == null) return;
 
-        // Check if this is our custom UI (null holder indicates Skilling UI)
-        // If the clicked inventory has a null holder, it's our custom UI
-        if (top.getHolder() != null) return;
+        // Check if this is our custom UI (SkillInventoryHolder indicates Skilling UI)
+        if (!(top.getHolder() instanceof SkillInventoryHolder)) return;
 
         // Cancel all interactions in custom UI slots
         event.setCancelled(true);
@@ -50,9 +49,11 @@ public final class UIProtectionListener implements Listener {
     public void onInventoryDrag(InventoryDragEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
         Inventory top = event.getView().getTopInventory();
-        if (top == null || top.getHolder() != null) return;
+        if (top == null) return;
 
-        event.setCancelled(true);
+        if (top.getHolder() instanceof SkillInventoryHolder) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
