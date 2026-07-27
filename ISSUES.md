@@ -192,22 +192,5 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-006.md` for full development plan
 
 # Ideas
-- [ ] Web GUI that is hosted on the server
-  - [ ] Configurable port from the plugin config
-    - [ ] Defaults to 8082
-  - [ ] Can be disabled from the plugin config
-    - [ ] Disabled by default
-  - [ ] Requires authentication to access
-    - [ ] Basic auth is configurable with a username and password in the plugin config
-  - [ ] Can be used to view:
-    - [ ] Skills
-    - [ ] Tags
-    - [ ] Config
-  - [ ] Can be used to edit and stage changes for:
-    - [ ] Skills
-    - [ ] Tags
-    - [ ] Config
-  - [ ] Changes aren't applied automatically:
-    - [ ] User must click an apply button which will save the changes
-    - [ ] After applying changes, the user is prompted with an optional reload button
-      - [ ] The button will execute a reload of the plugin (ie. `skills reload`)
+- [ ] Web GUI — Administrative interface with Javalin backend, Vue 3 + PrimeVue frontend
+  - See `ISSUE-007.md` for full development plan
