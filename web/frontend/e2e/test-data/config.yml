@@ -1,0 +1,17 @@
+database:
+  pool_size: 10
+  wal_mode: true
+bossbar:
+  max_active: 2
+  fade_ticks: 40
+debouncer:
+  interval_ms: 500
+debug_logging: false
+titles:
+  stay_duration: 5000
+global_xp_modifier: 1.0
+web:
+  enabled: true
+  port: 8082
+  username: "admin"
+  password: "skilling"

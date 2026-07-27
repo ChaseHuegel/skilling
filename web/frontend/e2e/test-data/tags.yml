@@ -1,0 +1,12 @@
+custom_tags:
+  c:ores:
+    - "minecraft:coal_ore"
+    - "minecraft:iron_ore"
+    - "minecraft:gold_ore"
+    - "minecraft:diamond_ore"
+    - "#minecraft:copper_ores"
+  c:stone:
+    - "minecraft:stone"
+    - "minecraft:andesite"
+    - "minecraft:granite"
+    - "minecraft:diorite"
