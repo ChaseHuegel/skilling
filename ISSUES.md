@@ -45,7 +45,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - Preferrably, this should be accomplished via some already available API
   - We can explore some external plugin library/API to use for this, but if that is the alternative then lets pause and discuss options.
   - If absolutely necessary, this may be accomplished via some damage event listener and tagging the entities but that feels like too much. A library is likely preferrable. Again, lets pause and discuss if this isn't achievable as-is with the paper/bukkit APIs.
-- [ ] The level-up title listing unlocked abilities isn't displaying content on a newline; the there is an `LF` character displayed by minecraft
+- [x] The level-up title listing unlocked abilities isn't displaying content on a newline; the there is an `LF` character displayed by minecraft
   - This may not be possible, but from some light research tellraw supports displaying newline characters so this may be possible in some fashion via a plugin.
   - Perform some research on this topic if necessary, and if it doesn't look possible then lets pause and discuss instead of just trying something hoping that it might work.
 - [ ] When using `/skills setlevel 7_eleven mining 15` there is an off-by-one error that becomes apparent. The following is observed:

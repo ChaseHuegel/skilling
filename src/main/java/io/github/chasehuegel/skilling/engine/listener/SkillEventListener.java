@@ -409,23 +409,39 @@ public final class SkillEventListener implements Listener {
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skill.id();
         boolean major = isMajorLevelUp(skill, newLevel);
-        var newlyUnlocked = skill.abilities().stream()
+        var unlockNames = skill.abilities().stream()
                 .filter(a -> a.unlockLevel() == newLevel)
                 .map(SkillDefinition.Ability::displayName)
-                .collect(java.util.stream.Collectors.joining(", "));
-        String subtitle = displayName + " increased to " + newLevel;
-        if (!newlyUnlocked.isEmpty()) {
-            subtitle += "\n" + newlyUnlocked + " unlocked!";
-        }
+                .toList();
+        boolean hasUnlocks = !unlockNames.isEmpty();
+
         player.showTitle(Title.title(
                 MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
-                MiniMessage.miniMessage().deserialize("<yellow>" + subtitle + "</yellow>"),
+                MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
                 Title.Times.times(
                         java.time.Duration.ofMillis(500),
-                        java.time.Duration.ofMillis(3500),
-                        java.time.Duration.ofMillis(1000)
+                        java.time.Duration.ofMillis(2000),
+                        java.time.Duration.ofMillis(500)
                 )
         ));
+
+        if (hasUnlocks) {
+            String unlockLines = String.join(", ", unlockNames);
+            String unlockSubtitle = "<yellow>" + unlockLines + " unlocked!</yellow>";
+            org.bukkit.Bukkit.getScheduler().runTaskLater(plugin, () ->
+                player.showTitle(Title.title(
+                        MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
+                        MiniMessage.miniMessage().deserialize(unlockSubtitle),
+                        Title.Times.times(
+                                java.time.Duration.ZERO,
+                                java.time.Duration.ofMillis(1500),
+                                java.time.Duration.ofMillis(500)
+                        )
+                )),
+                20L
+            );
+        }
+
         if (major) {
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
                     org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
@@ -439,7 +455,13 @@ public final class SkillEventListener implements Listener {
             spawnFirework(player.getLocation(), randomBrightColor(),
                     org.bukkit.FireworkEffect.Type.BURST, 1);
         }
-        plugin.getLogger().info("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel + "!");
+
+        StringBuilder logMsg = new StringBuilder("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel);
+        if (hasUnlocks) {
+            logMsg.append(" — Unlocked: ").append(String.join(", ", unlockNames));
+        }
+        logMsg.append("!");
+        plugin.getLogger().info(logMsg.toString());
     }
 
     private static boolean isMajorLevelUp(SkillDefinition skill, int newLevel) {
