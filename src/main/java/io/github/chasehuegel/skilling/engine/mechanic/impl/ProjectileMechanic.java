@@ -9,6 +9,13 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Map;
 
+/**
+ * Launches a snowball projectile from the player with configurable speed and damage on {@link PlayerInteractEvent}.
+ * Damage is applied via a {@code ProjectileHitEvent} handler using metadata.
+ *
+ * <p><b>YAML key:</b> {@code projectile}
+ * <p><b>Optional parameters:</b> {@code speed} (default 1.5), {@code damage} (default 4.0)
+ */
 public final class ProjectileMechanic implements SkillMechanic {
 
     @Override

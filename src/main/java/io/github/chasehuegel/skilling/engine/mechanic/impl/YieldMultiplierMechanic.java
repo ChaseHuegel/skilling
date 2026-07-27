@@ -9,6 +9,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Duplicates block drops with a percentage chance on {@link BlockBreakEvent}. When triggered, the block's
+ * natural drops are doubled and dropped as additional items.
+ *
+ * <p><b>YAML key:</b> {@code yield_multiplier}
+ * <p><b>Required parameters:</b> {@code yield_chance} (0-100, percentage chance to double drops)
+ */
 public final class YieldMultiplierMechanic implements SkillMechanic {
 
     @Override

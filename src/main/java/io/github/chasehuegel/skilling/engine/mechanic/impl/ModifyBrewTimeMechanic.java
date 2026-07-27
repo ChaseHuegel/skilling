@@ -7,6 +7,12 @@ import org.bukkit.event.Event;
 import org.bukkit.event.inventory.BrewEvent;
 import java.util.Map;
 
+/**
+ * Modifies the remaining brewing time of a {@link BrewingStand} by a multiplier on {@link BrewEvent}.
+ *
+ * <p><b>YAML key:</b> {@code modify_brew_time}
+ * <p><b>Optional parameters:</b> {@code multiplier} (default 1.0; values &lt; 1 speed up, &gt; 1 slow down)
+ */
 public final class ModifyBrewTimeMechanic implements SkillMechanic {
 
     @Override

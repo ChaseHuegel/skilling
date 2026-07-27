@@ -8,6 +8,13 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import java.util.Map;
 
+/**
+ * Applies a potion effect to all living entities within a radius of the player, excluding the player themselves.
+ *
+ * <p><b>YAML key:</b> {@code aoe_effect}
+ * <p><b>Required parameters:</b> {@code effect} (potion effect type name)
+ * <p><b>Optional parameters:</b> {@code radius} (default 5.0), {@code duration} (default 5s), {@code amplifier} (default 0)
+ */
 public final class AoeEffectMechanic implements SkillMechanic {
 
     @Override

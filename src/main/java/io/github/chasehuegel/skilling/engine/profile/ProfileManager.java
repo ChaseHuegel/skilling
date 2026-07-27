@@ -79,10 +79,15 @@ public final class ProfileManager {
     }
 
     /**
-     * Returns a player's profile, creating one if absent.
+     * Returns a player's profile from cache, creating an empty profile and inserting it
+     * if one does not already exist.
+     *
+     * <p>This is a synchronous operation intended for use during gameplay where an
+     * existing profile is expected. Profiles are normally loaded asynchronously
+     * during login via {@link #loadProfile}.
      *
      * @param player the player
-     * @return the existing or new profile
+     * @return the existing or newly created profile
      */
     public PlayerProfile getOrCreate(Player player) {
         return profiles.computeIfAbsent(player.getUniqueId(), PlayerProfile::new);

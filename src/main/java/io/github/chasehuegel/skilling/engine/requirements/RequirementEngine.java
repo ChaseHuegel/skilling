@@ -24,6 +24,11 @@ public final class RequirementEngine {
     private final Map<String, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
     private final TagResolver tagResolver;
 
+    /**
+     * Constructs a new requirement engine with the given tag resolver for item matching.
+     *
+     * @param tagResolver the tag resolver used to resolve namespace tags in item requirements
+     */
     public RequirementEngine(TagResolver tagResolver) {
         this.tagResolver = tagResolver;
     }

@@ -44,11 +44,12 @@ Registries registries = api.getRegistries();
 ```java
 public class LifestealMechanic implements SkillMechanic {
     @Override
-    public void execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return;
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return false;
         double percentage = ((Number) params.getOrDefault("percentage", 0.1)).doubleValue();
         double heal = damageEvent.getDamage() * percentage;
         player.setHealth(Math.min(player.getHealth() + heal, player.getMaxHealth()));
+        return true;
     }
 }
 
@@ -72,6 +73,10 @@ public record MyCustomTrigger() implements SkillTrigger {
 SkillingAPI api = Bukkit.getServicesManager().load(SkillingAPI.class);
 api.getRegistries().registerTrigger("my_custom_event", MyCustomTrigger.class);
 ```
+
+### Constructor Requirements
+
+Both `SkillMechanic` and `SkillTrigger` implementations **must** have a public no-argument constructor. The registries use `Class::newInstance()` to instantiate them at runtime. `ParameterEvaluator` implementations are registered as instances (not classes) and have no such constraint.
 
 ## Registering a Custom Evaluator
 
@@ -109,7 +114,7 @@ api.getRegistries().registerEvaluator("logistic", new LogisticEvaluator(10, 0.5)
 | `getRequirementEngine()` | `RequirementEngine` | Check/consume pipeline |
 | `getFeedbackDebouncer()` | `FeedbackDebouncer` | Spam throttle |
 | `getBossBarPool()` | `BossBarPool` | LRU Boss Bar cache |
-| `getProfile(UUID)` | `CompletableFuture<PlayerProfile>` | Player's skill data |
+| `getProfile(UUID)` | `CompletableFuture<PlayerProfile>` | Synchronous in-memory cache lookup wrapped in `CompletableFuture`; does not block the main thread but does not perform async I/O either |
 
 ### Registries
 

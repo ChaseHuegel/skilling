@@ -62,7 +62,10 @@ Each entry defines an action that grants XP.
 | Key | Type | Description |
 |---|---|---|
 | `target` | string | Material or tag filter (`minecraft:iron_ore` or `#c:ores`) |
-| `state` | string | Player state condition (`is_sneaking`, `is_sprinting`) |
+| `tool` | string | Material or tag filter for the item in the player's hand |
+| `state` | string | Player state condition (`is_sneaking`, `is_sprinting`, `is_on_ground`, `player_placed`) |
+
+> The `player_placed` state checks whether a block was placed by a player (e.g., `player_placed:false` only triggers for naturally generated blocks).
 
 #### reward
 
@@ -82,6 +85,16 @@ Each entry defines an unlockable ability with mechanics.
 | `on_failure` | No | section | Failure feedback overrides |
 | `mechanics` | Yes | list | Executable mechanic actions |
 | `feedback` | No | section | Success feedback (particles, sounds, messages) |
+
+#### on_failure
+
+| Key | Type | Description |
+|---|---|---|
+| `COOLDOWN` | section | Feedback when ability is on cooldown |
+| `STATE` | section | Feedback when player state requirements are not met |
+| `ITEMS` | section | Feedback when item requirements are not met |
+
+Each key maps to a `FailureReason` enum value and supports the same sub-keys as `feedback` (`notify`, `particles`, `sounds`).
 
 #### requirements
 
@@ -119,6 +132,8 @@ Each entry defines an unlockable ability with mechanics.
 | `particles` | list | Particle effect configurations |
 | `sounds` | list | Sound effect configurations |
 
+Particle and sound entries support a `target` field set to `"self"` (played at the player's location) or `"target"` (played at the target entity/location).
+
 ## Evaluators
 
 Evaluators compute dynamic numeric values based on the player's level.
@@ -148,6 +163,8 @@ parameters:
 ### milestones
 
 Tiered values at specific levels using a TreeMap for O(log n) lookup.
+
+> **Note:** The YAML configuration key is `milestones` (plural), while the internal evaluator registry key is `milestone` (singular).
 
 ```yaml
 parameters:

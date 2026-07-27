@@ -9,6 +9,14 @@ import org.bukkit.event.Event;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Temporarily modifies a player's attribute (e.g. {@code GENERIC_MAX_HEALTH}, {@code GENERIC_MOVEMENT_SPEED})
+ * for a specified duration using a transient {@link AttributeModifier}.
+ *
+ * <p><b>YAML key:</b> {@code modify_attribute}
+ * <p><b>Required parameters:</b> {@code attribute} (attribute enum name), {@code amount} (modifier value)
+ * <p><b>Optional parameters:</b> {@code duration} (default 5s)
+ */
 public final class ModifyAttributeMechanic implements SkillMechanic {
 
     @Override

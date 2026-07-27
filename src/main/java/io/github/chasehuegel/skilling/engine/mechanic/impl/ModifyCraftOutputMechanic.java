@@ -7,6 +7,13 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
 import java.util.Map;
 
+/**
+ * Increases the output amount of a crafted item by a multiplier on {@link CraftItemEvent}.
+ * Only activates when the multiplier is &gt; 1.0.
+ *
+ * <p><b>YAML key:</b> {@code modify_craft_output}
+ * <p><b>Optional parameters:</b> {@code multiplier} (default 1.0; extra output = amount &times; (multiplier - 1))
+ */
 public final class ModifyCraftOutputMechanic implements SkillMechanic {
 
     @Override

@@ -6,6 +6,12 @@ import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import java.util.Map;
 
+/**
+ * Injects additional saturation to the player on {@link PlayerItemConsumeEvent}.
+ *
+ * <p><b>YAML key:</b> {@code saturation_inject}
+ * <p><b>Required parameters:</b> {@code saturation} (positive float value to add)
+ */
 public final class SaturationInjectMechanic implements SkillMechanic {
 
     @Override

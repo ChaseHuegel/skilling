@@ -45,6 +45,14 @@ import org.bukkit.inventory.ItemStack;
 import java.util.*;
 import java.util.logging.Level;
 
+/**
+ * Central event listener that intercepts Minecraft events and routes them
+ * through the Skilling engine for XP granting and ability execution.
+ *
+ * <p>Each event handler maps to a trigger key used in YAML skill definitions.
+ * Handlers are registered at {@code MONITOR} priority as read-only observers
+ * (except for mechanic-required handlers at {@code HIGHEST}).
+ */
 public final class SkillEventListener implements Listener {
 
     private final Skilling plugin;
@@ -70,6 +78,11 @@ public final class SkillEventListener implements Listener {
         this.bossBarPool = bossBarPool;
     }
 
+    /**
+     * Handles {@link BlockBreakEvent} and routes it as a {@code block_break} trigger.
+     *
+     * @param event the block break event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         debug("block_break fired for " + event.getPlayer().getName()
@@ -77,12 +90,24 @@ public final class SkillEventListener implements Listener {
         dispatch(event.getPlayer(), event, "block_break");
     }
 
+    /**
+     * Handles {@link BlockPlaceEvent} and routes it as a {@code block_place} trigger.
+     * Tags the placed block as player-placed for filter matching.
+     *
+     * @param event the block place event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         event.getBlockPlaced().setMetadata("player_placed", new FixedMetadataValue(plugin, true));
         dispatch(event.getPlayer(), event, "block_place");
     }
 
+    /**
+     * Handles {@link EntityDamageByEntityEvent} and routes it as an {@code entity_damage} trigger
+     * when the damager is a player.
+     *
+     * @param event the entity damage by entity event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player player) {
@@ -90,6 +115,12 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link EntityDamageEvent} and routes it as an {@code entity_damage_taken} trigger
+     * when the damaged entity is a player.
+     *
+     * @param event the entity damage event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamageTaken(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player) {
@@ -97,6 +128,12 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link EntityDeathEvent} and routes it as an {@code entity_kill} trigger
+     * when the killer is a player.
+     *
+     * @param event the entity death event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityKill(EntityDeathEvent event) {
         if (event.getEntity().getKiller() instanceof Player player) {
@@ -104,6 +141,11 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link CraftItemEvent} and routes it as a {@code craft_item} trigger.
+     *
+     * @param event the craft item event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftItem(CraftItemEvent event) {
         if (event.getWhoClicked() instanceof Player player) {
@@ -111,11 +153,22 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link FurnaceExtractEvent} and routes it as a {@code furnace_extract} trigger.
+     *
+     * @param event the furnace extract event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onFurnaceExtract(FurnaceExtractEvent event) {
         dispatch(event.getPlayer(), event, "furnace_extract");
     }
 
+    /**
+     * Handles {@link BrewEvent} and routes it as a {@code brew_potion} trigger
+     * for nearby players.
+     *
+     * @param event the brew event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBrewPotion(BrewEvent event) {
         if (event.getContents().getHolder() instanceof org.bukkit.block.BrewingStand stand) {
@@ -129,21 +182,42 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link PlayerInteractEvent} and routes it as a {@code player_interact} trigger.
+     *
+     * @param event the player interact event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         dispatch(event.getPlayer(), event, "player_interact");
     }
 
+    /**
+     * Handles {@link PlayerItemConsumeEvent} and routes it as a {@code consume_item} trigger.
+     *
+     * @param event the player item consume event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onConsumeItem(PlayerItemConsumeEvent event) {
         dispatch(event.getPlayer(), event, "consume_item");
     }
 
+    /**
+     * Handles {@link PlayerFishEvent} and routes it as a {@code fishing} trigger.
+     *
+     * @param event the player fish event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onFish(PlayerFishEvent event) {
         dispatch(event.getPlayer(), event, "fishing");
     }
 
+    /**
+     * Handles {@link BlockGrowEvent} and routes it as a {@code crop_grow} trigger
+     * for nearby players.
+     *
+     * @param event the block grow event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCropGrow(BlockGrowEvent event) {
         var location = event.getBlock().getLocation();
@@ -155,6 +229,12 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link EntityBreedEvent} and routes it as a {@code breed_animals} trigger
+     * when the breeder is a player.
+     *
+     * @param event the entity breed event
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreedAnimals(EntityBreedEvent event) {
         if (event.getBreeder() instanceof Player player) {
@@ -358,6 +438,11 @@ public final class SkillEventListener implements Listener {
         return true;
     }
 
+    /**
+     * Cancels damage from Skilling-launched fireworks to prevent unintended harm.
+     *
+     * @param event the entity damage by entity event
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByFirework(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof org.bukkit.entity.Firework fw
@@ -366,6 +451,11 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Applies custom damage metadata from {@link ProjectileMechanic} when a Skilling projectile hits an entity.
+     *
+     * @param event the projectile hit event
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onProjectileHit(org.bukkit.event.entity.ProjectileHitEvent event) {
         if (event.getHitEntity() == null) return;

@@ -4,6 +4,11 @@ import io.github.chasehuegel.skilling.engine.trigger.SkillTrigger;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
 
+/**
+ * Trigger fired when a player takes damage.
+ *
+ * <p><b>YAML key:</b> {@code entity_damage_taken}
+ */
 public record EntityDamageTakenTrigger() implements SkillTrigger {
     @Override
     public String getKey() { return "entity_damage_taken"; }

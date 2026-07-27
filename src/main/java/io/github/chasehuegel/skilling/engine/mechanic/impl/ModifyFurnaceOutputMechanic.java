@@ -6,6 +6,13 @@ import org.bukkit.event.Event;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import java.util.Map;
 
+/**
+ * Grants bonus furnace output items directly into the player's inventory on {@link FurnaceExtractEvent}.
+ * Only activates when the multiplier is &gt; 1.0.
+ *
+ * <p><b>YAML key:</b> {@code modify_furnace_output}
+ * <p><b>Optional parameters:</b> {@code multiplier} (default 1.0; bonus items = original &times; (multiplier - 1))
+ */
 public final class ModifyFurnaceOutputMechanic implements SkillMechanic {
 
     @Override

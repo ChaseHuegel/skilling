@@ -37,30 +37,65 @@ public final class SkillingAPI {
         this.bossBarPool = bossBarPool;
     }
 
+    /**
+     * Returns the component registry containing all registered mechanics, triggers, and evaluators.
+     *
+     * @return the registries instance
+     */
     public Registries getRegistries() {
         return registries;
     }
 
+    /**
+     * Returns the profile manager for loading and caching player data.
+     *
+     * @return the profile manager instance
+     */
     public ProfileManager getProfileManager() {
         return profileManager;
     }
 
+    /**
+     * Returns the skill manager that holds all loaded skill definitions.
+     *
+     * @return the skill manager instance
+     */
     public SkillManager getSkillManager() {
         return skillManager;
     }
 
+    /**
+     * Returns the builder for constructing skill overview and detail UI inventories.
+     *
+     * @return the skill menu builder instance
+     */
     public SkillMenuBuilder getSkillMenuBuilder() {
         return skillMenuBuilder;
     }
 
+    /**
+     * Returns the requirement engine that enforces the check-execute-consume lifecycle for abilities.
+     *
+     * @return the requirement engine instance
+     */
     public RequirementEngine getRequirementEngine() {
         return requirementEngine;
     }
 
+    /**
+     * Returns the feedback debouncer for rate-limiting repeated failure messages.
+     *
+     * @return the feedback debouncer instance
+     */
     public FeedbackDebouncer getFeedbackDebouncer() {
         return feedbackDebouncer;
     }
 
+    /**
+     * Returns the boss bar pool for displaying XP progress bars to players.
+     *
+     * @return the boss bar pool instance
+     */
     public BossBarPool getBossBarPool() {
         return bossBarPool;
     }

@@ -7,6 +7,12 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Cancels incoming damage with a percentage chance on {@link EntityDamageEvent}.
+ *
+ * <p><b>YAML key:</b> {@code cancel_damage}
+ * <p><b>Required parameters:</b> {@code chance} (0-100, percentage chance to negate damage)
+ */
 public final class CancelDamageMechanic implements SkillMechanic {
 
     @Override

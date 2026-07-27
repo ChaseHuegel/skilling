@@ -112,6 +112,30 @@ Injects bonus saturation when consuming food.
 
 **Event:** `PlayerItemConsumeEvent`
 
+### core:modify_brew_time
+
+Modifies the brewing time of potions in a brewing stand.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `modifier` | double | `1.0` | Brewing time multiplier (<1.0 speeds up, >1.0 slows down) |
+
+**Event:** `BrewEvent`
+
+### core:modify_potion_duration
+
+Modifies the duration of brewed potion effects.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `modifier` | double | `1.0` | Duration multiplier for potion effects |
+
+**Event:** `BrewEvent`
+
 ### core:aoe_effect
 
 Applies a potion effect to all entities within a radius.
@@ -165,7 +189,7 @@ Short-range teleport in the player's looking direction.
 | `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
 | `fishing` | `PlayerFishEvent` | Fishing |
-| `crop_grow` | `BlockGrowEvent` | Crop growth |
+| `crop_grow` | `BlockGrowEvent` | Natural crop growth (fully implemented) |
 | `breed_animals` | `EntityBreedEvent` | Breeding animals |
 
 ## Built-In Evaluators

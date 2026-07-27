@@ -23,8 +23,12 @@ plugins/Skilling/
 
 | Command | Permission | Description |
 |---|---|---|---|
+| `/skills help` | `skilling.use` | Shows command usage information |
 | `/skills` | `skilling.use` | Opens the skill overview GUI |
 | `/skills <skill>` | `skilling.use` | Shows XP and level progress for a skill |
+| `/skills setlevel <player> <skill> <level>` | `skilling.admin` | Sets a player's skill level |
+| `/skills addxp <player> <skill> <amount>` | `skilling.admin` | Adds XP to a player's skill |
+| `/skills reset <player> <skill>` | `skilling.admin` | Resets a player's skill progress |
 
 ## Creating Your First Skill
 

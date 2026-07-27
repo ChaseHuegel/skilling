@@ -85,27 +85,24 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [x] chain_break should naturally be respected by this plugin, granting skill XP (ie. mining) and possibly activate abilities (ie. geologist ability)
 - [x] vein miner is now infinitely chaining on itself, reactivating in a loop until the player is out of hunger or coal
   - This is likely caused by the block break event changes in chain_break, or else the recent change to remove the "global" cooldown key
-- [ ] `UIProtectionListener` null-holder check is too broad — blocks all plugins' inventories with null holders (including non-Skilling UIs)
-- [ ] `FanfareDispatcher.dispatchSounds()` — sound `target` field always resolves to `player.getLocation()`, the "target" option has no effect
-- [ ] `ModifyBrewTimeMechanic` and `ModifyPotionDurationMechanic` are stubs — return `true` but do nothing, silently consuming resources
-- [ ] `ModifyFurnaceOutputMechanic` — throws `NoSuchElementException` when `getDrops()` returns an empty collection
-- [ ] `ProjectileMechanic` sets `skilling_damage` metadata but no listener ever reads it — damage values have no effect
-- [ ] Static `CHAINING` guard in `ChainBreakMechanic` serializes all chain breaks globally across all players
-  - See `ISSUE-003.md` for full development plan
-- [ ] `PlayerListener.onPlayerQuit` blocks the main thread with synchronous DB I/O
-  - See `ISSUE-002.md` for full development plan
-- [ ] `AsyncBatchWorker.flushDirtyProfiles()` has no synchronization — concurrent calls from reload + async scheduler can cause `SQLITE_BUSY`
-  - See `ISSUE-002.md` for full development plan
-- [ ] `RequirementEngine.cooldowns` uses `HashMap` instead of `ConcurrentHashMap` — `computeIfAbsent` is non-thread-safe
-- [ ] `BossBarPool` uses `LinkedHashMap`/`HashMap` without synchronization — fragile if ever accessed off main thread
-- [ ] `SkillManager.parseMechanics()` raw casts to `(String)` instead of `String.valueOf()` — throws `ClassCastException` on bad YAML instead of `IllegalArgumentException`
-- [ ] `SkillManager.parseInlineEvaluator()` milestone `parseInt` throws `NumberFormatException` instead of `IllegalArgumentException`
-- [ ] `SkillManager` does not validate unique ability IDs within a skill (duplicates silently overwrite)
-- [ ] `SkillManager` does not validate unique skill IDs across files (duplicates silently overwrite)
-- [ ] `CustomTagLoader.load()` silently swallows all exceptions (`catch (Exception ignored)`) — should log warnings per fail-fast
-- [ ] `DatabaseManager.initialize()` does not verify `PRAGMA journal_mode=WAL` succeeded (return value ignored)
-- [ ] `DatabaseManager` has no `PRAGMA wal_checkpoint(TRUNCATE)` on shutdown
-- [ ] `SkillEventListener.onCropGrow()` — event handler registered but body is empty; `crop_grow` trigger will never fire
+- [x] `UIProtectionListener` null-holder check is too broad — blocks all plugins' inventories with null holders (including non-Skilling UIs)
+- [x] `FanfareDispatcher.dispatchSounds()` — sound `target` field always resolves to `player.getLocation()`, the "target" option has no effect
+- [x] `ModifyBrewTimeMechanic` and `ModifyPotionDurationMechanic` are stubs — return `true` but do nothing, silently consuming resources
+- [x] `ModifyFurnaceOutputMechanic` — throws `NoSuchElementException` when `getDrops()` returns an empty collection
+- [x] `ProjectileMechanic` sets `skilling_damage` metadata but no listener ever reads it — damage values have no effect
+- [x] Static `CHAINING` guard in `ChainBreakMechanic` serializes all chain breaks globally across all players
+- [x] `PlayerListener.onPlayerQuit` blocks the main thread with synchronous DB I/O
+- [x] `AsyncBatchWorker.flushDirtyProfiles()` has no synchronization — concurrent calls from reload + async scheduler can cause `SQLITE_BUSY`
+- [x] `RequirementEngine.cooldowns` uses `HashMap` instead of `ConcurrentHashMap` — `computeIfAbsent` is non-thread-safe
+- [x] `BossBarPool` uses `LinkedHashMap`/`HashMap` without synchronization — fragile if ever accessed off main thread
+- [x] `SkillManager.parseMechanics()` raw casts to `(String)` instead of `String.valueOf()` — throws `ClassCastException` on bad YAML instead of `IllegalArgumentException`
+- [x] `SkillManager.parseInlineEvaluator()` milestone `parseInt` throws `NumberFormatException` instead of `IllegalArgumentException`
+- [x] `SkillManager` does not validate unique ability IDs within a skill (duplicates silently overwrite)
+- [x] `SkillManager` does not validate unique skill IDs across files (duplicates silently overwrite)
+- [x] `CustomTagLoader.load()` silently swallows all exceptions (`catch (Exception ignored)`) — should log warnings per fail-fast
+- [x] `DatabaseManager.initialize()` does not verify `PRAGMA journal_mode=WAL` succeeded (return value ignored)
+- [x] `DatabaseManager` has no `PRAGMA wal_checkpoint(TRUNCATE)` on shutdown
+- [x] `SkillEventListener.onCropGrow()` — event handler registered but body is empty; `crop_grow` trigger will never fire
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -163,27 +160,21 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Custom tags should be able to reference other custom tags
   - [x] Ignore recursive tags
   - [x] Use-case example is the `veinminer` custom tag which is combining two custom tags into one overarching tag
-- [ ] Refactor duplicate `showXpBossBar()` and `broadcastLevelUp()` logic into a shared `LevelUpDispatcher` utility
-  - See `ISSUE-001.md` for full development plan
-- [ ] Add missing Javadoc to all public API methods, mechanics, triggers, and undocumented classes
-  - `SkillingAPI.java`: 7 getter methods
-  - `SkillEventListener.java`: entire class and 15+ event/method handlers
-  - 12 mechanic implementations: missing class-level Javadoc
-  - 13 trigger implementations: missing class-level Javadoc
-  - `ProfileManager.getOrCreate()`, `RequirementEngine` constructor
-- [ ] `docs/api-integration.md`: Fix `SkillMechanic` example — wrong return type (`void` instead of `boolean`), missing return statement
-- [ ] `docs/api-integration.md`: Document that custom mechanics/triggers must have a public no-arg constructor
-- [ ] `docs/api-integration.md`: Document that `SkillingAPI.getProfile(UUID)` is a synchronous cache lookup wrapped in `CompletableFuture`, not truly async
-- [ ] `docs/configuration.md`: Add missing `titles.stay_duration` (default `5000`) and `global_xp_modifier` (default `1.0`) keys
-- [ ] `docs/creating-skills.md`: Add `tool` filter key, `is_on_ground` state, `player_placed:false` state to schema table
-- [ ] `docs/creating-skills.md`: Document `on_failure` key mapping to `FailureReason` enum values
-- [ ] `docs/creating-skills.md`: Document `target` field (`"self"` / `"target"`) for particle and sound entries in feedback
-- [ ] `docs/creating-skills.md`: Add note explaining that YAML key is `milestones` (plural) while registry key is `milestone` (singular)
-- [ ] `docs/capabilities.md`: Add entries for `core:modify_brew_time` and `core:modify_potion_duration` mechanics
-- [ ] `docs/capabilities.md`: Document that `crop_grow` trigger is pending implementation (event handler is empty)
-- [ ] `docs/getting-started.md`: Add `/skills help`, `/skills setlevel`, `/skills addxp`, `/skills reset` to commands table; fix table separator row
-- [ ] `SkillsCommand.java` uses `PlayerParser.playerParser()` which only resolves online players — admin commands targeting offline players should query DB directly per AGENTS.md
-- [ ] `PoisonPillTag.KEY` depends on `Skilling.getInstance()` at class-load time — fragile initialization order
+- [x] Refactor duplicate `showXpBossBar()` and `broadcastLevelUp()` logic into a shared `LevelUpDispatcher` utility
+- [x] Add missing Javadoc to all public API methods, mechanics, triggers, and undocumented classes
+- [x] `docs/api-integration.md`: Fix `SkillMechanic` example — wrong return type (`void` instead of `boolean`), missing return statement
+- [x] `docs/api-integration.md`: Document that custom mechanics/triggers must have a public no-arg constructor
+- [x] `docs/api-integration.md`: Document that `SkillingAPI.getProfile(UUID)` is a synchronous cache lookup wrapped in `CompletableFuture`, not truly async
+- [x] `docs/configuration.md`: Add missing `titles.stay_duration` (default `5000`) and `global_xp_modifier` (default `1.0`) keys
+- [x] `docs/creating-skills.md`: Add `tool` filter key, `is_on_ground` state, `player_placed:false` state to schema table
+- [x] `docs/creating-skills.md`: Document `on_failure` key mapping to `FailureReason` enum values
+- [x] `docs/creating-skills.md`: Document `target` field (`"self"` / `"target"`) for particle and sound entries in feedback
+- [x] `docs/creating-skills.md`: Add note explaining that YAML key is `milestones` (plural) while registry key is `milestone` (singular)
+- [x] `docs/capabilities.md`: Add entries for `core:modify_brew_time` and `core:modify_potion_duration` mechanics
+- [x] `docs/capabilities.md`: Document that `crop_grow` trigger is pending implementation (event handler is empty)
+- [x] `docs/getting-started.md`: Add `/skills help`, `/skills setlevel`, `/skills addxp`, `/skills reset` to commands table; fix table separator row
+- [x] `SkillsCommand.java` uses `PlayerParser.playerParser()` which only resolves online players — admin commands targeting offline players should query DB directly per AGENTS.md
+- [x] `PoisonPillTag.KEY` depends on `Skilling.getInstance()` at class-load time — fragile initialization order
 - [ ] Skills Guide Book — vanilla+ GUI access via crafted item with auto-unlocked recipe
   - See `ISSUE-004.md` for full development plan
 - [ ] Runtime config modification (`/skills set <key> <value>`)

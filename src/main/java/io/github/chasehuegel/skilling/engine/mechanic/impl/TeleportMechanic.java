@@ -8,6 +8,13 @@ import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.Map;
 
+/**
+ * Teleports the player to the targeted block or in the look direction up to a maximum range on {@link PlayerInteractEvent}.
+ * Includes safe-location fallback and bounds checking.
+ *
+ * <p><b>YAML key:</b> {@code teleport}
+ * <p><b>Optional parameters:</b> {@code range} (default 10.0, maximum teleport distance in blocks)
+ */
 public final class TeleportMechanic implements SkillMechanic {
 
     @Override
