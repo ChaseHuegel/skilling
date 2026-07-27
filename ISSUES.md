@@ -83,6 +83,8 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [x] chain_break should still effectively raise a block break event, so plugins can respond normally
   - [x] chain_break should naturally respect any protections (vanilla protected chunks, antigrief plugins, etc.) so it can't be used as an exploit
   - [x] chain_break should naturally be respected by this plugin, granting skill XP (ie. mining) and possibly activate abilities (ie. geologist ability)
+- [ ] vein miner is now infinitely chaining on itself, reactivating in a loop until the player is out of hunger or coal
+  - This is likely caused by the block break event changes in chain_break, or else the recent change to remove the "global" cooldown key
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
