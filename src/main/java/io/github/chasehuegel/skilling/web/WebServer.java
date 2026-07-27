@@ -40,9 +40,16 @@ public final class WebServer {
             return;
         }
 
+        boolean hasFrontend = getClass().getResource("/web/frontend") != null;
+        if (!hasFrontend) {
+            plugin.getLogger().info("Web GUI frontend not bundled — API-only mode. Build with: cd web/frontend && npm install && npm run build");
+        }
+
         try {
             app = Javalin.create(javalinConfig -> {
-                javalinConfig.staticFiles.add("/web/frontend");
+                if (hasFrontend) {
+                    javalinConfig.staticFiles.add("/web/frontend");
+                }
             });
 
             var routes = app.unsafe.routes;
