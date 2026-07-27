@@ -71,7 +71,7 @@ abilities:
       notify:
         action_bar: false                      # Suppress passive spam
         chat: false
-        message: "&a✦ Geologist proc! ✦"
+        message: "&a✦ Geologist ✦"
 
 
   # -- ABILITY 2: The Gated Active (Requirements & Milestones) --

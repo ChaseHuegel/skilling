@@ -77,6 +77,12 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] After setting notify to true for chat and action bar on the passive `geologist` ability, it does not appear to be sending any messages 
   - Via server logs can confirm the skill is being checked and passing, and in-game it appears drops are increased as expected
 - [x] The fireworks launched for any fanfare should use a random color per firework launched, they appear to all use the same color currently
+- [ ] Geologist appears to be blocking the vein miner ability from activating when mining ores
+  - [ ] Ensure successfully activated abilities don't block others from activating
+- [ ] The chain_break mechanic should be treated as if the player cause the block break
+  - [ ] chain_break should still effectively raise a block break event, so plugins can respond normally
+    - [ ] chain_break should naturally respect any protections (vanilla protected chunks, antigrief plugins, etc.) so it can't be used as an exploit
+    - [ ] chain_break should naturally be respected by this plugin, granting skill XP (ie. mining) and possibly activate abilities (ie. geologist ability)
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
