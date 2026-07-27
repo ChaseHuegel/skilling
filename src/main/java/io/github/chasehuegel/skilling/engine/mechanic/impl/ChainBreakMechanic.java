@@ -23,6 +23,7 @@ import java.util.*;
 public final class ChainBreakMechanic implements SkillMechanic {
 
     private static final Set<Location> PROCESSING = new HashSet<>();
+    private static boolean CHAINING = false;
 
     private static final int[][] DIRECTIONS = {
         {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}
@@ -31,6 +32,7 @@ public final class ChainBreakMechanic implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof BlockBreakEvent breakEvent)) return false;
+        if (CHAINING) return false;
         int limit = ((Number) params.getOrDefault("chain_limit", 0.0)).intValue();
         if (limit <= 0) return false;
 
@@ -44,6 +46,8 @@ public final class ChainBreakMechanic implements SkillMechanic {
         queue.add(origin);
         visited.add(origin.getLocation());
 
+        CHAINING = true;
+        try {
         int broken = 0;
         while (!queue.isEmpty() && broken < limit) {
             Block current = queue.poll();
@@ -70,6 +74,10 @@ public final class ChainBreakMechanic implements SkillMechanic {
                     }
                 }
             }
+        }
+
+        } finally {
+            CHAINING = false;
         }
 
         if (exhaustion > 0) {
