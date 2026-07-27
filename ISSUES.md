@@ -64,6 +64,19 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Level up unlocks aren't being echoed in the chat
   - [x] These should only be sent to the player that leveled up, not all players
   - [x] This should be formatted similar to the vanilla minecraft achievement message
+- [ ] Missing ability costs aren't gating the ability activation
+  - Vein miner can be activated even if the player has no coal
+- [ ] The exhaustion parameter of vein miner is not actually reducing the player's hunger
+  - Ensure this also prevents activating the skill if it isn't met
+- [ ] The color format tags aren't being displayed correctly for level 100 fanfare level ups
+  - This affects the subtitle and the chat message
+- [ ] The chain_break mechanic currently affects all blocks
+  - [ ] Add a parameter to specify a tag for the blocks which should be affected by it
+  - [ ] Update the template skill's vein miner to specify the tag `#c:stone` so the ability only affects mining-related blocks
+- [ ] The bossbar for xp should not display for skills after their max level has been reached
+- [ ] After setting notify to true for chat and action bar on the passive `geologist` ability, it does not appear to be sending any messages 
+  - Via server logs can confirm the skill is being checked and passing, and in-game it appears drops are increased as expected
+- [ ] The fireworks launched for any fanfare should use a random color per firework launched, they appear to all use the same color currently
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -114,6 +127,10 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - [x] If the debug config flag is enabled, also send this to the player that reached max level for testing purposes
   - [x] Send a server-wide chat message similar to the vanilla minecraft achievement message indicating the player's name, the level they reached, and the skill
 - [x] A config section for setting a global XP modifier. Default is `1.0`
+- [ ] Notify players when an ability is ready (comes off cooldown)
+  - [ ] In a chat message to just that player
+  - [ ] In the action bar
+- [ ] Send a chat message to players to log their ability activations in the same format as the action bar
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
@@ -140,3 +157,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [ ] These will apply immediately
   - [ ] These will save to the config file
 - [ ] Show skill item icons in the bossbar for XP gains
+- [ ] Add an optional personal per-player setting to send a chat message to the player when they gain xp (`/skills log xp <true/false>`)
+- [ ] Add an optional personal per-player setting to override sending players level up chat messages (`/skills log levels <true/false>`)
+- [ ] Add an optional personal per-player setting to override sending players unlock chat messages (`/skills log unlocks <true/false>`)
+- [ ] Add an optional personal per-player setting to override sending players ability chat messages (`/skills log abilities <true/false>`)
