@@ -61,14 +61,24 @@ public final class RequirementEngine {
             }
         }
 
-        // Check item possession
+        // Check item possession and cost availability
         for (var itemReq : requirements.items()) {
-            if ("possession".equals(itemReq.action())) {
-                if (!hasItem(player, itemReq.tag(), itemReq.slot())) {
-                    return RequirementResult.failed(FailureReason.MISSING_ITEM, Map.of(
-                            "item", itemReq.tag(),
-                            "amount", String.valueOf(itemReq.amount())
-                    ));
+            switch (itemReq.action()) {
+                case "possession" -> {
+                    if (!hasItem(player, itemReq.tag(), itemReq.slot())) {
+                        return RequirementResult.failed(FailureReason.MISSING_ITEM, Map.of(
+                                "item", itemReq.tag(),
+                                "amount", String.valueOf(itemReq.amount())
+                        ));
+                    }
+                }
+                case "cost" -> {
+                    if (!hasItems(player, itemReq.tag(), itemReq.amount())) {
+                        return RequirementResult.failed(FailureReason.MISSING_ITEM, Map.of(
+                                "item", itemReq.tag(),
+                                "amount", String.valueOf(itemReq.amount())
+                        ));
+                    }
                 }
             }
         }
@@ -119,6 +129,22 @@ public final class RequirementEngine {
             }
         }
         return false;
+    }
+
+    private boolean hasItems(Player player, String tag, int required) {
+        int count = 0;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item == null) continue;
+            boolean match;
+            if (tag.startsWith("#")) {
+                match = tagResolver.resolve(tag).contains(item.getType());
+            } else {
+                Material mat = Material.matchMaterial(tag);
+                match = mat != null && item.getType() == mat;
+            }
+            if (match) count += item.getAmount();
+        }
+        return count >= required;
     }
 
     private void removeItems(Player player, String tag, int amount) {
