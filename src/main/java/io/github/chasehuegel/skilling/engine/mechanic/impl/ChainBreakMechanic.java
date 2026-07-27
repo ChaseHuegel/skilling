@@ -1,6 +1,7 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -20,6 +21,8 @@ import java.util.*;
  * Filters: {@code target} material/tag
  */
 public final class ChainBreakMechanic implements SkillMechanic {
+
+    private static final Set<Location> PROCESSING = new HashSet<>();
 
     private static final int[][] DIRECTIONS = {
         {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}
@@ -48,12 +51,22 @@ public final class ChainBreakMechanic implements SkillMechanic {
                 if (broken >= limit) break;
                 Block neighbor = current.getRelative(dir[0], dir[1], dir[2]);
                 Location loc = neighbor.getLocation();
-                if (neighbor.getType() == targetType && !visited.contains(loc)) {
+                if (neighbor.getType() == targetType && !visited.contains(loc)
+                        && !PROCESSING.contains(loc)) {
                     visited.add(loc);
-                    neighbor.breakNaturally(player.getInventory().getItemInMainHand());
-                    broken++;
-                    if (broken < limit) {
-                        queue.add(neighbor);
+                    PROCESSING.add(loc);
+                    try {
+                        BlockBreakEvent chainEvent = new BlockBreakEvent(neighbor, player);
+                        Bukkit.getPluginManager().callEvent(chainEvent);
+                        if (!chainEvent.isCancelled()) {
+                            neighbor.breakNaturally(player.getInventory().getItemInMainHand());
+                            broken++;
+                            if (broken < limit) {
+                                queue.add(neighbor);
+                            }
+                        }
+                    } finally {
+                        PROCESSING.remove(loc);
                     }
                 }
             }
