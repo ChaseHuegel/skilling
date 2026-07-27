@@ -37,14 +37,30 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-// Frontend build integration will be added in Phase 4 when the Vue SPA is created.
+val shouldBuildFrontend = providers.provider {
+    file("web/frontend/package.json").exists() && file("web/frontend/node_modules").exists()
+}
+
+val buildFrontend = tasks.register("buildFrontend", Exec::class.java) {
+    description = "Build the Vue frontend for production"
+    workingDir = file("web/frontend")
+    commandLine("npm", "run", "build")
+    outputs.dir("web/frontend/dist")
+    onlyIf { shouldBuildFrontend.get() }
+}
+
 tasks.named<Copy>("processResources") {
+    dependsOn(buildFrontend)
     val frontendDist = file("web/frontend/dist")
     if (frontendDist.exists()) {
         from("web/frontend/dist") {
             into("web/frontend")
         }
     }
+}
+
+tasks.named("shadowJar") {
+    dependsOn(buildFrontend)
 }
 
 tasks.withType<Test> {
