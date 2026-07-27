@@ -74,7 +74,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [x] Add a parameter to specify a tag for the blocks which should be affected by it
   - [x] Update the template skill's vein miner to specify the tag `#c:stone` so the ability only affects mining-related blocks
 - [x] The bossbar for xp should not display for skills after their max level has been reached
-- [ ] After setting notify to true for chat and action bar on the passive `geologist` ability, it does not appear to be sending any messages 
+- [x] After setting notify to true for chat and action bar on the passive `geologist` ability, it does not appear to be sending any messages 
   - Via server logs can confirm the skill is being checked and passing, and in-game it appears drops are increased as expected
 - [ ] The fireworks launched for any fanfare should use a random color per firework launched, they appear to all use the same color currently
 
