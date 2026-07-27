@@ -348,6 +348,8 @@ public final class SkillsCommand {
                 .filter(a -> a.unlockLevel() == newLevel)
                 .toList();
 
+        String levelUpMsg = "<gray>[</gray><gold>Level Up!</gold><gray>]</gray> <yellow>" + displayName + " increased to " + newLevel + "</yellow>";
+        player.sendMessage(MiniMessage.miniMessage().deserialize(levelUpMsg));
         player.showTitle(Title.title(
                 MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
                 MiniMessage.miniMessage().deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
@@ -358,6 +360,8 @@ public final class SkillsCommand {
             int idx = i;
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                 Component line = SkillMenuBuilder.formatAbilityLine(unlockedAbilities.get(idx), newLevel);
+                String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
+                player.sendMessage(MiniMessage.miniMessage().deserialize(unlockMsg).append(line));
                 player.showTitle(Title.title(
                         MiniMessage.miniMessage().deserialize("<gold><bold>Level up!</bold></gold>"),
                         line.colorIfAbsent(NamedTextColor.WHITE),
