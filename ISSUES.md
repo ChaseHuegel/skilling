@@ -184,6 +184,12 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [ ] `docs/getting-started.md`: Add `/skills help`, `/skills setlevel`, `/skills addxp`, `/skills reset` to commands table; fix table separator row
 - [ ] `SkillsCommand.java` uses `PlayerParser.playerParser()` which only resolves online players — admin commands targeting offline players should query DB directly per AGENTS.md
 - [ ] `PoisonPillTag.KEY` depends on `Skilling.getInstance()` at class-load time — fragile initialization order
+- [ ] Skills Guide Book — vanilla+ GUI access via crafted item with auto-unlocked recipe
+  - See `ISSUE-004.md` for full development plan
+- [ ] Runtime config modification (`/skills set <key> <value>`)
+  - See `ISSUE-005.md` for full development plan
+- [ ] Per-player logging preferences (`/skills log xp|levels|unlocks|abilities <true/false>`)
+  - See `ISSUE-006.md` for full development plan
 
 # Ideas
 - [ ] Web GUI that is hosted on the server
@@ -205,12 +211,3 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - [ ] User must click an apply button which will save the changes
     - [ ] After applying changes, the user is prompted with an optional reload button
       - [ ] The button will execute a reload of the plugin (ie. `skills reload`)
-- [ ] An in-game way to open up and view the skills GUI that feels vanilla+ as an alternative to the `/skills` command
-- [ ] Commands to modify config values at runtime (`/skills set <config key> <value>`)
-  - [ ] These will apply immediately
-  - [ ] These will save to the config file
-- [ ] Show skill item icons in the bossbar for XP gains
-- [ ] Add an optional personal per-player setting to send a chat message to the player when they gain xp (`/skills log xp <true/false>`)
-- [ ] Add an optional personal per-player setting to override sending players level up chat messages (`/skills log levels <true/false>`)
-- [ ] Add an optional personal per-player setting to override sending players unlock chat messages (`/skills log unlocks <true/false>`)
-- [ ] Add an optional personal per-player setting to override sending players ability chat messages (`/skills log abilities <true/false>`)
