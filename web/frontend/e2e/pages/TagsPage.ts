@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { ensureLoggedIn } from './shared-login';
 
 export class TagsPage {
   readonly page: Page;
@@ -16,7 +17,8 @@ export class TagsPage {
   }
 
   async goto() {
-    await this.page.goto('/tags');
+    await ensureLoggedIn(this.page);
+    await this.page.goto('/#/tags');
     await this.page.waitForLoadState('networkidle');
   }
 

@@ -1,8 +1,11 @@
 import { test as setup, expect } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const AUTH_FILE = path.resolve(__dirname, '../../.auth/admin.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const AUTH_FILE = path.resolve(__dirname, '../.auth/admin.json');
 
 setup('authenticate via API and save storage state', async ({ request }) => {
   const res = await request.get('/api/auth/check', {

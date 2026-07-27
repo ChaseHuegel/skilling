@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { ensureLoggedIn } from './shared-login';
 
 export class ConfigPage {
   readonly page: Page;
@@ -16,11 +17,13 @@ export class ConfigPage {
   }
 
   async goto() {
-    await this.page.goto('/config');
+    await ensureLoggedIn(this.page);
+    await this.page.goto('/#/config');
     await this.page.waitForLoadState('networkidle');
   }
 
   async getSectionCount(): Promise<number> {
+    await this.sections.first().waitFor({ state: 'visible', timeout: 10000 });
     return this.sections.count();
   }
 

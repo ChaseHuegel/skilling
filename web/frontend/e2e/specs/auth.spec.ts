@@ -6,7 +6,7 @@ test.describe('Authentication', () => {
     const login = new LoginPage(page);
     await login.goto();
     await login.login('admin', 'skilling');
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/#\/$/);
     await expect(page.locator('.skill-grid')).toBeVisible({ timeout: 5000 });
   });
 
@@ -19,10 +19,9 @@ test.describe('Authentication', () => {
 
   test('redirects to login when session expires', async ({ page }) => {
     // Clear session storage while on the dashboard
-    await page.goto('/');
+    await page.goto('/#/');
     await page.evaluate(() => sessionStorage.clear());
     await page.reload();
-    // Auth guard should redirect to login
     await expect(page).toHaveURL(/\/login/);
   });
 });

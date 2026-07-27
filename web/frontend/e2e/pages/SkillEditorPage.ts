@@ -30,9 +30,9 @@ export class SkillEditorPage {
     this.errorBanner = page.locator('.error-banner');
 
     // Identity
-    this.idInput = page.locator('input[placeholder*="e.g."]');
-    this.displayNameInput = page.locator('input[placeholder="Display Name"]');
-    this.maxLevelInput = page.locator('input[type="number"]').first();
+    this.idInput = page.locator('input[placeholder="e.g. mining, woodcutting"]');
+    this.displayNameInput = page.locator('input[placeholder="e.g. Mining, Woodcutting"]');
+    this.maxLevelInput = page.locator('input[placeholder*="Max Level"], input[max="1000"]');
 
     // Display
     this.iconInput = page.locator('input[placeholder*="minecraft:"]');

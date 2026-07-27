@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { ensureLoggedIn } from './shared-login';
 
 export class DashboardPage {
   readonly page: Page;
@@ -18,7 +19,8 @@ export class DashboardPage {
   }
 
   async goto() {
-    await this.page.goto('/');
+    await ensureLoggedIn(this.page);
+    await this.page.goto('/#/');
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -30,6 +32,7 @@ export class DashboardPage {
 
   async clickCreateSkill() {
     await this.createBtn.click();
+    await this.page.waitForURL(/#\/skills\/new/);
   }
 
   async getSkillCount(): Promise<number> {
