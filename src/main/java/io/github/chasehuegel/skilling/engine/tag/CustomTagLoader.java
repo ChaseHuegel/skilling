@@ -12,15 +12,18 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Loads and resolves custom tag definitions from {@code tags.yml}.
  *
  * <p>Custom tags use the {@code #c:} prefix and are defined as lists of
- * material names and/or cross-references to vanilla {@code #minecraft:} tags.
- * All tags are flattened into {@link EnumSet} at load time for O(1) lookups.
+ * material names and/or cross-references to vanilla {@code #minecraft:} tags
+ * or other custom {@code #c:} tags.  All tags are flattened into
+ * {@link EnumSet} at load time for O(1) lookups.
  */
 public final class CustomTagLoader {
 
@@ -41,26 +44,47 @@ public final class CustomTagLoader {
             ConfigurationSection section = config.getConfigurationSection("custom_tags");
             if (section == null) return;
 
+            Map<String, List<String>> rawEntries = new HashMap<>();
             for (String key : section.getKeys(false)) {
-                List<String> entries = section.getStringList(key);
-                EnumSet<Material> materials = EnumSet.noneOf(Material.class);
-                for (String entry : entries) {
-                    resolveEntry(entry, materials);
-                }
-                customTags.put("#c:" + key, materials);
+                rawEntries.put(key, section.getStringList(key));
+            }
+
+            Set<String> resolving = new HashSet<>();
+            for (String key : rawEntries.keySet()) {
+                resolve(key, rawEntries, resolving);
             }
         } catch (Exception ignored) {
             // YAML parsing may fail in non-Bukkit environments
         }
     }
 
-    private void resolveEntry(String entry, EnumSet<Material> target) {
+    private EnumSet<Material> resolve(String key, Map<String, List<String>> rawEntries, Set<String> resolving) {
+        String fullKey = "#c:" + key;
+        if (customTags.containsKey(fullKey)) return customTags.get(fullKey);
+        if (!rawEntries.containsKey(key)) return EnumSet.noneOf(Material.class);
+        if (!resolving.add(key)) return EnumSet.noneOf(Material.class);
+
+        EnumSet<Material> materials = EnumSet.noneOf(Material.class);
+        for (String entry : rawEntries.get(key)) {
+            resolveEntry(entry, materials, rawEntries, resolving);
+        }
+        resolving.remove(key);
+        customTags.put(fullKey, materials);
+        return materials;
+    }
+
+    private void resolveEntry(String entry, EnumSet<Material> target,
+                               Map<String, List<String>> rawEntries, Set<String> resolving) {
         if (entry.startsWith("#")) {
-            // Cross-reference: #minecraft:logs etc.
             String tagKey = entry.substring(1);
-            Tag<Material> tag = loadVanillaTag(tagKey);
-            if (tag != null) {
-                target.addAll(tag.getValues());
+            String nsKey = tagKey.contains(":") ? tagKey.substring(0, tagKey.indexOf(':')) : "";
+            if ("c".equals(nsKey) && rawEntries.containsKey(tagKey.substring(2))) {
+                target.addAll(resolve(tagKey.substring(2), rawEntries, resolving));
+            } else {
+                Tag<Material> tag = loadVanillaTag(tagKey);
+                if (tag != null) {
+                    target.addAll(tag.getValues());
+                }
             }
         } else {
             try {
@@ -69,7 +93,6 @@ public final class CustomTagLoader {
                     target.add(material);
                 }
             } catch (Exception ignored) {
-                // matchMaterial may fail in non-Bukkit environments
             }
         }
     }
@@ -84,28 +107,14 @@ public final class CustomTagLoader {
         return tag;
     }
 
-    /**
-     * Resolves a custom tag key (e.g., {@code #c:ores}) into its material set.
-     *
-     * @param key the full custom tag key including the {@code #c:} prefix
-     * @return the resolved material set, or an empty set if not found
-     */
     public EnumSet<Material> resolve(String key) {
         return customTags.getOrDefault(key, EnumSet.noneOf(Material.class));
     }
 
-    /**
-     * Returns all loaded custom tag keys.
-     *
-     * @return set of custom tag keys (with the {@code #c:} prefix)
-     */
     public java.util.Set<String> getKeys() {
         return customTags.keySet();
     }
 
-    /**
-     * Clears all loaded custom tags.
-     */
     public void clear() {
         customTags.clear();
     }
