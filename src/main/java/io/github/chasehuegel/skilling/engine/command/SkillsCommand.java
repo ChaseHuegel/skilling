@@ -456,7 +456,7 @@ public final class SkillsCommand {
             fw.getPersistentDataContainer().set(Skilling.FIREWORK_KEY, PersistentDataType.BOOLEAN, true);
             org.bukkit.inventory.meta.FireworkMeta meta = fw.getFireworkMeta();
             meta.addEffect(org.bukkit.FireworkEffect.builder()
-                    .withColor(color)
+                    .withColor(randomBrightColor())
                     .with(type)
                     .build());
             meta.setPower(1);

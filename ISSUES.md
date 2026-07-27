@@ -76,7 +76,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] The bossbar for xp should not display for skills after their max level has been reached
 - [x] After setting notify to true for chat and action bar on the passive `geologist` ability, it does not appear to be sending any messages 
   - Via server logs can confirm the skill is being checked and passing, and in-game it appears drops are increased as expected
-- [ ] The fireworks launched for any fanfare should use a random color per firework launched, they appear to all use the same color currently
+- [x] The fireworks launched for any fanfare should use a random color per firework launched, they appear to all use the same color currently
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
