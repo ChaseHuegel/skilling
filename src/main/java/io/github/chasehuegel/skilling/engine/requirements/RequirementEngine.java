@@ -38,12 +38,12 @@ public final class RequirementEngine {
      * @param requirements the ability's requirements definition
      * @return the result of the check
      */
-    public RequirementResult check(Player player, SkillDefinition.Requirements requirements) {
+    public RequirementResult check(Player player, String abilityId, SkillDefinition.Requirements requirements) {
         // Check cooldown
         if (requirements.cooldown() > 0) {
             var abilityCooldowns = cooldowns.get(player.getUniqueId().toString());
             if (abilityCooldowns != null) {
-                long remaining = getRemainingCooldown(player, "global");
+                long remaining = getRemainingCooldown(player, abilityId);
                 if (remaining > 0) {
                     return RequirementResult.failed(FailureReason.COOLDOWN, Map.of(
                             "time", String.format("%.1f", remaining / 1000.0)
@@ -94,10 +94,10 @@ public final class RequirementEngine {
      * @param player       the player who activated the ability
      * @param requirements the ability's requirements definition
      */
-    public void consume(Player player, SkillDefinition.Requirements requirements) {
+    public void consume(Player player, String abilityId, SkillDefinition.Requirements requirements) {
         // Apply cooldown
         if (requirements.cooldown() > 0) {
-            applyCooldown(player, "global", (long) (requirements.cooldown() * 1000));
+            applyCooldown(player, abilityId, (long) (requirements.cooldown() * 1000));
         }
 
         // Consume items

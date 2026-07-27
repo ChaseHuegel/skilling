@@ -283,7 +283,7 @@ public final class SkillEventListener implements Listener {
                         continue;
                     }
 
-                    RequirementResult check = requirementEngine.check(player, ability.requirements());
+                    RequirementResult check = requirementEngine.check(player, ability.id(), ability.requirements());
                     debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
                     if (!check.success()) {
                         if (feedbackDebouncer.tryDebounce(player, ability.id())) {
@@ -306,7 +306,7 @@ public final class SkillEventListener implements Listener {
                         debug("    -> mechanic returned false (no-op), skipping consume and feedback");
                         continue;
                     }
-                    requirementEngine.consume(player, ability.requirements());
+                    requirementEngine.consume(player, ability.id(), ability.requirements());
 
                     String abilityMsg = ability.feedback().message();
                     boolean hasMsg = !abilityMsg.isBlank();
