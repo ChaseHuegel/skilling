@@ -28,3 +28,16 @@ titles:
 
 # Global XP multiplier applied to all XP gains. Default: 1.0
 global_xp_modifier: 1.0
+
+# Web-based administration interface
+# Disabled by default. Enable only if you need the browser GUI.
+# WARNING: Credentials are stored in plaintext. Use a reverse proxy (nginx, Caddy)
+# for HTTPS in production. This is a local admin tool for trusted networks only.
+web:
+  # Enable the web server
+  enabled: false
+  # Port to listen on (use a port > 1024 on Linux)
+  port: 8082
+  # Basic authentication credentials
+  username: "admin"
+  password: "skilling"

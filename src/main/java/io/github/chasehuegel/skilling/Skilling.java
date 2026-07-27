@@ -26,6 +26,8 @@ import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import io.github.chasehuegel.skilling.engine.ui.UIProtectionListener;
+import io.github.chasehuegel.skilling.web.WebServer;
+import io.github.chasehuegel.skilling.web.config.WebConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -61,6 +63,7 @@ public final class Skilling extends JavaPlugin {
     private LockdownManager lockdownManager;
     private SkillsCommand skillsCommand;
     private CustomTagLoader customTagLoader;
+    private WebServer webServer;
     private volatile boolean reloading;
     private volatile boolean debugLogging;
     private int titleStayDuration;
@@ -146,6 +149,11 @@ public final class Skilling extends JavaPlugin {
 
         // Lockdown / reload manager
         this.lockdownManager = new LockdownManager(this, profileManager, asyncBatchWorker, skillManager);
+
+        // Web GUI
+        WebConfig webConfig = WebConfig.load(config);
+        this.webServer = new WebServer(this, webConfig);
+        this.webServer.start();
 
         // Commands
         this.skillsCommand = new SkillsCommand(this, skillManager, profileManager, skillMenuBuilder,
@@ -236,6 +244,9 @@ public final class Skilling extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (webServer != null) {
+            webServer.stop();
+        }
         if (asyncBatchWorker != null) {
             asyncBatchWorker.stop();
             asyncBatchWorker.flushDirtyProfiles();

@@ -23,10 +23,28 @@ dependencies {
     implementation("org.incendo:cloud-annotations:2.0.0")
     annotationProcessor("org.incendo:cloud-annotations:2.0.0")
 
+    // Web GUI (Javalin 7)
+    implementation("io.javalin:javalin:7.0.1") {
+        exclude("org.slf4j")
+        exclude("com.fasterxml.jackson.core")
+    }
+    implementation("org.slf4j:slf4j-api:2.0.17")
+    implementation("org.slf4j:jul-to-slf4j:2.0.17")
+
     // Testing
     testImplementation("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+// Frontend build integration will be added in Phase 4 when the Vue SPA is created.
+tasks.named<Copy>("processResources") {
+    val frontendDist = file("web/frontend/dist")
+    if (frontendDist.exists()) {
+        from("web/frontend/dist") {
+            into("web/frontend")
+        }
+    }
 }
 
 tasks.withType<Test> {
@@ -42,6 +60,8 @@ tasks {
         relocate("com.zaxxer.hikari", "io.github.chasehuegel.skilling.libs.hikari")
         relocate("org.sqlite", "io.github.chasehuegel.skilling.libs.sqlite")
         relocate("org.incendo.cloud", "io.github.chasehuegel.skilling.libs.cloud")
+        relocate("io.javalin", "io.github.chasehuegel.skilling.libs.javalin")
+        relocate("org.eclipse.jetty", "io.github.chasehuegel.skilling.libs.jetty")
         minimize()
     }
 
