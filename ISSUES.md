@@ -70,9 +70,9 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - Ensure this also prevents activating the skill if it isn't met
 - [x] The color format tags aren't being displayed correctly for level 100 fanfare level ups
   - This affects the subtitle and the chat message
-- [ ] The chain_break mechanic currently affects all blocks
-  - [ ] Add a parameter to specify a tag for the blocks which should be affected by it
-  - [ ] Update the template skill's vein miner to specify the tag `#c:stone` so the ability only affects mining-related blocks
+- [x] The chain_break mechanic currently affects all blocks
+  - [x] Add a parameter to specify a tag for the blocks which should be affected by it
+  - [x] Update the template skill's vein miner to specify the tag `#c:stone` so the ability only affects mining-related blocks
 - [ ] The bossbar for xp should not display for skills after their max level has been reached
 - [ ] After setting notify to true for chat and action bar on the passive `geologist` ability, it does not appear to be sending any messages 
   - Via server logs can confirm the skill is being checked and passing, and in-game it appears drops are increased as expected

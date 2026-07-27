@@ -112,6 +112,8 @@ abilities:
 
     mechanics:
       - type: "core:chain_break"
+        filters:
+          - target: "#c:stone"
         parameters:
           chain_limit:
             milestones:                        # O(log N) TreeMap lookup for tiered upgrades
