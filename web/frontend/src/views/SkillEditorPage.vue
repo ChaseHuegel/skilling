@@ -32,12 +32,12 @@
 
                 <fieldset class="section">
                     <legend>XP Sources</legend>
-                    <XpSourcesSection v-model="form.xpSources" />
+                    <XpSourcesSection v-model="form.xpSources" :tagSuggestions="tagSuggestions" />
                 </fieldset>
 
                 <fieldset class="section">
                     <legend>Abilities</legend>
-                    <AbilitiesSection v-model="form.abilities" />
+                    <AbilitiesSection v-model="form.abilities" :tagSuggestions="tagSuggestions" />
                 </fieldset>
             </div>
         </div>
@@ -77,6 +77,14 @@ const loading = ref(false);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const showCancelDialog = ref(false);
+
+const tagSuggestions = [
+    '#c:ores', '#c:stone', '#c:logs', '#c:gems',
+    '#minecraft:logs', '#minecraft:planks', '#minecraft:stone_tool_materials',
+    '#minecraft:pickaxes', '#minecraft:axes', '#minecraft:shovels', '#minecraft:hoes',
+    '#minecraft:coals', '#minecraft:copper_ores', '#minecraft:iron_ores',
+    '#minecraft:gold_ores', '#minecraft:diamond_ores', '#minecraft:emerald_ores',
+];
 
 const form = reactive<Record<string, any>>({
     id: '',

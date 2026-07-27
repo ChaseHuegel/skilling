@@ -18,7 +18,7 @@ watch(darkMode, (val) => {
 });
 </script>
 
-<style lang="scss">
+<style>
 body {
     margin: 0;
     font-family: var(--font-family);
