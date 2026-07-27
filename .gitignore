@@ -29,3 +29,6 @@ run/
 web/frontend/node_modules/
 web/frontend/dist/
 web/frontend/tsconfig.tsbuildinfo
+web/frontend/screenshots/
+web/frontend/test-results/
+web/frontend/e2e/.auth/
