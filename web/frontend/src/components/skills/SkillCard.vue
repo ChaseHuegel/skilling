@@ -7,11 +7,11 @@
         <div class="card-header">
             <MinecraftIcon :material="skill.icon" :color="skill.color" :size="48" />
             <div class="card-badges">
-                <span v-if="skill.xpSourceCount && skill.xpSourceCount > 0" class="badge badge-xp" title="XP Sources">
-                    {{ skill.xpSourceCount }} src
+                <span v-if="skill.xpSourceCount && skill.xpSourceCount > 0" class="badge badge-xp">
+                    {{ skill.xpSourceCount }} XP source{{ skill.xpSourceCount !== 1 ? 's' : '' }}
                 </span>
-                <span v-if="skill.abilityCount > 0" class="badge badge-ability" :title="skill.abilityCount + ' abilit' + (skill.abilityCount !== 1 ? 'ies' : 'y')">
-                    {{ skill.abilityCount }} abil
+                <span v-if="skill.abilityCount > 0" class="badge badge-ability">
+                    {{ skill.abilityCount }} abilit{{ skill.abilityCount !== 1 ? 'ies' : 'y' }}
                 </span>
             </div>
         </div>
@@ -80,12 +80,11 @@ function open() {
 .badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     padding: 0 6px;
     border-radius: 4px;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    line-height: 1.5;
+    line-height: 1.6;
     white-space: nowrap;
 }
 
