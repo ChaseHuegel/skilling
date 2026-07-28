@@ -214,7 +214,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-020.md` for full development plan
 - [x] Confirmation dialogs don't respect dark mode — modal overlay/dialog styling breaks in dark theme
 - [x] Skill save should validate duplicate skill ID and duplicate ability IDs; show error toast and highlight offending fields in danger red
-- [ ] Ability card collapses on each keystroke in the ID field — `:key="ability.id || idx"` causes Vue to recreate the element; revert to `:key="idx"`
+- [x] Ability card collapses on each keystroke in the ID field — `:key="ability.id || idx"` causes Vue to recreate the element; revert to `:key="idx"`
 - [ ] Add collapse/expand toggle to XP source cards (same pattern as ability cards)
 - [ ] Move duplicate XP source button from SectionToolbar to each XP source card header as an icon button next to the delete button
 - [ ] Auto-generate skill ID from display name (lowercase, underscores for spaces) when ID is empty; show generated ID in placeholder

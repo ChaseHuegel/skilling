@@ -389,7 +389,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 
     <div
       v-for="(ability, idx) in modelValue"
-      :key="ability.id || idx"
+      :key="idx"
       :id="'ability-' + ability.id"
       class="ability-card"
       :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
