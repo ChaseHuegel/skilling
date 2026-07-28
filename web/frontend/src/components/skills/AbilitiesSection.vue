@@ -162,6 +162,11 @@ function toggleExpand(idx: number) {
   expanded.value[idx] = !expanded.value[idx]
 }
 
+function isAbilityActive(ability: Ability): boolean {
+  const r = ability.requirements
+  return r.cooldown > 0 || r.state.length > 0 || r.items.length > 0
+}
+
 function emptyAbility(): Ability {
   return {
     id: '',
@@ -428,6 +433,9 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
         <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="ability-title">
           {{ ability.id || 'Unnamed Ability' }}
+        </span>
+        <span class="editor-ability-type-badge" :class="isAbilityActive(ability) ? 'badge-active' : 'badge-passive'">
+          {{ isAbilityActive(ability) ? 'Active' : 'Passive' }}
         </span>
         <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
         <button
@@ -982,6 +990,15 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 .expand-toggle {
   font-size: 0.75rem;
   color: var(--p-form-field-placeholder-color);
+}
+
+.editor-ability-type-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .ability-body {
