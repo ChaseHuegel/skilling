@@ -31,7 +31,7 @@ const expanded = ref<Record<number, boolean>>({})
 
 watch(() => props.modelValue.length, (len) => {
   for (let i = 0; i < len; i++) {
-    if (expanded.value[i] === undefined) expanded.value[i] = true
+    if (expanded.value[i] === undefined) expanded.value[i] = false
   }
 }, { immediate: true })
 
