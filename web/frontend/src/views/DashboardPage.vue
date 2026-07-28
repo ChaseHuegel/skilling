@@ -122,10 +122,20 @@ const showDeleteDialog = ref(false);
 const deleteTarget = ref<string | null>(null);
 const deleteTargetName = ref('');
 
+const deletedSkillIds = computed(() => {
+    const ids: string[] = [];
+    for (const f of staging.files) {
+        const match = f.match(/^deleted_skills\/(.+)\.yml\.deleted$/);
+        if (match) ids.push(match[1]);
+    }
+    return ids;
+});
+
 const filteredSkills = computed(() => {
-    if (!searchQuery.value.trim()) return skills.value;
-    const q = searchQuery.value.toLowerCase();
+    const q = searchQuery.value.trim().toLowerCase();
     return skills.value.filter((s) => {
+        if (deletedSkillIds.value.includes(s.id)) return false;
+        if (!q) return true;
         const id = (s.id || '').toLowerCase();
         const display = (s.displayName || '').toLowerCase();
         const triggers = (s.xpSourceTriggers || []).join(' ').toLowerCase();
@@ -184,7 +194,7 @@ async function executeDeleteSkill() {
     deleteTarget.value = null;
     try {
         await api.skills.delete(id);
-        window.location.reload();
+        await staging.fetchStatus();
     } catch { /* ignore */ }
 }
 

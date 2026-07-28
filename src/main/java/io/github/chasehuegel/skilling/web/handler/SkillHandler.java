@@ -110,15 +110,13 @@ public final class SkillHandler {
         File liveFile = resolveSkillFile(id);
         File stagedFile = stagingManager.stagedSkillFile(id);
 
-        boolean liveDeleted = liveFile != null && liveFile.delete();
-        boolean stagedDeleted = stagedFile.exists() && stagedFile.delete();
-
-        if (liveDeleted || stagedDeleted) {
-            stagingManager.stageSkillDeletion(id);
-            ctx.json(Map.of("status", "ok", "id", id));
-        } else {
+        if (liveFile == null && !stagedFile.exists()) {
             ctx.status(404).json(Map.of("status", "error", "message", "Skill not found: " + id));
+            return;
         }
+
+        stagingManager.stageSkillDeletion(id);
+        ctx.json(Map.of("status", "ok", "id", id));
     }
 
     private File resolveSkillFile(String id) {
