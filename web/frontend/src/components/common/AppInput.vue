@@ -85,9 +85,9 @@ function toggleCheckbox() {
 /* ---- Text / Number / Password ---- */
 .app-input-field {
     padding: 0.45rem 0.6rem;
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--p-content-border-color);
     border-radius: 5px;
-    background: var(--p-surface-input);
+    background: var(--p-form-field-background);
     color: var(--p-text-color);
     font-size: 0.875rem;
     transition: border-color 0.15s, box-shadow 0.15s;
@@ -95,7 +95,7 @@ function toggleCheckbox() {
 }
 
 .app-input-field::placeholder {
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
     opacity: 0.6;
 }
 
@@ -115,8 +115,8 @@ function toggleCheckbox() {
     width: 36px;
     height: 20px;
     border-radius: 10px;
-    border: 1px solid var(--p-surface-border);
-    background: var(--p-surface-input);
+    border: 1px solid var(--p-content-border-color);
+    background: var(--p-form-field-background);
     cursor: pointer;
     padding: 0;
     transition: background 0.2s, border-color 0.2s;

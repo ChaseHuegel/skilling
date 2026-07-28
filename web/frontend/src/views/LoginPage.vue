@@ -47,8 +47,8 @@ async function submit() {
     background: var(--p-surface-ground);
 }
 .login-card {
-    background: var(--p-surface-section);
-    border: 1px solid var(--p-surface-border);
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
     border-radius: 8px;
     padding: 2rem;
     width: 100%;
@@ -62,7 +62,7 @@ async function submit() {
 .login-subtitle {
     margin: 0 0 1.5rem;
     text-align: center;
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
     font-size: 0.875rem;
 }
 .field {
@@ -76,9 +76,9 @@ async function submit() {
 .input {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--p-content-border-color);
     border-radius: 4px;
-    background: var(--p-surface-input);
+    background: var(--p-form-field-background);
     color: var(--p-text-color);
     box-sizing: border-box;
 }

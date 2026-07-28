@@ -94,9 +94,9 @@ function onKeydown(e: KeyboardEvent) {
 .multi-input {
   flex: 1;
   padding: 0.35rem 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   color: var(--p-text-color);
   font-size: 0.85rem;
 }
@@ -128,8 +128,8 @@ function onKeydown(e: KeyboardEvent) {
   align-items: center;
   gap: 0.25rem;
   padding: 0.2rem 0.5rem;
-  background: var(--p-surface-input);
-  border: 1px solid var(--p-surface-border);
+  background: var(--p-form-field-background);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   font-size: 0.8rem;
   color: var(--p-text-color);

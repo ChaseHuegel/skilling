@@ -117,9 +117,9 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
   align-items: flex-start;
   gap: 0.5rem;
   padding: 0.6rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   margin-bottom: 0.5rem;
 }
 
@@ -139,7 +139,7 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
   display: block;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
   margin-bottom: 0.2rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -148,9 +148,9 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 .filter-input {
   width: 100%;
   padding: 0.35rem 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   color: var(--p-text-color);
   font-size: 0.85rem;
   box-sizing: border-box;
@@ -159,7 +159,7 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 .state-hint {
   display: block;
   font-size: 0.7rem;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
   margin-top: 0.2rem;
   line-height: 1.2;
 }
@@ -180,9 +180,9 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 }
 
 .btn-add {
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   color: var(--p-text-color);
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   padding: 0.4rem 0.75rem;
   font-size: 0.85rem;
@@ -191,6 +191,6 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 }
 
 .btn-add:hover {
-  background: var(--p-surface-hover);
+  background: var(--p-content-hover-background);
 }
 </style>

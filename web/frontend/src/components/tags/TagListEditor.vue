@@ -121,9 +121,9 @@ function cancelAddTag() {
 
 .tag-entry {
   padding: 0.6rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   margin-bottom: 0.5rem;
 }
 
@@ -180,9 +180,9 @@ function cancelAddTag() {
 .tag-name-input {
   width: 160px;
   padding: 0.35rem 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   color: var(--p-text-color);
   font-size: 0.85rem;
   font-family: monospace;
@@ -218,11 +218,11 @@ function cancelAddTag() {
 
 .tag-name-hint {
   font-size: 0.75rem;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
 }
 
 .tag-name-hint code {
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   padding: 0.1rem 0.3rem;
   border-radius: 2px;
   color: var(--p-text-color);

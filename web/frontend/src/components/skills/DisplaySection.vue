@@ -106,9 +106,9 @@ function setField<K extends keyof DisplayConfig>(key: K, val: DisplayConfig[K]) 
 .field-input {
   flex: 1;
   padding: 0.45rem 0.6rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   color: var(--p-text-color);
   font-size: 0.875rem;
 }
@@ -116,9 +116,9 @@ function setField<K extends keyof DisplayConfig>(key: K, val: DisplayConfig[K]) 
 .field-select {
   flex: 1;
   padding: 0.45rem 0.6rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   color: var(--p-text-color);
   font-size: 0.875rem;
 }

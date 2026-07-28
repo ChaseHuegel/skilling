@@ -115,15 +115,15 @@ function createSkill() {
 .skill-count-badge {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--p-text-muted-color);
-    background: var(--p-surface-border);
+    color: var(--p-form-field-placeholder-color);
+    background: var(--p-content-border-color);
     padding: 0.15rem 0.6rem;
     border-radius: 10px;
     line-height: 1.4;
 }
 .dashboard-subtitle {
     margin: 0 0 1.5rem;
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
     font-size: 0.875rem;
 }
 .create-btn {
@@ -183,9 +183,9 @@ function createSkill() {
 
 /* ---- Skeleton Cards ---- */
 .skeleton-card {
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--p-content-border-color);
     border-radius: 8px;
-    background: var(--p-surface-section);
+    background: var(--p-content-background);
     overflow: hidden;
 }
 .skeleton-header {
@@ -200,9 +200,9 @@ function createSkill() {
     border-radius: 8px;
     background: linear-gradient(
         90deg,
-        var(--p-surface-border) 25%,
-        var(--p-surface-hover) 50%,
-        var(--p-surface-border) 75%
+        var(--p-content-border-color) 25%,
+        var(--p-content-hover-background) 50%,
+        var(--p-content-border-color) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
@@ -211,7 +211,7 @@ function createSkill() {
     width: 24px;
     height: 20px;
     border-radius: 10px;
-    background: var(--p-surface-border);
+    background: var(--p-content-border-color);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
 }
@@ -226,9 +226,9 @@ function createSkill() {
     border-radius: 4px;
     background: linear-gradient(
         90deg,
-        var(--p-surface-border) 25%,
-        var(--p-surface-hover) 50%,
-        var(--p-surface-border) 75%
+        var(--p-content-border-color) 25%,
+        var(--p-content-hover-background) 50%,
+        var(--p-content-border-color) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
@@ -262,7 +262,7 @@ function createSkill() {
 }
 .state-desc {
     margin: 0 0 1.25rem;
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
     font-size: 0.875rem;
     max-width: 320px;
 }
@@ -271,7 +271,7 @@ function createSkill() {
 }
 .retry-btn {
     background: none;
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--p-content-border-color);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -280,7 +280,7 @@ function createSkill() {
     transition: background 0.15s;
 }
 .retry-btn:hover {
-    background: var(--p-surface-hover);
+    background: var(--p-content-hover-background);
 }
 
 /* ---- Card Entrance Animation ---- */

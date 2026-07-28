@@ -799,9 +799,9 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 }
 
 .ability-card {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   overflow: hidden;
 }
 
@@ -810,8 +810,8 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: var(--p-surface-input);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--p-form-field-background);
+  border-bottom: 1px solid var(--p-content-border-color);
   cursor: pointer;
   user-select: none;
 }
@@ -820,12 +820,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   flex: 1;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
 }
 
 .expand-toggle {
   font-size: 0.75rem;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
 }
 
 .ability-body {
@@ -851,9 +851,9 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 .field-input {
   flex: 1;
   padding: 0.4rem 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   color: var(--p-text-color);
   font-size: 0.85rem;
 }
@@ -861,15 +861,15 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 .field-select {
   flex: 1;
   padding: 0.4rem 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   color: var(--p-text-color);
   font-size: 0.85rem;
 }
 
 .section-block {
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--p-content-border-color);
   padding-top: 0.75rem;
 }
 
@@ -891,7 +891,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
   margin-bottom: 0.35rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -919,18 +919,18 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   align-items: center;
   gap: 0.3rem;
   font-size: 0.85rem;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
 }
 
 .item-card,
 .mechanic-card,
 .particle-card,
 .sound-card {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   padding: 0.5rem;
   margin-bottom: 0.5rem;
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
 }
 
 .mechanic-header {
@@ -943,7 +943,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 .mechanic-title {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
 }
 
 .mechanic-body {
@@ -971,7 +971,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   display: block;
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
   margin-bottom: 0.15rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -980,9 +980,9 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 .field-input-sm {
   width: 100%;
   padding: 0.3rem 0.4rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 3px;
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   color: var(--p-text-color);
   font-size: 0.8rem;
   box-sizing: border-box;
@@ -1014,7 +1014,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   align-items: center;
   gap: 0.3rem;
   font-size: 0.85rem;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
 }
 
 .btn-remove {

@@ -153,9 +153,9 @@ function duplicateSource() {
 }
 
 .xp-source-card {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   overflow: hidden;
 }
 
@@ -164,14 +164,14 @@ function duplicateSource() {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
-  background: var(--p-surface-input);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--p-form-field-background);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
 .source-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
 }
 
 .source-body {
@@ -197,9 +197,9 @@ function duplicateSource() {
 .field-select {
   flex: 1;
   padding: 0.4rem 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   color: var(--p-text-color);
   font-size: 0.85rem;
 }
@@ -212,7 +212,7 @@ function duplicateSource() {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
   margin-bottom: 0.35rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;

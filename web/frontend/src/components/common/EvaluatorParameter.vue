@@ -225,9 +225,9 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
 .evaluator-type-select {
   width: 100%;
   padding: 0.4rem 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   color: var(--p-text-color);
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
@@ -247,15 +247,15 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
 .field-label {
   min-width: 5rem;
   font-size: 0.8rem;
-  color: var(--p-text-muted-color);
+  color: var(--p-form-field-placeholder-color);
 }
 
 .field-input {
   flex: 1;
   padding: 0.35rem 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
-  background: var(--p-surface-input);
+  background: var(--p-form-field-background);
   color: var(--p-text-color);
   font-size: 0.85rem;
 }
@@ -290,9 +290,9 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
 }
 
 .btn-add {
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   color: var(--p-text-color);
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
@@ -301,6 +301,6 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
 }
 
 .btn-add:hover {
-  background: var(--p-surface-hover);
+  background: var(--p-content-hover-background);
 }
 </style>

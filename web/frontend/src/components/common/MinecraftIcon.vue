@@ -73,8 +73,8 @@ function onLoad() {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    background: color-mix(in srgb, var(--accent, #888) 12%, var(--p-surface-section));
-    border: 1px solid var(--p-surface-border);
+    background: color-mix(in srgb, var(--accent, #888) 12%, var(--p-content-background));
+    border: 1px solid var(--p-content-border-color);
     box-shadow:
         inset 0 0 0 1px color-mix(in srgb, var(--accent, #888) 8%, transparent),
         0 0 0 1px color-mix(in srgb, var(--accent, #888) 25%, transparent);

@@ -48,11 +48,11 @@ function open() {
 .skill-card {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--p-content-border-color);
     border-top: 3px solid var(--skill-color);
     border-radius: 8px;
     cursor: pointer;
-    background: var(--p-surface-section);
+    background: var(--p-content-background);
     transition: all 0.2s ease;
     overflow: hidden;
 }
@@ -96,9 +96,9 @@ function open() {
 }
 
 .badge-xp {
-    background: var(--p-surface-border);
-    color: var(--p-text-muted-color);
-    border: 1px solid var(--p-surface-border);
+    background: var(--p-content-border-color);
+    color: var(--p-form-field-placeholder-color);
+    border: 1px solid var(--p-content-border-color);
 }
 
 .card-body {

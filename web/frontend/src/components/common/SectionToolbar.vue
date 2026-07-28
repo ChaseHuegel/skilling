@@ -49,12 +49,12 @@ const emit = defineEmits<{
 
 .toolbar-btn {
   padding: 0.4rem 0.75rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   font-size: 0.85rem;
   cursor: pointer;
   color: var(--p-text-color);
-  background: var(--p-surface-section);
+  background: var(--p-content-background);
   transition: background 0.15s;
 }
 

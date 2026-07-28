@@ -200,7 +200,7 @@ function discard() {
     color: white;
 }
 .btn-secondary {
-    background: var(--p-surface-hover);
+    background: var(--p-content-hover-background);
     color: var(--p-text-color);
 }
 .btn-danger {
@@ -226,7 +226,7 @@ function discard() {
     gap: 1.5rem;
 }
 .section {
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--p-content-border-color);
     border-radius: 6px;
     padding: 1rem;
 }

@@ -59,8 +59,8 @@ function logout() {
     justify-content: space-between;
     padding: 0 1.5rem;
     height: 52px;
-    background: var(--p-surface-section);
-    border-bottom: 1px solid var(--p-surface-border);
+    background: var(--p-content-background);
+    border-bottom: 1px solid var(--p-content-border-color);
 }
 
 .topbar-left {
@@ -89,7 +89,7 @@ function logout() {
 }
 
 .nav-link {
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
     text-decoration: none;
     padding: 0.35rem 0.65rem;
     border-radius: 5px;
@@ -99,7 +99,7 @@ function logout() {
 
 .nav-link:hover {
     color: var(--p-text-color);
-    background: var(--p-surface-hover);
+    background: var(--p-content-hover-background);
 }
 
 .nav-link.router-link-active,
@@ -126,14 +126,14 @@ function logout() {
     cursor: pointer;
     padding: 0.35rem;
     border-radius: 5px;
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
     display: flex;
     align-items: center;
     transition: background 0.15s, color 0.15s;
 }
 
 .theme-toggle:hover {
-    background: var(--p-surface-hover);
+    background: var(--p-content-hover-background);
     color: var(--p-text-color);
 }
 
@@ -141,7 +141,7 @@ function logout() {
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
 }
 
 .user-icon {
@@ -151,7 +151,7 @@ function logout() {
 
 .user-name {
     font-size: 0.8rem;
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
 }
 
 .logout-btn {
@@ -159,7 +159,7 @@ function logout() {
     border: none;
     cursor: pointer;
     font-size: 0.8rem;
-    color: var(--p-text-muted-color);
+    color: var(--p-form-field-placeholder-color);
     padding: 0.2rem 0.3rem;
     transition: color 0.15s;
 }
