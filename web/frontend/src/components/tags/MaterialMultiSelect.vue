@@ -121,8 +121,8 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 .chip-tag {
-  border-color: color-mix(in srgb, var(--p-primary-color), black 50%);
-  background: color-mix(in srgb, var(--p-primary-color), black 80%);
+  border-color: var(--p-primary-color);
+  background: var(--p-content-background);
 }
 
 .chip-text {
