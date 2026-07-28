@@ -126,13 +126,48 @@ function validate(): boolean {
     return Object.keys(errors).length === 0;
 }
 
-const tagSuggestions = [
+const TAG_SUGGESTIONS_BASE = [
     '#c:ores', '#c:stone', '#c:logs', '#c:gems',
     '#minecraft:logs', '#minecraft:planks', '#minecraft:stone_tool_materials',
     '#minecraft:pickaxes', '#minecraft:axes', '#minecraft:shovels', '#minecraft:hoes',
     '#minecraft:coals', '#minecraft:copper_ores', '#minecraft:iron_ores',
     '#minecraft:gold_ores', '#minecraft:diamond_ores', '#minecraft:emerald_ores',
 ];
+
+const MATERIAL_SUGGESTIONS = [
+    'minecraft:stone', 'minecraft:andesite', 'minecraft:diorite', 'minecraft:granite',
+    'minecraft:dirt', 'minecraft:grass_block', 'minecraft:sand', 'minecraft:gravel',
+    'minecraft:oak_log', 'minecraft:spruce_log', 'minecraft:birch_log', 'minecraft:jungle_log',
+    'minecraft:dark_oak_log', 'minecraft:acacia_log', 'minecraft:mangrove_log', 'minecraft:cherry_log',
+    'minecraft:oak_planks', 'minecraft:spruce_planks', 'minecraft:birch_planks',
+    'minecraft:cobblestone', 'minecraft:deepslate', 'minecraft:tuff', 'minecraft:calcite',
+    'minecraft:iron_ore', 'minecraft:copper_ore', 'minecraft:gold_ore', 'minecraft:diamond_ore',
+    'minecraft:emerald_ore', 'minecraft:lapis_ore', 'minecraft:redstone_ore', 'minecraft:coal_ore',
+    'minecraft:netherrack', 'minecraft:nether_gold_ore', 'minecraft:nether_quartz_ore',
+    'minecraft:ancient_debris', 'minecraft:end_stone', 'minecraft:obsidian',
+    'minecraft:diamond_pickaxe', 'minecraft:iron_pickaxe', 'minecraft:stone_pickaxe',
+    'minecraft:netherite_pickaxe', 'minecraft:diamond_axe', 'minecraft:iron_axe',
+    'minecraft:stone_axe', 'minecraft:netherite_axe', 'minecraft:diamond_shovel',
+    'minecraft:iron_shovel', 'minecraft:netherite_shovel',
+    'minecraft:diamond_hoe', 'minecraft:netherite_hoe',
+    'minecraft:cobblestone', 'minecraft:iron_ingot', 'minecraft:gold_ingot',
+    'minecraft:diamond', 'minecraft:emerald', 'minecraft:netherite_scrap',
+    'minecraft:redstone', 'minecraft:coal', 'minecraft:lapis_lazuli',
+    'minecraft:copper_ingot', 'minecraft:raw_iron', 'minecraft:raw_gold', 'minecraft:raw_copper',
+    'minecraft:wheat', 'minecraft:carrot', 'minecraft:potato', 'minecraft:beetroot',
+    'minecraft:apple', 'minecraft:golden_apple', 'minecraft:enchanted_golden_apple',
+    'minecraft:rotten_flesh', 'minecraft:bone', 'minecraft:string', 'minecraft:feather',
+    'minecraft:gunpowder', 'minecraft:blaze_rod', 'minecraft:blaze_powder',
+    'minecraft:ender_pearl', 'minecraft:eye_of_ender', 'minecraft:ghast_tear',
+    'minecraft:magma_cream', 'minecraft:slime_ball', 'minecraft:spider_eye',
+    'minecraft:fermented_spider_eye', 'minecraft:golden_carrot', 'minecraft:glistering_melon_slice',
+    'minecraft:potion', 'minecraft:experience_bottle', 'minecraft:book', 'minecraft:enchanted_book',
+    'minecraft:paper', 'minecraft:map', 'minecraft:compass', 'minecraft:clock',
+    'minecraft:leather', 'minecraft:rabbit_hide', 'minecraft:scute', 'minecraft:nautilus_shell',
+    'minecraft:heart_of_the_sea', 'minecraft:prismarine_shard', 'minecraft:prismarine_crystals',
+];
+
+const tagSuggestions = [...TAG_SUGGESTIONS_BASE, ...MATERIAL_SUGGESTIONS];
 
 const form = reactive<Record<string, any>>({
     id: '',
