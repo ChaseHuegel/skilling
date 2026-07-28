@@ -6,14 +6,6 @@
     >
         <div class="card-header">
             <MinecraftIcon :material="skill.icon" :color="skill.color" :size="48" />
-            <div class="card-badges">
-                <span v-if="skill.xpSourceCount && skill.xpSourceCount > 0" class="badge badge-xp">
-                    {{ skill.xpSourceCount }} XP source{{ skill.xpSourceCount !== 1 ? 's' : '' }}
-                </span>
-                <span v-if="skill.abilityCount > 0" class="badge badge-ability">
-                    {{ skill.abilityCount }} abilit{{ skill.abilityCount !== 1 ? 'ies' : 'y' }}
-                </span>
-            </div>
             <div class="card-actions">
                 <button class="btn-icon-sm" title="Duplicate" @click.stop="emit('duplicate', skill.id)">
                     <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
@@ -32,6 +24,14 @@
             <div class="skill-name">{{ skill.displayName || skill.id }}</div>
             <div class="skill-meta">Level 1 – {{ skill.maxLevel }}</div>
             <div class="skill-id">{{ skill.id }}</div>
+            <div class="card-badges">
+                <span v-if="skill.xpSourceCount && skill.xpSourceCount > 0" class="badge badge-xp">
+                    {{ skill.xpSourceCount }} XP source{{ skill.xpSourceCount !== 1 ? 's' : '' }}
+                </span>
+                <span v-if="skill.abilityCount > 0" class="badge badge-ability">
+                    {{ skill.abilityCount }} abilit{{ skill.abilityCount !== 1 ? 'ies' : 'y' }}
+                </span>
+            </div>
         </div>
     </div>
 </template>
@@ -84,16 +84,8 @@ function open() {
 .card-header {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
     padding: 1rem 1rem 0.5rem;
     position: relative;
-}
-
-.card-badges {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
 }
 
 .badge {
@@ -148,6 +140,15 @@ function open() {
 }
 .card-body {
     padding: 0.5rem 1rem 1rem;
+    position: relative;
+}
+
+.card-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
 }
 .skill-id {
     margin-top: 0.35rem;
