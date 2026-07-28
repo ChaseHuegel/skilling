@@ -7,13 +7,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from './stores/auth';
+import { useStagingStore } from './stores/staging';
 import AppTopbar from './components/layout/AppTopbar.vue';
 import PendingChangesBanner from './components/layout/PendingChangesBanner.vue';
 
 const authStore = useAuthStore();
+const stagingStore = useStagingStore();
 authStore.checkSession();
+onMounted(() => stagingStore.fetchStatus());
 
 const darkMode = ref(document.documentElement.classList.contains('app-dark'));
 
