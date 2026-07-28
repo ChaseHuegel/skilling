@@ -31,7 +31,7 @@
             <div class="editor-sections">
                 <fieldset class="section">
                     <legend>Identity</legend>
-                    <SkillIdentitySection v-model="identityForm" :readonly="!isNew" />
+                    <SkillIdentitySection v-model="identityForm" :readonly="false" />
                 </fieldset>
 
                 <fieldset class="section">
