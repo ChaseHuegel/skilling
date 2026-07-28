@@ -3,7 +3,7 @@
         <div class="topbar-left">
             <router-link to="/" class="topbar-brand">
                 <svg class="brand-icon" viewBox="0 0 24 24" width="22" height="22" fill="none">
-                    <path d="M14 2L6.5 12.5l3.5 2L7 22l10-12.5L13.5 8l3.5-6H14z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                    <path d="M12 3L3 14h5v7h8v-7h5L12 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
                 </svg>
                 Skilling
             </router-link>
