@@ -54,6 +54,8 @@ const SOUND_SUGGESTIONS = [
   'minecraft:ui_toast_in', 'minecraft:ui_toast_out', 'minecraft:ui_toast_challenge_complete',
 ]
 
+const SLOT_SUGGESTIONS = ['HAND', 'OFF_HAND', 'FEET', 'LEGS', 'CHEST', 'HEAD']
+
 const MECHANIC_SUGGESTIONS = [
   'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
   'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
@@ -561,11 +563,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                 </div>
                 <div class="item-field">
                   <label class="field-label-sm">Slot</label>
-                  <input
-                    class="field-input-sm"
-                    type="text"
-                    :value="item.slot"
-                    @input="updateItem(idx, iIdx, { slot: ($event.target as HTMLInputElement).value })"
+                  <AppCombobox
+                    :model-value="item.slot"
+                    :suggestions="SLOT_SUGGESTIONS"
+                    placeholder="HAND"
+                    :name="'slot-' + idx + '-' + iIdx"
+                    @update:model-value="updateItem(idx, iIdx, { slot: $event })"
                   />
                 </div>
                 <div class="item-field">
