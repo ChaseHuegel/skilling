@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
@@ -26,6 +26,18 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: XpSource[]]
 }>()
+
+const expanded = ref<Record<number, boolean>>({})
+
+watch(() => props.modelValue.length, (len) => {
+  for (let i = 0; i < len; i++) {
+    if (expanded.value[i] === undefined) expanded.value[i] = true
+  }
+}, { immediate: true })
+
+function toggleExpand(idx: number) {
+  expanded.value[idx] = !expanded.value[idx]
+}
 
 const sources = computed({
   get: () => props.modelValue,
@@ -78,6 +90,8 @@ function removeSource(index: number) {
 }
 
 function addSource() {
+  const idx = props.modelValue.length
+  expanded.value[idx] = true
   emit('update:modelValue', [
     ...props.modelValue,
     {
@@ -121,19 +135,26 @@ function duplicateSource() {
       @dragover="onDragOver($event, idx)"
       @dragend="onDragEnd"
     >
-      <div class="source-header">
-        <span class="drag-handle" title="Drag to reorder">&#8801;</span>
+      <div
+        class="source-header"
+        @click="toggleExpand(idx)"
+      >
+        <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="source-title">Source #{{ idx + 1 }}</span>
+        <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
         <button
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
-          @click="confirmRemoveSource(idx)"
+          @click.stop="confirmRemoveSource(idx)"
         >
           &times;
         </button>
       </div>
 
-      <div class="source-body">
+      <div
+        v-if="expanded[idx]"
+        class="source-body"
+      >
         <div class="field-row">
           <label class="field-label">Trigger</label>
           <AppCombobox
@@ -215,6 +236,8 @@ function duplicateSource() {
   padding: 0.5rem 0.75rem;
   background: var(--p-form-field-background);
   border-bottom: 1px solid var(--p-content-border-color);
+  cursor: pointer;
+  user-select: none;
 }
 
 .source-title {
