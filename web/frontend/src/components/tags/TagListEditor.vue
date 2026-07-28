@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import MaterialMultiSelect from './MaterialMultiSelect.vue'
+import { useDragReorder } from '../../composables/useDragReorder'
 
 const props = defineProps<{
   modelValue: Record<string, string[]>
@@ -14,7 +15,17 @@ const emit = defineEmits<{
 const addingTag = ref(false)
 const newTagName = ref('')
 
-const entries = () => Object.entries(props.modelValue)
+const entriesList = computed({
+  get: () => Object.entries(props.modelValue).map(([key, val]) => ({ key, val })),
+  set: (newEntries) => {
+    const obj: Record<string, string[]> = {}
+    for (const e of newEntries) {
+      obj[e.key] = e.val
+    }
+    emit('update:modelValue', obj)
+  },
+})
+const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(entriesList)
 
 function updateTagMaterials(tag: string, materials: string[]) {
   emit('update:modelValue', { ...props.modelValue, [tag]: materials })
@@ -55,25 +66,31 @@ function cancelAddTag() {
 <template>
   <div class="tag-list-editor">
     <div
-      v-for="[tag, materials] in entries()"
-      :key="tag"
+      v-for="(entry, idx) in entriesList"
+      :key="entry.key"
       class="tag-entry"
+      :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
+      draggable="true"
+      @dragstart="onDragStart(idx)"
+      @dragover="onDragOver($event, idx)"
+      @dragend="onDragEnd"
     >
       <div class="tag-header">
-        <span class="tag-name">{{ tag }}</span>
+        <span class="drag-handle" title="Drag to reorder">&#8801;</span>
+        <span class="tag-name">{{ entry.key }}</span>
         <button
-          v-if="entries().length > 1"
+          v-if="entriesList.length > 1"
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
-          @click="removeTag(tag)"
+          @click="removeTag(entry.key)"
         >
           Remove Tag
         </button>
       </div>
       <MaterialMultiSelect
-        :model-value="materials"
+        :model-value="entry.val"
         :suggestions="suggestions"
-        @update:model-value="updateTagMaterials(tag, $event)"
+        @update:model-value="updateTagMaterials(entry.key, $event)"
       />
     </div>
 
@@ -127,11 +144,26 @@ function cancelAddTag() {
   background: var(--p-content-background);
   margin-bottom: 0.5rem;
 }
-
+.tag-entry[draggable="true"] {
+  cursor: default;
+}
+.tag-entry.drag-over {
+  opacity: 0.5;
+}
+.drag-handle {
+  cursor: grab;
+  color: var(--p-form-field-placeholder-color);
+  font-size: 1.1rem;
+  line-height: 1;
+  user-select: none;
+  margin-right: 0.35rem;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
 .tag-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: 0.5rem;
 }
 

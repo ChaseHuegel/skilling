@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
+import { useDragReorder } from '../../composables/useDragReorder'
 
 interface FilterEntry {
   target?: string
@@ -23,6 +25,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: XpSource[]]
 }>()
+
+const sources = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
+})
+const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(sources)
 
 const TRIGGER_OPTIONS = [
   'block_break',
@@ -94,8 +102,14 @@ function duplicateSource() {
       v-for="(source, idx) in modelValue"
       :key="idx"
       class="xp-source-card"
+      :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
+      draggable="true"
+      @dragstart="onDragStart(idx)"
+      @dragover="onDragOver($event, idx)"
+      @dragend="onDragEnd"
     >
       <div class="source-header">
+        <span class="drag-handle" title="Drag to reorder">&#8801;</span>
         <span class="source-title">Source #{{ idx + 1 }}</span>
         <button
           class="btn btn-ghost btn-sm"
@@ -160,16 +174,33 @@ function duplicateSource() {
   overflow: hidden;
 }
 
+.xp-source-card[draggable="true"] {
+  cursor: default;
+}
+.xp-source-card.drag-over {
+  opacity: 0.5;
+}
+.drag-handle {
+  cursor: grab;
+  color: var(--p-form-field-placeholder-color);
+  font-size: 1.1rem;
+  line-height: 1;
+  user-select: none;
+  margin-right: 0.25rem;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
 .source-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0.5rem 0.75rem;
   background: var(--p-form-field-background);
   border-bottom: 1px solid var(--p-content-border-color);
 }
 
 .source-title {
+  flex: 1;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--p-form-field-placeholder-color);

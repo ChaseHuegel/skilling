@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
+import { useDragReorder } from '../../composables/useDragReorder'
 
 interface FilterEntry {
   target?: string
@@ -69,6 +70,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: Ability[]]
 }>()
+
+const abilities = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
+})
+const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abilities)
 
 const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground'] as const
 
@@ -317,11 +324,17 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
       v-for="(ability, idx) in modelValue"
       :key="idx"
       class="ability-card"
+      :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
+      draggable="true"
+      @dragstart="onDragStart(idx)"
+      @dragover="onDragOver($event, idx)"
+      @dragend="onDragEnd"
     >
       <div
         class="ability-header"
         @click="toggleExpand(idx)"
       >
+        <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="ability-title">
           {{ ability.id || 'Unnamed Ability' }}
         </span>
@@ -811,7 +824,22 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   background: var(--p-content-background);
   overflow: hidden;
 }
-
+.ability-card[draggable="true"] {
+  cursor: default;
+}
+.ability-card.drag-over {
+  opacity: 0.5;
+}
+.drag-handle {
+  cursor: grab;
+  color: var(--p-form-field-placeholder-color);
+  font-size: 1.1rem;
+  line-height: 1;
+  user-select: none;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
 .ability-header {
   display: flex;
   align-items: center;

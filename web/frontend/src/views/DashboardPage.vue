@@ -55,7 +55,16 @@
 
         <!-- Skill grid or empty state -->
         <div v-else class="skill-grid">
-            <SkillCard v-for="s in filteredSkills" :key="s.id" :skill="s" />
+            <SkillCard
+                v-for="(s, idx) in filteredSkills"
+                :key="s.id"
+                :skill="s"
+                :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
+                draggable="true"
+                @dragstart="onDragStart(idx)"
+                @dragover="onDragOver($event, idx)"
+                @dragend="onDragEnd"
+            />
             <div v-if="searchQuery.trim() && filteredSkills.length === 0" class="state-card empty-state">
                 <h2 class="state-title">No skills match your search</h2>
                 <p class="state-desc">Try adjusting your search query.</p>
@@ -92,6 +101,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { api } from '../api/client';
 import { useStagingStore } from '../stores/staging';
+import { useDragReorder } from '../composables/useDragReorder';
 import SkillCard from '../components/skills/SkillCard.vue';
 import PendingChangesBanner from '../components/layout/PendingChangesBanner.vue';
 
@@ -102,6 +112,8 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const searchQuery = ref('');
 const showResetDialog = ref(false);
+
+const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(skills);
 
 const filteredSkills = computed(() => {
     if (!searchQuery.value.trim()) return skills.value;
@@ -371,6 +383,16 @@ async function confirmReset() {
 /* ---- Card Entrance Animation ---- */
 .skill-card {
     animation: cardEnter 0.35s ease both;
+}
+.skill-card[draggable="true"] {
+    cursor: grab;
+}
+.skill-card[draggable="true"]:active {
+    cursor: grabbing;
+}
+.skill-card.drag-over {
+    opacity: 0.4;
+    transform: scale(0.96);
 }
 .skill-card:nth-child(1) { animation-delay: 0ms; }
 .skill-card:nth-child(2) { animation-delay: 50ms; }
