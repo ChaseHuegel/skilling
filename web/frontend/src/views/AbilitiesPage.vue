@@ -131,6 +131,13 @@ async function fetchAll() {
                 }
             }
         }
+        results.sort((a, b) => {
+            const skillCmp = a.skillDisplayName.localeCompare(b.skillDisplayName);
+            if (skillCmp !== 0) return skillCmp;
+            const levelCmp = a.ability.unlockLevel - b.ability.unlockLevel;
+            if (levelCmp !== 0) return levelCmp;
+            return (a.ability.displayName || a.ability.id).localeCompare(b.ability.displayName || b.ability.id);
+        });
         abilities.value = results;
     } catch (e: any) {
         error.value = e.message || 'Failed to load abilities';
