@@ -554,11 +554,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                 </div>
                 <div class="item-field">
                   <label class="field-label-sm">Tag</label>
-                  <input
-                    class="field-input-sm"
-                    type="text"
-                    :value="item.tag"
-                    @input="updateItem(idx, iIdx, { tag: ($event.target as HTMLInputElement).value })"
+                  <AppCombobox
+                    :model-value="item.tag"
+                    :suggestions="tagSuggestions"
+                    placeholder="#minecraft:logs or minecraft:stone"
+                    :name="'tag-' + idx + '-' + iIdx"
+                    @update:model-value="updateItem(idx, iIdx, { tag: $event })"
                   />
                 </div>
                 <div class="item-field">
