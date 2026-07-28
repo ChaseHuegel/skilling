@@ -202,7 +202,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Rename page headers for consistency: "Configuration" → "Config", "Custom Tags" → "Tags", nav "Dashboard" → "Skills"
 - [x] Replace topbar lightning bolt icon with a stylish upwards arrow to better evoke "skilling up" / "leveling up"
 - [x] Reset buttons should be `btn-danger` style and only appear when there are pending changes relevant to that page
-- [ ] Save Changes buttons should only appear when there are unsaved local edits on that page (dirty state tracking)
+- [x] Save Changes buttons should only appear when there are unsaved local edits on that page (dirty state tracking)
 - [ ] Skill icon field: replace text input with a searchable dropdown of all Minecraft materials, showing 16x16 texture thumbnails inline
   - See `ISSUE-018.md` for full development plan
 - [ ] Create reusable `AppCombobox` component (input + datalist) and apply to State, Target, Tool fields; enrich Target/Tool suggestions with Minecraft materials

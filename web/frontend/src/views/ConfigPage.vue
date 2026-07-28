@@ -4,7 +4,7 @@
             <h1>Config</h1>
             <div class="header-actions">
                 <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
-                <button class="btn btn-primary" :disabled="saving" @click="saveConfig">
+                <button v-if="isDirty" class="btn btn-primary" :disabled="saving" @click="saveConfig">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </button>
             </div>
@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { api } from '../api/client';
 import { useStagingStore } from '../stores/staging';
 import ConfigSection from '../components/config/ConfigSection.vue';
@@ -77,6 +77,7 @@ const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const showResetDialog = ref(false);
+const cleanConfig = ref('');
 
 const config = reactive({
     database: { poolSize: 10, walMode: true },
@@ -87,6 +88,8 @@ const config = reactive({
     globalXpModifier: 1.0,
     web: { enabled: false, port: 8082, username: 'admin', password: 'skilling' },
 });
+
+const isDirty = computed(() => JSON.stringify(config) !== cleanConfig.value);
 
 onMounted(fetchConfig);
 
@@ -101,6 +104,7 @@ async function fetchConfig() {
     try {
         const data = await api.config.get();
         Object.assign(config, data);
+        cleanConfig.value = JSON.stringify(config);
     } catch (e: any) {
         error.value = e.message || 'Failed to load config';
     } finally {
@@ -113,6 +117,7 @@ async function saveConfig() {
     error.value = null;
     try {
         await api.config.update({ ...config });
+        cleanConfig.value = JSON.stringify(config);
     } catch (e: any) {
         error.value = e.message || 'Failed to save config';
     } finally {

@@ -5,7 +5,7 @@
             <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
             <div class="header-actions">
                 <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
-                <button class="btn btn-primary" :disabled="saving" @click="saveTags">
+                <button v-if="isDirty" class="btn btn-primary" :disabled="saving" @click="saveTags">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </button>
             </div>
@@ -60,8 +60,11 @@ const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const tags = reactive<Record<string, string[]>>({});
+const cleanTags = ref('');
 const searchQuery = ref('');
 const showResetDialog = ref(false);
+
+const isDirty = computed(() => JSON.stringify(tags) !== cleanTags.value);
 
 const filteredTags = computed({
     get: () => {
@@ -103,6 +106,7 @@ async function fetchTags() {
     try {
         const data = await api.tags.get();
         Object.assign(tags, data.tags || {});
+        cleanTags.value = JSON.stringify(tags);
     } catch (e: any) {
         error.value = e.message || 'Failed to load tags';
     } finally {
