@@ -6,6 +6,19 @@
         </div>
         <p class="page-subtitle">All abilities across all skills</p>
 
+        <div class="search-bar">
+            <svg class="search-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+                <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" />
+                <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <input
+                v-model="searchQuery"
+                class="search-input"
+                type="text"
+                placeholder="Search abilities..."
+            />
+        </div>
+
         <div v-if="loading" class="loading-grid">
             <div v-for="i in 4" :key="i" class="skeleton-card">
                 <div class="skeleton-header" />
@@ -22,6 +35,11 @@
             <button class="btn btn-secondary btn-sm" @click="fetchAll">Retry</button>
         </div>
 
+        <div v-else-if="searchQuery.trim() && filteredAbilities.length === 0" class="state-card empty-state">
+            <h2 class="state-title">No abilities match your search</h2>
+            <p class="state-desc">Try adjusting your search query.</p>
+        </div>
+
         <div v-else-if="abilities.length === 0" class="state-card empty-state">
             <h2 class="state-title">No abilities found</h2>
             <p class="state-desc">Create skills with abilities to see them here.</p>
@@ -29,7 +47,7 @@
 
         <div v-else class="abilities-grid">
             <AbilityCard
-                v-for="a in abilities"
+                v-for="a in filteredAbilities"
                 :key="a.skillId + '-' + a.ability.id"
                 :ability="a.ability"
                 :skill-id="a.skillId"
@@ -40,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { api } from '../api/client';
 import AbilityCard from '../components/skills/AbilityCard.vue';
 
@@ -51,13 +69,47 @@ interface AbilityEntry {
         id: string;
         displayName?: string;
         unlockLevel: number;
-        requirements?: { cooldown?: number };
+        requirements?: {
+            cooldown?: number;
+            state?: string[];
+            items?: any[];
+        };
+        mechanics?: {
+            type: string;
+            filters?: any[];
+            parameters?: any;
+        }[];
+        feedback?: {
+            actionBar?: boolean;
+            chat?: boolean;
+            message?: string;
+            particles?: any[];
+            sounds?: any[];
+        };
     };
 }
 
 const abilities = ref<AbilityEntry[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const searchQuery = ref('');
+
+const filteredAbilities = computed(() => {
+    if (!searchQuery.value.trim()) return abilities.value;
+    const q = searchQuery.value.toLowerCase();
+    return abilities.value.filter((a) => {
+        const id = (a.ability.id || '').toLowerCase();
+        const displayName = (a.ability.displayName || '').toLowerCase();
+        const skillId = (a.skillId || '').toLowerCase();
+        const skillDisplay = (a.skillDisplayName || '').toLowerCase();
+        const unlockLevel = String(a.ability.unlockLevel);
+        const states = (a.ability.requirements?.state || []).join(' ').toLowerCase();
+        const feedbackMsg = (a.ability.feedback?.message || '').toLowerCase();
+        const mechanics = (a.ability.mechanics || []).map((m: any) => m.type).join(' ').toLowerCase();
+        const fields = [id, displayName, skillId, skillDisplay, unlockLevel, states, feedbackMsg, mechanics];
+        return fields.some(f => f.includes(q));
+    });
+});
 
 onMounted(fetchAll);
 
@@ -114,9 +166,39 @@ async function fetchAll() {
     line-height: 1.4;
 }
 .page-subtitle {
-    margin: 0 0 1.5rem;
+    margin: 0 0 1rem;
     color: var(--p-form-field-placeholder-color, #888);
     font-size: 0.875rem;
+}
+.search-bar {
+    position: relative;
+    margin-bottom: 1.25rem;
+}
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--p-form-field-placeholder-color, #888);
+    pointer-events: none;
+}
+.search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 6px;
+    background: var(--p-form-field-background, #fff);
+    color: var(--p-form-field-color, #000);
+    font-size: 0.875rem;
+    outline: none;
+    box-sizing: border-box;
+}
+.search-input:focus {
+    border-color: var(--p-primary-color, #3b82f6);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--p-primary-color, #3b82f6) 20%, transparent);
+}
+.search-input::placeholder {
+    color: var(--p-form-field-placeholder-color, #888);
 }
 .abilities-grid {
     display: grid;

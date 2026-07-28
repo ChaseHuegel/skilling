@@ -187,7 +187,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-006.md` for full development plan
 - [x] Web GUI — Administrative interface with Javalin backend, Vue 3 + PrimeVue frontend
   - See `ISSUE-007.md` for full development plan (Phases 1-7 implemented)
-- [ ] Abilities Page search — filter abilities by name, ID, skill, unlock level, states, feedback, and mechanics
+- [x] Abilities Page search — filter abilities by name, ID, skill, unlock level, states, feedback, and mechanics
   - See `ISSUE-017.md` for full development plan
 - [ ] Dark mode primary button text contrast — white-on-green hard to read; use black text in dark mode
 - [ ] Remove drag reordering from skill cards on the dashboard (grid layout is not suited for it)
