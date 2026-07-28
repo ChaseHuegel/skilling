@@ -42,7 +42,8 @@ function confirmAddTag() {
     addingTag.value = false
     return
   }
-  emit('update:modelValue', { ...props.modelValue, [name]: [] })
+  const key = name.startsWith('#c:') ? name : '#c:' + name
+  emit('update:modelValue', { ...props.modelValue, [key]: [] })
   addingTag.value = false
 }
 
@@ -59,7 +60,7 @@ function cancelAddTag() {
       class="tag-entry"
     >
       <div class="tag-header">
-        <span class="tag-name">#c:{{ tag }}</span>
+        <span class="tag-name">{{ tag }}</span>
         <button
           v-if="entries().length > 1"
           class="btn-remove-tag"

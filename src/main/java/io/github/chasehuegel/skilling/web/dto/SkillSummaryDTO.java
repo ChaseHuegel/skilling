@@ -6,5 +6,6 @@ public record SkillSummaryDTO(
     String icon,
     String color,
     int maxLevel,
-    int abilityCount
+    int abilityCount,
+    int xpSourceCount
 ) {}

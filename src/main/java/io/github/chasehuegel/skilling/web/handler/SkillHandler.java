@@ -33,7 +33,8 @@ public final class SkillHandler {
                 def.display() != null ? def.display().icon() : "minecraft:barrier",
                 def.display() != null ? def.display().color() : "WHITE",
                 def.maxLevel(),
-                def.abilities() != null ? def.abilities().size() : 0
+                def.abilities() != null ? def.abilities().size() : 0,
+                def.xpSources() != null ? def.xpSources().size() : 0
             ));
         }
         ctx.json(summaries);

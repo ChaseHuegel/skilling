@@ -6,9 +6,14 @@
     >
         <div class="card-header">
             <MinecraftIcon :material="skill.icon" :color="skill.color" :size="48" />
-            <span v-if="skill.abilityCount > 0" class="ability-badge">
-                {{ skill.abilityCount }}
-            </span>
+            <div class="card-badges">
+                <span v-if="skill.xpSourceCount && skill.xpSourceCount > 0" class="badge badge-xp" title="XP Sources">
+                    {{ skill.xpSourceCount }} src
+                </span>
+                <span v-if="skill.abilityCount > 0" class="badge badge-ability" :title="skill.abilityCount + ' abilit' + (skill.abilityCount !== 1 ? 'ies' : 'y')">
+                    {{ skill.abilityCount }} abil
+                </span>
+            </div>
         </div>
         <div class="card-body">
             <div class="skill-name">{{ skill.displayName || skill.id }}</div>
@@ -29,6 +34,7 @@ const props = defineProps<{
         color: string;
         maxLevel: number;
         abilityCount: number;
+        xpSourceCount?: number;
     };
 }>();
 
@@ -64,19 +70,35 @@ function open() {
     position: relative;
 }
 
-.ability-badge {
+.card-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 20px;
-    height: 20px;
     padding: 0 6px;
-    border-radius: 10px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.badge-ability {
     background: color-mix(in srgb, var(--skill-color, #fff) 20%, transparent);
     color: var(--skill-color, #fff);
-    font-size: 0.7rem;
-    font-weight: 600;
     border: 1px solid color-mix(in srgb, var(--skill-color, #fff) 40%, transparent);
+}
+
+.badge-xp {
+    background: var(--p-surface-border);
+    color: var(--p-text-muted-color);
+    border: 1px solid var(--p-surface-border);
 }
 
 .card-body {
