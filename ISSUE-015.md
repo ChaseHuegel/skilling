@@ -55,7 +55,7 @@ in a grid layout, similar to the skill dashboard.
 ### Observation
 
 Clicking to expand an ability card in the skill editor causes it to disappear
-entirely. This is a regression from a previous working state.
+entirely. This is a regression from a previous working state. This is being seen specifically with the template skill's abilities. Creating a new skill with new abilities appears to be fine.
 
 ### Root Cause Investigation
 
