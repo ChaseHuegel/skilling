@@ -222,16 +222,16 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Replace the skill editor header with a full-width preview banner mimicking the skill card styling (color accent, icon, name, level range), serving as both a preview and header
 - [x] Add hover flyout on the Skills nav link showing a dropdown of all skills; clicking navigates directly to that skill's editor
 - [x] Sort abilities on the abilities page by skill -> unlock level -> name
-- [ ] Skills nav button is slightly higher than other nav buttons (needs `align-items: center` on `.nav-dropdown`)
-- [ ] Skill card duplicate and delete buttons should be in top-right corner of card (move `.card-actions` inside `.card-header`)
-- [ ] Ability card foldout collapses when typing in the ID field — `expanded` map keyed by `ability.id` changes on each keystroke; key by index instead
-- [ ] Pending changes banner doesn't appear on other pages until visiting Skills page — `fetchStatus()` only called in DashboardPage; should be called at app level
-- [ ] Tags page count badge is centered between header and actions instead of being next to "Tags" text — needs a `.header-left` wrapper like Skills page
-- [ ] Pending changes banner should have a hover tooltip listing the pending files
-- [ ] "Apply & Reload" button should reload the page immediately after success
-- [ ] Skills nav flyout should be edge-to-edge with the nav button — set `width: 100%` on `.dropdown-menu`
-- [ ] Delete button for requirement items, particles, and sounds is below the fields instead of inline at the right
-- [ ] Mechanic parameter entries should have a light card-like outline (border/padding/background) similar to filter entries
-- [ ] Item slot field should use `AppCombobox` with prepopulated equipment slot options (HAND, OFF_HAND, FEET, LEGS, CHEST, HEAD)
-- [ ] Saving a skill with a new ability that has only id/name/unlockLevel/one mechanic fails — `RequirementsDTO` has `state` (singular) but frontend sends `states` (plural), causing deserialization error
-- [ ] Gap between skills nav button and flyout dropdown causes hover to break when moving mouse between them
+- [x] Skills nav button is slightly higher than other nav buttons (needs `align-items: center` on `.nav-dropdown`)
+- [x] Skill card duplicate and delete buttons should be in top-right corner of card (move `.card-actions` inside `.card-header`)
+- [x] Ability card foldout collapses when typing in the ID field — `expanded` map keyed by `ability.id` changes on each keystroke; key by index instead
+- [x] Pending changes banner doesn't appear on other pages until visiting Skills page — `fetchStatus()` only called in DashboardPage; should be called at app level
+- [x] Tags page count badge is centered between header and actions instead of being next to "Tags" text — needs a `.header-left` wrapper like Skills page
+- [x] Pending changes banner should have a hover tooltip listing the pending files
+- [x] "Apply & Reload" button should reload the page immediately after success
+- [x] Skills nav flyout should be edge-to-edge with the nav button — set `width: 100%` on `.dropdown-menu`
+- [x] Delete button for requirement items, particles, and sounds is below the fields instead of inline at the right
+- [x] Mechanic parameter entries should have a light card-like outline (border/padding/background) similar to filter entries
+- [x] Item slot field should use `AppCombobox` with prepopulated equipment slot options (HAND, OFF_HAND, FEET, LEGS, CHEST, HEAD)
+- [x] Saving a skill with a new ability that has only id/name/unlockLevel/one mechanic fails — `RequirementsDTO` has `state` (singular) but frontend sends `states` (plural), causing deserialization error
+- [x] Gap between skills nav button and flyout dropdown causes hover to break when moving mouse between them
