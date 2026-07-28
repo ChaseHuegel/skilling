@@ -2,6 +2,7 @@
     <div class="tags-page">
         <div class="page-header">
             <h1>Custom Tags</h1>
+            <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
             <div class="header-actions">
                 <button class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" :disabled="saving" @click="saveTags">
@@ -135,6 +136,15 @@ async function saveTags() {
 .page-header h1 {
     margin: 0;
     font-size: 1.5rem;
+}
+.count-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--p-form-field-placeholder-color, #888);
+    background: var(--p-content-border-color, #ddd);
+    padding: 0.15rem 0.6rem;
+    border-radius: 10px;
+    line-height: 1.4;
 }
 .header-actions {
     display: flex;
