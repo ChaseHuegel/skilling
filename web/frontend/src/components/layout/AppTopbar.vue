@@ -114,6 +114,8 @@ function logout() {
 }
 .nav-dropdown {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 .nav-dropdown:hover .dropdown-menu {
     display: block;
