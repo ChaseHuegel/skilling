@@ -205,7 +205,7 @@ async function save() {
         } else {
             await api.skills.update(skillId || form.id, payload);
         }
-        router.push('/');
+        window.location.reload();
     } catch (e: any) {
         error.value = e.message || 'Failed to save skill';
     } finally {
