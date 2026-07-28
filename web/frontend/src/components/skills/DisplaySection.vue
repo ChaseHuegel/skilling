@@ -41,7 +41,7 @@ function setField<K extends keyof DisplayConfig>(key: K, val: DisplayConfig[K]) 
       <input
         class="field-input"
         type="number"
-        step="1"
+        step="any"
         :value="modelValue.customModelData"
         @input="setField('customModelData', Number(($event.target as HTMLInputElement).value))"
       />

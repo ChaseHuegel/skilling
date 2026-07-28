@@ -489,6 +489,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
           <input
             class="field-input"
             type="number"
+            step="any"
             min="0"
             :value="ability.unlockLevel"
             @input="updateAbility(idx, { unlockLevel: Number(($event.target as HTMLInputElement).value) })"
@@ -602,6 +603,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                   <input
                     class="field-input-sm"
                     type="number"
+                    step="any"
                     min="1"
                     :value="item.amount"
                     @input="updateItem(idx, iIdx, { amount: Number(($event.target as HTMLInputElement).value) })"
@@ -784,6 +786,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                   <input
                     class="field-input-sm"
                     type="number"
+                    step="any"
                     min="1"
                     :value="particle.count"
                     @input="updateParticle(idx, pIdx, { count: Number(($event.target as HTMLInputElement).value) })"

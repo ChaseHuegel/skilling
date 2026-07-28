@@ -57,6 +57,7 @@ function setField<K extends keyof IdentityFields>(key: K, val: IdentityFields[K]
       <input
         class="field-input"
         type="number"
+        step="any"
         min="1"
         max="1000"
         :value="modelValue.maxLevel"
