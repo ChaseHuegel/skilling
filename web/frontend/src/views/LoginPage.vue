@@ -1,5 +1,14 @@
 <template>
     <div class="login-wrapper">
+        <button class="theme-toggle" @click="toggleDark" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+            <svg v-if="darkMode" viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.5" />
+                <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.07-6.07l-1.41 1.41M7.34 16.66l-1.41 1.41m12.73 0l-1.41-1.41M7.34 7.34L5.93 5.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <svg v-else viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+            </svg>
+        </button>
         <div class="login-card">
             <h1 class="login-title">Skilling</h1>
             <p class="login-subtitle">Web Administration Interface</p>
@@ -23,9 +32,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+
+const darkMode = computed(() => document.documentElement.classList.contains('app-dark'));
+
+function toggleDark() {
+    const next = !darkMode.value;
+    document.documentElement.classList.toggle('app-dark', next);
+    localStorage.setItem('skilling_dark_mode', String(next));
+}
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -45,6 +62,7 @@ async function submit() {
     justify-content: center;
     min-height: 100vh;
     background: var(--p-surface-ground);
+    position: relative;
 }
 .login-card {
     background: var(--p-content-background);
@@ -86,6 +104,24 @@ async function submit() {
     color: var(--p-red-600);
     font-size: 0.875rem;
     margin: 0.5rem 0;
+}
+.theme-toggle {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.35rem;
+    border-radius: 5px;
+    color: var(--p-form-field-placeholder-color, #888);
+    display: flex;
+    align-items: center;
+    transition: background 0.15s, color 0.15s;
+}
+.theme-toggle:hover {
+    background: var(--p-content-hover-background, #eee);
+    color: var(--p-text-color, #000);
 }
 
 </style>
