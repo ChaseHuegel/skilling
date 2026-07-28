@@ -156,11 +156,14 @@ public final class LevelUpDispatcher {
                 }
             }
 
-            String broadcastMsg = "<gray>[</gray><gold>Max Level!</gold><gray>]</gray> "
+            Component broadcastComponent = MINI_MESSAGE.deserialize(
+                    "<gray>[</gray><gold>Max Level!</gold><gray>]</gray> "
                     + "<light green>" + player.getName() + " </light green><yellow>reached max "
                     + "<" + skillColorName + ">" + displayName + "</" + skillColorName + ">"
-                    + " level!</yellow>";
-            Bukkit.broadcast(MINI_MESSAGE.deserialize(broadcastMsg));
+                    + " level!</yellow>");
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                online.sendMessage(broadcastComponent);
+            }
         } else if (major) {
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
                     org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
