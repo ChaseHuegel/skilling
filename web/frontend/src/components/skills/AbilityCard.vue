@@ -23,6 +23,10 @@
                 <span class="detail-label">Cooldown</span>
                 <span class="detail-value">{{ ability.requirements.cooldown }}s</span>
             </div>
+            <div v-if="mechanicList.length" class="ability-detail">
+                <span class="detail-label">Mechanics</span>
+                <span class="detail-value mechanic-list" :title="mechanicList.join('\n')">{{ mechanicList.join(', ') }}</span>
+            </div>
         </div>
     </div>
 </template>
@@ -37,6 +41,7 @@ const props = defineProps<{
         displayName?: string;
         unlockLevel: number;
         requirements?: { cooldown?: number; state?: string[]; items?: any[] };
+        mechanics?: { type: string }[];
     };
     skillId: string;
     skillDisplayName: string;
@@ -46,6 +51,8 @@ const isActive = computed(() => {
     const r = props.ability.requirements;
     return (r?.cooldown ?? 0) > 0 || (r?.state?.length ?? 0) > 0 || (r?.items?.length ?? 0) > 0;
 });
+
+const mechanicList = computed(() => (props.ability.mechanics || []).map(m => m.type));
 
 const router = useRouter();
 
@@ -117,5 +124,11 @@ function openSkill() {
 .detail-value {
     color: var(--p-text-color, #000);
     font-weight: 500;
+}
+.mechanic-list {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
 }
 </style>
