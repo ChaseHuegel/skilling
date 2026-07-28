@@ -1,8 +1,10 @@
 <template>
     <div class="tags-page">
         <div class="page-header">
-            <h1>Tags</h1>
-            <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
+            <div class="header-left">
+                <h1>Tags</h1>
+                <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
+            </div>
             <div class="header-actions">
                 <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
                 <button v-if="isDirty" class="btn btn-primary" :disabled="saving" @click="saveTags">
@@ -142,6 +144,11 @@ async function saveTags() {
 .page-header h1 {
     margin: 0;
     font-size: 1.5rem;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 .count-badge {
     font-size: 0.75rem;
