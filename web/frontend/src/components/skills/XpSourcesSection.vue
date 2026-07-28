@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
+import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 
 interface FilterEntry {
@@ -123,19 +124,13 @@ function duplicateSource() {
       <div class="source-body">
         <div class="field-row">
           <label class="field-label">Trigger</label>
-          <select
-            class="field-select"
-            :value="source.trigger"
-            @change="updateSource(idx, { trigger: ($event.target as HTMLSelectElement).value })"
-          >
-            <option
-              v-for="t in TRIGGER_OPTIONS"
-              :key="t"
-              :value="t"
-            >
-              {{ t }}
-            </option>
-          </select>
+          <AppCombobox
+            :model-value="source.trigger"
+            :suggestions="TRIGGER_OPTIONS as unknown as string[]"
+            placeholder="Select or type trigger"
+            :name="'trigger-' + idx"
+            @update:model-value="updateSource(idx, { trigger: $event })"
+          />
         </div>
 
         <div class="sub-section">

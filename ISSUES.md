@@ -205,7 +205,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Save Changes buttons should only appear when there are unsaved local edits on that page (dirty state tracking)
 - [x] Skill icon field: replace text input with a searchable dropdown of all Minecraft materials, showing 16x16 texture thumbnails inline
   - See `ISSUE-018.md` for full development plan
-- [ ] Create reusable `AppCombobox` component (input + datalist) and apply to State, Target, Tool fields; enrich Target/Tool suggestions with Minecraft materials
+- [x] Create reusable `AppCombobox` component (input + datalist) and apply to State, Target, Tool fields; enrich Target/Tool suggestions with Minecraft materials
   - See `ISSUE-019.md` for full development plan
 - [ ] Apply AppCombobox to particle type, sound type, and mechanic type fields in the ability editor; prepopulate with all known Minecraft particles, sounds, and registered mechanics (depends on ISSUE-019)
 - [ ] Move duplicate ability button from SectionToolbar to each ability card header as an icon button next to the delete button
