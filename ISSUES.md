@@ -192,7 +192,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Dark mode primary button text contrast — white-on-green hard to read; use black text in dark mode
 - [x] Remove drag reordering from skill cards on the dashboard (grid layout is not suited for it)
 - [x] Tags page is completely non-functional — `TagListEditor` v-model bound to read-only computed (`filteredTags`) silently drops all `update:modelValue` emits (remove tag, add material, drag reorder, etc.)
-- [ ] Config page Reset button has no confirmation dialog — discards changes immediately
+- [x] Config page Reset button has no confirmation dialog — discards changes immediately
 - [ ] Pending changes banner only appears on the dashboard — move to App.vue so it's visible on all pages (tags, config, abilities, skill editor, etc.)
 - [ ] Pending changes banner colors are too harsh in both themes — soften background/text/border for light and dark mode
 - [ ] Add tag count badge next to "Custom Tags" header on the Tags page

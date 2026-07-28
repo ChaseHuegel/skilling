@@ -3,7 +3,7 @@
         <div class="page-header">
             <h1>Configuration</h1>
             <div class="header-actions">
-                <button class="btn btn-secondary" @click="fetchConfig">Reset</button>
+                <button class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" :disabled="saving" @click="saveConfig">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </button>
@@ -50,6 +50,18 @@
                 <AppInput v-model="config.web.password" type="password" label="Password" />
             </ConfigSection>
         </div>
+
+        <!-- Reset confirm dialog -->
+        <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
+            <div class="modal">
+                <h3>Discard config changes?</h3>
+                <p>Any unsaved changes to your configuration will be lost.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showResetDialog = false">Keep Editing</button>
+                    <button class="btn btn-danger" @click="confirmReset">Discard</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -62,6 +74,7 @@ import AppInput from '../components/common/AppInput.vue';
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
+const showResetDialog = ref(false);
 
 const config = reactive({
     database: { poolSize: 10, walMode: true },
@@ -74,6 +87,11 @@ const config = reactive({
 });
 
 onMounted(fetchConfig);
+
+function confirmReset() {
+    showResetDialog.value = false;
+    fetchConfig();
+}
 
 async function fetchConfig() {
     loading.value = true;
@@ -142,5 +160,38 @@ async function saveConfig() {
     font-size: 0.8rem;
     color: var(--p-text-muted-color, #888);
     font-style: italic;
+}
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal {
+    background: var(--p-content-background, #fff);
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+}
+.modal p {
+    margin: 0 0 1.25rem;
+    color: var(--p-text-muted-color, #888);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
 }
 </style>
