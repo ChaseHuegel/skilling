@@ -212,6 +212,47 @@ conflicting files.
 
 ---
 
+## Minecraft Asset Textures
+
+The skill card icons render actual Minecraft item textures via a public
+CDN. This gives admins a visual preview of how their icon choice looks.
+
+### Configuration
+
+The Minecraft release version used for asset URLs is set in
+`web/frontend/.env`:
+
+```
+VITE_MINECRAFT_ASSETS_VERSION=1.21.4
+```
+
+This defaults to `1.21.4` (matching the current Paper API target). To
+change it, edit the `.env` file and rebuild the frontend:
+
+```bash
+cd web/frontend && npm run build
+```
+
+The version must correspond to a branch in the
+[InventivetalentDev/minecraft-assets](https://github.com/InventivetalentDev/minecraft-assets)
+repository (e.g., `1.21.4`, `1.21.3`, etc.).
+
+### Texture CDN Source
+
+Textures are fetched from GitHub's raw content CDN:
+
+```
+https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/{VERSION}/assets/minecraft/textures/item/{ITEM_NAME}.png
+```
+
+- Strips the `minecraft:` namespace from material strings.
+- Falls back to a styled letter-in-circle if the texture fails to load
+  (network error, missing texture, or invalid version).
+- The `MinecraftIcon` component handles loading states (shimmer), error
+  states (letter fallback), and loaded states (fade-in).
+
+---
+
 ## Security Considerations
 
 - **Auth:** Basic Auth over HTTP. All API routes (except `/api/health` and

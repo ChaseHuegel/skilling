@@ -2,7 +2,7 @@
 
 Welcome to the Skilling repository. This file provides architectural context, coding constraints, and design philosophies. **Read these instructions carefully before writing or modifying any code.**
 
-Companion files with deeper specifications: `README.md`, `REQUIREMENTS.md`, `DESIGN.md`, and `template-skill.yml`.
+Companion files with deeper specifications: `README.md`, `REQUIREMENTS.md`, `DESIGN.md`, `template-skill.yml`, and `web/AGENTS.md` for Web GUI configuration (including Minecraft asset texture version).
 
 ## Project Context
 Skilling is a high-performance, data-driven RPG skills engine for PaperMC (Minecraft). It acts as a rules engine, not a traditional plugin.
