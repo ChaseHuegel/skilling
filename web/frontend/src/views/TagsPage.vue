@@ -3,7 +3,7 @@
         <div class="page-header">
             <h1>Custom Tags</h1>
             <div class="header-actions">
-                <button class="btn btn-secondary" @click="fetchTags">Reset</button>
+                <button class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" :disabled="saving" @click="saveTags">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </button>
@@ -33,6 +33,18 @@
         <div v-else class="tags-content">
             <TagListEditor v-model="filteredTags" :suggestions="suggestions" />
         </div>
+
+        <!-- Reset confirm dialog -->
+        <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
+            <div class="modal">
+                <h3>Discard tag changes?</h3>
+                <p>Any unsaved changes to your custom tags will be lost.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showResetDialog = false">Keep Editing</button>
+                    <button class="btn btn-danger" @click="resetTags">Discard</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -46,6 +58,7 @@ const saving = ref(false);
 const error = ref<string | null>(null);
 const tags = reactive<Record<string, string[]>>({});
 const searchQuery = ref('');
+const showResetDialog = ref(false);
 
 const filteredTags = computed(() => {
     if (!searchQuery.value.trim()) return tags;
@@ -68,6 +81,11 @@ const suggestions = [
 ];
 
 onMounted(fetchTags);
+
+function resetTags() {
+    showResetDialog.value = false;
+    fetchTags();
+}
 
 async function fetchTags() {
     loading.value = true;
@@ -158,6 +176,39 @@ async function saveTags() {
     padding: 2rem;
     color: var(--p-text-muted-color, #888);
     font-size: 0.875rem;
+}
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal {
+    background: var(--p-content-background, #fff);
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+}
+.modal p {
+    margin: 0 0 1.25rem;
+    color: var(--p-text-muted-color, #888);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
 }
 .loading {
     text-align: center;

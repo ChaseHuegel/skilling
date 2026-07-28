@@ -6,12 +6,15 @@
                 <h1>Skills</h1>
                 <span v-if="!loading && skills.length > 0" class="skill-count-badge">{{ skills.length }} skill{{ skills.length !== 1 ? 's' : '' }}</span>
             </div>
+            <div class="header-actions">
+                <button v-if="staging.hasPending" class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" @click="createSkill">
-                <svg class="plus-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
-                    <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-                </svg>
-                New Skill
-            </button>
+                    <svg class="plus-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+                        <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    </svg>
+                    New Skill
+                </button>
+            </div>
         </div>
         <p class="dashboard-subtitle">Manage your skill definitions and abilities</p>
 
@@ -69,6 +72,18 @@
                 </button>
             </div>
         </div>
+
+        <!-- Reset confirm dialog -->
+        <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
+            <div class="modal">
+                <h3>Discard all pending changes?</h3>
+                <p>This will remove all staged edits to skills, tags, and configuration. The pending changes banner will disappear.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showResetDialog = false">Keep Editing</button>
+                    <button class="btn btn-danger" @click="confirmReset">Discard</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -86,6 +101,7 @@ const skills = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const searchQuery = ref('');
+const showResetDialog = ref(false);
 
 const filteredSkills = computed(() => {
     if (!searchQuery.value.trim()) return skills.value;
@@ -117,6 +133,12 @@ onMounted(fetchSkills);
 
 function createSkill() {
     router.push('/skills/new');
+}
+
+async function confirmReset() {
+    showResetDialog.value = false;
+    await staging.discard();
+    await staging.fetchStatus();
 }
 </script>
 
@@ -274,6 +296,44 @@ function createSkill() {
 }
 .skeleton-line.w-70 { width: 70%; }
 .skeleton-line.w-40 { width: 40%; }
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal {
+    background: var(--p-content-background, #fff);
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+}
+.modal p {
+    margin: 0 0 1.25rem;
+    color: var(--p-text-muted-color, #888);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
 
 @keyframes shimmer {
     0% { background-position: 200% 0; }

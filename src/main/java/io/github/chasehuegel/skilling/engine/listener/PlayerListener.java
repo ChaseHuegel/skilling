@@ -37,7 +37,7 @@ public final class PlayerListener implements Listener {
                 asyncBatchWorker.flushDirtyProfiles();
             }).whenComplete((v, ex) -> {
                 if (ex != null) {
-                    plugin.getLogger().log(Level.WARNING, "Failed to flush dirty profiles on quit for " + player.getName(), ex);
+                    Skilling.getInstance().getLogger().log(Level.WARNING, "Failed to flush dirty profiles on quit for " + player.getName(), ex);
                 }
                 profileManager.unloadProfile(player.getUniqueId());
             });
