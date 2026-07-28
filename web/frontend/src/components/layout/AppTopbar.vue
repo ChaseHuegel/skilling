@@ -126,6 +126,7 @@ function logout() {
     top: 100%;
     left: 0;
     z-index: 200;
+    width: 100%;
     min-width: 200px;
     margin-top: 4px;
     border: 1px solid var(--p-content-border-color, #ddd);
