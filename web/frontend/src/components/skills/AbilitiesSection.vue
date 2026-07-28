@@ -136,11 +136,11 @@ const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abiliti
 
 const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground'] as const
 
-const expanded = ref<Record<string, boolean>>({})
+const expanded = ref<Record<number, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)
 
-function toggleExpand(id: string) {
-  expanded.value[id] = !expanded.value[id]
+function toggleExpand(idx: number) {
+  expanded.value[idx] = !expanded.value[idx]
 }
 
 function emptyAbility(): Ability {
@@ -404,13 +404,13 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
     >
       <div
         class="ability-header"
-        @click="toggleExpand(ability.id)"
+        @click="toggleExpand(idx)"
       >
         <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="ability-title">
           {{ ability.id || 'Unnamed Ability' }}
         </span>
-        <span class="expand-toggle">{{ expanded[ability.id] ? '▼' : '▶' }}</span>
+        <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
         <button
           class="btn btn-ghost btn-sm"
           title="Duplicate"
@@ -431,7 +431,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
       </div>
 
       <div
-        v-if="expanded[ability.id]"
+        v-if="expanded[idx]"
         class="ability-body"
       >
         <div class="field-row">
