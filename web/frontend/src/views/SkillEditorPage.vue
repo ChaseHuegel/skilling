@@ -13,6 +13,11 @@
             </div>
 
             <div v-if="error" class="error-banner">{{ error }}</div>
+            <div v-if="Object.keys(fieldErrors).length > 0" class="error-banner">
+                <div v-for="(msg, field) in fieldErrors" :key="field" class="field-error-line">
+                    <strong>{{ field }}</strong>: {{ msg }}
+                </div>
+            </div>
 
             <div class="editor-sections">
                 <fieldset class="section">
@@ -78,6 +83,39 @@ const saving = ref(false);
 const error = ref<string | null>(null);
 const showCancelDialog = ref(false);
 
+const fieldErrors = reactive<Record<string, string>>({});
+
+function clearFieldError(field: string) {
+    delete fieldErrors[field];
+}
+
+function validate(): boolean {
+    const errors: Record<string, string> = {};
+    const trimmedId = form.id.trim();
+
+    if (!trimmedId) {
+        errors['id'] = 'Skill ID is required';
+    } else if (isNew && skillsStore.skills.some((s: any) => s.id === trimmedId)) {
+        errors['id'] = 'Skill ID already exists';
+    }
+
+    if (form.abilities && form.abilities.length > 0) {
+        const seen = new Set<string>();
+        for (let i = 0; i < form.abilities.length; i++) {
+            const ab = form.abilities[i];
+            if (!ab.id || !ab.id.trim()) {
+                errors[`ability-${i}-id`] = 'Ability ID is required';
+            } else if (seen.has(ab.id)) {
+                errors[`ability-${i}-id`] = 'Duplicate ability ID';
+            }
+            seen.add(ab.id);
+        }
+    }
+
+    Object.assign(fieldErrors, errors);
+    return Object.keys(errors).length === 0;
+}
+
 const tagSuggestions = [
     '#c:ores', '#c:stone', '#c:logs', '#c:gems',
     '#minecraft:logs', '#minecraft:planks', '#minecraft:stone_tool_materials',
@@ -136,6 +174,7 @@ onMounted(async () => {
 });
 
 async function save() {
+    if (!validate()) return;
     saving.value = true;
     error.value = null;
     try {
@@ -208,6 +247,12 @@ function discard() {
     border-radius: 4px;
     margin-bottom: 1rem;
     font-size: 0.875rem;
+}
+.field-error-line {
+    margin-bottom: 0.25rem;
+}
+.field-error-line:last-child {
+    margin-bottom: 0;
 }
 .loading {
     text-align: center;
