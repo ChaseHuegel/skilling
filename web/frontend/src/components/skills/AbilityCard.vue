@@ -2,8 +2,8 @@
     <div class="ability-card" @click="openSkill">
         <div class="ability-header">
             <span class="ability-name">{{ ability.displayName || ability.id }}</span>
-            <span class="ability-type-badge" :class="ability.unlockLevel > 0 ? 'badge-active' : 'badge-passive'">
-                {{ ability.unlockLevel > 0 ? 'Active' : 'Passive' }}
+            <span class="ability-type-badge" :class="isActive ? 'badge-active' : 'badge-passive'">
+                {{ isActive ? 'Active' : 'Passive' }}
             </span>
         </div>
         <div class="ability-body">
@@ -28,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
@@ -35,11 +36,16 @@ const props = defineProps<{
         id: string;
         displayName?: string;
         unlockLevel: number;
-        requirements?: { cooldown?: number };
+        requirements?: { cooldown?: number; state?: string[]; items?: any[] };
     };
     skillId: string;
     skillDisplayName: string;
 }>();
+
+const isActive = computed(() => {
+    const r = props.ability.requirements;
+    return (r?.cooldown ?? 0) > 0 || (r?.state?.length ?? 0) > 0 || (r?.items?.length ?? 0) > 0;
+});
 
 const router = useRouter();
 
@@ -88,9 +94,9 @@ function openSkill() {
     border: 1px solid color-mix(in srgb, var(--p-primary-color, #3b82f6) 40%, transparent);
 }
 .badge-passive {
-    background: color-mix(in srgb, var(--p-cyan-500, #06b6d4) 15%, transparent);
-    color: var(--p-cyan-600, #0891b2);
-    border: 1px solid color-mix(in srgb, var(--p-cyan-500, #06b6d4) 30%, transparent);
+    background: var(--p-content-border-color);
+    color: var(--p-form-field-placeholder-color);
+    border: 1px solid var(--p-content-border-color);
 }
 .ability-body {
     padding: 0.75rem 1rem;
