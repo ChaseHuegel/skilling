@@ -12,10 +12,10 @@ export class DashboardPage {
   constructor(page: Page) {
     this.page = page;
     this.skillCards = page.locator('.skill-card');
-    this.createBtn = page.locator('.create-btn');
+    this.createBtn = page.locator('.dashboard-header .btn-primary');
     this.pendingBanner = page.locator('.banner');
-    this.applyBtn = page.locator('.apply-btn');
-    this.discardBtn = page.locator('.discard-btn');
+    this.applyBtn = page.locator('.banner .btn-primary');
+    this.discardBtn = page.locator('.banner .btn-ghost');
   }
 
   async goto() {

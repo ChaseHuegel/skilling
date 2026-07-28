@@ -85,25 +85,6 @@ async function saveTags() {
     display: flex;
     gap: 0.5rem;
 }
-.btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.875rem;
-}
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-.btn-primary {
-    background: var(--p-primary-color, #3b82f6);
-    color: white;
-}
-.btn-secondary {
-    background: var(--p-surface-border, #e5e7eb);
-    color: var(--p-text-color, #333);
-}
 .error-banner {
     background: var(--p-red-100, #fee2e2);
     color: var(--p-red-800, #991b1b);

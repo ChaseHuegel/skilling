@@ -6,7 +6,7 @@
                 <h1>Skills</h1>
                 <span v-if="!loading && skills.length > 0" class="skill-count-badge">{{ skills.length }} skill{{ skills.length !== 1 ? 's' : '' }}</span>
             </div>
-            <button class="create-btn" @click="createSkill">
+                <button class="btn btn-primary" @click="createSkill">
                 <svg class="plus-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
                     <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
                 </svg>
@@ -34,7 +34,7 @@
             <div class="state-icon">⚠️</div>
             <h2 class="state-title">Failed to load skills</h2>
             <p class="state-desc">{{ error }}</p>
-            <button class="retry-btn" @click="fetchSkills">Retry</button>
+                <button class="btn btn-secondary btn-sm" @click="fetchSkills">Retry</button>
         </div>
 
         <!-- Skill grid or empty state -->
@@ -44,7 +44,7 @@
                 <div class="state-icon">📦</div>
                 <h2 class="state-title">No skills yet</h2>
                 <p class="state-desc">Create your first skill definition to get started.</p>
-                <button class="create-btn" @click="createSkill">
+            <button class="btn btn-primary" @click="createSkill">
                     <svg class="plus-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
                         <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
                     </svg>
@@ -126,32 +126,10 @@ function createSkill() {
     color: var(--p-form-field-placeholder-color);
     font-size: 0.875rem;
 }
-.create-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: var(--p-primary-color);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: background 0.15s, transform 0.15s;
-}
-.create-btn:hover {
-    filter: brightness(1.1);
-    transform: scale(1.02);
-}
-.create-btn:active {
-    transform: scale(0.98);
-}
 .plus-icon {
     flex-shrink: 0;
 }
 
-/* ---- Skill Grid ---- */
 .skill-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -269,20 +247,6 @@ function createSkill() {
 .error-state .state-icon {
     font-size: 2rem;
 }
-.retry-btn {
-    background: none;
-    border: 1px solid var(--p-content-border-color);
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.875rem;
-    color: var(--p-text-color);
-    transition: background 0.15s;
-}
-.retry-btn:hover {
-    background: var(--p-content-hover-background);
-}
-
 /* ---- Card Entrance Animation ---- */
 .skill-card {
     animation: cardEnter 0.35s ease both;

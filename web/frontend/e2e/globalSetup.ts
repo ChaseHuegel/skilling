@@ -36,7 +36,7 @@ async function globalSetup(_config: FullConfig) {
   await page.waitForSelector('#username', { timeout: 10000 });
   await page.fill('#username', 'admin');
   await page.fill('#password', 'skilling');
-  await page.click('.login-btn');
+  await page.click('.btn-primary');
   await page.waitForURL('**/');
   await context.storageState({ path: AUTH_FILE });
   await browser.close();

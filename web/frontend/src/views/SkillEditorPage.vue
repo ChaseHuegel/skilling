@@ -184,28 +184,13 @@ function discard() {
     display: flex;
     gap: 0.5rem;
 }
-.btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.875rem;
-}
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-.btn-primary {
-    background: var(--p-primary-color, #3b82f6);
-    color: white;
-}
-.btn-secondary {
-    background: var(--p-content-hover-background);
-    color: var(--p-text-color);
-}
 .btn-danger {
-    background: var(--p-red-600, #dc2626);
-    color: white;
+    background: transparent;
+    color: var(--p-red-500, #ef4444);
+    border-color: var(--p-red-500, #ef4444);
+}
+.btn-danger:hover {
+    background: color-mix(in srgb, var(--p-red-500, #ef4444) 10%, transparent);
 }
 .error-banner {
     background: var(--p-red-100, #fee2e2);

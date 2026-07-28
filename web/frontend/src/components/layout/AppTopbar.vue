@@ -14,7 +14,7 @@
             </nav>
         </div>
         <div class="topbar-right">
-            <button class="theme-toggle" @click="$emit('toggleDark')" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+            <button class="btn btn-icon" @click="$emit('toggleDark')" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
                 <svg v-if="darkMode" viewBox="0 0 24 24" width="18" height="18" fill="none">
                     <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.5" />
                     <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.07-6.07l-1.41 1.41M7.34 16.66l-1.41 1.41m12.73 0l-1.41-1.41M7.34 7.34L5.93 5.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -155,7 +155,7 @@ function logout() {
 }
 
 .logout-btn {
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
     font-size: 0.8rem;
@@ -167,5 +167,9 @@ function logout() {
 .logout-btn:hover {
     color: var(--p-text-color);
     text-decoration: underline;
+}
+
+.theme-toggle {
+    /* btn-icon styles handled by global .btn.btn-icon */
 }
 </style>

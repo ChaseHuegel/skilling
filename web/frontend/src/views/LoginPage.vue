@@ -15,7 +15,7 @@
 
             <p v-if="authStore.error" class="error-msg">{{ authStore.error }}</p>
 
-            <button class="login-btn" :disabled="authStore.loading" @click="submit">
+            <button class="btn btn-primary" :disabled="authStore.loading" @click="submit">
                 {{ authStore.loading ? 'Signing in...' : 'Sign In' }}
             </button>
         </div>
@@ -87,18 +87,5 @@ async function submit() {
     font-size: 0.875rem;
     margin: 0.5rem 0;
 }
-.login-btn {
-    width: 100%;
-    padding: 0.625rem;
-    background: var(--p-primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-}
-.login-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
+
 </style>

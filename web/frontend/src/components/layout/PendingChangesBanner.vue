@@ -8,10 +8,10 @@
                 <span>{{ staging.fileCount }} file{{ staging.fileCount !== 1 ? 's' : '' }} changed</span>
             </div>
             <div class="banner-actions">
-                <button class="apply-btn" :disabled="staging.applying" @click="apply">
+                <button class="btn btn-primary btn-sm" :disabled="staging.applying" @click="apply">
                     {{ staging.applying ? 'Applying...' : 'Apply & Reload' }}
                 </button>
-                <button class="discard-btn" :disabled="staging.applying" @click="staging.discard()">Discard</button>
+                <button class="btn btn-ghost btn-sm" :disabled="staging.applying" @click="staging.discard()">Discard</button>
                 <span v-if="error" class="error-pill">{{ error }}</span>
             </div>
         </div>
@@ -65,48 +65,6 @@ async function apply() {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-.apply-btn {
-    background: var(--p-primary-color);
-    color: white;
-    border: none;
-    padding: 0.3rem 0.7rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 500;
-    transition: filter 0.15s;
-}
-
-.apply-btn:hover {
-    filter: brightness(1.1);
-}
-
-.apply-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.discard-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.8rem;
-    color: var(--p-yellow-800);
-    opacity: 0.6;
-    padding: 0.2rem 0.3rem;
-    transition: opacity 0.15s;
-}
-
-.discard-btn:hover {
-    opacity: 1;
-    text-decoration: underline;
-}
-
-.discard-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
 }
 
 .error-pill {

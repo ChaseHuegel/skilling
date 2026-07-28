@@ -10,12 +10,13 @@ export async function ensureLoggedIn(page: Page): Promise<void> {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(500);
 
-  // Check if we're on the login page (auth guard redirected)
-  const loginBtn = page.locator('.login-btn');
-  if (await loginBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+  // Check if we're on the login page by looking for the login-title element
+  // (unique to the login page — avoids conflicting with .btn-primary on the dashboard)
+  const loginTitle = page.locator('.login-title');
+  if (await loginTitle.isVisible({ timeout: 1000 }).catch(() => false)) {
     await page.fill('#username', 'admin');
     await page.fill('#password', 'skilling');
-    await loginBtn.click();
+    await page.locator('.btn-primary').click();
     await page.waitForURL(/#\/$/);
   }
 }
