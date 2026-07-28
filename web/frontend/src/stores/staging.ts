@@ -33,6 +33,7 @@ export const useStagingStore = defineStore('staging', () => {
                 hasPending.value = false;
                 fileCount.value = 0;
                 files.value = [];
+                window.location.reload();
                 return null;
             }
             return result.message;
