@@ -56,6 +56,23 @@ const SOUND_SUGGESTIONS = [
 
 const SLOT_SUGGESTIONS = ['HAND', 'OFF_HAND', 'FEET', 'LEGS', 'CHEST', 'HEAD']
 
+const MECHANIC_PARAM_NAMES: Record<string, string[]> = {
+  'core:yield_multiplier': ['yield_chance'],
+  'core:chain_break': ['chain_limit', 'exhaustion'],
+  'core:apply_status': ['effect', 'duration', 'amplifier'],
+  'core:modify_attribute': ['attribute', 'amount', 'duration'],
+  'core:modify_damage': ['multiplier'],
+  'core:cancel_damage': ['chance'],
+  'core:modify_furnace_output': ['multiplier'],
+  'core:modify_brew_time': ['multiplier'],
+  'core:modify_potion_duration': ['multiplier'],
+  'core:modify_craft_output': ['multiplier'],
+  'core:saturation_inject': ['saturation'],
+  'core:aoe_effect': ['effect', 'radius', 'duration', 'amplifier'],
+  'core:projectile': ['speed', 'damage'],
+  'core:teleport': ['range'],
+}
+
 const MECHANIC_SUGGESTIONS = [
   'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
   'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
@@ -658,12 +675,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                   class="param-entry"
                 >
                   <div class="param-header">
-                    <input
-                      class="field-input param-name-input"
-                      type="text"
+                    <AppCombobox
+                      :model-value="param.name"
+                      :suggestions="MECHANIC_PARAM_NAMES[mech.type] || []"
                       placeholder="Parameter name"
-                      :value="param.name"
-                      @input="updateMechanicParamName(idx, mIdx, pIdx, ($event.target as HTMLInputElement).value)"
+                      :name="'param-' + idx + '-' + mIdx + '-' + pIdx"
+                      @update:model-value="updateMechanicParamName(idx, mIdx, pIdx, $event)"
                     />
                     <button
                       class="btn btn-ghost btn-sm"
