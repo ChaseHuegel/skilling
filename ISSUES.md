@@ -194,7 +194,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Tags page is completely non-functional — `TagListEditor` v-model bound to read-only computed (`filteredTags`) silently drops all `update:modelValue` emits (remove tag, add material, drag reorder, etc.)
 - [x] Config page Reset button has no confirmation dialog — discards changes immediately
 - [x] Pending changes banner only appears on the dashboard — move to App.vue so it's visible on all pages (tags, config, abilities, skill editor, etc.)
-- [ ] Pending changes banner colors are too harsh in both themes — soften background/text/border for light and dark mode
+- [x] Pending changes banner colors are too harsh in both themes — soften background/text/border for light and dark mode
 - [ ] Add tag count badge next to "Custom Tags" header on the Tags page
 - [ ] Config section cards have stark white background in dark mode — missing explicit `background: var(--p-content-background)` on `.config-section`
 - [ ] Default to dark mode (currently defaults to light mode)

@@ -34,8 +34,8 @@ async function apply() {
 
 <style scoped>
 .banner {
-    background: var(--p-yellow-100);
-    border-bottom: 1px solid var(--p-yellow-300);
+    background: color-mix(in srgb, var(--p-primary-color) 8%, var(--p-content-background));
+    border-bottom: 1px solid var(--p-content-border-color);
     padding: 0.35rem 1.5rem;
 }
 
@@ -52,7 +52,7 @@ async function apply() {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    color: var(--p-yellow-800);
+    color: var(--p-text-muted-color);
     font-weight: 500;
 }
 
