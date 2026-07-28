@@ -14,6 +14,7 @@ const emit = defineEmits<{
 
 const addingTag = ref(false)
 const newTagName = ref('')
+const pendingRemoveTag = ref<string | null>(null)
 
 const entriesList = computed({
   get: () => Object.entries(props.modelValue).map(([key, val]) => ({ key, val })),
@@ -31,7 +32,14 @@ function updateTagMaterials(tag: string, materials: string[]) {
   emit('update:modelValue', { ...props.modelValue, [tag]: materials })
 }
 
-function removeTag(tag: string) {
+function confirmRemoveTag(tag: string) {
+  pendingRemoveTag.value = tag
+}
+
+function executeRemoveTag() {
+  const tag = pendingRemoveTag.value
+  if (!tag) return
+  pendingRemoveTag.value = null
   const copy = { ...props.modelValue }
   delete copy[tag]
   emit('update:modelValue', copy)
@@ -82,7 +90,7 @@ function cancelAddTag() {
           v-if="entriesList.length > 1"
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
-          @click="removeTag(entry.key)"
+          @click="confirmRemoveTag(entry.key)"
         >
           Remove Tag
         </button>
@@ -129,7 +137,18 @@ function cancelAddTag() {
       </button>
       <span class="tag-name-hint">Name must match <code>[a-z_]+</code></span>
     </div>
-  </div>
+    </div>
+
+    <div v-if="pendingRemoveTag" class="modal-overlay" @click.self="pendingRemoveTag = null">
+      <div class="modal">
+        <h3>Remove tag?</h3>
+        <p>This will permanently remove <strong>{{ pendingRemoveTag }}</strong> and its materials.</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" @click="pendingRemoveTag = null">Cancel</button>
+          <button class="btn btn-danger" @click="executeRemoveTag">Remove</button>
+        </div>
+      </div>
+    </div>
 </template>
 
 <style scoped>
@@ -203,5 +222,38 @@ function cancelAddTag() {
   padding: 0.1rem 0.3rem;
   border-radius: 2px;
   color: var(--p-text-color);
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--p-content-background, #fff);
+  border: 1px solid var(--p-content-border-color, #ddd);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+.modal p {
+  margin: 0 0 1.25rem;
+  color: var(--p-text-muted-color, #888);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 </style>

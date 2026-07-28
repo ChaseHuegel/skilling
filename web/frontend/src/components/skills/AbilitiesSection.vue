@@ -137,6 +137,7 @@ const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abiliti
 const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground'] as const
 
 const expanded = ref<Record<string, boolean>>({})
+const pendingRemoveAbility = ref<number | null>(null)
 
 function toggleExpand(id: string) {
   expanded.value[id] = !expanded.value[id]
@@ -178,6 +179,18 @@ function updateRequirement(index: number, patch: Partial<Ability['requirements']
 function updateFeedback(index: number, patch: Partial<Ability['feedback']>) {
   const ab = props.modelValue[index]
   updateAbility(index, { feedback: { ...ab.feedback, ...patch } })
+}
+
+function confirmRemoveAbility(index: number) {
+  pendingRemoveAbility.value = index
+}
+
+function executeRemoveAbility() {
+  if (pendingRemoveAbility.value === null) return
+  const copy = [...props.modelValue]
+  copy.splice(pendingRemoveAbility.value, 1)
+  emit('update:modelValue', copy)
+  pendingRemoveAbility.value = null
 }
 
 function removeAbility(index: number) {
@@ -407,7 +420,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
         <button
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
-          @click.stop="removeAbility(idx)"
+          @click.stop="confirmRemoveAbility(idx)"
         >
           &times;
         </button>
@@ -873,6 +886,17 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
         </div>
       </div>
     </div>
+
+    <div v-if="pendingRemoveAbility !== null" class="modal-overlay" @click.self="pendingRemoveAbility = null">
+      <div class="modal">
+        <h3>Delete ability?</h3>
+        <p>This will permanently remove this ability and all its mechanics.</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" @click="pendingRemoveAbility = null">Cancel</button>
+          <button class="btn btn-danger" @click="executeRemoveAbility">Delete</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1117,5 +1141,37 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   color: var(--p-form-field-placeholder-color);
 }
 
-
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--p-content-background, #fff);
+  border: 1px solid var(--p-content-border-color, #ddd);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+.modal p {
+  margin: 0 0 1.25rem;
+  color: var(--p-text-muted-color, #888);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
 </style>

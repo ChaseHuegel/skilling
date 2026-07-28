@@ -209,7 +209,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-019.md` for full development plan
 - [x] Apply AppCombobox to particle type, sound type, and mechanic type fields in the ability editor; prepopulate with all known Minecraft particles, sounds, and registered mechanics (depends on ISSUE-019)
 - [x] Move duplicate ability button from SectionToolbar to each ability card header as an icon button next to the delete button
-- [ ] Add confirmation dialogs to destructive deletes: "Remove Tag" (tags page), "×" on XP source cards, "×" on ability cards (not minor items like individual filter entries)
+- [x] Add confirmation dialogs to destructive deletes: "Remove Tag" (tags page), "×" on XP source cards, "×" on ability cards (not minor items like individual filter entries)
 - [ ] Add delete and duplicate buttons to skill cards; duplicate appends _N to ID and " (copy)" to display name; show skill ID in faded text at card bottom
   - See `ISSUE-020.md` for full development plan
 - [ ] Confirmation dialogs don't respect dark mode — modal overlay/dialog styling breaks in dark theme

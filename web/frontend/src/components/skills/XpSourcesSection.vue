@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
@@ -32,6 +32,18 @@ const sources = computed({
   set: (val) => emit('update:modelValue', val),
 })
 const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(sources)
+
+const pendingRemoveSource = ref<number | null>(null)
+
+function confirmRemoveSource(index: number) {
+  pendingRemoveSource.value = index
+}
+
+function executeRemoveSource() {
+  if (pendingRemoveSource.value === null) return
+  removeSource(pendingRemoveSource.value)
+  pendingRemoveSource.value = null
+}
 
 const TRIGGER_OPTIONS = [
   'block_break',
@@ -115,7 +127,7 @@ function duplicateSource() {
         <button
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
-          @click="removeSource(idx)"
+          @click="confirmRemoveSource(idx)"
         >
           &times;
         </button>
@@ -150,6 +162,17 @@ function duplicateSource() {
             @update:model-value="updateReward(idx, $event)"
           />
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="pendingRemoveSource !== null" class="modal-overlay" @click.self="pendingRemoveSource = null">
+    <div class="modal">
+      <h3>Delete XP source?</h3>
+      <p>This will permanently remove this XP source.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" @click="pendingRemoveSource = null">Cancel</button>
+        <button class="btn btn-danger" @click="executeRemoveSource">Delete</button>
       </div>
     </div>
   </div>
@@ -245,5 +268,37 @@ function duplicateSource() {
   letter-spacing: 0.03em;
 }
 
-
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--p-content-background, #fff);
+  border: 1px solid var(--p-content-border-color, #ddd);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+.modal p {
+  margin: 0 0 1.25rem;
+  color: var(--p-text-muted-color, #888);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
 </style>
