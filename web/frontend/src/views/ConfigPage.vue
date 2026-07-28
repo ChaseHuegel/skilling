@@ -1,7 +1,7 @@
 <template>
     <div class="config-page">
         <div class="page-header">
-            <h1>Configuration</h1>
+            <h1>Config</h1>
             <div class="header-actions">
                 <button class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" :disabled="saving" @click="saveConfig">

@@ -1,7 +1,7 @@
 <template>
     <div class="tags-page">
         <div class="page-header">
-            <h1>Custom Tags</h1>
+            <h1>Tags</h1>
             <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
             <div class="header-actions">
                 <button class="btn btn-secondary" @click="showResetDialog = true">Reset</button>

@@ -199,7 +199,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Config section cards have stark white background in dark mode — missing explicit `background: var(--p-content-background)` on `.config-section`
 - [x] Default to dark mode (currently defaults to light mode)
 - [x] Add dark/light mode toggle button to the login page
-- [ ] Rename page headers for consistency: "Configuration" → "Config", "Custom Tags" → "Tags", nav "Dashboard" → "Skills"
+- [x] Rename page headers for consistency: "Configuration" → "Config", "Custom Tags" → "Tags", nav "Dashboard" → "Skills"
 - [ ] Replace topbar lightning bolt icon with a stylish upwards arrow to better evoke "skilling up" / "leveling up"
 - [ ] Reset buttons should be `btn-danger` style and only appear when there are pending changes relevant to that page
 - [ ] Save Changes buttons should only appear when there are unsaved local edits on that page (dirty state tracking)

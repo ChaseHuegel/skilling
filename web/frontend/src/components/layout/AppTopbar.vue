@@ -8,7 +8,7 @@
                 Skilling
             </router-link>
             <nav class="topbar-nav">
-                <router-link to="/" class="nav-link" exact-active-class="router-link-exact-active">Dashboard</router-link>
+                <router-link to="/" class="nav-link" exact-active-class="router-link-exact-active">Skills</router-link>
                 <router-link to="/abilities" class="nav-link" active-class="router-link-active">Abilities</router-link>
                 <router-link to="/tags" class="nav-link" active-class="router-link-active">Tags</router-link>
                 <router-link to="/config" class="nav-link" active-class="router-link-active">Config</router-link>
