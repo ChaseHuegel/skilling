@@ -108,7 +108,7 @@ interface Ability {
   lore: string[]
   requirements: {
     cooldown: number
-    states: string[]
+    state: string[]
     items: RequirementItem[]
   }
   mechanics: MechanicEntry[]
@@ -153,7 +153,7 @@ function emptyAbility(): Ability {
     lore: [],
     requirements: {
       cooldown: 0,
-      states: [],
+      state: [],
       items: [],
     },
     mechanics: [],
@@ -237,9 +237,9 @@ function updateLoreLine(index: number, lineIdx: number, val: string) {
 
 function toggleState(index: number, state: string) {
   const ab = props.modelValue[index]
-  const states = ab.requirements.states
-  const copy = states.includes(state) ? states.filter(s => s !== state) : [...states, state]
-  updateRequirement(index, { states: copy })
+  const current = ab.requirements.state
+  const copy = current.includes(state) ? current.filter(s => s !== state) : [...current, state]
+  updateRequirement(index, { state: copy })
 }
 
 function addItem(index: number) {
@@ -525,7 +525,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               >
                 <input
                   type="checkbox"
-                  :checked="ability.requirements.states.includes(state)"
+                  :checked="ability.requirements.state.includes(state)"
                   @change="toggleState(idx, state)"
                 />
                 {{ state }}
