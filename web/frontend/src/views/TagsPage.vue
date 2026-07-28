@@ -60,16 +60,23 @@ const tags = reactive<Record<string, string[]>>({});
 const searchQuery = ref('');
 const showResetDialog = ref(false);
 
-const filteredTags = computed(() => {
-    if (!searchQuery.value.trim()) return tags;
-    const q = searchQuery.value.toLowerCase();
-    const result: Record<string, string[]> = {};
-    for (const [key, values] of Object.entries(tags)) {
-        if (key.toLowerCase().includes(q) || values.some(v => v.toLowerCase().includes(q))) {
-            result[key] = values;
+const filteredTags = computed({
+    get: () => {
+        if (!searchQuery.value.trim()) return tags;
+        const q = searchQuery.value.toLowerCase();
+        const result: Record<string, string[]> = {};
+        for (const [key, values] of Object.entries(tags)) {
+            if (key.toLowerCase().includes(q) || values.some(v => v.toLowerCase().includes(q))) {
+                result[key] = values;
+            }
         }
-    }
-    return result;
+        return result;
+    },
+    set: (val) => {
+        const keys = Object.keys(tags);
+        for (const k of keys) delete tags[k];
+        for (const [k, v] of Object.entries(val)) tags[k] = v;
+    },
 });
 
 const suggestions = [
