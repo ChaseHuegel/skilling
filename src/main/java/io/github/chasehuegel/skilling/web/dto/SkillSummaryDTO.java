@@ -1,5 +1,7 @@
 package io.github.chasehuegel.skilling.web.dto;
 
+import java.util.List;
+
 public record SkillSummaryDTO(
     String id,
     String displayName,
@@ -7,5 +9,8 @@ public record SkillSummaryDTO(
     String color,
     int maxLevel,
     int abilityCount,
-    int xpSourceCount
+    int xpSourceCount,
+    List<String> xpSourceTriggers,
+    List<String> abilityIds,
+    List<String> abilityNames
 ) {}

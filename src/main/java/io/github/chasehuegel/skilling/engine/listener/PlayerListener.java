@@ -1,5 +1,6 @@
 package io.github.chasehuegel.skilling.engine.listener;
 
+import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
@@ -10,7 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public final class PlayerListener implements Listener {
 
@@ -34,8 +35,14 @@ public final class PlayerListener implements Listener {
         if (profile != null && profile.isDirty()) {
             CompletableFuture.runAsync(() -> {
                 asyncBatchWorker.flushDirtyProfiles();
-            }).orTimeout(1, TimeUnit.SECONDS);
+            }).whenComplete((v, ex) -> {
+                if (ex != null) {
+                    plugin.getLogger().log(Level.WARNING, "Failed to flush dirty profiles on quit for " + player.getName(), ex);
+                }
+                profileManager.unloadProfile(player.getUniqueId());
+            });
+        } else {
+            profileManager.unloadProfile(player.getUniqueId());
         }
-        profileManager.unloadProfile(player.getUniqueId());
     }
 }

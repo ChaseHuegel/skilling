@@ -15,6 +15,19 @@
         </div>
         <p class="dashboard-subtitle">Manage your skill definitions and abilities</p>
 
+        <div class="search-bar">
+            <svg class="search-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+                <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" />
+                <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <input
+                v-model="searchQuery"
+                class="search-input"
+                type="text"
+                placeholder="Search skills..."
+            />
+        </div>
+
         <!-- Loading state: skeleton cards -->
         <div v-if="loading" class="skill-grid">
             <div v-for="i in 3" :key="i" class="skeleton-card">
@@ -39,8 +52,12 @@
 
         <!-- Skill grid or empty state -->
         <div v-else class="skill-grid">
-            <SkillCard v-for="s in skills" :key="s.id" :skill="s" />
-            <div v-if="skills.length === 0" class="state-card empty-state">
+            <SkillCard v-for="s in filteredSkills" :key="s.id" :skill="s" />
+            <div v-if="searchQuery.trim() && filteredSkills.length === 0" class="state-card empty-state">
+                <h2 class="state-title">No skills match your search</h2>
+                <p class="state-desc">Try adjusting your search query.</p>
+            </div>
+            <div v-else-if="skills.length === 0" class="state-card empty-state">
                 <div class="state-icon">📦</div>
                 <h2 class="state-title">No skills yet</h2>
                 <p class="state-desc">Create your first skill definition to get started.</p>
@@ -56,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { api } from '../api/client';
 import { useStagingStore } from '../stores/staging';
@@ -68,6 +85,20 @@ const staging = useStagingStore();
 const skills = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const searchQuery = ref('');
+
+const filteredSkills = computed(() => {
+    if (!searchQuery.value.trim()) return skills.value;
+    const q = searchQuery.value.toLowerCase();
+    return skills.value.filter((s) => {
+        const id = (s.id || '').toLowerCase();
+        const display = (s.displayName || '').toLowerCase();
+        const triggers = (s.xpSourceTriggers || []).join(' ').toLowerCase();
+        const abilityIds = (s.abilityIds || []).join(' ').toLowerCase();
+        const abilityNames = (s.abilityNames || []).join(' ').toLowerCase();
+        return [id, display, triggers, abilityIds, abilityNames].some(f => f.includes(q));
+    });
+});
 
 async function fetchSkills() {
     loading.value = true;
@@ -122,9 +153,39 @@ function createSkill() {
     line-height: 1.4;
 }
 .dashboard-subtitle {
-    margin: 0 0 1.5rem;
+    margin: 0 0 1rem;
     color: var(--p-form-field-placeholder-color);
     font-size: 0.875rem;
+}
+.search-bar {
+    position: relative;
+    margin-bottom: 1.25rem;
+}
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--p-form-field-placeholder-color, #888);
+    pointer-events: none;
+}
+.search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 6px;
+    background: var(--p-form-field-background, #fff);
+    color: var(--p-form-field-color, #000);
+    font-size: 0.875rem;
+    outline: none;
+    box-sizing: border-box;
+}
+.search-input:focus {
+    border-color: var(--p-primary-color, #3b82f6);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--p-primary-color, #3b82f6) 20%, transparent);
+}
+.search-input::placeholder {
+    color: var(--p-form-field-placeholder-color, #888);
 }
 .plus-icon {
     flex-shrink: 0;

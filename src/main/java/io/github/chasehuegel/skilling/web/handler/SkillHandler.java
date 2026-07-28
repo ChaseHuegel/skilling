@@ -1,5 +1,6 @@
 package io.github.chasehuegel.skilling.web.handler;
 
+import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.web.dto.SkillDetailDTO;
 import io.github.chasehuegel.skilling.web.dto.SkillSerializer;
@@ -8,6 +9,7 @@ import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.http.Context;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +29,15 @@ public final class SkillHandler {
         List<SkillSummaryDTO> summaries = new ArrayList<>();
         for (var entry : skillManager.getSkills().entrySet()) {
             var def = entry.getValue();
+            List<String> xpSourceTriggers = def.xpSources() != null
+                ? def.xpSources().stream().map(SkillDefinition.XpSource::trigger).toList()
+                : Collections.emptyList();
+            List<String> abilityIds = def.abilities() != null
+                ? def.abilities().stream().map(SkillDefinition.Ability::id).toList()
+                : Collections.emptyList();
+            List<String> abilityNames = def.abilities() != null
+                ? def.abilities().stream().map(a -> a.displayName() != null ? a.displayName() : a.id()).toList()
+                : Collections.emptyList();
             summaries.add(new SkillSummaryDTO(
                 def.id(),
                 def.display() != null ? def.display().name() : def.id(),
@@ -34,7 +45,10 @@ public final class SkillHandler {
                 def.display() != null ? def.display().color() : "WHITE",
                 def.maxLevel(),
                 def.abilities() != null ? def.abilities().size() : 0,
-                def.xpSources() != null ? def.xpSources().size() : 0
+                def.xpSources() != null ? def.xpSources().size() : 0,
+                xpSourceTriggers,
+                abilityIds,
+                abilityNames
             ));
         }
         ctx.json(summaries);
