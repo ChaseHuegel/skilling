@@ -33,6 +33,7 @@ export const useStagingStore = defineStore('staging', () => {
                 hasPending.value = false;
                 fileCount.value = 0;
                 files.value = [];
+                window.location.reload();
                 return null;
             }
             return result.message;
@@ -52,5 +53,9 @@ export const useStagingStore = defineStore('staging', () => {
         } catch { /* ignore */ }
     }
 
-    return { hasPending, fileCount, files, loading, applying, fetchStatus, applyAndReload, discard };
+    function hasFileChanges(pattern: string): boolean {
+        return files.value.some(f => f.includes(pattern));
+    }
+
+    return { hasPending, fileCount, files, loading, applying, fetchStatus, applyAndReload, discard, hasFileChanges };
 });

@@ -17,10 +17,11 @@ defineProps<{
 
 <style scoped>
 .config-section {
-    border: 1px solid var(--p-surface-border, #ddd);
+    border: 1px solid var(--p-content-border-color, #ddd);
     border-radius: 6px;
     padding: 1rem;
     margin-bottom: 1rem;
+    background: var(--p-content-background);
 }
 .config-section legend {
     font-weight: 600;

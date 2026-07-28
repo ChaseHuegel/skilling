@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
+import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 
 interface FilterEntry {
@@ -26,11 +27,35 @@ const emit = defineEmits<{
   'update:modelValue': [value: XpSource[]]
 }>()
 
+const expanded = ref<Record<number, boolean>>({})
+
+watch(() => props.modelValue.length, (len) => {
+  for (let i = 0; i < len; i++) {
+    if (expanded.value[i] === undefined) expanded.value[i] = false
+  }
+}, { immediate: true })
+
+function toggleExpand(idx: number) {
+  expanded.value[idx] = !expanded.value[idx]
+}
+
 const sources = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val),
 })
 const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(sources)
+
+const pendingRemoveSource = ref<number | null>(null)
+
+function confirmRemoveSource(index: number) {
+  pendingRemoveSource.value = index
+}
+
+function executeRemoveSource() {
+  if (pendingRemoveSource.value === null) return
+  removeSource(pendingRemoveSource.value)
+  pendingRemoveSource.value = null
+}
 
 const TRIGGER_OPTIONS = [
   'block_break',
@@ -65,6 +90,8 @@ function removeSource(index: number) {
 }
 
 function addSource() {
+  const idx = props.modelValue.length
+  expanded.value[idx] = true
   emit('update:modelValue', [
     ...props.modelValue,
     {
@@ -75,15 +102,13 @@ function addSource() {
   ])
 }
 
-function duplicateSource() {
-  if (props.modelValue.length === 0) {
-    addSource()
-    return
-  }
-  const last = props.modelValue[props.modelValue.length - 1]
+function duplicateSource(index: number) {
+  const source = props.modelValue[index]
+  const idx = props.modelValue.length
+  expanded.value[idx] = true
   emit('update:modelValue', [
     ...props.modelValue,
-    { ...last, filters: [...last.filters], reward: { ...last.reward, params: { ...last.reward.params } } },
+    { ...source, filters: [...source.filters], reward: { ...source.reward, params: { ...source.reward.params } } },
   ])
 }
 </script>
@@ -93,10 +118,13 @@ function duplicateSource() {
     <SectionToolbar
       section-name="XP Source"
       :can-delete="false"
-      :can-duplicate="modelValue.length > 0"
+      :can-duplicate="false"
       @add="addSource"
-      @duplicate="duplicateSource"
     />
+
+    <div v-if="modelValue.length === 0" class="empty-warning">
+      No XP sources defined. Skills require at least one XP source to be functional.
+    </div>
 
     <div
       v-for="(source, idx) in modelValue"
@@ -108,34 +136,46 @@ function duplicateSource() {
       @dragover="onDragOver($event, idx)"
       @dragend="onDragEnd"
     >
-      <div class="source-header">
-        <span class="drag-handle" title="Drag to reorder">&#8801;</span>
+      <div
+        class="source-header"
+        @click="toggleExpand(idx)"
+      >
+        <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="source-title">Source #{{ idx + 1 }}</span>
+        <span class="source-trigger">{{ source.trigger }}</span>
+        <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
+        <button
+          class="btn btn-ghost btn-sm"
+          title="Duplicate"
+          @click.stop="duplicateSource(idx)"
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+            <rect x="3" y="5" width="9" height="10" rx="1" stroke="currentColor" stroke-width="1.2" />
+            <path d="M5 5V3a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.2" />
+          </svg>
+        </button>
         <button
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
-          @click="removeSource(idx)"
+          @click.stop="confirmRemoveSource(idx)"
         >
           &times;
         </button>
       </div>
 
-      <div class="source-body">
+      <div
+        v-if="expanded[idx]"
+        class="source-body"
+      >
         <div class="field-row">
           <label class="field-label">Trigger</label>
-          <select
-            class="field-select"
-            :value="source.trigger"
-            @change="updateSource(idx, { trigger: ($event.target as HTMLSelectElement).value })"
-          >
-            <option
-              v-for="t in TRIGGER_OPTIONS"
-              :key="t"
-              :value="t"
-            >
-              {{ t }}
-            </option>
-          </select>
+          <AppCombobox
+            :model-value="source.trigger"
+            :suggestions="TRIGGER_OPTIONS as unknown as string[]"
+            placeholder="Select or type trigger"
+            :name="'trigger-' + idx"
+            @update:model-value="updateSource(idx, { trigger: $event })"
+          />
         </div>
 
         <div class="sub-section">
@@ -158,6 +198,17 @@ function duplicateSource() {
       </div>
     </div>
   </div>
+
+  <div v-if="pendingRemoveSource !== null" class="modal-overlay" @click.self="pendingRemoveSource = null">
+    <div class="modal">
+      <h3>Delete XP source?</h3>
+      <p>This will permanently remove this XP source.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" @click="pendingRemoveSource = null">Cancel</button>
+        <button class="btn btn-danger" @click="executeRemoveSource">Delete</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -174,6 +225,15 @@ function duplicateSource() {
   overflow: hidden;
 }
 
+.empty-warning {
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+  border: 1px dashed var(--p-content-border-color);
+  border-radius: 6px;
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
+  text-align: center;
+}
 .xp-source-card[draggable="true"] {
   cursor: default;
 }
@@ -197,13 +257,23 @@ function duplicateSource() {
   padding: 0.5rem 0.75rem;
   background: var(--p-form-field-background);
   border-bottom: 1px solid var(--p-content-border-color);
+  cursor: pointer;
+  user-select: none;
 }
 
 .source-title {
-  flex: 1;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--p-form-field-placeholder-color);
+}
+.source-trigger {
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--p-form-field-placeholder-color);
+  margin-left: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .source-body {
@@ -250,5 +320,38 @@ function duplicateSource() {
   letter-spacing: 0.03em;
 }
 
-
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--p-text-color);
+}
+.modal p {
+  margin: 0 0 1.25rem;
+  color: var(--p-text-muted-color, #888);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
 </style>

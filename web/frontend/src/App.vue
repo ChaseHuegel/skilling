@@ -1,17 +1,22 @@
 <template>
     <div class="app-container">
         <AppTopbar v-if="authStore.isAuthenticated" @toggle-dark="toggleDark" />
+        <PendingChangesBanner v-if="authStore.isAuthenticated" />
         <router-view />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from './stores/auth';
+import { useStagingStore } from './stores/staging';
 import AppTopbar from './components/layout/AppTopbar.vue';
+import PendingChangesBanner from './components/layout/PendingChangesBanner.vue';
 
 const authStore = useAuthStore();
+const stagingStore = useStagingStore();
 authStore.checkSession();
+onMounted(() => stagingStore.fetchStatus());
 
 const darkMode = ref(document.documentElement.classList.contains('app-dark'));
 
@@ -57,6 +62,9 @@ body {
     background: var(--p-primary-color);
     color: #fff;
     border-color: var(--p-primary-color);
+}
+.app-dark .btn-primary {
+    color: #000;
 }
 .btn-primary:hover { filter: brightness(1.1); }
 

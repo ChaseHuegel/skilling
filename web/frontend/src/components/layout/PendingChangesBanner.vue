@@ -5,7 +5,7 @@
                 <svg class="banner-icon" viewBox="0 0 24 24" width="16" height="16" fill="none">
                     <path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
                 </svg>
-                <span>{{ staging.fileCount }} file{{ staging.fileCount !== 1 ? 's' : '' }} changed</span>
+                <span :title="staging.files.join('\n')">{{ staging.fileCount }} file{{ staging.fileCount !== 1 ? 's' : '' }} changed</span>
             </div>
             <div class="banner-actions">
                 <button class="btn btn-primary btn-sm" :disabled="staging.applying" @click="apply">
@@ -34,8 +34,8 @@ async function apply() {
 
 <style scoped>
 .banner {
-    background: var(--p-yellow-100);
-    border-bottom: 1px solid var(--p-yellow-300);
+    background: color-mix(in srgb, var(--p-primary-color) 8%, var(--p-content-background));
+    border-bottom: 1px solid var(--p-content-border-color);
     padding: 0.35rem 1.5rem;
 }
 
@@ -52,8 +52,9 @@ async function apply() {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    color: var(--p-yellow-800);
+    color: var(--p-text-muted-color);
     font-weight: 500;
+    cursor: help;
 }
 
 .banner-icon {

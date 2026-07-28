@@ -3,12 +3,27 @@
         <div class="topbar-left">
             <router-link to="/" class="topbar-brand">
                 <svg class="brand-icon" viewBox="0 0 24 24" width="22" height="22" fill="none">
-                    <path d="M14 2L6.5 12.5l3.5 2L7 22l10-12.5L13.5 8l3.5-6H14z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                    <path d="M12 3L3 14h5v7h8v-7h5L12 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
                 </svg>
                 Skilling
             </router-link>
             <nav class="topbar-nav">
-                <router-link to="/" class="nav-link" exact-active-class="router-link-exact-active">Dashboard</router-link>
+                <div class="nav-dropdown">
+                    <router-link to="/" class="nav-link" exact-active-class="router-link-exact-active">Skills</router-link>
+                    <div class="dropdown-menu">
+                        <div v-if="skills.length === 0" class="dropdown-empty">No skills loaded</div>
+                        <router-link
+                            v-for="s in skills"
+                            :key="s.id"
+                            :to="'/skills/' + s.id"
+                            class="dropdown-item"
+                            :style="{ '--skill-color': (s.color || 'white').toLowerCase() }"
+                        >
+                            <MinecraftIcon :material="s.icon || 'minecraft:barrier'" :size="28" />
+                            {{ s.displayName || s.id }}
+                        </router-link>
+                    </div>
+                </div>
                 <router-link to="/abilities" class="nav-link" active-class="router-link-active">Abilities</router-link>
                 <router-link to="/tags" class="nav-link" active-class="router-link-active">Tags</router-link>
                 <router-link to="/config" class="nav-link" active-class="router-link-active">Config</router-link>
@@ -37,11 +52,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
+import { api } from '../../api/client';
+import MinecraftIcon from '../common/MinecraftIcon.vue';
 
 defineEmits<{ toggleDark: [] }>();
+
+const skills = ref<any[]>([]);
+
+onMounted(async () => {
+    try {
+        skills.value = await api.skills.list();
+    } catch { /* ignore */ }
+});
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -87,6 +112,56 @@ function logout() {
 .topbar-nav {
     display: flex;
     gap: 0.25rem;
+}
+.nav-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-dropdown:hover .dropdown-menu {
+    display: block;
+}
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 200;
+    width: 100%;
+    min-width: 200px;
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 6px;
+    background: var(--p-content-background, #fff);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+.dropdown-empty {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--p-form-field-placeholder-color, #888);
+    text-align: center;
+}
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem 0.5rem 0.65rem;
+    text-decoration: none;
+    color: var(--p-text-color, #000);
+    font-size: 0.85rem;
+    transition: background 0.1s;
+    border-left: 3px solid var(--skill-color, transparent);
+}
+.dropdown-item:hover {
+    background: var(--p-content-hover-background, #f0f0f0);
 }
 
 .nav-link {

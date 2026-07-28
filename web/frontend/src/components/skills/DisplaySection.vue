@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MaterialPicker from '../common/MaterialPicker.vue'
+
 interface DisplayConfig {
   icon: string
   customModelData: number
@@ -27,12 +29,10 @@ function setField<K extends keyof DisplayConfig>(key: K, val: DisplayConfig[K]) 
   <div class="display-section">
     <div class="field-row">
       <label class="field-label">Icon</label>
-      <input
-        class="field-input"
-        type="text"
-        placeholder="minecraft:iron_pickaxe"
-        :value="modelValue.icon"
-        @input="setField('icon', ($event.target as HTMLInputElement).value)"
+      <MaterialPicker
+        :model-value="modelValue.icon"
+        label=""
+        @update:model-value="setField('icon', $event)"
       />
     </div>
 
@@ -41,7 +41,7 @@ function setField<K extends keyof DisplayConfig>(key: K, val: DisplayConfig[K]) 
       <input
         class="field-input"
         type="number"
-        step="1"
+        step="any"
         :value="modelValue.customModelData"
         @input="setField('customModelData', Number(($event.target as HTMLInputElement).value))"
       />

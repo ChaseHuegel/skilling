@@ -131,6 +131,22 @@ public final class StagingManager {
         return new File(stagingDir, stagedPath);
     }
 
+    public void stageSkillDeletion(String skillId) {
+        File markerDir = new File(stagingDir, "deleted_skills");
+        markerDir.mkdirs();
+        try {
+            File marker = new File(markerDir, skillId + ".yml.deleted");
+            marker.createNewFile();
+            updateStatusAdd("deleted_skills/" + skillId + ".yml.deleted");
+            // Remove any previously staged file for this skill so it doesn't
+            // get resurrected by applyAndBackup() copying all staged .yml files
+            File staged = stagedSkillFile(skillId);
+            if (staged.exists()) staged.delete();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to stage deletion for skill: " + skillId, e);
+        }
+    }
+
     public List<String> applyAndBackup() {
         if (!hasPendingChanges()) return List.of();
 
@@ -146,6 +162,24 @@ public final class StagingManager {
             File backupDir = new File(stagingDir, "backup/" + java.time.LocalDateTime.now().toString()
                 .replace(":", "-"));
             backupDir.mkdirs();
+
+            // Process deletions before applying new files
+            File deletedSkillsDir = new File(stagingDir, "deleted_skills");
+            if (deletedSkillsDir.exists()) {
+                File[] deletionMarkers = deletedSkillsDir.listFiles((d, n) -> n.endsWith(".yml.deleted"));
+                if (deletionMarkers != null) {
+                    for (File marker : deletionMarkers) {
+                        String name = marker.getName();
+                        String skillId = name.substring(0, name.length() - ".yml.deleted".length());
+                        File live = new File(skillsDir, skillId + ".yml");
+                        backupFile(live, backupDir);
+                        if (live.exists() && live.delete()) {
+                            LOGGER.info("Deleted live skill file: " + live.getName());
+                        }
+                        applied.add("deleted_skills/" + skillId + ".yml");
+                    }
+                }
+            }
 
             // Apply staged skills
             File stagedSkillsDir = new File(stagingDir, "skills");

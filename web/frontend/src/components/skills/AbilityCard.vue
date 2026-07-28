@@ -1,9 +1,9 @@
 <template>
-    <div class="ability-card" @click="openSkill">
+    <div class="ability-card" :style="{ '--skill-color': (skillColor || 'white').toLowerCase() }" @click="openSkill">
         <div class="ability-header">
             <span class="ability-name">{{ ability.displayName || ability.id }}</span>
-            <span class="ability-type-badge" :class="ability.unlockLevel > 0 ? 'badge-active' : 'badge-passive'">
-                {{ ability.unlockLevel > 0 ? 'Active' : 'Passive' }}
+            <span class="ability-type-badge" :class="isActive ? 'badge-active' : 'badge-passive'">
+                {{ isActive ? 'Active' : 'Passive' }}
             </span>
         </div>
         <div class="ability-body">
@@ -15,15 +15,24 @@
                 <span class="detail-label">Unlock</span>
                 <span class="detail-value">Level {{ ability.unlockLevel }}</span>
             </div>
+            <div class="ability-detail">
+                <span class="detail-label">ID</span>
+                <span class="detail-value" style="font-family: monospace; font-size: 0.75rem;">{{ ability.id }}</span>
+            </div>
             <div v-if="ability.requirements?.cooldown" class="ability-detail">
                 <span class="detail-label">Cooldown</span>
                 <span class="detail-value">{{ ability.requirements.cooldown }}s</span>
+            </div>
+            <div v-if="mechanicList.length" class="ability-detail">
+                <span class="detail-label">Mechanics</span>
+                <span class="detail-value mechanic-list" :title="mechanicList.join('\n')">{{ mechanicList.join(', ') }}</span>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
@@ -31,11 +40,20 @@ const props = defineProps<{
         id: string;
         displayName?: string;
         unlockLevel: number;
-        requirements?: { cooldown?: number };
+        requirements?: { cooldown?: number; state?: string[]; items?: any[] };
+        mechanics?: { type: string }[];
     };
     skillId: string;
     skillDisplayName: string;
+    skillColor?: string;
 }>();
+
+const isActive = computed(() => {
+    const r = props.ability.requirements;
+    return (r?.cooldown ?? 0) > 0 || (r?.state?.length ?? 0) > 0 || (r?.items?.length ?? 0) > 0;
+});
+
+const mechanicList = computed(() => (props.ability.mechanics || []).map(m => m.type));
 
 const router = useRouter();
 
@@ -49,6 +67,7 @@ function openSkill() {
     display: flex;
     flex-direction: column;
     border: 1px solid var(--p-content-border-color, #ddd);
+    border-top: 3px solid var(--skill-color, var(--p-content-border-color));
     border-radius: 8px;
     background: var(--p-content-background, #fff);
     cursor: pointer;
@@ -84,9 +103,9 @@ function openSkill() {
     border: 1px solid color-mix(in srgb, var(--p-primary-color, #3b82f6) 40%, transparent);
 }
 .badge-passive {
-    background: color-mix(in srgb, var(--p-cyan-500, #06b6d4) 15%, transparent);
-    color: var(--p-cyan-600, #0891b2);
-    border: 1px solid color-mix(in srgb, var(--p-cyan-500, #06b6d4) 30%, transparent);
+    background: var(--p-content-border-color);
+    color: var(--p-form-field-placeholder-color);
+    border: 1px solid var(--p-content-border-color);
 }
 .ability-body {
     padding: 0.75rem 1rem;
@@ -107,5 +126,11 @@ function openSkill() {
 .detail-value {
     color: var(--p-text-color, #000);
     font-weight: 500;
+}
+.mechanic-list {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
 }
 </style>

@@ -2,9 +2,18 @@
     <div class="editor-page">
         <div v-if="loading" class="loading">Loading skill...</div>
         <div v-else>
-            <div class="editor-header">
-                <h1>{{ isNew ? 'Create Skill' : `Edit: ${form.displayName || form.id}` }}</h1>
-                <div class="header-actions">
+            <div
+                class="editor-banner"
+                :style="{ '--banner-color': form.color?.toLowerCase() || '#fff' }"
+            >
+                <div class="banner-left">
+                    <MinecraftIcon :material="form.icon || 'minecraft:barrier'" :color="form.color" :size="48" />
+                    <div class="banner-info">
+                        <div class="banner-name">{{ form.displayName || form.id || 'New Skill' }}</div>
+                        <div class="banner-meta">Level 1 – {{ form.maxLevel }}</div>
+                    </div>
+                </div>
+                <div class="banner-actions">
                     <button class="btn btn-secondary" @click="confirmCancel">Cancel</button>
                     <button class="btn btn-primary" :disabled="saving" @click="save">
                         {{ saving ? 'Saving...' : 'Save Changes' }}
@@ -13,11 +22,16 @@
             </div>
 
             <div v-if="error" class="error-banner">{{ error }}</div>
+            <div v-if="Object.keys(fieldErrors).length > 0" class="error-banner">
+                <div v-for="(msg, field) in fieldErrors" :key="field" class="field-error-line">
+                    <strong>{{ field }}</strong>: {{ msg }}
+                </div>
+            </div>
 
             <div class="editor-sections">
                 <fieldset class="section">
                     <legend>Identity</legend>
-                    <SkillIdentitySection v-model="identityForm" :readonly="!isNew" />
+                    <SkillIdentitySection v-model="identityForm" :readonly="false" />
                 </fieldset>
 
                 <fieldset class="section">
@@ -61,6 +75,7 @@ import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api } from '../api/client';
 import { useSkillsStore } from '../stores/skills';
+import MinecraftIcon from '../components/common/MinecraftIcon.vue';
 import SkillIdentitySection from '../components/skills/SkillIdentitySection.vue';
 import DisplaySection from '../components/skills/DisplaySection.vue';
 import ProgressionSection from '../components/skills/ProgressionSection.vue';
@@ -78,13 +93,81 @@ const saving = ref(false);
 const error = ref<string | null>(null);
 const showCancelDialog = ref(false);
 
-const tagSuggestions = [
+const fieldErrors = reactive<Record<string, string>>({});
+
+function clearFieldError(field: string) {
+    delete fieldErrors[field];
+}
+
+function validate(): boolean {
+    const errors: Record<string, string> = {};
+    const trimmedId = form.id.trim();
+
+    if (!trimmedId) {
+        errors['id'] = 'Skill ID is required';
+    } else if (isNew && skillsStore.skills.some((s: any) => s.id === trimmedId)) {
+        errors['id'] = 'Skill ID already exists';
+    }
+
+    if (form.abilities && form.abilities.length > 0) {
+        const seen = new Set<string>();
+        for (let i = 0; i < form.abilities.length; i++) {
+            const ab = form.abilities[i];
+            if (!ab.id || !ab.id.trim()) {
+                errors[`ability-${i}-id`] = 'Ability ID is required';
+            } else if (seen.has(ab.id)) {
+                errors[`ability-${i}-id`] = 'Duplicate ability ID';
+            }
+            seen.add(ab.id);
+        }
+    }
+
+    Object.assign(fieldErrors, errors);
+    return Object.keys(errors).length === 0;
+}
+
+const TAG_SUGGESTIONS_BASE = [
     '#c:ores', '#c:stone', '#c:logs', '#c:gems',
     '#minecraft:logs', '#minecraft:planks', '#minecraft:stone_tool_materials',
     '#minecraft:pickaxes', '#minecraft:axes', '#minecraft:shovels', '#minecraft:hoes',
     '#minecraft:coals', '#minecraft:copper_ores', '#minecraft:iron_ores',
     '#minecraft:gold_ores', '#minecraft:diamond_ores', '#minecraft:emerald_ores',
 ];
+
+const MATERIAL_SUGGESTIONS = [
+    'minecraft:stone', 'minecraft:andesite', 'minecraft:diorite', 'minecraft:granite',
+    'minecraft:dirt', 'minecraft:grass_block', 'minecraft:sand', 'minecraft:gravel',
+    'minecraft:oak_log', 'minecraft:spruce_log', 'minecraft:birch_log', 'minecraft:jungle_log',
+    'minecraft:dark_oak_log', 'minecraft:acacia_log', 'minecraft:mangrove_log', 'minecraft:cherry_log',
+    'minecraft:oak_planks', 'minecraft:spruce_planks', 'minecraft:birch_planks',
+    'minecraft:cobblestone', 'minecraft:deepslate', 'minecraft:tuff', 'minecraft:calcite',
+    'minecraft:iron_ore', 'minecraft:copper_ore', 'minecraft:gold_ore', 'minecraft:diamond_ore',
+    'minecraft:emerald_ore', 'minecraft:lapis_ore', 'minecraft:redstone_ore', 'minecraft:coal_ore',
+    'minecraft:netherrack', 'minecraft:nether_gold_ore', 'minecraft:nether_quartz_ore',
+    'minecraft:ancient_debris', 'minecraft:end_stone', 'minecraft:obsidian',
+    'minecraft:diamond_pickaxe', 'minecraft:iron_pickaxe', 'minecraft:stone_pickaxe',
+    'minecraft:netherite_pickaxe', 'minecraft:diamond_axe', 'minecraft:iron_axe',
+    'minecraft:stone_axe', 'minecraft:netherite_axe', 'minecraft:diamond_shovel',
+    'minecraft:iron_shovel', 'minecraft:netherite_shovel',
+    'minecraft:diamond_hoe', 'minecraft:netherite_hoe',
+    'minecraft:cobblestone', 'minecraft:iron_ingot', 'minecraft:gold_ingot',
+    'minecraft:diamond', 'minecraft:emerald', 'minecraft:netherite_scrap',
+    'minecraft:redstone', 'minecraft:coal', 'minecraft:lapis_lazuli',
+    'minecraft:copper_ingot', 'minecraft:raw_iron', 'minecraft:raw_gold', 'minecraft:raw_copper',
+    'minecraft:wheat', 'minecraft:carrot', 'minecraft:potato', 'minecraft:beetroot',
+    'minecraft:apple', 'minecraft:golden_apple', 'minecraft:enchanted_golden_apple',
+    'minecraft:rotten_flesh', 'minecraft:bone', 'minecraft:string', 'minecraft:feather',
+    'minecraft:gunpowder', 'minecraft:blaze_rod', 'minecraft:blaze_powder',
+    'minecraft:ender_pearl', 'minecraft:eye_of_ender', 'minecraft:ghast_tear',
+    'minecraft:magma_cream', 'minecraft:slime_ball', 'minecraft:spider_eye',
+    'minecraft:fermented_spider_eye', 'minecraft:golden_carrot', 'minecraft:glistering_melon_slice',
+    'minecraft:potion', 'minecraft:experience_bottle', 'minecraft:book', 'minecraft:enchanted_book',
+    'minecraft:paper', 'minecraft:map', 'minecraft:compass', 'minecraft:clock',
+    'minecraft:leather', 'minecraft:rabbit_hide', 'minecraft:scute', 'minecraft:nautilus_shell',
+    'minecraft:heart_of_the_sea', 'minecraft:prismarine_shard', 'minecraft:prismarine_crystals',
+];
+
+const tagSuggestions = [...TAG_SUGGESTIONS_BASE, ...MATERIAL_SUGGESTIONS];
 
 const form = reactive<Record<string, any>>({
     id: '',
@@ -112,11 +195,53 @@ const progressionForm = computed({
     set: (val: any) => { form.progression = val; },
 });
 
+function apiAbilityToForm(ab: any): any {
+    return {
+        ...ab,
+        lore: ab.display?.lore || [],
+        display: undefined,
+        requirements: {
+            ...ab.requirements,
+            items: (ab.requirements?.items || []).map((item: any) => ({
+                action: item.action || 'possession',
+                tag: item.tag || '',
+                slot: item.slot || '',
+                amount: item.amount || 1,
+                itemCooldown: item.itemCooldown || 0,
+            })),
+        },
+        mechanics: (ab.mechanics || []).map((m: any) => ({
+            ...m,
+            params: Object.entries(m.parameters || {}).map(([name, evaluator]) => ({ name, evaluator })),
+            parameters: undefined,
+        })),
+    };
+}
+
+function formAbilityToApi(ab: any): any {
+    const result: any = {
+        ...ab,
+        lore: undefined,
+        display: { lore: ab.lore || [] },
+        mechanics: (ab.mechanics || []).map((m: any) => {
+            const params: Record<string, any> = {};
+            for (const p of m.params || []) {
+                if (p.name) params[p.name] = p.evaluator;
+            }
+            return { ...m, params: undefined, parameters: params };
+        }),
+    };
+    return result;
+}
+
 onMounted(async () => {
     if (!isNew && skillId) {
         loading.value = true;
         try {
             const data = await api.skills.get(skillId);
+            if (data.abilities) {
+                data.abilities = data.abilities.map(apiAbilityToForm);
+            }
             Object.assign(form, data);
             await nextTick();
             const hash = route.hash;
@@ -136,6 +261,7 @@ onMounted(async () => {
 });
 
 async function save() {
+    if (!validate()) return;
     saving.value = true;
     error.value = null;
     try {
@@ -149,14 +275,14 @@ async function save() {
             style: form.style,
             progression: form.progression,
             xpSources: form.xpSources,
-            abilities: form.abilities,
+            abilities: (form.abilities || []).map(formAbilityToApi),
         };
         if (isNew) {
             await api.skills.create(payload);
         } else {
             await api.skills.update(skillId || form.id, payload);
         }
-        router.push('/');
+        window.location.reload();
     } catch (e: any) {
         error.value = e.message || 'Failed to save skill';
     } finally {
@@ -179,19 +305,40 @@ function discard() {
     margin: 0 auto;
     padding: 1.5rem;
 }
-.editor-header {
+.editor-banner {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--p-content-border-color);
+    border-top: 3px solid var(--banner-color);
+    border-radius: 8px;
+    background: var(--p-content-background);
     margin-bottom: 1.5rem;
 }
-.editor-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
+.banner-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
-.header-actions {
+.banner-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.banner-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+.banner-meta {
+    font-size: 0.8rem;
+    color: var(--p-text-muted-color, #888);
+}
+.banner-actions {
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 .btn-danger {
     background: transparent;
@@ -208,6 +355,12 @@ function discard() {
     border-radius: 4px;
     margin-bottom: 1rem;
     font-size: 0.875rem;
+}
+.field-error-line {
+    margin-bottom: 0.25rem;
+}
+.field-error-line:last-child {
+    margin-bottom: 0;
 }
 .loading {
     text-align: center;
@@ -239,13 +392,15 @@ function discard() {
     z-index: 1000;
 }
 .modal {
-    background: var(--p-surface-section, #fff);
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
     border-radius: 8px;
     padding: 1.5rem;
     min-width: 300px;
 }
 .modal h3 {
     margin: 0 0 0.5rem;
+    color: var(--p-text-color);
 }
 .modal p {
     color: var(--p-text-muted-color, #666);

@@ -1,10 +1,10 @@
 <template>
     <div class="config-page">
         <div class="page-header">
-            <h1>Configuration</h1>
+            <h1>Config</h1>
             <div class="header-actions">
-                <button class="btn btn-secondary" @click="fetchConfig">Reset</button>
-                <button class="btn btn-primary" :disabled="saving" @click="saveConfig">
+                <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
+                <button v-if="isDirty" class="btn btn-primary" :disabled="saving" @click="saveConfig">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </button>
             </div>
@@ -50,18 +50,47 @@
                 <AppInput v-model="config.web.password" type="password" label="Password" />
             </ConfigSection>
         </div>
+
+        <!-- Web disable confirm dialog -->
+        <div v-if="showWebDisableDialog" class="modal-overlay" @click.self="showWebDisableDialog = false">
+            <div class="modal">
+                <h3>Disable web interface?</h3>
+                <p>This page will no longer be accessible once saved. To re-enable, you must edit <code>config.yml</code> directly on the server.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showWebDisableDialog = false">Keep Enabled</button>
+                    <button class="btn btn-danger" @click="confirmWebDisable">Disable</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reset confirm dialog -->
+        <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
+            <div class="modal">
+                <h3>Discard config changes?</h3>
+                <p>Any unsaved changes to your configuration will be lost.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showResetDialog = false">Keep Editing</button>
+                    <button class="btn btn-danger" @click="confirmReset">Discard</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { api } from '../api/client';
+import { useStagingStore } from '../stores/staging';
 import ConfigSection from '../components/config/ConfigSection.vue';
 import AppInput from '../components/common/AppInput.vue';
 
+const staging = useStagingStore();
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
+const showResetDialog = ref(false);
+const showWebDisableDialog = ref(false);
+const cleanConfig = ref('');
 
 const config = reactive({
     database: { poolSize: 10, walMode: true },
@@ -73,7 +102,14 @@ const config = reactive({
     web: { enabled: false, port: 8082, username: 'admin', password: 'skilling' },
 });
 
+const isDirty = computed(() => JSON.stringify(config) !== cleanConfig.value);
+
 onMounted(fetchConfig);
+
+function confirmReset() {
+    showResetDialog.value = false;
+    fetchConfig();
+}
 
 async function fetchConfig() {
     loading.value = true;
@@ -81,6 +117,7 @@ async function fetchConfig() {
     try {
         const data = await api.config.get();
         Object.assign(config, data);
+        cleanConfig.value = JSON.stringify(config);
     } catch (e: any) {
         error.value = e.message || 'Failed to load config';
     } finally {
@@ -89,10 +126,24 @@ async function fetchConfig() {
 }
 
 async function saveConfig() {
+    if (!config.web.enabled) {
+        showWebDisableDialog.value = true;
+        return;
+    }
+    await doSaveConfig();
+}
+
+function confirmWebDisable() {
+    showWebDisableDialog.value = false;
+    doSaveConfig();
+}
+
+async function doSaveConfig() {
     saving.value = true;
     error.value = null;
     try {
         await api.config.update({ ...config });
+        window.location.reload();
     } catch (e: any) {
         error.value = e.message || 'Failed to save config';
     } finally {
@@ -142,5 +193,39 @@ async function saveConfig() {
     font-size: 0.8rem;
     color: var(--p-text-muted-color, #888);
     font-style: italic;
+}
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal {
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    color: var(--p-text-color);
+}
+.modal p {
+    margin: 0 0 1.25rem;
+    color: var(--p-text-muted-color, #888);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
 }
 </style>

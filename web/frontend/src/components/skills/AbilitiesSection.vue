@@ -3,7 +3,83 @@ import { ref, computed } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
+import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
+
+const PARTICLE_SUGGESTIONS = [
+  'minecraft:flame', 'minecraft:smoke', 'minecraft:large_smoke', 'minecraft:campfire_cosy_smoke',
+  'minecraft:campfire_signal_smoke', 'minecraft:cloud', 'minecraft:crit', 'minecraft:enchanted_hit',
+  'minecraft:enchant', 'minecraft:dragon_breath', 'minecraft:end_rod', 'minecraft:explosion',
+  'minecraft:explosion_emitter', 'minecraft:firework', 'minecraft:glow', 'minecraft:glow_squid_ink',
+  'minecraft:heart', 'minecraft:happy_villager', 'minecraft:angry_villager', 'minecraft:instant_effect',
+  'minecraft:effect', 'minecraft:item_slime', 'minecraft:item_snowball', 'minecraft:lava',
+  'minecraft:dripping_lava', 'minecraft:falling_lava', 'minecraft:landing_lava', 'minecraft:note',
+  'minecraft:poof', 'minecraft:portal', 'minecraft:rain', 'minecraft:splash',
+  'minecraft:sweep_attack', 'minecraft:totem_of_undying', 'minecraft:witch',
+  'minecraft:dripping_water', 'minecraft:falling_water', 'minecraft:bubble', 'minecraft:bubble_pop',
+  'minecraft:fishing', 'minecraft:nautilus', 'minecraft:sonic_boom', 'minecraft:sculk_soul',
+  'minecraft:sculk_charge', 'minecraft:sculk_charge_pop', 'minecraft:shriek', 'minecraft:trail',
+  'minecraft:dust', 'minecraft:dust_color_transition', 'minecraft:vibration',
+]
+
+const SOUND_SUGGESTIONS = [
+  'minecraft:entity_experience_orb_pickup', 'minecraft:entity_player_levelup',
+  'minecraft:entity_player_attack_crit', 'minecraft:entity_player_attack_strong',
+  'minecraft:entity_player_attack_sweep', 'minecraft:entity_player_attack_knockback',
+  'minecraft:entity_player_attack_weak', 'minecraft:entity_arrow_shoot',
+  'minecraft:entity_arrow_hit', 'minecraft:entity_firework_rocket_blast',
+  'minecraft:entity_firework_rocket_twinkle', 'minecraft:entity_firework_rocket_large_blast',
+  'minecraft:entity_firework_rocket_launch', 'minecraft:entity_generic_explode',
+  'minecraft:entity_lightning_bolt_thunder', 'minecraft:entity_lightning_bolt_impact',
+  'minecraft:entity_wither_spawn', 'minecraft:entity_wither_death',
+  'minecraft:entity_wither_shoot', 'minecraft:entity_ender_dragon_death',
+  'minecraft:entity_ender_dragon_growl', 'minecraft:entity_ender_dragon_fireball_explode',
+  'minecraft:item_trident_thunder', 'minecraft:item_trident_riptide_1',
+  'minecraft:item_trident_riptide_2', 'minecraft:item_trident_riptide_3',
+  'minecraft:block_anvil_land', 'minecraft:block_anvil_place',
+  'minecraft:block_anvil_break', 'minecraft:block_anvil_destroy',
+  'minecraft:block_anvil_fall', 'minecraft:block_anvil_hit',
+  'minecraft:block_anvil_step', 'minecraft:block_anvil_use',
+  'minecraft:block_brewing_stand_brew', 'minecraft:block_chest_open',
+  'minecraft:block_chest_close', 'minecraft:block_ender_chest_open',
+  'minecraft:block_ender_chest_close', 'minecraft:block_furnace_fire_crackle',
+  'minecraft:block_note_block_bell', 'minecraft:block_note_block_chime',
+  'minecraft:block_note_block_flute', 'minecraft:block_note_block_guitar',
+  'minecraft:block_note_block_harpsichord', 'minecraft:block_note_block_hat',
+  'minecraft:block_note_block_basedrum', 'minecraft:block_note_block_snare',
+  'minecraft:block_note_block_pling', 'minecraft:block_note_block_xylophone',
+  'minecraft:block_note_block_iron_xylophone', 'minecraft:block_note_block_cow_bell',
+  'minecraft:block_note_block_didgeridoo', 'minecraft:block_note_block_bit',
+  'minecraft:block_note_block_banjo', 'minecraft:ui_button_click',
+  'minecraft:ui_toast_in', 'minecraft:ui_toast_out', 'minecraft:ui_toast_challenge_complete',
+]
+
+const SLOT_SUGGESTIONS = ['HAND', 'OFF_HAND', 'FEET', 'LEGS', 'CHEST', 'HEAD']
+
+const MECHANIC_PARAM_NAMES: Record<string, string[]> = {
+  'core:yield_multiplier': ['yield_chance'],
+  'core:chain_break': ['chain_limit', 'exhaustion'],
+  'core:apply_status': ['effect', 'duration', 'amplifier'],
+  'core:modify_attribute': ['attribute', 'amount', 'duration'],
+  'core:modify_damage': ['multiplier'],
+  'core:cancel_damage': ['chance'],
+  'core:modify_furnace_output': ['multiplier'],
+  'core:modify_brew_time': ['multiplier'],
+  'core:modify_potion_duration': ['multiplier'],
+  'core:modify_craft_output': ['multiplier'],
+  'core:saturation_inject': ['saturation'],
+  'core:aoe_effect': ['effect', 'radius', 'duration', 'amplifier'],
+  'core:projectile': ['speed', 'damage'],
+  'core:teleport': ['range'],
+}
+
+const MECHANIC_SUGGESTIONS = [
+  'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
+  'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
+  'core:modify_attribute', 'core:heal', 'core:feed', 'core:damage', 'core:experience',
+  'core:command', 'core:message', 'core:sound', 'core:particle', 'core:teleport',
+  'core:lightning', 'core:explosion', 'core:firework',
+]
 
 interface FilterEntry {
   target?: string
@@ -49,7 +125,7 @@ interface Ability {
   lore: string[]
   requirements: {
     cooldown: number
-    states: string[]
+    state: string[]
     items: RequirementItem[]
   }
   mechanics: MechanicEntry[]
@@ -79,10 +155,16 @@ const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abiliti
 
 const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground'] as const
 
-const expanded = ref<Record<string, boolean>>({})
+const expanded = ref<Record<number, boolean>>({})
+const pendingRemoveAbility = ref<number | null>(null)
 
-function toggleExpand(id: string) {
-  expanded.value[id] = !expanded.value[id]
+function toggleExpand(idx: number) {
+  expanded.value[idx] = !expanded.value[idx]
+}
+
+function isAbilityActive(ability: Ability): boolean {
+  const r = ability.requirements
+  return r.cooldown > 0 || r.state.length > 0 || r.items.length > 0
 }
 
 function emptyAbility(): Ability {
@@ -93,7 +175,7 @@ function emptyAbility(): Ability {
     lore: [],
     requirements: {
       cooldown: 0,
-      states: [],
+      state: [],
       items: [],
     },
     mechanics: [],
@@ -123,6 +205,18 @@ function updateFeedback(index: number, patch: Partial<Ability['feedback']>) {
   updateAbility(index, { feedback: { ...ab.feedback, ...patch } })
 }
 
+function confirmRemoveAbility(index: number) {
+  pendingRemoveAbility.value = index
+}
+
+function executeRemoveAbility() {
+  if (pendingRemoveAbility.value === null) return
+  const copy = [...props.modelValue]
+  copy.splice(pendingRemoveAbility.value, 1)
+  emit('update:modelValue', copy)
+  pendingRemoveAbility.value = null
+}
+
 function removeAbility(index: number) {
   const copy = [...props.modelValue]
   copy.splice(index, 1)
@@ -133,17 +227,15 @@ function addAbility() {
   emit('update:modelValue', [...props.modelValue, emptyAbility()])
 }
 
-function duplicateAbility() {
-  if (props.modelValue.length === 0) {
-    addAbility()
-    return
-  }
-  const last = props.modelValue[props.modelValue.length - 1]
+function duplicateAbility(index: number) {
+  const source = props.modelValue[index]
   const cloned: Ability = {
-    ...JSON.parse(JSON.stringify(last)),
-    id: last.id ? last.id + '_copy' : '',
+    ...JSON.parse(JSON.stringify(source)),
+    id: source.id ? source.id + '_copy' : '',
   }
-  emit('update:modelValue', [...props.modelValue, cloned])
+  const copy = [...props.modelValue]
+  copy.splice(index + 1, 0, cloned)
+  emit('update:modelValue', copy)
 }
 
 function addLoreLine(index: number) {
@@ -167,9 +259,9 @@ function updateLoreLine(index: number, lineIdx: number, val: string) {
 
 function toggleState(index: number, state: string) {
   const ab = props.modelValue[index]
-  const states = ab.requirements.states
-  const copy = states.includes(state) ? states.filter(s => s !== state) : [...states, state]
-  updateRequirement(index, { states: copy })
+  const current = ab.requirements.state
+  const copy = current.includes(state) ? current.filter(s => s !== state) : [...current, state]
+  updateRequirement(index, { state: copy })
 }
 
 function addItem(index: number) {
@@ -315,14 +407,17 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
     <SectionToolbar
       section-name="Ability"
       :can-delete="false"
-      :can-duplicate="modelValue.length > 0"
+      :can-duplicate="false"
       @add="addAbility"
-      @duplicate="duplicateAbility"
     />
+
+    <div v-if="modelValue.length === 0" class="empty-warning">
+      No abilities defined. Add some to give players unlockable perks.
+    </div>
 
     <div
       v-for="(ability, idx) in modelValue"
-      :key="ability.id || idx"
+      :key="idx"
       :id="'ability-' + ability.id"
       class="ability-card"
       :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
@@ -333,24 +428,38 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
     >
       <div
         class="ability-header"
-        @click="toggleExpand(ability.id)"
+        @click="toggleExpand(idx)"
       >
         <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="ability-title">
           {{ ability.id || 'Unnamed Ability' }}
         </span>
-        <span class="expand-toggle">{{ expanded[ability.id] ? '▼' : '▶' }}</span>
+        <span class="ability-unlock-level">Lv.{{ ability.unlockLevel }}</span>
+        <span class="editor-ability-type-badge" :class="isAbilityActive(ability) ? 'badge-active' : 'badge-passive'">
+          {{ isAbilityActive(ability) ? 'Active' : 'Passive' }}
+        </span>
+        <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
+        <button
+          class="btn btn-ghost btn-sm"
+          title="Duplicate"
+          @click.stop="duplicateAbility(idx)"
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+            <rect x="3" y="5" width="9" height="10" rx="1" stroke="currentColor" stroke-width="1.2" />
+            <path d="M5 5V3a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.2" />
+          </svg>
+        </button>
         <button
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
-          @click.stop="removeAbility(idx)"
+          @click.stop="confirmRemoveAbility(idx)"
         >
           &times;
         </button>
       </div>
 
       <div
-        v-if="expanded[ability.id]"
+        v-if="expanded[idx]"
         class="ability-body"
       >
         <div class="field-row">
@@ -381,6 +490,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
           <input
             class="field-input"
             type="number"
+            step="any"
             min="0"
             :value="ability.unlockLevel"
             @input="updateAbility(idx, { unlockLevel: Number(($event.target as HTMLInputElement).value) })"
@@ -442,7 +552,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               >
                 <input
                   type="checkbox"
-                  :checked="ability.requirements.states.includes(state)"
+                  :checked="ability.requirements.state.includes(state)"
                   @change="toggleState(idx, state)"
                 />
                 {{ state }}
@@ -471,20 +581,22 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                 </div>
                 <div class="item-field">
                   <label class="field-label-sm">Tag</label>
-                  <input
-                    class="field-input-sm"
-                    type="text"
-                    :value="item.tag"
-                    @input="updateItem(idx, iIdx, { tag: ($event.target as HTMLInputElement).value })"
+                  <AppCombobox
+                    :model-value="item.tag"
+                    :suggestions="tagSuggestions"
+                    placeholder="#minecraft:logs or minecraft:stone"
+                    :name="'tag-' + idx + '-' + iIdx"
+                    @update:model-value="updateItem(idx, iIdx, { tag: $event })"
                   />
                 </div>
                 <div class="item-field">
                   <label class="field-label-sm">Slot</label>
-                  <input
-                    class="field-input-sm"
-                    type="text"
-                    :value="item.slot"
-                    @input="updateItem(idx, iIdx, { slot: ($event.target as HTMLInputElement).value })"
+                  <AppCombobox
+                    :model-value="item.slot"
+                    :suggestions="SLOT_SUGGESTIONS"
+                    placeholder="HAND"
+                    :name="'slot-' + idx + '-' + iIdx"
+                    @update:model-value="updateItem(idx, iIdx, { slot: $event })"
                   />
                 </div>
                 <div class="item-field">
@@ -492,6 +604,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                   <input
                     class="field-input-sm"
                     type="number"
+                    step="any"
                     min="1"
                     :value="item.amount"
                     @input="updateItem(idx, iIdx, { amount: Number(($event.target as HTMLInputElement).value) })"
@@ -508,14 +621,14 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                     @input="updateItem(idx, iIdx, { itemCooldown: Number(($event.target as HTMLInputElement).value) })"
                   />
                 </div>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444); align-self: flex-end"
+                  @click="removeItem(idx, iIdx)"
+                >
+                  &times;
+                </button>
               </div>
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeItem(idx, iIdx)"
-              >
-                &times;
-              </button>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -547,12 +660,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
             <div class="mechanic-body">
               <div class="field-row">
                 <label class="field-label">Type</label>
-                <input
-                  class="field-input"
-                  type="text"
+                <AppCombobox
+                  :model-value="mech.type"
+                  :suggestions="MECHANIC_SUGGESTIONS"
                   placeholder="core:yield_multiplier"
-                  :value="mech.type"
-                  @input="updateMechanic(idx, mIdx, { type: ($event.target as HTMLInputElement).value })"
+                  :name="'mech-' + idx + '-' + mIdx"
+                  @update:model-value="updateMechanic(idx, mIdx, { type: $event })"
                 />
               </div>
 
@@ -573,12 +686,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                   class="param-entry"
                 >
                   <div class="param-header">
-                    <input
-                      class="field-input param-name-input"
-                      type="text"
+                    <AppCombobox
+                      :model-value="param.name"
+                      :suggestions="MECHANIC_PARAM_NAMES[mech.type] || []"
                       placeholder="Parameter name"
-                      :value="param.name"
-                      @input="updateMechanicParamName(idx, mIdx, pIdx, ($event.target as HTMLInputElement).value)"
+                      :name="'param-' + idx + '-' + mIdx + '-' + pIdx"
+                      @update:model-value="updateMechanicParamName(idx, mIdx, pIdx, $event)"
                     />
                     <button
                       class="btn btn-ghost btn-sm"
@@ -652,22 +765,29 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               :key="pIdx"
               class="particle-card"
             >
+              <div class="particle-type-row">
+                <AppCombobox
+                  :model-value="particle.type"
+                  :suggestions="PARTICLE_SUGGESTIONS"
+                  placeholder="minecraft:flame"
+                  :name="'particle-' + idx + '-' + pIdx"
+                  @update:model-value="updateParticle(idx, pIdx, { type: $event })"
+                />
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
+                  @click="removeParticle(idx, pIdx)"
+                >
+                  &times;
+                </button>
+              </div>
               <div class="particle-fields">
-                <div class="particle-field">
-                  <label class="field-label-sm">Type</label>
-                  <input
-                    class="field-input-sm"
-                    type="text"
-                    placeholder="minecraft:flame"
-                    :value="particle.type"
-                    @input="updateParticle(idx, pIdx, { type: ($event.target as HTMLInputElement).value })"
-                  />
-                </div>
                 <div class="particle-field">
                   <label class="field-label-sm">Count</label>
                   <input
                     class="field-input-sm"
                     type="number"
+                    step="any"
                     min="1"
                     :value="particle.count"
                     @input="updateParticle(idx, pIdx, { count: Number(($event.target as HTMLInputElement).value) })"
@@ -725,13 +845,6 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                   />
                 </div>
               </div>
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeParticle(idx, pIdx)"
-              >
-                &times;
-              </button>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -748,17 +861,23 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               :key="sIdx"
               class="sound-card"
             >
+              <div class="sound-type-row">
+                <AppCombobox
+                  :model-value="sound.type"
+                  :suggestions="SOUND_SUGGESTIONS"
+                  placeholder="minecraft:entity_experience_orb_pickup"
+                  :name="'sound-' + idx + '-' + sIdx"
+                  @update:model-value="updateSound(idx, sIdx, { type: $event })"
+                />
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
+                  @click="removeSound(idx, sIdx)"
+                >
+                  &times;
+                </button>
+              </div>
               <div class="sound-fields">
-                <div class="sound-field">
-                  <label class="field-label-sm">Type</label>
-                  <input
-                    class="field-input-sm"
-                    type="text"
-                    placeholder="minecraft:entity_experience_orb_pickup"
-                    :value="sound.type"
-                    @input="updateSound(idx, sIdx, { type: ($event.target as HTMLInputElement).value })"
-                  />
-                </div>
                 <div class="sound-field">
                   <label class="field-label-sm">Volume</label>
                   <input
@@ -791,13 +910,6 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                   </select>
                 </div>
               </div>
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeSound(idx, sIdx)"
-              >
-                &times;
-              </button>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -809,10 +921,30 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
         </div>
       </div>
     </div>
+
+    <div v-if="pendingRemoveAbility !== null" class="modal-overlay" @click.self="pendingRemoveAbility = null">
+      <div class="modal">
+        <h3>Delete ability?</h3>
+        <p>This will permanently remove this ability and all its mechanics.</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" @click="pendingRemoveAbility = null">Cancel</button>
+          <button class="btn btn-danger" @click="executeRemoveAbility">Delete</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.empty-warning {
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+  border: 1px dashed var(--p-content-border-color);
+  border-radius: 6px;
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
+  text-align: center;
+}
 .abilities-section {
   display: flex;
   flex-direction: column;
@@ -862,6 +994,20 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 .expand-toggle {
   font-size: 0.75rem;
   color: var(--p-form-field-placeholder-color);
+}
+
+.ability-unlock-level {
+  font-size: 0.7rem;
+  color: var(--p-form-field-placeholder-color);
+  white-space: nowrap;
+}
+.editor-ability-type-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .ability-body {
@@ -988,6 +1134,18 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   gap: 0.5rem;
 }
 
+.particle-type-row,
+.sound-type-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.particle-type-row > :first-child,
+.sound-type-row > :first-child {
+  flex: 1;
+}
+
 .item-fields,
 .particle-fields,
 .sound-fields {
@@ -1025,6 +1183,10 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 }
 
 .param-entry {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+  background: var(--p-content-background);
   margin-bottom: 0.5rem;
 }
 
@@ -1053,5 +1215,38 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   color: var(--p-form-field-placeholder-color);
 }
 
-
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+.modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--p-text-color);
+}
+.modal p {
+  margin: 0 0 1.25rem;
+  color: var(--p-text-muted-color, #888);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
 </style>

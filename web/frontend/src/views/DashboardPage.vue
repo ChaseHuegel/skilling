@@ -1,13 +1,12 @@
 <template>
     <div class="dashboard">
-        <PendingChangesBanner />
         <div class="dashboard-header">
             <div class="header-left">
                 <h1>Skills</h1>
                 <span v-if="!loading && skills.length > 0" class="skill-count-badge">{{ skills.length }} skill{{ skills.length !== 1 ? 's' : '' }}</span>
             </div>
             <div class="header-actions">
-                <button v-if="staging.hasPending" class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
+                <button v-if="staging.hasPending" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" @click="createSkill">
                     <svg class="plus-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
                         <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
@@ -56,14 +55,11 @@
         <!-- Skill grid or empty state -->
         <div v-else class="skill-grid">
             <SkillCard
-                v-for="(s, idx) in filteredSkills"
+                v-for="s in filteredSkills"
                 :key="s.id"
                 :skill="s"
-                :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
-                draggable="true"
-                @dragstart="onDragStart(idx)"
-                @dragover="onDragOver($event, idx)"
-                @dragend="onDragEnd"
+                @duplicate="duplicateSkill"
+                @delete="confirmDeleteSkill"
             />
             <div v-if="searchQuery.trim() && filteredSkills.length === 0" class="state-card empty-state">
                 <h2 class="state-title">No skills match your search</h2>
@@ -79,6 +75,18 @@
                     </svg>
                     Create Skill
                 </button>
+            </div>
+        </div>
+
+        <!-- Delete skill confirm dialog -->
+        <div v-if="showDeleteDialog" class="modal-overlay" @click.self="showDeleteDialog = false">
+            <div class="modal">
+                <h3>Delete skill?</h3>
+                <p>This will permanently remove <strong>{{ deleteTargetName }}</strong> and all its data.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showDeleteDialog = false">Keep</button>
+                    <button class="btn btn-danger" @click="executeDeleteSkill">Delete</button>
+                </div>
             </div>
         </div>
 
@@ -101,9 +109,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { api } from '../api/client';
 import { useStagingStore } from '../stores/staging';
-import { useDragReorder } from '../composables/useDragReorder';
 import SkillCard from '../components/skills/SkillCard.vue';
-import PendingChangesBanner from '../components/layout/PendingChangesBanner.vue';
 
 const router = useRouter();
 const staging = useStagingStore();
@@ -112,13 +118,24 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const searchQuery = ref('');
 const showResetDialog = ref(false);
+const showDeleteDialog = ref(false);
+const deleteTarget = ref<string | null>(null);
+const deleteTargetName = ref('');
 
-const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(skills);
+const deletedSkillIds = computed(() => {
+    const ids: string[] = [];
+    for (const f of staging.files) {
+        const match = f.match(/^deleted_skills\/(.+)\.yml\.deleted$/);
+        if (match) ids.push(match[1]);
+    }
+    return ids;
+});
 
 const filteredSkills = computed(() => {
-    if (!searchQuery.value.trim()) return skills.value;
-    const q = searchQuery.value.toLowerCase();
+    const q = searchQuery.value.trim().toLowerCase();
     return skills.value.filter((s) => {
+        if (deletedSkillIds.value.includes(s.id)) return false;
+        if (!q) return true;
         const id = (s.id || '').toLowerCase();
         const display = (s.displayName || '').toLowerCase();
         const triggers = (s.xpSourceTriggers || []).join(' ').toLowerCase();
@@ -145,6 +162,40 @@ onMounted(fetchSkills);
 
 function createSkill() {
     router.push('/skills/new');
+}
+
+async function duplicateSkill(id: string) {
+    const detail = await api.skills.get(id);
+    let copyId = id + '_1';
+    let attempts = 0;
+    const existingIds = new Set(skills.value.map((s: any) => s.id));
+    while (existingIds.has(copyId) && attempts < 100) {
+        const num = parseInt(copyId.replace(/.*_(\d+)$/, '$1')) + 1;
+        copyId = id + '_' + num;
+        attempts++;
+    }
+    detail.id = copyId;
+    detail.displayName = (detail.displayName || id) + ' (copy)';
+    await api.skills.create(detail);
+    router.push(`/skills/${copyId}`);
+}
+
+function confirmDeleteSkill(id: string) {
+    const skill = skills.value.find((s: any) => s.id === id);
+    deleteTarget.value = id;
+    deleteTargetName.value = skill?.displayName || skill?.id || id;
+    showDeleteDialog.value = true;
+}
+
+async function executeDeleteSkill() {
+    const id = deleteTarget.value;
+    if (!id) return;
+    showDeleteDialog.value = false;
+    deleteTarget.value = null;
+    try {
+        await api.skills.delete(id);
+        await staging.fetchStatus();
+    } catch { /* ignore */ }
 }
 
 async function confirmReset() {
@@ -323,8 +374,8 @@ async function confirmReset() {
     z-index: 1000;
 }
 .modal {
-    background: var(--p-content-background, #fff);
-    border: 1px solid var(--p-content-border-color, #ddd);
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
     border-radius: 8px;
     padding: 1.5rem;
     max-width: 400px;
@@ -334,6 +385,7 @@ async function confirmReset() {
 .modal h3 {
     margin: 0 0 0.5rem;
     font-size: 1.05rem;
+    color: var(--p-text-color);
 }
 .modal p {
     margin: 0 0 1.25rem;
@@ -383,16 +435,6 @@ async function confirmReset() {
 /* ---- Card Entrance Animation ---- */
 .skill-card {
     animation: cardEnter 0.35s ease both;
-}
-.skill-card[draggable="true"] {
-    cursor: grab;
-}
-.skill-card[draggable="true"]:active {
-    cursor: grabbing;
-}
-.skill-card.drag-over {
-    opacity: 0.4;
-    transform: scale(0.96);
 }
 .skill-card:nth-child(1) { animation-delay: 0ms; }
 .skill-card:nth-child(2) { animation-delay: 50ms; }

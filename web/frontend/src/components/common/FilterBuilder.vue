@@ -1,9 +1,16 @@
 <script setup lang="ts">
+import AppCombobox from './AppCombobox.vue'
+
 interface FilterEntry {
   target?: string
   state?: string
   tool?: string
 }
+
+const STATE_SUGGESTIONS = [
+  'is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground',
+  'player_placed:false', 'player_placed:true',
+]
 
 const props = defineProps<{
   modelValue: FilterEntry[]
@@ -39,55 +46,32 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
       class="filter-entry"
     >
       <div class="filter-fields">
-        <div class="filter-field">
-          <label class="filter-label">Target</label>
-          <input
-            class="filter-input"
-            type="text"
-            placeholder="e.g. #minecraft:logs"
-            list="target-suggestions"
-            :value="entry.target ?? ''"
-            @input="updateFilter(idx, 'target', ($event.target as HTMLInputElement).value)"
-          />
-          <datalist id="target-suggestions">
-            <option
-              v-for="tag in tagSuggestions"
-              :key="tag"
-              :value="tag"
-            />
-          </datalist>
-        </div>
+        <AppCombobox
+          :model-value="entry.target ?? ''"
+          :suggestions="tagSuggestions"
+          label="Target"
+          placeholder="e.g. #minecraft:logs"
+          :name="'target-' + idx"
+          @update:model-value="updateFilter(idx, 'target', $event)"
+        />
 
-        <div class="filter-field">
-          <label class="filter-label">State</label>
-          <input
-            class="filter-input"
-            type="text"
-            placeholder="e.g. is_sneaking"
-            :value="entry.state ?? ''"
-            @input="updateFilter(idx, 'state', ($event.target as HTMLInputElement).value)"
-          />
-          <span class="state-hint">Options: is_sneaking, is_sprinting, is_in_water, is_on_ground, player_placed:false</span>
-        </div>
+        <AppCombobox
+          :model-value="entry.state ?? ''"
+          :suggestions="STATE_SUGGESTIONS"
+          label="State"
+          placeholder="e.g. is_sneaking"
+          :name="'state-' + idx"
+          @update:model-value="updateFilter(idx, 'state', $event)"
+        />
 
-        <div class="filter-field">
-          <label class="filter-label">Tool</label>
-          <input
-            class="filter-input"
-            type="text"
-            placeholder="e.g. #c:pickaxes"
-            list="tool-suggestions"
-            :value="entry.tool ?? ''"
-            @input="updateFilter(idx, 'tool', ($event.target as HTMLInputElement).value)"
-          />
-          <datalist id="tool-suggestions">
-            <option
-              v-for="tag in tagSuggestions"
-              :key="tag"
-              :value="tag"
-            />
-          </datalist>
-        </div>
+        <AppCombobox
+          :model-value="entry.tool ?? ''"
+          :suggestions="tagSuggestions"
+          label="Tool"
+          placeholder="e.g. #c:pickaxes"
+          :name="'tool-' + idx"
+          @update:model-value="updateFilter(idx, 'tool', $event)"
+        />
       </div>
 
       <button
@@ -129,40 +113,6 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-}
-
-.filter-field {
-  flex: 1;
-  min-width: 140px;
-}
-
-.filter-label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--p-form-field-placeholder-color);
-  margin-bottom: 0.2rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.filter-input {
-  width: 100%;
-  padding: 0.35rem 0.5rem;
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 4px;
-  background: var(--p-form-field-background);
-  color: var(--p-text-color);
-  font-size: 0.85rem;
-  box-sizing: border-box;
-}
-
-.state-hint {
-  display: block;
-  font-size: 0.7rem;
-  color: var(--p-form-field-placeholder-color);
-  margin-top: 0.2rem;
-  line-height: 1.2;
 }
 
 
