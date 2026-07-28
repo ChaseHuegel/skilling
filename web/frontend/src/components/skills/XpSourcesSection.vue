@@ -102,15 +102,13 @@ function addSource() {
   ])
 }
 
-function duplicateSource() {
-  if (props.modelValue.length === 0) {
-    addSource()
-    return
-  }
-  const last = props.modelValue[props.modelValue.length - 1]
+function duplicateSource(index: number) {
+  const source = props.modelValue[index]
+  const idx = props.modelValue.length
+  expanded.value[idx] = true
   emit('update:modelValue', [
     ...props.modelValue,
-    { ...last, filters: [...last.filters], reward: { ...last.reward, params: { ...last.reward.params } } },
+    { ...source, filters: [...source.filters], reward: { ...source.reward, params: { ...source.reward.params } } },
   ])
 }
 </script>
@@ -120,9 +118,8 @@ function duplicateSource() {
     <SectionToolbar
       section-name="XP Source"
       :can-delete="false"
-      :can-duplicate="modelValue.length > 0"
+      :can-duplicate="false"
       @add="addSource"
-      @duplicate="duplicateSource"
     />
 
     <div
@@ -142,6 +139,16 @@ function duplicateSource() {
         <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="source-title">Source #{{ idx + 1 }}</span>
         <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
+        <button
+          class="btn btn-ghost btn-sm"
+          title="Duplicate"
+          @click.stop="duplicateSource(idx)"
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+            <rect x="3" y="5" width="9" height="10" rx="1" stroke="currentColor" stroke-width="1.2" />
+            <path d="M5 5V3a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.2" />
+          </svg>
+        </button>
         <button
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
