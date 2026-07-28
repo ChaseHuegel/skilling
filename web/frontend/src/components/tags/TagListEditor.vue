@@ -88,11 +88,11 @@ function cancelAddTag() {
         <span class="tag-name">{{ entry.key }}</span>
         <button
           v-if="entriesList.length > 1"
-          class="btn btn-ghost btn-sm"
-          style="color: var(--p-red-500, #ef4444)"
+          class="btn-remove-tag"
+          title="Remove Tag"
           @click="confirmRemoveTag(entry.key)"
         >
-          Remove Tag
+          &times;
         </button>
       </div>
       <MaterialMultiSelect
@@ -183,7 +183,25 @@ function cancelAddTag() {
 .tag-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.5rem;
+}
+.btn-remove-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--p-red-500, #ef4444);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-remove-tag:hover {
+  background: color-mix(in srgb, var(--p-red-500, #ef4444) 10%, transparent);
 }
 
 .tag-name {
