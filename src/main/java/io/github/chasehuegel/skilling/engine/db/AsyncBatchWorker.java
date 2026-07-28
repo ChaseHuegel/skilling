@@ -44,7 +44,7 @@ public final class AsyncBatchWorker implements Runnable {
     public void run() {
         if (lock.tryLock()) {
             try {
-                flushDirtyProfiles();
+                doFlush();
             } finally {
                 lock.unlock();
             }
@@ -54,46 +54,50 @@ public final class AsyncBatchWorker implements Runnable {
     public void flushDirtyProfiles() {
         lock.lock();
         try {
-            Map<UUID, PlayerProfile> dirty = profileManager.getDirtyProfiles();
-            if (dirty.isEmpty()) return;
-
-            String sql = """
-                    INSERT INTO player_skills (player_uuid, skill_id, xp)
-                    VALUES (?, ?, ?)
-                    ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = excluded.xp
-                    """;
-
-            try (Connection conn = databaseManager.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-                for (var entry : dirty.entrySet()) {
-                    UUID uuid = entry.getKey();
-                    PlayerProfile profile = entry.getValue();
-
-                    for (var xpEntry : profile.getXpMap().entrySet()) {
-                        stmt.setString(1, uuid.toString());
-                        stmt.setString(2, xpEntry.getKey());
-                        stmt.setLong(3, xpEntry.getValue());
-                        stmt.addBatch();
-                    }
-                }
-
-                int[] results = stmt.executeBatch();
-                for (int i = 0; i < results.length; i++) {
-                    if (results[i] == Statement.EXECUTE_FAILED) {
-                        plugin.getLogger().warning("Batch entry " + i + " failed during flush");
-                        return;
-                    }
-                }
-                dirty.values().forEach(PlayerProfile::markSaved);
-
-            } catch (BatchUpdateException e) {
-                plugin.getLogger().log(Level.SEVERE, "Batch flush partially failed", e);
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to flush dirty profiles", e);
-            }
+            doFlush();
         } finally {
             lock.unlock();
+        }
+    }
+
+    private void doFlush() {
+        Map<UUID, PlayerProfile> dirty = profileManager.getDirtyProfiles();
+        if (dirty.isEmpty()) return;
+
+        String sql = """
+                INSERT INTO player_skills (player_uuid, skill_id, xp)
+                VALUES (?, ?, ?)
+                ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = excluded.xp
+                """;
+
+        try (Connection conn = databaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            for (var entry : dirty.entrySet()) {
+                UUID uuid = entry.getKey();
+                PlayerProfile profile = entry.getValue();
+
+                for (var xpEntry : profile.getXpMap().entrySet()) {
+                    stmt.setString(1, uuid.toString());
+                    stmt.setString(2, xpEntry.getKey());
+                    stmt.setLong(3, xpEntry.getValue());
+                    stmt.addBatch();
+                }
+            }
+
+            int[] results = stmt.executeBatch();
+            for (int i = 0; i < results.length; i++) {
+                if (results[i] == Statement.EXECUTE_FAILED) {
+                    plugin.getLogger().warning("Batch entry " + i + " failed during flush");
+                    return;
+                }
+            }
+            dirty.values().forEach(PlayerProfile::markSaved);
+
+        } catch (BatchUpdateException e) {
+            plugin.getLogger().log(Level.SEVERE, "Batch flush partially failed", e);
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to flush dirty profiles", e);
         }
     }
 }

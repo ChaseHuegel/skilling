@@ -191,7 +191,7 @@ public final class SkillsCommand {
     private static final String USAGE_RESET = "<yellow>Usage: /skills reset <player> [<skill>]</yellow>";
 
     private void setLevel(CommandSender sender, String playerName, String skillId, int level) {
-        Player target = Bukkit.getPlayerExact(playerName);
+        Player target = Bukkit.getPlayer(playerName);
         if (target != null) {
             PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
             if (profile == null) {
@@ -234,23 +234,26 @@ public final class SkillsCommand {
             return;
         }
         String uuid = offlinePlayer.getUniqueId().toString();
-        String sql = "INSERT INTO player_skills (player_uuid, skill_id, xp, fanfare_pending) VALUES (?, ?, ?, 1) ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = ?, fanfare_pending = 1";
-        try (var conn = plugin.getDatabaseManager().getConnection();
-             var stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, uuid);
-            stmt.setString(2, skillId);
-            stmt.setLong(3, xp);
-            stmt.setLong(4, xp);
-            stmt.executeUpdate();
-        } catch (Exception e) {
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage()));
-            return;
-        }
-        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + level + " (offline, fanfare pending)."));
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            String sql = "INSERT INTO player_skills (player_uuid, skill_id, xp, fanfare_pending) VALUES (?, ?, ?, 1) ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = ?, fanfare_pending = 1";
+            try (var conn = plugin.getDatabaseManager().getConnection();
+                 var stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, uuid);
+                stmt.setString(2, skillId);
+                stmt.setLong(3, xp);
+                stmt.setLong(4, xp);
+                stmt.executeUpdate();
+                Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + level + " (offline, fanfare pending).")));
+            } catch (Exception e) {
+                Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage())));
+            }
+        });
     }
 
     private void addXp(CommandSender sender, String playerName, String skillId, int amount) {
-        Player target = Bukkit.getPlayerExact(playerName);
+        Player target = Bukkit.getPlayer(playerName);
         if (target != null) {
             PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
             if (profile == null) {
@@ -291,23 +294,26 @@ public final class SkillsCommand {
             return;
         }
         String uuid = offlinePlayer.getUniqueId().toString();
-        String sql = "INSERT INTO player_skills (player_uuid, skill_id, xp, fanfare_pending) VALUES (?, ?, ?, 1) ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = xp + ?, fanfare_pending = 1";
-        try (var conn = plugin.getDatabaseManager().getConnection();
-             var stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, uuid);
-            stmt.setString(2, skillId);
-            stmt.setLong(3, amount);
-            stmt.setLong(4, amount);
-            stmt.executeUpdate();
-        } catch (Exception e) {
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage()));
-            return;
-        }
-        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + " (offline, fanfare pending)."));
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            String sql = "INSERT INTO player_skills (player_uuid, skill_id, xp, fanfare_pending) VALUES (?, ?, ?, 1) ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = xp + ?, fanfare_pending = 1";
+            try (var conn = plugin.getDatabaseManager().getConnection();
+                 var stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, uuid);
+                stmt.setString(2, skillId);
+                stmt.setLong(3, amount);
+                stmt.setLong(4, amount);
+                stmt.executeUpdate();
+                Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + " (offline, fanfare pending).")));
+            } catch (Exception e) {
+                Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage())));
+            }
+        });
     }
 
     private void reset(CommandSender sender, String playerName, String skillId) {
-        Player target = Bukkit.getPlayerExact(playerName);
+        Player target = Bukkit.getPlayer(playerName);
         if (target != null) {
             PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
             if (profile == null) {
@@ -337,26 +343,31 @@ public final class SkillsCommand {
             return;
         }
         String uuid = offlinePlayer.getUniqueId().toString();
-        try (var conn = plugin.getDatabaseManager().getConnection()) {
-            if (skillId != null) {
-                String sql = "UPDATE player_skills SET xp = 0 WHERE player_uuid = ? AND skill_id = ?";
-                try (var stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, uuid);
-                    stmt.setString(2, skillId);
-                    stmt.executeUpdate();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (var conn = plugin.getDatabaseManager().getConnection()) {
+                if (skillId != null) {
+                    String sql = "UPDATE player_skills SET xp = 0 WHERE player_uuid = ? AND skill_id = ?";
+                    try (var stmt = conn.prepareStatement(sql)) {
+                        stmt.setString(1, uuid);
+                        stmt.setString(2, skillId);
+                        stmt.executeUpdate();
+                    }
+                    Bukkit.getScheduler().runTask(plugin, () ->
+                        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset " + playerName + "'s " + skillId + " (offline).")));
+                } else {
+                    String sql = "DELETE FROM player_skills WHERE player_uuid = ?";
+                    try (var stmt = conn.prepareStatement(sql)) {
+                        stmt.setString(1, uuid);
+                        stmt.executeUpdate();
+                    }
+                    Bukkit.getScheduler().runTask(plugin, () ->
+                        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset all skills for " + playerName + " (offline).")));
                 }
-                sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset " + playerName + "'s " + skillId + " (offline)."));
-            } else {
-                String sql = "DELETE FROM player_skills WHERE player_uuid = ?";
-                try (var stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, uuid);
-                    stmt.executeUpdate();
-                }
-                sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset all skills for " + playerName + " (offline)."));
+            } catch (Exception e) {
+                Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage())));
             }
-        } catch (Exception e) {
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage()));
-        }
+        });
     }
 
     private int getLevelForXp(SkillDefinition skill, long xp) {

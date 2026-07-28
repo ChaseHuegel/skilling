@@ -48,12 +48,13 @@ public final class BossBarPool {
     public BossBar getOrCreate(Player player, String skillId) {
         String key = key(player, skillId);
 
-        // Evict LRU entry if at capacity
-        if (!cache.containsKey(key) && cache.size() >= maxActive) {
-            var eldest = cache.entrySet().iterator().next();
-            hideBar(eldest.getValue());
-            cache.remove(eldest.getKey());
-            ttlMap.remove(eldest.getKey());
+        synchronized (cache) {
+            if (!cache.containsKey(key) && cache.size() >= maxActive) {
+                var eldest = cache.entrySet().iterator().next();
+                hideBar(eldest.getValue());
+                cache.remove(eldest.getKey());
+                ttlMap.remove(eldest.getKey());
+            }
         }
 
         BossBar bar = cache.get(key);
@@ -107,14 +108,16 @@ public final class BossBarPool {
      */
     public void removeAll(Player player) {
         String prefix = player.getUniqueId() + ":";
-        cache.entrySet().removeIf(e -> {
-            if (e.getKey().startsWith(prefix)) {
-                ttlMap.remove(e.getKey());
-                hideBar(e.getValue());
-                return true;
-            }
-            return false;
-        });
+        synchronized (cache) {
+            cache.entrySet().removeIf(e -> {
+                if (e.getKey().startsWith(prefix)) {
+                    ttlMap.remove(e.getKey());
+                    hideBar(e.getValue());
+                    return true;
+                }
+                return false;
+            });
+        }
     }
 
     /**
