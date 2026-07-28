@@ -148,7 +148,9 @@ function open() {
     flex-direction: column;
     align-items: flex-end;
     gap: 0.25rem;
-    margin-top: 0.5rem;
+    position: absolute;
+    bottom: 0.75rem;
+    right: 1rem;
 }
 .skill-id {
     margin-top: 0.35rem;
