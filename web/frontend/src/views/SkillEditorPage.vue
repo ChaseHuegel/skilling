@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch } from 'vue';
+import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api } from '../api/client';
 import { useSkillsStore } from '../stores/skills';
@@ -118,6 +118,15 @@ onMounted(async () => {
         try {
             const data = await api.skills.get(skillId);
             Object.assign(form, data);
+            await nextTick();
+            const hash = route.hash;
+            if (hash && hash.startsWith('#ability-')) {
+                const abilityId = hash.replace('#ability-', '');
+                const el = document.getElementById('ability-' + abilityId);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
         } catch (e: any) {
             error.value = e.message || 'Failed to load skill';
         } finally {

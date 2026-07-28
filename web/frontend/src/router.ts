@@ -28,6 +28,12 @@ const router = createRouter({
             meta: { requiresAuth: true },
         },
         {
+            path: '/abilities',
+            name: 'Abilities',
+            component: () => import('./views/AbilitiesPage.vue'),
+            meta: { requiresAuth: true },
+        },
+        {
             path: '/tags',
             name: 'Tags',
             component: () => import('./views/TagsPage.vue'),

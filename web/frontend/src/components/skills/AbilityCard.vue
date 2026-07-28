@@ -1,0 +1,111 @@
+<template>
+    <div class="ability-card" @click="openSkill">
+        <div class="ability-header">
+            <span class="ability-name">{{ ability.displayName || ability.id }}</span>
+            <span class="ability-type-badge" :class="ability.unlockLevel > 0 ? 'badge-active' : 'badge-passive'">
+                {{ ability.unlockLevel > 0 ? 'Active' : 'Passive' }}
+            </span>
+        </div>
+        <div class="ability-body">
+            <div class="ability-detail">
+                <span class="detail-label">Skill</span>
+                <span class="detail-value">{{ skillDisplayName }}</span>
+            </div>
+            <div class="ability-detail">
+                <span class="detail-label">Unlock</span>
+                <span class="detail-value">Level {{ ability.unlockLevel }}</span>
+            </div>
+            <div v-if="ability.requirements?.cooldown" class="ability-detail">
+                <span class="detail-label">Cooldown</span>
+                <span class="detail-value">{{ ability.requirements.cooldown }}s</span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
+
+const props = defineProps<{
+    ability: {
+        id: string;
+        displayName?: string;
+        unlockLevel: number;
+        requirements?: { cooldown?: number };
+    };
+    skillId: string;
+    skillDisplayName: string;
+}>();
+
+const router = useRouter();
+
+function openSkill() {
+    router.push(`/skills/${props.skillId}#ability-${props.ability.id}`);
+}
+</script>
+
+<style scoped>
+.ability-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 8px;
+    background: var(--p-content-background, #fff);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+.ability-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+.ability-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--p-form-field-background, #f8f8f8);
+    border-bottom: 1px solid var(--p-content-border-color, #ddd);
+}
+.ability-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.ability-type-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+.badge-active {
+    background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 20%, transparent);
+    color: var(--p-primary-color, #3b82f6);
+    border: 1px solid color-mix(in srgb, var(--p-primary-color, #3b82f6) 40%, transparent);
+}
+.badge-passive {
+    background: color-mix(in srgb, var(--p-cyan-500, #06b6d4) 15%, transparent);
+    color: var(--p-cyan-600, #0891b2);
+    border: 1px solid color-mix(in srgb, var(--p-cyan-500, #06b6d4) 30%, transparent);
+}
+.ability-body {
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.ability-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+}
+.detail-label {
+    color: var(--p-form-field-placeholder-color, #888);
+    min-width: 4rem;
+}
+.detail-value {
+    color: var(--p-text-color, #000);
+    font-weight: 500;
+}
+</style>

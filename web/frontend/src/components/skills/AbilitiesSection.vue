@@ -79,10 +79,10 @@ const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abiliti
 
 const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground'] as const
 
-const expanded = ref<Record<number, boolean>>({})
+const expanded = ref<Record<string, boolean>>({})
 
-function toggleExpand(idx: number) {
-  expanded.value[idx] = !expanded.value[idx]
+function toggleExpand(id: string) {
+  expanded.value[id] = !expanded.value[id]
 }
 
 function emptyAbility(): Ability {
@@ -322,7 +322,8 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 
     <div
       v-for="(ability, idx) in modelValue"
-      :key="idx"
+      :key="ability.id || idx"
+      :id="'ability-' + ability.id"
       class="ability-card"
       :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
       draggable="true"
@@ -332,13 +333,13 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
     >
       <div
         class="ability-header"
-        @click="toggleExpand(idx)"
+        @click="toggleExpand(ability.id)"
       >
         <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="ability-title">
           {{ ability.id || 'Unnamed Ability' }}
         </span>
-        <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
+        <span class="expand-toggle">{{ expanded[ability.id] ? '▼' : '▶' }}</span>
         <button
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
@@ -349,7 +350,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
       </div>
 
       <div
-        v-if="expanded[idx]"
+        v-if="expanded[ability.id]"
         class="ability-body"
       >
         <div class="field-row">
