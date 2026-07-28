@@ -51,6 +51,18 @@
             </ConfigSection>
         </div>
 
+        <!-- Web disable confirm dialog -->
+        <div v-if="showWebDisableDialog" class="modal-overlay" @click.self="showWebDisableDialog = false">
+            <div class="modal">
+                <h3>Disable web interface?</h3>
+                <p>This page will no longer be accessible once saved. To re-enable, you must edit <code>config.yml</code> directly on the server.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showWebDisableDialog = false">Keep Enabled</button>
+                    <button class="btn btn-danger" @click="confirmWebDisable">Disable</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Reset confirm dialog -->
         <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
             <div class="modal">
@@ -77,6 +89,7 @@ const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const showResetDialog = ref(false);
+const showWebDisableDialog = ref(false);
 const cleanConfig = ref('');
 
 const config = reactive({
@@ -113,6 +126,19 @@ async function fetchConfig() {
 }
 
 async function saveConfig() {
+    if (!config.web.enabled) {
+        showWebDisableDialog.value = true;
+        return;
+    }
+    await doSaveConfig();
+}
+
+function confirmWebDisable() {
+    showWebDisableDialog.value = false;
+    doSaveConfig();
+}
+
+async function doSaveConfig() {
     saving.value = true;
     error.value = null;
     try {
