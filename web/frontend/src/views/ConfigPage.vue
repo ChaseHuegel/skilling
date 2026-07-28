@@ -15,75 +15,39 @@
 
         <div v-else class="config-sections">
             <ConfigSection title="Database" description="HikariCP connection pool settings">
-                <div class="field-row">
-                    <label>Pool Size</label>
-                    <input type="number" v-model.number="config.database.poolSize" min="1" max="100" class="input" />
-                </div>
-                <div class="field-row">
-                    <label>WAL Mode</label>
-                    <input type="checkbox" v-model="config.database.walMode" />
-                    <span class="field-note">Write-Ahead Logging; requires restart to change</span>
-                </div>
+                <AppInput v-model.number="config.database.poolSize" type="number" label="Pool Size" :min="1" :max="100" />
+                <AppInput v-model="config.database.walMode" type="checkbox" label="WAL Mode" />
+                <span class="field-note">Write-Ahead Logging; requires restart to change</span>
             </ConfigSection>
 
             <ConfigSection title="Boss Bar" description="XP progress bar display settings">
-                <div class="field-row">
-                    <label>Max Active</label>
-                    <input type="number" v-model.number="config.bossbar.maxActive" min="1" max="10" class="input" />
-                </div>
-                <div class="field-row">
-                    <label>Fade Ticks</label>
-                    <input type="number" v-model.number="config.bossbar.fadeTicks" min="0" max="200" class="input" />
-                </div>
+                <AppInput v-model.number="config.bossbar.maxActive" type="number" label="Max Active" :min="1" :max="10" />
+                <AppInput v-model.number="config.bossbar.fadeTicks" type="number" label="Fade Ticks" :min="0" :max="200" />
             </ConfigSection>
 
             <ConfigSection title="Debouncer" description="Minimum interval between repeated feedback messages">
-                <div class="field-row">
-                    <label>Interval (ms)</label>
-                    <input type="number" v-model.number="config.debouncer.intervalMs" min="100" max="5000" class="input" />
-                </div>
+                <AppInput v-model.number="config.debouncer.intervalMs" type="number" label="Interval (ms)" :min="100" :max="5000" />
             </ConfigSection>
 
             <ConfigSection title="Debug" description="Verbose console logging">
-                <div class="field-row">
-                    <label>Debug Logging</label>
-                    <input type="checkbox" v-model="config.debugLogging" />
-                    <span class="field-note">WARNING: significant log output</span>
-                </div>
+                <AppInput v-model="config.debugLogging" type="checkbox" label="Debug Logging" />
+                <span class="field-note">WARNING: significant log output</span>
             </ConfigSection>
 
             <ConfigSection title="Titles" description="Level-up title display settings">
-                <div class="field-row">
-                    <label>Stay Duration (ms)</label>
-                    <input type="number" v-model.number="config.titles.stayDuration" min="1000" max="30000" class="input" />
-                </div>
+                <AppInput v-model.number="config.titles.stayDuration" type="number" label="Stay Duration (ms)" :min="1000" :max="30000" />
             </ConfigSection>
 
             <ConfigSection title="XP" description="Global XP modifier">
-                <div class="field-row">
-                    <label>Global XP Modifier</label>
-                    <input type="number" v-model.number="config.globalXpModifier" min="0.1" max="100" step="0.1" class="input" />
-                </div>
+                <AppInput v-model.number="config.globalXpModifier" type="number" label="Global XP Modifier" :min="0.1" :max="100" :step="0.1" />
             </ConfigSection>
 
             <ConfigSection title="Web Server" description="Built-in administration interface">
-                <div class="field-row">
-                    <label>Enabled</label>
-                    <input type="checkbox" v-model="config.web.enabled" />
-                    <span class="field-note">Requires server restart to take effect</span>
-                </div>
-                <div class="field-row">
-                    <label>Port</label>
-                    <input type="number" v-model.number="config.web.port" min="1025" max="65535" class="input" />
-                </div>
-                <div class="field-row">
-                    <label>Username</label>
-                    <input type="text" v-model="config.web.username" class="input" />
-                </div>
-                <div class="field-row">
-                    <label>Password</label>
-                    <input type="password" v-model="config.web.password" class="input" />
-                </div>
+                <AppInput v-model="config.web.enabled" type="checkbox" label="Enabled" />
+                <span class="field-note">Requires server restart to take effect</span>
+                <AppInput v-model.number="config.web.port" type="number" label="Port" :min="1025" :max="65535" />
+                <AppInput v-model="config.web.username" type="text" label="Username" />
+                <AppInput v-model="config.web.password" type="password" label="Password" />
             </ConfigSection>
         </div>
     </div>
@@ -93,6 +57,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { api } from '../api/client';
 import ConfigSection from '../components/config/ConfigSection.vue';
+import AppInput from '../components/common/AppInput.vue';
 
 const loading = ref(true);
 const saving = ref(false);
@@ -191,23 +156,6 @@ async function saveConfig() {
 .config-sections {
     display: flex;
     flex-direction: column;
-}
-.field-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-.field-row label {
-    min-width: 120px;
-    font-size: 0.875rem;
-}
-.input {
-    padding: 0.375rem 0.5rem;
-    border: 1px solid var(--p-surface-border, #ddd);
-    border-radius: 4px;
-    background: var(--p-surface-input, #fff);
-    color: var(--p-text-color, #333);
-    width: 120px;
 }
 .field-note {
     font-size: 0.8rem;

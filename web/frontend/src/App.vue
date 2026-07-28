@@ -13,10 +13,7 @@ import AppTopbar from './components/layout/AppTopbar.vue';
 const authStore = useAuthStore();
 authStore.checkSession();
 
-const darkMode = ref(localStorage.getItem('skilling_dark_mode') === 'true');
-if (darkMode.value) {
-    document.documentElement.classList.add('app-dark');
-}
+const darkMode = ref(document.documentElement.classList.contains('app-dark'));
 
 function toggleDark() {
     darkMode.value = !darkMode.value;
