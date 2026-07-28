@@ -121,6 +121,7 @@ async function saveTags() {
     error.value = null;
     try {
         await api.tags.update({ ...tags });
+        window.location.reload();
     } catch (e: any) {
         error.value = e.message || 'Failed to save tags';
     } finally {

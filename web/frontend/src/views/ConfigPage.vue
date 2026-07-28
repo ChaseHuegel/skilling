@@ -117,7 +117,7 @@ async function saveConfig() {
     error.value = null;
     try {
         await api.config.update({ ...config });
-        cleanConfig.value = JSON.stringify(config);
+        window.location.reload();
     } catch (e: any) {
         error.value = e.message || 'Failed to save config';
     } finally {
