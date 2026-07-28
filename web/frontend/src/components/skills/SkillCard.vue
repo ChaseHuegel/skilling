@@ -14,19 +14,19 @@
                     {{ skill.abilityCount }} abilit{{ skill.abilityCount !== 1 ? 'ies' : 'y' }}
                 </span>
             </div>
-        </div>
-        <div class="card-actions">
-            <button class="btn-icon-sm" title="Duplicate" @click.stop="emit('duplicate', skill.id)">
-                <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
-                    <rect x="3" y="5" width="9" height="10" rx="1" stroke="currentColor" stroke-width="1.2" />
-                    <path d="M5 5V3a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.2" />
-                </svg>
-            </button>
-            <button class="btn-icon-sm btn-icon-danger" title="Delete" @click.stop="emit('delete', skill.id)">
-                <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
-                    <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-            </button>
+            <div class="card-actions">
+                <button class="btn-icon-sm" title="Duplicate" @click.stop="emit('duplicate', skill.id)">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+                        <rect x="3" y="5" width="9" height="10" rx="1" stroke="currentColor" stroke-width="1.2" />
+                        <path d="M5 5V3a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.2" />
+                    </svg>
+                </button>
+                <button class="btn-icon-sm btn-icon-danger" title="Delete" @click.stop="emit('delete', skill.id)">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+                        <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
         </div>
         <div class="card-body">
             <div class="skill-name">{{ skill.displayName || skill.id }}</div>
@@ -121,9 +121,10 @@ function open() {
 
 .card-actions {
     display: flex;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem 0 0;
-    justify-content: flex-end;
+    gap: 0.15rem;
+    position: absolute;
+    top: 0.35rem;
+    right: 0.5rem;
 }
 .btn-icon-sm {
     display: inline-flex;
