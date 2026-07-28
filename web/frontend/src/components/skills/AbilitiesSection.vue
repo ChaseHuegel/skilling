@@ -434,6 +434,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
         <span class="ability-title">
           {{ ability.id || 'Unnamed Ability' }}
         </span>
+        <span class="ability-unlock-level">Lv.{{ ability.unlockLevel }}</span>
         <span class="editor-ability-type-badge" :class="isAbilityActive(ability) ? 'badge-active' : 'badge-passive'">
           {{ isAbilityActive(ability) ? 'Active' : 'Passive' }}
         </span>
@@ -995,6 +996,11 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   color: var(--p-form-field-placeholder-color);
 }
 
+.ability-unlock-level {
+  font-size: 0.7rem;
+  color: var(--p-form-field-placeholder-color);
+  white-space: nowrap;
+}
 .editor-ability-type-badge {
   font-size: 0.65rem;
   font-weight: 600;
