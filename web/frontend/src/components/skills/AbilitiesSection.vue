@@ -1126,6 +1126,10 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 }
 
 .param-entry {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+  background: var(--p-content-background);
   margin-bottom: 0.5rem;
 }
 
