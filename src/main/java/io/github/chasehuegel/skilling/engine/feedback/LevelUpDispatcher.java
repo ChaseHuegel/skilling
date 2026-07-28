@@ -91,7 +91,7 @@ public final class LevelUpDispatcher {
                 .filter(a -> a.unlockLevel() == newLevel)
                 .toList();
 
-        String levelUpMsg = "<gray>[</gray><gold>Level Up!</gold><gray>]</gray> <yellow>" + displayName + " increased to " + newLevel + "</yellow>";
+        String levelUpMsg = "<yellow>" + displayName + " increased to " + newLevel + "</yellow>";
         player.sendMessage(MINI_MESSAGE.deserialize(levelUpMsg));
         int stayMs = plugin.getTitleStayDuration();
         player.showTitle(Title.title(
@@ -132,7 +132,7 @@ public final class LevelUpDispatcher {
 
             String skillColorName = skill.display() != null && skill.display().color() != null
                     ? mmColorName(skill.display().color()) : "green";
-            String maxSubMsg = "<light green>" + player.getName() + " </light green><yellow>reached </yellow>"
+            String maxSubMsg = player.getName() + " reached "
                     + "<light green>" + newLevel + " </light green>"
                     + "<" + skillColorName + ">"
                     + displayName + "</" + skillColorName + ">";
@@ -157,10 +157,8 @@ public final class LevelUpDispatcher {
             }
 
             Component broadcastComponent = MINI_MESSAGE.deserialize(
-                    "<gray>[</gray><gold>Max Level!</gold><gray>]</gray> "
-                    + "<light green>" + player.getName() + " </light green><yellow>reached max "
-                    + "<" + skillColorName + ">" + displayName + "</" + skillColorName + ">"
-                    + " level!</yellow>");
+                    player.getName() + " has reached max level "
+                    + "<" + skillColorName + ">[" + displayName + "]</" + skillColorName + ">");
             for (Player online : Bukkit.getOnlinePlayers()) {
                 online.sendMessage(broadcastComponent);
             }
