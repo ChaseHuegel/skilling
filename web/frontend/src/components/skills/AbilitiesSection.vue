@@ -327,7 +327,8 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
         </span>
         <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
         <button
-          class="btn-remove"
+          class="btn btn-ghost btn-sm"
+          style="color: var(--p-red-500, #ef4444)"
           @click.stop="removeAbility(idx)"
         >
           &times;
@@ -387,14 +388,15 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               @input="updateLoreLine(idx, lIdx, ($event.target as HTMLInputElement).value)"
             />
             <button
-              class="btn-remove"
+              class="btn btn-ghost btn-sm"
+              style="color: var(--p-red-500, #ef4444)"
               @click="removeLoreLine(idx, lIdx)"
             >
               &times;
             </button>
           </div>
           <button
-            class="btn-add"
+            class="btn btn-primary btn-sm"
             @click="addLoreLine(idx)"
           >
             + Add Lore Line
@@ -494,14 +496,15 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                 </div>
               </div>
               <button
-                class="btn-remove"
+                class="btn btn-ghost btn-sm"
+                style="color: var(--p-red-500, #ef4444)"
                 @click="removeItem(idx, iIdx)"
               >
                 &times;
               </button>
             </div>
             <button
-              class="btn-add"
+              class="btn btn-primary btn-sm"
               @click="addItem(idx)"
             >
               + Add Item
@@ -519,7 +522,8 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
             <div class="mechanic-header">
               <span class="mechanic-title">Mechanic #{{ mIdx + 1 }}</span>
               <button
-                class="btn-remove"
+                class="btn btn-ghost btn-sm"
+                style="color: var(--p-red-500, #ef4444)"
                 @click="removeMechanic(idx, mIdx)"
               >
                 &times;
@@ -563,7 +567,8 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                       @input="updateMechanicParamName(idx, mIdx, pIdx, ($event.target as HTMLInputElement).value)"
                     />
                     <button
-                      class="btn-remove"
+                      class="btn btn-ghost btn-sm"
+                      style="color: var(--p-red-500, #ef4444)"
                       @click="removeMechanicParam(idx, mIdx, pIdx)"
                     >
                       &times;
@@ -577,7 +582,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                   />
                 </div>
                 <button
-                  class="btn-add"
+                  class="btn btn-primary btn-sm"
                   @click="addMechanicParam(idx, mIdx)"
                 >
                   + Add Parameter
@@ -586,7 +591,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
             </div>
           </div>
           <button
-            class="btn-add"
+            class="btn btn-primary btn-sm"
             @click="addMechanic(idx)"
           >
             + Add Mechanic
@@ -707,14 +712,15 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                 </div>
               </div>
               <button
-                class="btn-remove"
+                class="btn btn-ghost btn-sm"
+                style="color: var(--p-red-500, #ef4444)"
                 @click="removeParticle(idx, pIdx)"
               >
                 &times;
               </button>
             </div>
             <button
-              class="btn-add"
+              class="btn btn-primary btn-sm"
               @click="addParticle(idx)"
             >
               + Add Particle
@@ -772,14 +778,15 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                 </div>
               </div>
               <button
-                class="btn-remove"
+                class="btn btn-ghost btn-sm"
+                style="color: var(--p-red-500, #ef4444)"
                 @click="removeSound(idx, sIdx)"
               >
                 &times;
               </button>
             </div>
             <button
-              class="btn-add"
+              class="btn btn-primary btn-sm"
               @click="addSound(idx)"
             >
               + Add Sound
@@ -1017,33 +1024,5 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   color: var(--p-form-field-placeholder-color);
 }
 
-.btn-remove {
-  background: none;
-  border: none;
-  color: var(--p-red-500, #f87171);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0 0.25rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
 
-.btn-remove:hover {
-  color: var(--p-red-600, #ef4444);
-}
-
-.btn-add {
-  background: color-mix(in srgb, var(--p-primary-color), black 70%);
-  color: var(--p-text-color);
-  border: 1px solid color-mix(in srgb, var(--p-primary-color), black 55%);
-  border-radius: 4px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  margin-top: 0.25rem;
-}
-
-.btn-add:hover {
-  background: color-mix(in srgb, var(--p-primary-color), black 55%);
-}
 </style>

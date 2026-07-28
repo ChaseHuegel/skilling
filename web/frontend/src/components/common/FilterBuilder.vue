@@ -91,7 +91,8 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
       </div>
 
       <button
-        class="btn-remove"
+        class="btn btn-ghost btn-sm"
+        style="color: var(--p-red-500, #ef4444)"
         @click="removeFilter(idx)"
       >
         &times;
@@ -99,7 +100,7 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
     </div>
 
     <button
-      class="btn-add"
+      class="btn btn-primary btn-sm"
       @click="addFilter"
     >
       + Add Filter
@@ -164,33 +165,5 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
   line-height: 1.2;
 }
 
-.btn-remove {
-  background: none;
-  border: none;
-  color: var(--p-red-500, #f87171);
-  font-size: 1.3rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
 
-.btn-remove:hover {
-  color: var(--p-red-600, #ef4444);
-}
-
-.btn-add {
-  background: var(--p-content-background);
-  color: var(--p-text-color);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 4px;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-add:hover {
-  background: var(--p-content-hover-background);
-}
 </style>

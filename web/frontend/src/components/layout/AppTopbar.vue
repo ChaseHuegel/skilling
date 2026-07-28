@@ -30,7 +30,7 @@
                 </svg>
                 <span class="user-name">{{ authStore.user }}</span>
             </div>
-            <button class="logout-btn" @click="logout">Logout</button>
+            <button class="btn btn-ghost" @click="logout">Logout</button>
         </div>
     </div>
 </template>
@@ -152,21 +152,6 @@ function logout() {
 .user-name {
     font-size: 0.8rem;
     color: var(--p-form-field-placeholder-color);
-}
-
-.logout-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 0.8rem;
-    color: var(--p-form-field-placeholder-color);
-    padding: 0.2rem 0.3rem;
-    transition: color 0.15s;
-}
-
-.logout-btn:hover {
-    color: var(--p-text-color);
-    text-decoration: underline;
 }
 
 .theme-toggle {

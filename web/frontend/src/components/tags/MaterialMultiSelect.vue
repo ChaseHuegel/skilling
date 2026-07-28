@@ -52,7 +52,7 @@ function onKeydown(e: KeyboardEvent) {
         />
       </datalist>
       <button
-        class="btn-add"
+        class="btn btn-primary btn-sm"
         @click="addEntry"
       >
         Add
@@ -99,21 +99,6 @@ function onKeydown(e: KeyboardEvent) {
   background: var(--p-content-background);
   color: var(--p-text-color);
   font-size: 0.85rem;
-}
-
-.btn-add {
-  background: color-mix(in srgb, var(--p-primary-color), black 70%);
-  color: var(--p-text-color);
-  border: 1px solid color-mix(in srgb, var(--p-primary-color), black 55%);
-  border-radius: 4px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.btn-add:hover {
-  background: color-mix(in srgb, var(--p-primary-color), black 55%);
 }
 
 .chips {

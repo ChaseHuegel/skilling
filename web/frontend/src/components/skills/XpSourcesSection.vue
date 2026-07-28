@@ -98,7 +98,8 @@ function duplicateSource() {
       <div class="source-header">
         <span class="source-title">Source #{{ idx + 1 }}</span>
         <button
-          class="btn-remove"
+          class="btn btn-ghost btn-sm"
+          style="color: var(--p-red-500, #ef4444)"
           @click="removeSource(idx)"
         >
           &times;
@@ -218,17 +219,5 @@ function duplicateSource() {
   letter-spacing: 0.03em;
 }
 
-.btn-remove {
-  background: none;
-  border: none;
-  color: var(--p-red-500, #f87171);
-  font-size: 1.3rem;
-  cursor: pointer;
-  padding: 0 0.25rem;
-  line-height: 1;
-}
 
-.btn-remove:hover {
-  color: var(--p-red-600, #ef4444);
-}
 </style>

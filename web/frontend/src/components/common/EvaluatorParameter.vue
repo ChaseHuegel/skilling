@@ -168,7 +168,8 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
               @input="updateMilestone(idx, 'value', ($event.target as HTMLInputElement).value)"
             />
             <button
-              class="btn-remove"
+              class="btn btn-ghost btn-sm"
+              style="color: var(--p-red-500, #ef4444)"
               @click="removeMilestone(idx)"
             >
               &times;
@@ -176,7 +177,7 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
           </div>
         </div>
         <button
-          class="btn-add"
+          class="btn btn-primary btn-sm"
           @click="addMilestone"
         >
           + Add Milestone
@@ -275,32 +276,5 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
   flex: 1;
 }
 
-.btn-remove {
-  background: none;
-  border: none;
-  color: var(--p-red-500, #f87171);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0 0.25rem;
-  line-height: 1;
-}
 
-.btn-remove:hover {
-  color: var(--p-red-600, #ef4444);
-}
-
-.btn-add {
-  background: var(--p-content-background);
-  color: var(--p-text-color);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 4px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-add:hover {
-  background: var(--p-content-hover-background);
-}
 </style>

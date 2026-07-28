@@ -25,8 +25,8 @@ export class SkillEditorPage {
   constructor(page: Page) {
     this.page = page;
     this.header = page.locator('.editor-header h1');
-    this.saveBtn = page.locator('.btn-primary');
-    this.cancelBtn = page.locator('.btn-secondary');
+    this.saveBtn = page.locator('.editor-header .btn-primary');
+    this.cancelBtn = page.locator('.editor-header .btn-secondary');
     this.errorBanner = page.locator('.error-banner');
 
     // Identity

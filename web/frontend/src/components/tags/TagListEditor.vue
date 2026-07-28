@@ -63,7 +63,8 @@ function cancelAddTag() {
         <span class="tag-name">{{ tag }}</span>
         <button
           v-if="entries().length > 1"
-          class="btn-remove-tag"
+          class="btn btn-ghost btn-sm"
+          style="color: var(--p-red-500, #ef4444)"
           @click="removeTag(tag)"
         >
           Remove Tag
@@ -78,7 +79,7 @@ function cancelAddTag() {
 
     <div v-if="!addingTag">
       <button
-        class="btn-add"
+        class="btn btn-primary btn-sm"
         @click="startAddTag"
       >
         + Add Tag
@@ -98,13 +99,13 @@ function cancelAddTag() {
         @keydown.escape="cancelAddTag"
       />
       <button
-        class="btn-confirm"
+        class="btn btn-primary btn-sm"
         @click="confirmAddTag"
       >
         OK
       </button>
       <button
-        class="btn-cancel"
+        class="btn btn-secondary btn-sm"
         @click="cancelAddTag"
       >
         Cancel
@@ -141,34 +142,6 @@ function cancelAddTag() {
   font-family: monospace;
 }
 
-.btn-remove-tag {
-  background: none;
-  border: 1px solid color-mix(in srgb, var(--p-red-500, #f87171), black 60%);
-  color: var(--p-red-500, #f87171);
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.btn-remove-tag:hover {
-  background: color-mix(in srgb, var(--p-red-500, #f87171), black 80%);
-}
-
-.btn-add {
-  background: color-mix(in srgb, var(--p-primary-color), black 70%);
-  color: var(--p-text-color);
-  border: 1px solid color-mix(in srgb, var(--p-primary-color), black 55%);
-  border-radius: 4px;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.btn-add:hover {
-  background: color-mix(in srgb, var(--p-primary-color), black 55%);
-}
-
 .add-tag-row {
   display: flex;
   align-items: center;
@@ -186,34 +159,6 @@ function cancelAddTag() {
   color: var(--p-text-color);
   font-size: 0.85rem;
   font-family: monospace;
-}
-
-.btn-confirm {
-  background: color-mix(in srgb, var(--p-green-600, #16a34a), black 75%);
-  color: var(--p-text-color);
-  border: 1px solid color-mix(in srgb, var(--p-green-600, #16a34a), black 50%);
-  border-radius: 4px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.btn-confirm:hover {
-  background: color-mix(in srgb, var(--p-green-600, #16a34a), black 60%);
-}
-
-.btn-cancel {
-  background: color-mix(in srgb, var(--p-red-600, #ef4444), black 80%);
-  color: var(--p-text-color);
-  border: 1px solid color-mix(in srgb, var(--p-red-500, #f87171), black 60%);
-  border-radius: 4px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.btn-cancel:hover {
-  background: color-mix(in srgb, var(--p-red-600, #ef4444), black 65%);
 }
 
 .tag-name-hint {

@@ -15,7 +15,7 @@ const emit = defineEmits<{
 <template>
   <div class="section-toolbar">
     <button
-      class="toolbar-btn btn-add"
+      class="btn btn-primary btn-sm"
       @click="emit('add')"
     >
       + Add {{ sectionName }}
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
     <button
       v-if="canDuplicate"
-      class="toolbar-btn btn-duplicate"
+      class="btn btn-secondary btn-sm"
       @click="emit('duplicate')"
     >
       Duplicate {{ sectionName }}
@@ -31,7 +31,8 @@ const emit = defineEmits<{
 
     <button
       v-if="canDelete"
-      class="toolbar-btn btn-delete"
+      class="btn btn-ghost btn-sm"
+      style="color: var(--p-red-500, #ef4444)"
       @click="emit('delete')"
     >
       Delete {{ sectionName }}
@@ -47,43 +48,5 @@ const emit = defineEmits<{
   flex-wrap: wrap;
 }
 
-.toolbar-btn {
-  padding: 0.4rem 0.75rem;
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  color: var(--p-text-color);
-  background: var(--p-content-background);
-  transition: background 0.15s;
-}
 
-.toolbar-btn:hover {
-  filter: brightness(1.2);
-}
-
-.btn-add {
-  border-color: var(--p-primary-color);
-  color: var(--p-primary-color);
-}
-
-.btn-duplicate {
-  border-color: var(--p-primary-color);
-  color: var(--p-primary-color);
-  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
-}
-
-.btn-duplicate:hover {
-  filter: brightness(1.2);
-}
-
-.btn-delete {
-  border-color: var(--p-red-600, #dc2626);
-  color: var(--p-red-600, #dc2626);
-  background: color-mix(in srgb, var(--p-red-600, #dc2626) 10%, transparent);
-}
-
-.btn-delete:hover {
-  filter: brightness(1.2);
-}
 </style>
