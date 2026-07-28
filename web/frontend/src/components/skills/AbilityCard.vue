@@ -15,6 +15,10 @@
                 <span class="detail-label">Unlock</span>
                 <span class="detail-value">Level {{ ability.unlockLevel }}</span>
             </div>
+            <div class="ability-detail">
+                <span class="detail-label">ID</span>
+                <span class="detail-value" style="font-family: monospace; font-size: 0.75rem;">{{ ability.id }}</span>
+            </div>
             <div v-if="ability.requirements?.cooldown" class="ability-detail">
                 <span class="detail-label">Cooldown</span>
                 <span class="detail-value">{{ ability.requirements.cooldown }}s</span>
