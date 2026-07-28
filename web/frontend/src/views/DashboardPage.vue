@@ -15,11 +15,42 @@
         </div>
         <p class="dashboard-subtitle">Manage your skill definitions and abilities</p>
 
-        <div v-if="loading" class="loading">Loading skills...</div>
-        <div v-else-if="error" class="error">{{ error }}</div>
+        <!-- Loading state: skeleton cards -->
+        <div v-if="loading" class="skill-grid">
+            <div v-for="i in 3" :key="i" class="skeleton-card">
+                <div class="skeleton-header">
+                    <div class="skeleton-icon" />
+                    <div class="skeleton-badge" />
+                </div>
+                <div class="skeleton-body">
+                    <div class="skeleton-line w-70" />
+                    <div class="skeleton-line w-40" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Error state -->
+        <div v-else-if="error" class="state-card error-state">
+            <div class="state-icon">⚠️</div>
+            <h2 class="state-title">Failed to load skills</h2>
+            <p class="state-desc">{{ error }}</p>
+            <button class="retry-btn" @click="fetchSkills">Retry</button>
+        </div>
+
+        <!-- Skill grid or empty state -->
         <div v-else class="skill-grid">
             <SkillCard v-for="s in skills" :key="s.id" :skill="s" />
-            <div v-if="skills.length === 0" class="empty">No skills loaded. Create one to get started.</div>
+            <div v-if="skills.length === 0" class="state-card empty-state">
+                <div class="state-icon">📦</div>
+                <h2 class="state-title">No skills yet</h2>
+                <p class="state-desc">Create your first skill definition to get started.</p>
+                <button class="create-btn" @click="createSkill">
+                    <svg class="plus-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+                        <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    </svg>
+                    Create Skill
+                </button>
+            </div>
         </div>
     </div>
 </template>
@@ -38,7 +69,9 @@ const skills = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
-onMounted(async () => {
+async function fetchSkills() {
+    loading.value = true;
+    error.value = null;
     try {
         skills.value = await api.skills.list();
         staging.fetchStatus();
@@ -47,7 +80,9 @@ onMounted(async () => {
     } finally {
         loading.value = false;
     }
-});
+}
+
+onMounted(fetchSkills);
 
 function createSkill() {
     router.push('/skills/new');
@@ -60,6 +95,8 @@ function createSkill() {
     margin: 0 auto;
     padding: 1.5rem;
 }
+
+/* ---- Header ---- */
 .dashboard-header {
     display: flex;
     align-items: center;
@@ -114,6 +151,7 @@ function createSkill() {
     flex-shrink: 0;
 }
 
+/* ---- Skill Grid ---- */
 .skill-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -142,12 +180,126 @@ function createSkill() {
         justify-content: center;
     }
 }
-.loading, .error, .empty {
-    text-align: center;
-    padding: 2rem;
-    color: var(--p-text-muted-color);
+
+/* ---- Skeleton Cards ---- */
+.skeleton-card {
+    border: 1px solid var(--p-surface-border);
+    border-radius: 8px;
+    background: var(--p-surface-section);
+    overflow: hidden;
 }
-.error {
-    color: var(--p-red-600);
+.skeleton-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1rem 1rem 0.5rem;
+}
+.skeleton-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        var(--p-surface-border) 25%,
+        var(--p-surface-hover) 50%,
+        var(--p-surface-border) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+.skeleton-badge {
+    width: 24px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--p-surface-border);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+.skeleton-body {
+    padding: 0.5rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.skeleton-line {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(
+        90deg,
+        var(--p-surface-border) 25%,
+        var(--p-surface-hover) 50%,
+        var(--p-surface-border) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+.skeleton-line.w-70 { width: 70%; }
+.skeleton-line.w-40 { width: 40%; }
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ---- State Cards (empty/error) ---- */
+.state-card {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+.state-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+.state-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.state-desc {
+    margin: 0 0 1.25rem;
+    color: var(--p-text-muted-color);
+    font-size: 0.875rem;
+    max-width: 320px;
+}
+.error-state .state-icon {
+    font-size: 2rem;
+}
+.retry-btn {
+    background: none;
+    border: 1px solid var(--p-surface-border);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--p-text-color);
+    transition: background 0.15s;
+}
+.retry-btn:hover {
+    background: var(--p-surface-hover);
+}
+
+/* ---- Card Entrance Animation ---- */
+.skill-card {
+    animation: cardEnter 0.35s ease both;
+}
+.skill-card:nth-child(1) { animation-delay: 0ms; }
+.skill-card:nth-child(2) { animation-delay: 50ms; }
+.skill-card:nth-child(3) { animation-delay: 100ms; }
+.skill-card:nth-child(4) { animation-delay: 150ms; }
+.skill-card:nth-child(5) { animation-delay: 200ms; }
+.skill-card:nth-child(6) { animation-delay: 250ms; }
+.skill-card:nth-child(7) { animation-delay: 300ms; }
+.skill-card:nth-child(8) { animation-delay: 350ms; }
+.skill-card:nth-child(9) { animation-delay: 400ms; }
+.skill-card:nth-child(10) { animation-delay: 450ms; }
+
+@keyframes cardEnter {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
