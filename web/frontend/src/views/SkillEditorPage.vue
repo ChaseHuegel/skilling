@@ -2,9 +2,18 @@
     <div class="editor-page">
         <div v-if="loading" class="loading">Loading skill...</div>
         <div v-else>
-            <div class="editor-header">
-                <h1>{{ isNew ? 'Create Skill' : `Edit: ${form.displayName || form.id}` }}</h1>
-                <div class="header-actions">
+            <div
+                class="editor-banner"
+                :style="{ '--banner-color': form.color?.toLowerCase() || '#fff' }"
+            >
+                <div class="banner-left">
+                    <MinecraftIcon :material="form.icon || 'minecraft:barrier'" :color="form.color" :size="48" />
+                    <div class="banner-info">
+                        <div class="banner-name">{{ form.displayName || form.id || 'New Skill' }}</div>
+                        <div class="banner-meta">Level 1 – {{ form.maxLevel }}</div>
+                    </div>
+                </div>
+                <div class="banner-actions">
                     <button class="btn btn-secondary" @click="confirmCancel">Cancel</button>
                     <button class="btn btn-primary" :disabled="saving" @click="save">
                         {{ saving ? 'Saving...' : 'Save Changes' }}
@@ -66,6 +75,7 @@ import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api } from '../api/client';
 import { useSkillsStore } from '../stores/skills';
+import MinecraftIcon from '../components/common/MinecraftIcon.vue';
 import SkillIdentitySection from '../components/skills/SkillIdentitySection.vue';
 import DisplaySection from '../components/skills/DisplaySection.vue';
 import ProgressionSection from '../components/skills/ProgressionSection.vue';
@@ -218,19 +228,40 @@ function discard() {
     margin: 0 auto;
     padding: 1.5rem;
 }
-.editor-header {
+.editor-banner {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--p-content-border-color);
+    border-top: 3px solid var(--banner-color);
+    border-radius: 8px;
+    background: var(--p-content-background);
     margin-bottom: 1.5rem;
 }
-.editor-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
+.banner-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
-.header-actions {
+.banner-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.banner-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+.banner-meta {
+    font-size: 0.8rem;
+    color: var(--p-text-muted-color, #888);
+}
+.banner-actions {
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 .btn-danger {
     background: transparent;
