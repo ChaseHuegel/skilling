@@ -158,7 +158,8 @@ public final class LevelUpDispatcher {
 
             String broadcastMsg = "<gray>[</gray><gold>Max Level!</gold><gray>]</gray> "
                     + "<light green>" + player.getName() + " </light green><yellow>reached max "
-                    + "<light green>" + displayName + " </light green><yellow>level!</yellow>";
+                    + "<" + skillColorName + ">" + displayName + "</" + skillColorName + ">"
+                    + " level!</yellow>";
             Bukkit.broadcast(MINI_MESSAGE.deserialize(broadcastMsg));
         } else if (major) {
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
