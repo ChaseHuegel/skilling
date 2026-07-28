@@ -3,7 +3,64 @@ import { ref, computed } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
+import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
+
+const PARTICLE_SUGGESTIONS = [
+  'minecraft:flame', 'minecraft:smoke', 'minecraft:large_smoke', 'minecraft:campfire_cosy_smoke',
+  'minecraft:campfire_signal_smoke', 'minecraft:cloud', 'minecraft:crit', 'minecraft:enchanted_hit',
+  'minecraft:enchant', 'minecraft:dragon_breath', 'minecraft:end_rod', 'minecraft:explosion',
+  'minecraft:explosion_emitter', 'minecraft:firework', 'minecraft:glow', 'minecraft:glow_squid_ink',
+  'minecraft:heart', 'minecraft:happy_villager', 'minecraft:angry_villager', 'minecraft:instant_effect',
+  'minecraft:effect', 'minecraft:item_slime', 'minecraft:item_snowball', 'minecraft:lava',
+  'minecraft:dripping_lava', 'minecraft:falling_lava', 'minecraft:landing_lava', 'minecraft:note',
+  'minecraft:poof', 'minecraft:portal', 'minecraft:rain', 'minecraft:splash',
+  'minecraft:sweep_attack', 'minecraft:totem_of_undying', 'minecraft:witch',
+  'minecraft:dripping_water', 'minecraft:falling_water', 'minecraft:bubble', 'minecraft:bubble_pop',
+  'minecraft:fishing', 'minecraft:nautilus', 'minecraft:sonic_boom', 'minecraft:sculk_soul',
+  'minecraft:sculk_charge', 'minecraft:sculk_charge_pop', 'minecraft:shriek', 'minecraft:trail',
+  'minecraft:dust', 'minecraft:dust_color_transition', 'minecraft:vibration',
+]
+
+const SOUND_SUGGESTIONS = [
+  'minecraft:entity_experience_orb_pickup', 'minecraft:entity_player_levelup',
+  'minecraft:entity_player_attack_crit', 'minecraft:entity_player_attack_strong',
+  'minecraft:entity_player_attack_sweep', 'minecraft:entity_player_attack_knockback',
+  'minecraft:entity_player_attack_weak', 'minecraft:entity_arrow_shoot',
+  'minecraft:entity_arrow_hit', 'minecraft:entity_firework_rocket_blast',
+  'minecraft:entity_firework_rocket_twinkle', 'minecraft:entity_firework_rocket_large_blast',
+  'minecraft:entity_firework_rocket_launch', 'minecraft:entity_generic_explode',
+  'minecraft:entity_lightning_bolt_thunder', 'minecraft:entity_lightning_bolt_impact',
+  'minecraft:entity_wither_spawn', 'minecraft:entity_wither_death',
+  'minecraft:entity_wither_shoot', 'minecraft:entity_ender_dragon_death',
+  'minecraft:entity_ender_dragon_growl', 'minecraft:entity_ender_dragon_fireball_explode',
+  'minecraft:item_trident_thunder', 'minecraft:item_trident_riptide_1',
+  'minecraft:item_trident_riptide_2', 'minecraft:item_trident_riptide_3',
+  'minecraft:block_anvil_land', 'minecraft:block_anvil_place',
+  'minecraft:block_anvil_break', 'minecraft:block_anvil_destroy',
+  'minecraft:block_anvil_fall', 'minecraft:block_anvil_hit',
+  'minecraft:block_anvil_step', 'minecraft:block_anvil_use',
+  'minecraft:block_brewing_stand_brew', 'minecraft:block_chest_open',
+  'minecraft:block_chest_close', 'minecraft:block_ender_chest_open',
+  'minecraft:block_ender_chest_close', 'minecraft:block_furnace_fire_crackle',
+  'minecraft:block_note_block_bell', 'minecraft:block_note_block_chime',
+  'minecraft:block_note_block_flute', 'minecraft:block_note_block_guitar',
+  'minecraft:block_note_block_harpsichord', 'minecraft:block_note_block_hat',
+  'minecraft:block_note_block_basedrum', 'minecraft:block_note_block_snare',
+  'minecraft:block_note_block_pling', 'minecraft:block_note_block_xylophone',
+  'minecraft:block_note_block_iron_xylophone', 'minecraft:block_note_block_cow_bell',
+  'minecraft:block_note_block_didgeridoo', 'minecraft:block_note_block_bit',
+  'minecraft:block_note_block_banjo', 'minecraft:ui_button_click',
+  'minecraft:ui_toast_in', 'minecraft:ui_toast_out', 'minecraft:ui_toast_challenge_complete',
+]
+
+const MECHANIC_SUGGESTIONS = [
+  'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
+  'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
+  'core:modify_attribute', 'core:heal', 'core:feed', 'core:damage', 'core:experience',
+  'core:command', 'core:message', 'core:sound', 'core:particle', 'core:teleport',
+  'core:lightning', 'core:explosion', 'core:firework',
+]
 
 interface FilterEntry {
   target?: string
@@ -547,12 +604,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
             <div class="mechanic-body">
               <div class="field-row">
                 <label class="field-label">Type</label>
-                <input
-                  class="field-input"
-                  type="text"
+                <AppCombobox
+                  :model-value="mech.type"
+                  :suggestions="MECHANIC_SUGGESTIONS"
                   placeholder="core:yield_multiplier"
-                  :value="mech.type"
-                  @input="updateMechanic(idx, mIdx, { type: ($event.target as HTMLInputElement).value })"
+                  :name="'mech-' + idx + '-' + mIdx"
+                  @update:model-value="updateMechanic(idx, mIdx, { type: $event })"
                 />
               </div>
 
@@ -655,12 +712,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               <div class="particle-fields">
                 <div class="particle-field">
                   <label class="field-label-sm">Type</label>
-                  <input
-                    class="field-input-sm"
-                    type="text"
+                  <AppCombobox
+                    :model-value="particle.type"
+                    :suggestions="PARTICLE_SUGGESTIONS"
                     placeholder="minecraft:flame"
-                    :value="particle.type"
-                    @input="updateParticle(idx, pIdx, { type: ($event.target as HTMLInputElement).value })"
+                    :name="'particle-' + idx + '-' + pIdx"
+                    @update:model-value="updateParticle(idx, pIdx, { type: $event })"
                   />
                 </div>
                 <div class="particle-field">
@@ -751,12 +808,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               <div class="sound-fields">
                 <div class="sound-field">
                   <label class="field-label-sm">Type</label>
-                  <input
-                    class="field-input-sm"
-                    type="text"
+                  <AppCombobox
+                    :model-value="sound.type"
+                    :suggestions="SOUND_SUGGESTIONS"
                     placeholder="minecraft:entity_experience_orb_pickup"
-                    :value="sound.type"
-                    @input="updateSound(idx, sIdx, { type: ($event.target as HTMLInputElement).value })"
+                    :name="'sound-' + idx + '-' + sIdx"
+                    @update:model-value="updateSound(idx, sIdx, { type: $event })"
                   />
                 </div>
                 <div class="sound-field">
