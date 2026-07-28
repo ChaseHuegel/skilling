@@ -190,7 +190,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Abilities Page search — filter abilities by name, ID, skill, unlock level, states, feedback, and mechanics
   - See `ISSUE-017.md` for full development plan
 - [x] Dark mode primary button text contrast — white-on-green hard to read; use black text in dark mode
-- [ ] Remove drag reordering from skill cards on the dashboard (grid layout is not suited for it)
+- [x] Remove drag reordering from skill cards on the dashboard (grid layout is not suited for it)
 - [ ] Tags page is completely non-functional — `TagListEditor` v-model bound to read-only computed (`filteredTags`) silently drops all `update:modelValue` emits (remove tag, add material, drag reorder, etc.)
 - [ ] Config page Reset button has no confirmation dialog — discards changes immediately
 - [ ] Pending changes banner only appears on the dashboard — move to App.vue so it's visible on all pages (tags, config, abilities, skill editor, etc.)
