@@ -85,16 +85,19 @@ public final class SkillHandler {
     }
 
     public void update(Context ctx) {
-        String id = ctx.pathParam("id");
+        String oldId = ctx.pathParam("id");
         try {
             SkillDetailDTO dto = ctx.bodyAsClass(SkillDetailDTO.class);
-            if (!dto.id().equals(id)) {
-                throw new IllegalArgumentException("ID in path does not match body");
-            }
             validateSkill(dto);
+            String newId = dto.id();
             String yaml = SkillSerializer.toYaml(dto);
-            stagingManager.stageSkillFile(id, yaml);
-            ctx.json(Map.of("status", "ok", "id", id));
+            if (!newId.equals(oldId)) {
+                stagingManager.stageSkillFile(newId, yaml);
+                stagingManager.stageSkillDeletion(oldId);
+            } else {
+                stagingManager.stageSkillFile(oldId, yaml);
+            }
+            ctx.json(Map.of("status", "ok", "id", newId));
         } catch (IllegalArgumentException e) {
             ctx.status(400).json(Map.of("status", "error", "message", e.getMessage()));
         } catch (Exception e) {
