@@ -239,13 +239,15 @@ function discard() {
     z-index: 1000;
 }
 .modal {
-    background: var(--p-surface-section, #fff);
+    background: var(--p-content-background);
+    border: 1px solid var(--p-content-border-color);
     border-radius: 8px;
     padding: 1.5rem;
     min-width: 300px;
 }
 .modal h3 {
     margin: 0 0 0.5rem;
+    color: var(--p-text-color);
 }
 .modal p {
     color: var(--p-text-muted-color, #666);

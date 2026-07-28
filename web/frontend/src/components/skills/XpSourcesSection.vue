@@ -278,8 +278,8 @@ function duplicateSource() {
   z-index: 1000;
 }
 .modal {
-  background: var(--p-content-background, #fff);
-  border: 1px solid var(--p-content-border-color, #ddd);
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 1.5rem;
   max-width: 400px;
@@ -289,6 +289,7 @@ function duplicateSource() {
 .modal h3 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
+  color: var(--p-text-color);
 }
 .modal p {
   margin: 0 0 1.25rem;
