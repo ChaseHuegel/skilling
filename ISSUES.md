@@ -175,6 +175,9 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] `docs/getting-started.md`: Add `/skills help`, `/skills setlevel`, `/skills addxp`, `/skills reset` to commands table; fix table separator row
 - [x] `SkillsCommand.java` uses `PlayerParser.playerParser()` which only resolves online players — admin commands targeting offline players should query DB directly per AGENTS.md
 - [x] `PoisonPillTag.KEY` depends on `Skilling.getInstance()` at class-load time — fragile initialization order
+- [x] Level 100 (max level) fanfare chat message and title show raw MiniMessage tags instead of formatting them
+  - The broadcast message string had an unclosed `<yellow>` tag followed by a second `<yellow>` opening — MiniMessage's strict nesting parser rendered the raw tags as literal text
+  - The skill display name was also hardcoded to `<light green>` instead of using the actual `skillColorName`
 - [ ] Skills Guide Book — vanilla+ GUI access via crafted item with auto-unlocked recipe
   - See `ISSUE-004.md` for full development plan
 - [ ] Runtime config modification (`/skills set <key> <value>`)
@@ -183,3 +186,38 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-006.md` for full development plan
 - [x] Web GUI — Administrative interface with Javalin backend, Vue 3 + PrimeVue frontend
   - See `ISSUE-007.md` for full development plan (Phases 1-7 implemented)
+- [ ] Abilities Page search — filter abilities by name, ID, skill, unlock level, states, feedback, and mechanics
+  - See `ISSUE-017.md` for full development plan
+- [ ] Dark mode primary button text contrast — white-on-green hard to read; use black text in dark mode
+- [ ] Remove drag reordering from skill cards on the dashboard (grid layout is not suited for it)
+- [ ] Tags page is completely non-functional — `TagListEditor` v-model bound to read-only computed (`filteredTags`) silently drops all `update:modelValue` emits (remove tag, add material, drag reorder, etc.)
+- [ ] Config page Reset button has no confirmation dialog — discards changes immediately
+- [ ] Pending changes banner only appears on the dashboard — move to App.vue so it's visible on all pages (tags, config, abilities, skill editor, etc.)
+- [ ] Pending changes banner colors are too harsh in both themes — soften background/text/border for light and dark mode
+- [ ] Add tag count badge next to "Custom Tags" header on the Tags page
+- [ ] Config section cards have stark white background in dark mode — missing explicit `background: var(--p-content-background)` on `.config-section`
+- [ ] Default to dark mode (currently defaults to light mode)
+- [ ] Add dark/light mode toggle button to the login page
+- [ ] Rename page headers for consistency: "Configuration" → "Config", "Custom Tags" → "Tags", nav "Dashboard" → "Skills"
+- [ ] Replace topbar lightning bolt icon with a stylish upwards arrow to better evoke "skilling up" / "leveling up"
+- [ ] Reset buttons should be `btn-danger` style and only appear when there are pending changes relevant to that page
+- [ ] Save Changes buttons should only appear when there are unsaved local edits on that page (dirty state tracking)
+- [ ] Skill icon field: replace text input with a searchable dropdown of all Minecraft materials, showing 16x16 texture thumbnails inline
+  - See `ISSUE-018.md` for full development plan
+- [ ] Create reusable `AppCombobox` component (input + datalist) and apply to State, Target, Tool fields; enrich Target/Tool suggestions with Minecraft materials
+  - See `ISSUE-019.md` for full development plan
+- [ ] Apply AppCombobox to particle type, sound type, and mechanic type fields in the ability editor; prepopulate with all known Minecraft particles, sounds, and registered mechanics (depends on ISSUE-019)
+- [ ] Move duplicate ability button from SectionToolbar to each ability card header as an icon button next to the delete button
+- [ ] Add confirmation dialogs to destructive deletes: "Remove Tag" (tags page), "×" on XP source cards, "×" on ability cards (not minor items like individual filter entries)
+- [ ] Add delete and duplicate buttons to skill cards; duplicate appends _N to ID and " (copy)" to display name; show skill ID in faded text at card bottom
+  - See `ISSUE-020.md` for full development plan
+- [ ] Confirmation dialogs don't respect dark mode — modal overlay/dialog styling breaks in dark theme
+- [ ] Skill save should validate duplicate skill ID and duplicate ability IDs; show error toast and highlight offending fields in danger red
+- [ ] Ability card collapses on each keystroke in the ID field — `:key="ability.id || idx"` causes Vue to recreate the element; revert to `:key="idx"`
+- [ ] Add collapse/expand toggle to XP source cards (same pattern as ability cards)
+- [ ] Move duplicate XP source button from SectionToolbar to each XP source card header as an icon button next to the delete button
+- [ ] Auto-generate skill ID from display name (lowercase, underscores for spaces) when ID is empty; show generated ID in placeholder
+- [ ] Show warning banner on empty XP sources / abilities sections; error-highlight and block save if an ability has missing or duplicate ID
+- [ ] Replace the skill editor header with a full-width preview banner mimicking the skill card styling (color accent, icon, name, level range), serving as both a preview and header
+- [ ] Add hover flyout on the Skills nav link showing a dropdown of all skills; clicking navigates directly to that skill's editor
+- [ ] Sort abilities on the abilities page by skill -> unlock level -> name
