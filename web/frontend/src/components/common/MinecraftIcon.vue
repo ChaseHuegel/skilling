@@ -73,12 +73,11 @@ function onLoad() {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--accent, #888) 12%, var(--p-surface-section));
+    border: 1px solid var(--p-surface-border);
     box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-        inset 0 0 12px rgba(0, 0, 0, 0.3),
-        0 0 0 1px var(--accent, #fff) 33;
+        inset 0 0 0 1px color-mix(in srgb, var(--accent, #888) 8%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--accent, #888) 25%, transparent);
     position: relative;
     overflow: hidden;
     flex-shrink: 0;

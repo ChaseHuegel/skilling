@@ -799,9 +799,9 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 }
 
 .ability-card {
-  border: 1px solid #333;
+  border: 1px solid var(--p-surface-border);
   border-radius: 6px;
-  background: #1e1e1e;
+  background: var(--p-surface-section);
   overflow: hidden;
 }
 
@@ -810,8 +810,8 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: #252525;
-  border-bottom: 1px solid #333;
+  background: var(--p-surface-input);
+  border-bottom: 1px solid var(--p-surface-border);
   cursor: pointer;
   user-select: none;
 }
@@ -820,12 +820,12 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   flex: 1;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #ccc;
+  color: var(--p-text-muted-color);
 }
 
 .expand-toggle {
   font-size: 0.75rem;
-  color: #888;
+  color: var(--p-text-muted-color);
 }
 
 .ability-body {
@@ -845,31 +845,31 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   min-width: 6rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--p-text-color);
 }
 
 .field-input {
   flex: 1;
   padding: 0.4rem 0.5rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #2a2a2a;
-  color: #e0e0e0;
+  background: var(--p-surface-input);
+  color: var(--p-text-color);
   font-size: 0.85rem;
 }
 
 .field-select {
   flex: 1;
   padding: 0.4rem 0.5rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #2a2a2a;
-  color: #e0e0e0;
+  background: var(--p-surface-input);
+  color: var(--p-text-color);
   font-size: 0.85rem;
 }
 
 .section-block {
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--p-surface-border);
   padding-top: 0.75rem;
 }
 
@@ -877,7 +877,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   display: block;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--p-text-color);
   margin-bottom: 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -891,7 +891,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #bbb;
+  color: var(--p-text-muted-color);
   margin-bottom: 0.35rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -919,18 +919,18 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   align-items: center;
   gap: 0.3rem;
   font-size: 0.85rem;
-  color: #ccc;
+  color: var(--p-text-muted-color);
 }
 
 .item-card,
 .mechanic-card,
 .particle-card,
 .sound-card {
-  border: 1px solid #333;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
   padding: 0.5rem;
   margin-bottom: 0.5rem;
-  background: #1a1a1a;
+  background: var(--p-surface-section);
 }
 
 .mechanic-header {
@@ -943,7 +943,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 .mechanic-title {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #aaa;
+  color: var(--p-text-muted-color);
 }
 
 .mechanic-body {
@@ -971,7 +971,7 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   display: block;
   font-size: 0.7rem;
   font-weight: 600;
-  color: #999;
+  color: var(--p-text-muted-color);
   margin-bottom: 0.15rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -980,10 +980,10 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 .field-input-sm {
   width: 100%;
   padding: 0.3rem 0.4rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 3px;
-  background: #2a2a2a;
-  color: #e0e0e0;
+  background: var(--p-surface-input);
+  color: var(--p-text-color);
   font-size: 0.8rem;
   box-sizing: border-box;
 }
@@ -1014,13 +1014,13 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   align-items: center;
   gap: 0.3rem;
   font-size: 0.85rem;
-  color: #ccc;
+  color: var(--p-text-muted-color);
 }
 
 .btn-remove {
   background: none;
   border: none;
-  color: #f87171;
+  color: var(--p-red-500, #f87171);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0 0.25rem;
@@ -1029,13 +1029,13 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 }
 
 .btn-remove:hover {
-  color: #ef4444;
+  color: var(--p-red-600, #ef4444);
 }
 
 .btn-add {
-  background: #1e3a5f;
-  color: #e0e0e0;
-  border: 1px solid #2a4a7f;
+  background: color-mix(in srgb, var(--p-primary-color), black 70%);
+  color: var(--p-text-color);
+  border: 1px solid color-mix(in srgb, var(--p-primary-color), black 55%);
   border-radius: 4px;
   padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
@@ -1044,6 +1044,6 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 }
 
 .btn-add:hover {
-  background: #2a4a7f;
+  background: color-mix(in srgb, var(--p-primary-color), black 55%);
 }
 </style>

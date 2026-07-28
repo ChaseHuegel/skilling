@@ -219,16 +219,16 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
   font-weight: 600;
   margin-bottom: 0.25rem;
   font-size: 0.875rem;
-  color: #e0e0e0;
+  color: var(--p-text-color);
 }
 
 .evaluator-type-select {
   width: 100%;
   padding: 0.4rem 0.5rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #2a2a2a;
-  color: #e0e0e0;
+  background: var(--p-surface-input);
+  color: var(--p-text-color);
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
 }
@@ -247,16 +247,16 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
 .field-label {
   min-width: 5rem;
   font-size: 0.8rem;
-  color: #bbb;
+  color: var(--p-text-muted-color);
 }
 
 .field-input {
   flex: 1;
   padding: 0.35rem 0.5rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #1e1e1e;
-  color: #e0e0e0;
+  background: var(--p-surface-input);
+  color: var(--p-text-color);
   font-size: 0.85rem;
 }
 
@@ -278,7 +278,7 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
 .btn-remove {
   background: none;
   border: none;
-  color: #f87171;
+  color: var(--p-red-500, #f87171);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0 0.25rem;
@@ -286,20 +286,21 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
 }
 
 .btn-remove:hover {
-  color: #ef4444;
+  color: var(--p-red-600, #ef4444);
 }
 
 .btn-add {
-  background: #1e3a5f;
-  color: #e0e0e0;
-  border: 1px solid #2a4a7f;
+  background: var(--p-surface-section);
+  color: var(--p-text-color);
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
   padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 .btn-add:hover {
-  background: #2a4a7f;
+  background: var(--p-surface-hover);
 }
 </style>

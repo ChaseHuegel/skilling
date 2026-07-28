@@ -94,17 +94,17 @@ function onKeydown(e: KeyboardEvent) {
 .multi-input {
   flex: 1;
   padding: 0.35rem 0.5rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #1e1e1e;
-  color: #e0e0e0;
+  background: var(--p-surface-section);
+  color: var(--p-text-color);
   font-size: 0.85rem;
 }
 
 .btn-add {
-  background: #1e3a5f;
-  color: #e0e0e0;
-  border: 1px solid #2a4a7f;
+  background: color-mix(in srgb, var(--p-primary-color), black 70%);
+  color: var(--p-text-color);
+  border: 1px solid color-mix(in srgb, var(--p-primary-color), black 55%);
   border-radius: 4px;
   padding: 0.35rem 0.75rem;
   font-size: 0.85rem;
@@ -113,7 +113,7 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 .btn-add:hover {
-  background: #2a4a7f;
+  background: color-mix(in srgb, var(--p-primary-color), black 55%);
 }
 
 .chips {
@@ -128,16 +128,16 @@ function onKeydown(e: KeyboardEvent) {
   align-items: center;
   gap: 0.25rem;
   padding: 0.2rem 0.5rem;
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: var(--p-surface-input);
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
   font-size: 0.8rem;
-  color: #e0e0e0;
+  color: var(--p-text-color);
 }
 
 .chip-tag {
-  border-color: #2a5a7f;
-  background: #1e2f4f;
+  border-color: color-mix(in srgb, var(--p-primary-color), black 50%);
+  background: color-mix(in srgb, var(--p-primary-color), black 80%);
 }
 
 .chip-text {
@@ -150,7 +150,7 @@ function onKeydown(e: KeyboardEvent) {
 .chip-remove {
   background: none;
   border: none;
-  color: #f87171;
+  color: var(--p-red-500, #f87171);
   font-size: 1rem;
   cursor: pointer;
   padding: 0 0.1rem;
@@ -158,6 +158,6 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 .chip-remove:hover {
-  color: #ef4444;
+  color: var(--p-red-600, #ef4444);
 }
 </style>

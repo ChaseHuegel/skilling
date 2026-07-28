@@ -76,16 +76,16 @@ function setField<K extends keyof IdentityFields>(key: K, val: IdentityFields[K]
   min-width: 7rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--p-text-color);
 }
 
 .field-input {
   flex: 1;
   padding: 0.45rem 0.6rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #1e1e1e;
-  color: #e0e0e0;
+  background: var(--p-surface-section);
+  color: var(--p-text-color);
   font-size: 0.875rem;
 }
 

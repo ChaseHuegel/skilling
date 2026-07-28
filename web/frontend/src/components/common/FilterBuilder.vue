@@ -117,9 +117,9 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
   align-items: flex-start;
   gap: 0.5rem;
   padding: 0.6rem;
-  border: 1px solid #333;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #1e1e1e;
+  background: var(--p-surface-section);
   margin-bottom: 0.5rem;
 }
 
@@ -139,7 +139,7 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
   display: block;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #bbb;
+  color: var(--p-text-muted-color);
   margin-bottom: 0.2rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -148,10 +148,10 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 .filter-input {
   width: 100%;
   padding: 0.35rem 0.5rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #2a2a2a;
-  color: #e0e0e0;
+  background: var(--p-surface-input);
+  color: var(--p-text-color);
   font-size: 0.85rem;
   box-sizing: border-box;
 }
@@ -159,7 +159,7 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 .state-hint {
   display: block;
   font-size: 0.7rem;
-  color: #777;
+  color: var(--p-text-muted-color);
   margin-top: 0.2rem;
   line-height: 1.2;
 }
@@ -167,7 +167,7 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 .btn-remove {
   background: none;
   border: none;
-  color: #f87171;
+  color: var(--p-red-500, #f87171);
   font-size: 1.3rem;
   cursor: pointer;
   padding: 0.25rem;
@@ -176,20 +176,21 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 }
 
 .btn-remove:hover {
-  color: #ef4444;
+  color: var(--p-red-600, #ef4444);
 }
 
 .btn-add {
-  background: #1e3a5f;
-  color: #e0e0e0;
-  border: 1px solid #2a4a7f;
+  background: var(--p-surface-section);
+  color: var(--p-text-color);
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
   padding: 0.4rem 0.75rem;
   font-size: 0.85rem;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 .btn-add:hover {
-  background: #2a4a7f;
+  background: var(--p-surface-hover);
 }
 </style>

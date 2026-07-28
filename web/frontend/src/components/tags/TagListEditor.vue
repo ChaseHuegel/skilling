@@ -121,9 +121,9 @@ function cancelAddTag() {
 
 .tag-entry {
   padding: 0.6rem;
-  border: 1px solid #333;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #1e1e1e;
+  background: var(--p-surface-section);
   margin-bottom: 0.5rem;
 }
 
@@ -137,14 +137,14 @@ function cancelAddTag() {
 .tag-name {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #60a5fa;
+  color: var(--p-primary-color);
   font-family: monospace;
 }
 
 .btn-remove-tag {
   background: none;
-  border: 1px solid #7a2a2a;
-  color: #f87171;
+  border: 1px solid color-mix(in srgb, var(--p-red-500, #f87171), black 60%);
+  color: var(--p-red-500, #f87171);
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
@@ -152,13 +152,13 @@ function cancelAddTag() {
 }
 
 .btn-remove-tag:hover {
-  background: #3f1e1e;
+  background: color-mix(in srgb, var(--p-red-500, #f87171), black 80%);
 }
 
 .btn-add {
-  background: #1e3a5f;
-  color: #e0e0e0;
-  border: 1px solid #2a4a7f;
+  background: color-mix(in srgb, var(--p-primary-color), black 70%);
+  color: var(--p-text-color);
+  border: 1px solid color-mix(in srgb, var(--p-primary-color), black 55%);
   border-radius: 4px;
   padding: 0.4rem 0.75rem;
   font-size: 0.85rem;
@@ -166,7 +166,7 @@ function cancelAddTag() {
 }
 
 .btn-add:hover {
-  background: #2a4a7f;
+  background: color-mix(in srgb, var(--p-primary-color), black 55%);
 }
 
 .add-tag-row {
@@ -180,18 +180,18 @@ function cancelAddTag() {
 .tag-name-input {
   width: 160px;
   padding: 0.35rem 0.5rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #1e1e1e;
-  color: #e0e0e0;
+  background: var(--p-surface-section);
+  color: var(--p-text-color);
   font-size: 0.85rem;
   font-family: monospace;
 }
 
 .btn-confirm {
-  background: #1e3f2a;
-  color: #e0e0e0;
-  border: 1px solid #2a7a3f;
+  background: color-mix(in srgb, var(--p-green-600, #16a34a), black 75%);
+  color: var(--p-text-color);
+  border: 1px solid color-mix(in srgb, var(--p-green-600, #16a34a), black 50%);
   border-radius: 4px;
   padding: 0.35rem 0.75rem;
   font-size: 0.85rem;
@@ -199,13 +199,13 @@ function cancelAddTag() {
 }
 
 .btn-confirm:hover {
-  background: #2a5f3f;
+  background: color-mix(in srgb, var(--p-green-600, #16a34a), black 60%);
 }
 
 .btn-cancel {
-  background: #3f1e1e;
-  color: #e0e0e0;
-  border: 1px solid #7a2a2a;
+  background: color-mix(in srgb, var(--p-red-600, #ef4444), black 80%);
+  color: var(--p-text-color);
+  border: 1px solid color-mix(in srgb, var(--p-red-500, #f87171), black 60%);
   border-radius: 4px;
   padding: 0.35rem 0.75rem;
   font-size: 0.85rem;
@@ -213,18 +213,18 @@ function cancelAddTag() {
 }
 
 .btn-cancel:hover {
-  background: #5f2a2a;
+  background: color-mix(in srgb, var(--p-red-600, #ef4444), black 65%);
 }
 
 .tag-name-hint {
   font-size: 0.75rem;
-  color: #777;
+  color: var(--p-text-muted-color);
 }
 
 .tag-name-hint code {
-  background: #2a2a2a;
+  background: var(--p-surface-input);
   padding: 0.1rem 0.3rem;
   border-radius: 2px;
-  color: #e0e0e0;
+  color: var(--p-text-color);
 }
 </style>

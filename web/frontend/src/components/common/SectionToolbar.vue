@@ -49,43 +49,41 @@ const emit = defineEmits<{
 
 .toolbar-btn {
   padding: 0.4rem 0.75rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
   font-size: 0.85rem;
   cursor: pointer;
-  color: #e0e0e0;
-  background: #2a2a2a;
+  color: var(--p-text-color);
+  background: var(--p-surface-section);
   transition: background 0.15s;
 }
 
 .toolbar-btn:hover {
-  filter: brightness(1.3);
+  filter: brightness(1.2);
 }
 
 .btn-add {
-  border-color: #2a7a3f;
-  background: #1e3f2a;
-}
-
-.btn-add:hover {
-  background: #2a5f3f;
+  border-color: var(--p-primary-color);
+  color: var(--p-primary-color);
 }
 
 .btn-duplicate {
-  border-color: #2a5a7f;
-  background: #1e2f4f;
+  border-color: var(--p-primary-color);
+  color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
 }
 
 .btn-duplicate:hover {
-  background: #2a4a7f;
+  filter: brightness(1.2);
 }
 
 .btn-delete {
-  border-color: #7a2a2a;
-  background: #3f1e1e;
+  border-color: var(--p-red-600, #dc2626);
+  color: var(--p-red-600, #dc2626);
+  background: color-mix(in srgb, var(--p-red-600, #dc2626) 10%, transparent);
 }
 
 .btn-delete:hover {
-  background: #5f2a2a;
+  filter: brightness(1.2);
 }
 </style>

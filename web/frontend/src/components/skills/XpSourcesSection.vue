@@ -153,9 +153,9 @@ function duplicateSource() {
 }
 
 .xp-source-card {
-  border: 1px solid #333;
+  border: 1px solid var(--p-surface-border);
   border-radius: 6px;
-  background: #1e1e1e;
+  background: var(--p-surface-section);
   overflow: hidden;
 }
 
@@ -164,14 +164,14 @@ function duplicateSource() {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
-  background: #252525;
-  border-bottom: 1px solid #333;
+  background: var(--p-surface-input);
+  border-bottom: 1px solid var(--p-surface-border);
 }
 
 .source-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #ccc;
+  color: var(--p-text-muted-color);
 }
 
 .source-body {
@@ -191,16 +191,16 @@ function duplicateSource() {
   min-width: 5rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--p-text-color);
 }
 
 .field-select {
   flex: 1;
   padding: 0.4rem 0.5rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #2a2a2a;
-  color: #e0e0e0;
+  background: var(--p-surface-input);
+  color: var(--p-text-color);
   font-size: 0.85rem;
 }
 
@@ -212,7 +212,7 @@ function duplicateSource() {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #bbb;
+  color: var(--p-text-muted-color);
   margin-bottom: 0.35rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -221,7 +221,7 @@ function duplicateSource() {
 .btn-remove {
   background: none;
   border: none;
-  color: #f87171;
+  color: var(--p-red-500, #f87171);
   font-size: 1.3rem;
   cursor: pointer;
   padding: 0 0.25rem;
@@ -229,6 +229,6 @@ function duplicateSource() {
 }
 
 .btn-remove:hover {
-  color: #ef4444;
+  color: var(--p-red-600, #ef4444);
 }
 </style>

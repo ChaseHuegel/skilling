@@ -152,35 +152,35 @@ function setParam(key: string, val: number) {
   min-width: 6rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--p-text-color);
 }
 
 .field-input {
   flex: 1;
   padding: 0.45rem 0.6rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #1e1e1e;
-  color: #e0e0e0;
+  background: var(--p-surface-section);
+  color: var(--p-text-color);
   font-size: 0.875rem;
 }
 
 .field-select {
   flex: 1;
   padding: 0.45rem 0.6rem;
-  border: 1px solid #444;
+  border: 1px solid var(--p-surface-border);
   border-radius: 4px;
-  background: #2a2a2a;
-  color: #e0e0e0;
+  background: var(--p-surface-input);
+  color: var(--p-text-color);
   font-size: 0.875rem;
 }
 
 .unsupported-notice {
   padding: 0.75rem 1rem;
-  border: 1px solid #7a5a2a;
+  border: 1px solid color-mix(in srgb, var(--p-warning-color, #eab308), black 50%);
   border-radius: 4px;
-  background: #3f2e1e;
-  color: #e0b060;
+  background: color-mix(in srgb, var(--p-warning-color, #eab308), black 80%);
+  color: var(--p-warning-color, #eab308);
   font-size: 0.85rem;
 }
 </style>
