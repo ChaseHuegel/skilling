@@ -1,5 +1,5 @@
 <template>
-    <div class="ability-card" @click="openSkill">
+    <div class="ability-card" :style="{ '--skill-color': (skillColor || 'white').toLowerCase() }" @click="openSkill">
         <div class="ability-header">
             <span class="ability-name">{{ ability.displayName || ability.id }}</span>
             <span class="ability-type-badge" :class="isActive ? 'badge-active' : 'badge-passive'">
@@ -45,6 +45,7 @@ const props = defineProps<{
     };
     skillId: string;
     skillDisplayName: string;
+    skillColor?: string;
 }>();
 
 const isActive = computed(() => {
@@ -66,6 +67,7 @@ function openSkill() {
     display: flex;
     flex-direction: column;
     border: 1px solid var(--p-content-border-color, #ddd);
+    border-top: 3px solid var(--skill-color, var(--p-content-border-color));
     border-radius: 8px;
     background: var(--p-content-background, #fff);
     cursor: pointer;

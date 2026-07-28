@@ -52,6 +52,7 @@
                 :ability="a.ability"
                 :skill-id="a.skillId"
                 :skill-display-name="a.skillDisplayName"
+                :skill-color="a.skillColor"
             />
         </div>
     </div>
@@ -65,6 +66,7 @@ import AbilityCard from '../components/skills/AbilityCard.vue';
 interface AbilityEntry {
     skillId: string;
     skillDisplayName: string;
+    skillColor: string;
     ability: {
         id: string;
         displayName?: string;
@@ -126,6 +128,7 @@ async function fetchAll() {
                     results.push({
                         skillId: s.id,
                         skillDisplayName: s.displayName || s.id,
+                        skillColor: s.color || 'WHITE',
                         ability: ab,
                     });
                 }
