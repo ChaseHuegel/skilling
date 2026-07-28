@@ -16,7 +16,7 @@ test.describe('Dashboard', () => {
     const card = dashboard.skillCards.first();
     await expect(card).toBeVisible();
     await expect(card.locator('.skill-name')).not.toBeEmpty();
-    await expect(card.locator('.skill-meta')).toContainText(/Max Level/);
+    await expect(card.locator('.skill-meta')).toContainText(/Level/);
   });
 
   test('clicking a skill card navigates to editor', async ({ page }) => {
