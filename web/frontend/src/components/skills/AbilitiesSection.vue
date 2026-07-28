@@ -387,6 +387,10 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
       @add="addAbility"
     />
 
+    <div v-if="modelValue.length === 0" class="empty-warning">
+      No abilities defined. Add some to give players unlockable perks.
+    </div>
+
     <div
       v-for="(ability, idx) in modelValue"
       :key="idx"
@@ -901,6 +905,15 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 </template>
 
 <style scoped>
+.empty-warning {
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+  border: 1px dashed var(--p-content-border-color);
+  border-radius: 6px;
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
+  text-align: center;
+}
 .abilities-section {
   display: flex;
   flex-direction: column;
