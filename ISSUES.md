@@ -217,7 +217,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Ability card collapses on each keystroke in the ID field — `:key="ability.id || idx"` causes Vue to recreate the element; revert to `:key="idx"`
 - [x] Add collapse/expand toggle to XP source cards (same pattern as ability cards)
 - [x] Move duplicate XP source button from SectionToolbar to each XP source card header as an icon button next to the delete button
-- [ ] Auto-generate skill ID from display name (lowercase, underscores for spaces) when ID is empty; show generated ID in placeholder
+- [x] Auto-generate skill ID from display name (lowercase, underscores for spaces) when ID is empty; show generated ID in placeholder
 - [ ] Show warning banner on empty XP sources / abilities sections; error-highlight and block save if an ability has missing or duplicate ID
 - [ ] Replace the skill editor header with a full-width preview banner mimicking the skill card styling (color accent, icon, name, level range), serving as both a preview and header
 - [ ] Add hover flyout on the Skills nav link showing a dropdown of all skills; clicking navigates directly to that skill's editor

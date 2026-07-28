@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 interface IdentityFields {
   id: string
   displayName: string
@@ -14,6 +16,11 @@ const emit = defineEmits<{
   'update:modelValue': [value: IdentityFields]
 }>()
 
+const idPlaceholder = computed(() => {
+  if (!props.modelValue.displayName || props.modelValue.id) return ''
+  return props.modelValue.displayName.toLowerCase().replace(/\s+/g, '_')
+})
+
 function setField<K extends keyof IdentityFields>(key: K, val: IdentityFields[K]) {
   emit('update:modelValue', { ...props.modelValue, [key]: val })
 }
@@ -27,7 +34,7 @@ function setField<K extends keyof IdentityFields>(key: K, val: IdentityFields[K]
         class="field-input"
         type="text"
         required
-        placeholder="e.g. mining, woodcutting"
+        :placeholder="idPlaceholder || 'e.g. mining, woodcutting'"
         :readonly="readonly"
         :value="modelValue.id"
         @input="setField('id', ($event.target as HTMLInputElement).value)"
