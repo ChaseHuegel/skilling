@@ -90,6 +90,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
 <style scoped>
 .material-picker {
     position: relative;
+    flex: 1;
 }
 .picker-label {
     display: block;
