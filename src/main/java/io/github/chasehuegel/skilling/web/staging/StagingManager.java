@@ -138,6 +138,10 @@ public final class StagingManager {
             File marker = new File(markerDir, skillId + ".yml.deleted");
             marker.createNewFile();
             updateStatusAdd("deleted_skills/" + skillId + ".yml.deleted");
+            // Remove any previously staged file for this skill so it doesn't
+            // get resurrected by applyAndBackup() copying all staged .yml files
+            File staged = stagedSkillFile(skillId);
+            if (staged.exists()) staged.delete();
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage deletion for skill: " + skillId, e);
         }
