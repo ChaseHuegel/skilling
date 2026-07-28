@@ -197,7 +197,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Pending changes banner colors are too harsh in both themes — soften background/text/border for light and dark mode
 - [x] Add tag count badge next to "Custom Tags" header on the Tags page
 - [x] Config section cards have stark white background in dark mode — missing explicit `background: var(--p-content-background)` on `.config-section`
-- [ ] Default to dark mode (currently defaults to light mode)
+- [x] Default to dark mode (currently defaults to light mode)
 - [ ] Add dark/light mode toggle button to the login page
 - [ ] Rename page headers for consistency: "Configuration" → "Config", "Custom Tags" → "Tags", nav "Dashboard" → "Skills"
 - [ ] Replace topbar lightning bolt icon with a stylish upwards arrow to better evoke "skilling up" / "leveling up"
