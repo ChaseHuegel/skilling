@@ -175,6 +175,9 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] `docs/getting-started.md`: Add `/skills help`, `/skills setlevel`, `/skills addxp`, `/skills reset` to commands table; fix table separator row
 - [x] `SkillsCommand.java` uses `PlayerParser.playerParser()` which only resolves online players — admin commands targeting offline players should query DB directly per AGENTS.md
 - [x] `PoisonPillTag.KEY` depends on `Skilling.getInstance()` at class-load time — fragile initialization order
+- [x] Level 100 (max level) fanfare chat message and title show raw MiniMessage tags instead of formatting them
+  - The broadcast message string had an unclosed `<yellow>` tag followed by a second `<yellow>` opening — MiniMessage's strict nesting parser rendered the raw tags as literal text
+  - The skill display name was also hardcoded to `<light green>` instead of using the actual `skillColorName`
 - [ ] Skills Guide Book — vanilla+ GUI access via crafted item with auto-unlocked recipe
   - See `ISSUE-004.md` for full development plan
 - [ ] Runtime config modification (`/skills set <key> <value>`)
