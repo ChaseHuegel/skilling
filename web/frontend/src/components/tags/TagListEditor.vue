@@ -84,8 +84,10 @@ function cancelAddTag() {
       @dragend="onDragEnd"
     >
       <div class="tag-header">
-        <span class="drag-handle" title="Drag to reorder">&#8801;</span>
-        <span class="tag-name">{{ entry.key }}</span>
+        <div class="tag-header-left">
+          <span class="drag-handle" title="Drag to reorder">&#8801;</span>
+          <span class="tag-name">{{ entry.key }}</span>
+        </div>
         <button
           v-if="entriesList.length > 1"
           class="btn-remove-tag"
