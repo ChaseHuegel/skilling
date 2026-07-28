@@ -1,6 +1,5 @@
 <template>
     <div class="dashboard">
-        <PendingChangesBanner />
         <div class="dashboard-header">
             <div class="header-left">
                 <h1>Skills</h1>
@@ -97,7 +96,6 @@ import { useRouter } from 'vue-router';
 import { api } from '../api/client';
 import { useStagingStore } from '../stores/staging';
 import SkillCard from '../components/skills/SkillCard.vue';
-import PendingChangesBanner from '../components/layout/PendingChangesBanner.vue';
 
 const router = useRouter();
 const staging = useStagingStore();

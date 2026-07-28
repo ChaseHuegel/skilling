@@ -1,6 +1,7 @@
 <template>
     <div class="app-container">
         <AppTopbar v-if="authStore.isAuthenticated" @toggle-dark="toggleDark" />
+        <PendingChangesBanner v-if="authStore.isAuthenticated" />
         <router-view />
     </div>
 </template>
@@ -9,6 +10,7 @@
 import { ref, watch } from 'vue';
 import { useAuthStore } from './stores/auth';
 import AppTopbar from './components/layout/AppTopbar.vue';
+import PendingChangesBanner from './components/layout/PendingChangesBanner.vue';
 
 const authStore = useAuthStore();
 authStore.checkSession();
