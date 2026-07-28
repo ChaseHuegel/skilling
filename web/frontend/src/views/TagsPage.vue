@@ -4,7 +4,7 @@
             <h1>Tags</h1>
             <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
             <div class="header-actions">
-                <button class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
+                <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" :disabled="saving" @click="saveTags">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </button>
@@ -52,8 +52,10 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { api } from '../api/client';
+import { useStagingStore } from '../stores/staging';
 import TagListEditor from '../components/tags/TagListEditor.vue';
 
+const staging = useStagingStore();
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);

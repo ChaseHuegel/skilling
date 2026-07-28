@@ -6,7 +6,7 @@
                 <span v-if="!loading && skills.length > 0" class="skill-count-badge">{{ skills.length }} skill{{ skills.length !== 1 ? 's' : '' }}</span>
             </div>
             <div class="header-actions">
-                <button v-if="staging.hasPending" class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
+                <button v-if="staging.hasPending" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" @click="createSkill">
                     <svg class="plus-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
                         <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />

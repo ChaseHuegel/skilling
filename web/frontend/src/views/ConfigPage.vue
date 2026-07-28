@@ -3,7 +3,7 @@
         <div class="page-header">
             <h1>Config</h1>
             <div class="header-actions">
-                <button class="btn btn-secondary" @click="showResetDialog = true">Reset</button>
+                <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" :disabled="saving" @click="saveConfig">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </button>
@@ -68,9 +68,11 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { api } from '../api/client';
+import { useStagingStore } from '../stores/staging';
 import ConfigSection from '../components/config/ConfigSection.vue';
 import AppInput from '../components/common/AppInput.vue';
 
+const staging = useStagingStore();
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
