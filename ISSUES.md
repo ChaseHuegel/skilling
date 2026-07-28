@@ -208,7 +208,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Create reusable `AppCombobox` component (input + datalist) and apply to State, Target, Tool fields; enrich Target/Tool suggestions with Minecraft materials
   - See `ISSUE-019.md` for full development plan
 - [x] Apply AppCombobox to particle type, sound type, and mechanic type fields in the ability editor; prepopulate with all known Minecraft particles, sounds, and registered mechanics (depends on ISSUE-019)
-- [ ] Move duplicate ability button from SectionToolbar to each ability card header as an icon button next to the delete button
+- [x] Move duplicate ability button from SectionToolbar to each ability card header as an icon button next to the delete button
 - [ ] Add confirmation dialogs to destructive deletes: "Remove Tag" (tags page), "×" on XP source cards, "×" on ability cards (not minor items like individual filter entries)
 - [ ] Add delete and duplicate buttons to skill cards; duplicate appends _N to ID and " (copy)" to display name; show skill ID in faded text at card bottom
   - See `ISSUE-020.md` for full development plan

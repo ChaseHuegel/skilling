@@ -190,17 +190,15 @@ function addAbility() {
   emit('update:modelValue', [...props.modelValue, emptyAbility()])
 }
 
-function duplicateAbility() {
-  if (props.modelValue.length === 0) {
-    addAbility()
-    return
-  }
-  const last = props.modelValue[props.modelValue.length - 1]
+function duplicateAbility(index: number) {
+  const source = props.modelValue[index]
   const cloned: Ability = {
-    ...JSON.parse(JSON.stringify(last)),
-    id: last.id ? last.id + '_copy' : '',
+    ...JSON.parse(JSON.stringify(source)),
+    id: source.id ? source.id + '_copy' : '',
   }
-  emit('update:modelValue', [...props.modelValue, cloned])
+  const copy = [...props.modelValue]
+  copy.splice(index + 1, 0, cloned)
+  emit('update:modelValue', copy)
 }
 
 function addLoreLine(index: number) {
@@ -372,9 +370,8 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
     <SectionToolbar
       section-name="Ability"
       :can-delete="false"
-      :can-duplicate="modelValue.length > 0"
+      :can-duplicate="false"
       @add="addAbility"
-      @duplicate="duplicateAbility"
     />
 
     <div
@@ -397,6 +394,16 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
           {{ ability.id || 'Unnamed Ability' }}
         </span>
         <span class="expand-toggle">{{ expanded[ability.id] ? '▼' : '▶' }}</span>
+        <button
+          class="btn btn-ghost btn-sm"
+          title="Duplicate"
+          @click.stop="duplicateAbility(idx)"
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+            <rect x="3" y="5" width="9" height="10" rx="1" stroke="currentColor" stroke-width="1.2" />
+            <path d="M5 5V3a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.2" />
+          </svg>
+        </button>
         <button
           class="btn btn-ghost btn-sm"
           style="color: var(--p-red-500, #ef4444)"
