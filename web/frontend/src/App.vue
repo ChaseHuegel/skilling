@@ -58,6 +58,9 @@ body {
     color: #fff;
     border-color: var(--p-primary-color);
 }
+.app-dark .btn-primary {
+    color: #000;
+}
 .btn-primary:hover { filter: brightness(1.1); }
 
 /* Secondary — bordered, adapts to theme */
