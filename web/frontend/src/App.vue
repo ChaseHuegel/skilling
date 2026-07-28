@@ -1,6 +1,6 @@
 <template>
-    <div :class="['app-container', darkMode ? 'app-dark' : '']">
-        <AppTopbar v-if="authStore.isAuthenticated" @toggle-dark="darkMode = !darkMode" />
+    <div class="app-container">
+        <AppTopbar v-if="authStore.isAuthenticated" @toggle-dark="toggleDark" />
         <router-view />
     </div>
 </template>
@@ -12,11 +12,17 @@ import AppTopbar from './components/layout/AppTopbar.vue';
 
 const authStore = useAuthStore();
 authStore.checkSession();
-const darkMode = ref(localStorage.getItem('skilling_dark_mode') === 'true');
 
-watch(darkMode, (val) => {
-    localStorage.setItem('skilling_dark_mode', String(val));
-});
+const darkMode = ref(localStorage.getItem('skilling_dark_mode') === 'true');
+if (darkMode.value) {
+    document.documentElement.classList.add('app-dark');
+}
+
+function toggleDark() {
+    darkMode.value = !darkMode.value;
+    document.documentElement.classList.toggle('app-dark', darkMode.value);
+    localStorage.setItem('skilling_dark_mode', String(darkMode.value));
+}
 </script>
 
 <style>
