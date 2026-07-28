@@ -3,7 +3,7 @@
         <label v-if="label" class="picker-label">{{ label }}</label>
         <div class="picker-trigger" @click="toggleOpen">
             <span class="picker-selected">
-                <MinecraftIcon v-if="modelValue" :material="modelValue" :size="16" />
+                <MinecraftIcon v-if="modelValue" :material="modelValue" :size="28" />
                 <span class="picker-text">{{ modelValue || 'Select an icon...' }}</span>
             </span>
             <svg class="picker-chevron" :class="{ open: isOpen }" viewBox="0 0 16 16" width="12" height="12" fill="none">
@@ -32,7 +32,7 @@
                     :class="{ selected: m === modelValue }"
                     @click="select(m)"
                 >
-                    <MinecraftIcon :material="m" :size="16" />
+                    <MinecraftIcon :material="m" :size="28" />
                     <span class="picker-option-text">{{ m }}</span>
                 </div>
                 <div v-if="filteredMaterials.length === 0" class="picker-no-results">

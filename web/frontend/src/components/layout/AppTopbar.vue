@@ -18,7 +18,7 @@
                             :to="'/skills/' + s.id"
                             class="dropdown-item"
                         >
-                            <MinecraftIcon :material="s.icon || 'minecraft:barrier'" :size="14" />
+                            <MinecraftIcon :material="s.icon || 'minecraft:barrier'" :size="28" />
                             {{ s.displayName || s.id }}
                         </router-link>
                     </div>
