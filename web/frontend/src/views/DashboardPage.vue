@@ -184,7 +184,7 @@ async function executeDeleteSkill() {
     deleteTarget.value = null;
     try {
         await api.skills.delete(id);
-        await fetchSkills();
+        window.location.reload();
     } catch { /* ignore */ }
 }
 

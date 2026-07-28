@@ -114,6 +114,7 @@ public final class SkillHandler {
         boolean stagedDeleted = stagedFile.exists() && stagedFile.delete();
 
         if (liveDeleted || stagedDeleted) {
+            stagingManager.stageSkillDeletion(id);
             ctx.json(Map.of("status", "ok", "id", id));
         } else {
             ctx.status(404).json(Map.of("status", "error", "message", "Skill not found: " + id));
