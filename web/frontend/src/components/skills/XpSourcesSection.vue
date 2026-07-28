@@ -142,6 +142,7 @@ function duplicateSource(index: number) {
       >
         <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="source-title">Source #{{ idx + 1 }}</span>
+        <span class="source-trigger">{{ source.trigger }}</span>
         <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
         <button
           class="btn btn-ghost btn-sm"
@@ -261,10 +262,18 @@ function duplicateSource(index: number) {
 }
 
 .source-title {
-  flex: 1;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--p-form-field-placeholder-color);
+}
+.source-trigger {
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--p-form-field-placeholder-color);
+  margin-left: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .source-body {
