@@ -589,14 +589,14 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                     @input="updateItem(idx, iIdx, { itemCooldown: Number(($event.target as HTMLInputElement).value) })"
                   />
                 </div>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444); align-self: flex-end"
+                  @click="removeItem(idx, iIdx)"
+                >
+                  &times;
+                </button>
               </div>
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeItem(idx, iIdx)"
-              >
-                &times;
-              </button>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -805,14 +805,14 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                     @input="updateParticle(idx, pIdx, { speed: Number(($event.target as HTMLInputElement).value) })"
                   />
                 </div>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444); align-self: flex-end"
+                  @click="removeParticle(idx, pIdx)"
+                >
+                  &times;
+                </button>
               </div>
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeParticle(idx, pIdx)"
-              >
-                &times;
-              </button>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -871,14 +871,14 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                     <option value="target">target</option>
                   </select>
                 </div>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444); align-self: flex-end"
+                  @click="removeSound(idx, sIdx)"
+                >
+                  &times;
+                </button>
               </div>
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeSound(idx, sIdx)"
-              >
-                &times;
-              </button>
             </div>
             <button
               class="btn btn-primary btn-sm"
