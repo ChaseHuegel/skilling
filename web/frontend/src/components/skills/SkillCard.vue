@@ -48,11 +48,11 @@ function open() {
 .skill-card {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--p-surface-border, #ddd);
-    border-top: 3px solid var(--skill-color, #fff);
+    border: 1px solid var(--p-surface-border);
+    border-top: 3px solid var(--skill-color);
     border-radius: 8px;
     cursor: pointer;
-    background: var(--p-surface-section, #fff);
+    background: var(--p-surface-section);
     transition: all 0.2s ease;
     overflow: hidden;
 }

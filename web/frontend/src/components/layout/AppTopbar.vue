@@ -105,8 +105,13 @@ function logout() {
 .nav-link.router-link-active,
 .nav-link.router-link-exact-active {
     color: var(--p-primary-color);
-    background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+    background: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
     font-weight: 600;
+}
+
+.app-dark .nav-link.router-link-active,
+.app-dark .nav-link.router-link-exact-active {
+    background: color-mix(in srgb, var(--p-primary-color) 25%, transparent);
 }
 
 .topbar-right {

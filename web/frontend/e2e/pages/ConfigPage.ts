@@ -28,26 +28,26 @@ export class ConfigPage {
   }
 
   async getCheckbox(label: string): Promise<boolean> {
-    const row = this.page.locator('.field-row', { hasText: label });
-    const cb = row.locator('input[type="checkbox"]');
-    return cb.isChecked();
+    const wrapper = this.page.locator('.app-input', { hasText: label });
+    const toggle = wrapper.locator('.checkbox-toggle');
+    return toggle.getAttribute('aria-checked').then(v => v === 'true');
   }
 
   async toggleCheckbox(label: string) {
-    const row = this.page.locator('.field-row', { hasText: label });
-    const cb = row.locator('input[type="checkbox"]');
-    await cb.click();
+    const wrapper = this.page.locator('.app-input', { hasText: label });
+    const toggle = wrapper.locator('.checkbox-toggle');
+    await toggle.click();
   }
 
   async getNumberField(label: string): Promise<number> {
-    const row = this.page.locator('.field-row', { hasText: label });
-    const input = row.locator('input[type="number"]');
+    const wrapper = this.page.locator('.app-input', { hasText: label });
+    const input = wrapper.locator('.app-input-field');
     return parseInt(await input.inputValue(), 10);
   }
 
   async setNumberField(label: string, value: number) {
-    const row = this.page.locator('.field-row', { hasText: label });
-    const input = row.locator('input[type="number"]');
+    const wrapper = this.page.locator('.app-input', { hasText: label });
+    const input = wrapper.locator('.app-input-field');
     await input.fill(String(value));
   }
 
