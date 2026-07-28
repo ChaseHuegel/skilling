@@ -17,6 +17,7 @@
                             :key="s.id"
                             :to="'/skills/' + s.id"
                             class="dropdown-item"
+                            :style="{ '--skill-color': (s.color || 'white').toLowerCase() }"
                         >
                             <MinecraftIcon :material="s.icon || 'minecraft:barrier'" :size="28" />
                             {{ s.displayName || s.id }}
@@ -152,11 +153,12 @@ function logout() {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.75rem 0.5rem 0.65rem;
     text-decoration: none;
     color: var(--p-text-color, #000);
     font-size: 0.85rem;
     transition: background 0.1s;
+    border-left: 3px solid var(--skill-color, transparent);
 }
 .dropdown-item:hover {
     background: var(--p-content-hover-background, #f0f0f0);
