@@ -8,7 +8,21 @@
                 Skilling
             </router-link>
             <nav class="topbar-nav">
-                <router-link to="/" class="nav-link" exact-active-class="router-link-exact-active">Skills</router-link>
+                <div class="nav-dropdown">
+                    <router-link to="/" class="nav-link" exact-active-class="router-link-exact-active">Skills</router-link>
+                    <div class="dropdown-menu">
+                        <div v-if="skills.length === 0" class="dropdown-empty">No skills loaded</div>
+                        <router-link
+                            v-for="s in skills"
+                            :key="s.id"
+                            :to="'/skills/' + s.id"
+                            class="dropdown-item"
+                        >
+                            <MinecraftIcon :material="s.icon || 'minecraft:barrier'" :size="14" />
+                            {{ s.displayName || s.id }}
+                        </router-link>
+                    </div>
+                </div>
                 <router-link to="/abilities" class="nav-link" active-class="router-link-active">Abilities</router-link>
                 <router-link to="/tags" class="nav-link" active-class="router-link-active">Tags</router-link>
                 <router-link to="/config" class="nav-link" active-class="router-link-active">Config</router-link>
@@ -37,11 +51,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
+import { api } from '../../api/client';
+import MinecraftIcon from '../common/MinecraftIcon.vue';
 
 defineEmits<{ toggleDark: [] }>();
+
+const skills = ref<any[]>([]);
+
+onMounted(async () => {
+    try {
+        skills.value = await api.skills.list();
+    } catch { /* ignore */ }
+});
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -87,6 +111,45 @@ function logout() {
 .topbar-nav {
     display: flex;
     gap: 0.25rem;
+}
+.nav-dropdown {
+    position: relative;
+}
+.nav-dropdown:hover .dropdown-menu {
+    display: block;
+}
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 200;
+    min-width: 200px;
+    margin-top: 4px;
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 6px;
+    background: var(--p-content-background, #fff);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+.dropdown-empty {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--p-form-field-placeholder-color, #888);
+    text-align: center;
+}
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    text-decoration: none;
+    color: var(--p-text-color, #000);
+    font-size: 0.85rem;
+    transition: background 0.1s;
+}
+.dropdown-item:hover {
+    background: var(--p-content-hover-background, #f0f0f0);
 }
 
 .nav-link {

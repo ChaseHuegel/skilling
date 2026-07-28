@@ -220,5 +220,5 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Auto-generate skill ID from display name (lowercase, underscores for spaces) when ID is empty; show generated ID in placeholder
 - [x] Show warning banner on empty XP sources / abilities sections; error-highlight and block save if an ability has missing or duplicate ID
 - [x] Replace the skill editor header with a full-width preview banner mimicking the skill card styling (color accent, icon, name, level range), serving as both a preview and header
-- [ ] Add hover flyout on the Skills nav link showing a dropdown of all skills; clicking navigates directly to that skill's editor
+- [x] Add hover flyout on the Skills nav link showing a dropdown of all skills; clicking navigates directly to that skill's editor
 - [ ] Sort abilities on the abilities page by skill -> unlock level -> name
