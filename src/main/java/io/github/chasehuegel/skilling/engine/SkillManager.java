@@ -272,7 +272,10 @@ public final class SkillManager {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> filtersRaw = (List<Map<String, Object>>) mechanicMap.getOrDefault("filters", List.of());
             List<SkillDefinition.Filter> filters = filtersRaw.stream()
-                    .map(fm -> new SkillDefinition.Filter(String.valueOf(fm.get("target")), String.valueOf(fm.get("state")), String.valueOf(fm.get("tool"))))
+                    .map(fm -> new SkillDefinition.Filter(
+                            fm.get("target") != null ? String.valueOf(fm.get("target")) : null,
+                            fm.get("state") != null ? String.valueOf(fm.get("state")) : null,
+                            fm.get("tool") != null ? String.valueOf(fm.get("tool")) : null))
                     .toList();
 
             entries.add(new SkillDefinition.MechanicEntry(type, filters, parameters));
