@@ -58,6 +58,8 @@
                 v-for="s in filteredSkills"
                 :key="s.id"
                 :skill="s"
+                @duplicate="duplicateSkill"
+                @delete="confirmDeleteSkill"
             />
             <div v-if="searchQuery.trim() && filteredSkills.length === 0" class="state-card empty-state">
                 <h2 class="state-title">No skills match your search</h2>
@@ -73,6 +75,18 @@
                     </svg>
                     Create Skill
                 </button>
+            </div>
+        </div>
+
+        <!-- Delete skill confirm dialog -->
+        <div v-if="showDeleteDialog" class="modal-overlay" @click.self="showDeleteDialog = false">
+            <div class="modal">
+                <h3>Delete skill?</h3>
+                <p>This will permanently remove <strong>{{ deleteTargetName }}</strong> and all its data.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showDeleteDialog = false">Keep</button>
+                    <button class="btn btn-danger" @click="executeDeleteSkill">Delete</button>
+                </div>
             </div>
         </div>
 
@@ -104,6 +118,9 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const searchQuery = ref('');
 const showResetDialog = ref(false);
+const showDeleteDialog = ref(false);
+const deleteTarget = ref<string | null>(null);
+const deleteTargetName = ref('');
 
 const filteredSkills = computed(() => {
     if (!searchQuery.value.trim()) return skills.value;
@@ -135,6 +152,40 @@ onMounted(fetchSkills);
 
 function createSkill() {
     router.push('/skills/new');
+}
+
+async function duplicateSkill(id: string) {
+    const detail = await api.skills.get(id);
+    let copyId = id + '_1';
+    let attempts = 0;
+    const existingIds = new Set(skills.value.map((s: any) => s.id));
+    while (existingIds.has(copyId) && attempts < 100) {
+        const num = parseInt(copyId.replace(/.*_(\d+)$/, '$1')) + 1;
+        copyId = id + '_' + num;
+        attempts++;
+    }
+    detail.id = copyId;
+    detail.displayName = (detail.displayName || id) + ' (copy)';
+    await api.skills.create(detail);
+    router.push(`/skills/${copyId}`);
+}
+
+function confirmDeleteSkill(id: string) {
+    const skill = skills.value.find((s: any) => s.id === id);
+    deleteTarget.value = id;
+    deleteTargetName.value = skill?.displayName || skill?.id || id;
+    showDeleteDialog.value = true;
+}
+
+async function executeDeleteSkill() {
+    const id = deleteTarget.value;
+    if (!id) return;
+    showDeleteDialog.value = false;
+    deleteTarget.value = null;
+    try {
+        await api.skills.delete(id);
+        await fetchSkills();
+    } catch { /* ignore */ }
 }
 
 async function confirmReset() {
