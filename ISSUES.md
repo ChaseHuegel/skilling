@@ -234,3 +234,4 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [ ] Mechanic parameter entries should have a light card-like outline (border/padding/background) similar to filter entries
 - [ ] Item slot field should use `AppCombobox` with prepopulated equipment slot options (HAND, OFF_HAND, FEET, LEGS, CHEST, HEAD)
 - [ ] Saving a skill with a new ability that has only id/name/unlockLevel/one mechanic fails — `RequirementsDTO` has `state` (singular) but frontend sends `states` (plural), causing deserialization error
+- [ ] Gap between skills nav button and flyout dropdown causes hover to break when moving mouse between them

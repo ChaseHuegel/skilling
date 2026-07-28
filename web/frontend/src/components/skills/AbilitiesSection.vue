@@ -736,17 +736,23 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               :key="pIdx"
               class="particle-card"
             >
+              <div class="particle-type-row">
+                <AppCombobox
+                  :model-value="particle.type"
+                  :suggestions="PARTICLE_SUGGESTIONS"
+                  placeholder="minecraft:flame"
+                  :name="'particle-' + idx + '-' + pIdx"
+                  @update:model-value="updateParticle(idx, pIdx, { type: $event })"
+                />
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
+                  @click="removeParticle(idx, pIdx)"
+                >
+                  &times;
+                </button>
+              </div>
               <div class="particle-fields">
-                <div class="particle-field">
-                  <label class="field-label-sm">Type</label>
-                  <AppCombobox
-                    :model-value="particle.type"
-                    :suggestions="PARTICLE_SUGGESTIONS"
-                    placeholder="minecraft:flame"
-                    :name="'particle-' + idx + '-' + pIdx"
-                    @update:model-value="updateParticle(idx, pIdx, { type: $event })"
-                  />
-                </div>
                 <div class="particle-field">
                   <label class="field-label-sm">Count</label>
                   <input
@@ -808,13 +814,6 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                     @input="updateParticle(idx, pIdx, { speed: Number(($event.target as HTMLInputElement).value) })"
                   />
                 </div>
-                <button
-                  class="btn btn-ghost btn-sm"
-                  style="color: var(--p-red-500, #ef4444); align-self: flex-end"
-                  @click="removeParticle(idx, pIdx)"
-                >
-                  &times;
-                </button>
               </div>
             </div>
             <button
@@ -832,17 +831,23 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
               :key="sIdx"
               class="sound-card"
             >
+              <div class="sound-type-row">
+                <AppCombobox
+                  :model-value="sound.type"
+                  :suggestions="SOUND_SUGGESTIONS"
+                  placeholder="minecraft:entity_experience_orb_pickup"
+                  :name="'sound-' + idx + '-' + sIdx"
+                  @update:model-value="updateSound(idx, sIdx, { type: $event })"
+                />
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
+                  @click="removeSound(idx, sIdx)"
+                >
+                  &times;
+                </button>
+              </div>
               <div class="sound-fields">
-                <div class="sound-field">
-                  <label class="field-label-sm">Type</label>
-                  <AppCombobox
-                    :model-value="sound.type"
-                    :suggestions="SOUND_SUGGESTIONS"
-                    placeholder="minecraft:entity_experience_orb_pickup"
-                    :name="'sound-' + idx + '-' + sIdx"
-                    @update:model-value="updateSound(idx, sIdx, { type: $event })"
-                  />
-                </div>
                 <div class="sound-field">
                   <label class="field-label-sm">Volume</label>
                   <input
@@ -874,13 +879,6 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
                     <option value="target">target</option>
                   </select>
                 </div>
-                <button
-                  class="btn btn-ghost btn-sm"
-                  style="color: var(--p-red-500, #ef4444); align-self: flex-end"
-                  @click="removeSound(idx, sIdx)"
-                >
-                  &times;
-                </button>
               </div>
             </div>
             <button
@@ -1090,6 +1088,18 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.particle-type-row,
+.sound-type-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.particle-type-row > :first-child,
+.sound-type-row > :first-child {
+  flex: 1;
 }
 
 .item-fields,

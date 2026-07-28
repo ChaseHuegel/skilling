@@ -160,11 +160,53 @@ const progressionForm = computed({
     set: (val: any) => { form.progression = val; },
 });
 
+function apiAbilityToForm(ab: any): any {
+    return {
+        ...ab,
+        lore: ab.display?.lore || [],
+        display: undefined,
+        requirements: {
+            ...ab.requirements,
+            items: (ab.requirements?.items || []).map((item: any) => ({
+                action: item.action || 'possession',
+                tag: item.tag || '',
+                slot: item.slot || '',
+                amount: item.amount || 1,
+                itemCooldown: item.itemCooldown || 0,
+            })),
+        },
+        mechanics: (ab.mechanics || []).map((m: any) => ({
+            ...m,
+            params: Object.entries(m.parameters || {}).map(([name, evaluator]) => ({ name, evaluator })),
+            parameters: undefined,
+        })),
+    };
+}
+
+function formAbilityToApi(ab: any): any {
+    const result: any = {
+        ...ab,
+        lore: undefined,
+        display: { lore: ab.lore || [] },
+        mechanics: (ab.mechanics || []).map((m: any) => {
+            const params: Record<string, any> = {};
+            for (const p of m.params || []) {
+                if (p.name) params[p.name] = p.evaluator;
+            }
+            return { ...m, params: undefined, parameters: params };
+        }),
+    };
+    return result;
+}
+
 onMounted(async () => {
     if (!isNew && skillId) {
         loading.value = true;
         try {
             const data = await api.skills.get(skillId);
+            if (data.abilities) {
+                data.abilities = data.abilities.map(apiAbilityToForm);
+            }
             Object.assign(form, data);
             await nextTick();
             const hash = route.hash;
@@ -198,7 +240,7 @@ async function save() {
             style: form.style,
             progression: form.progression,
             xpSources: form.xpSources,
-            abilities: form.abilities,
+            abilities: (form.abilities || []).map(formAbilityToApi),
         };
         if (isNew) {
             await api.skills.create(payload);

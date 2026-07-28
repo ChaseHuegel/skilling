@@ -123,17 +123,24 @@ function logout() {
 .dropdown-menu {
     display: none;
     position: absolute;
-    top: 100%;
+    top: calc(100% + 4px);
     left: 0;
     z-index: 200;
     width: 100%;
     min-width: 200px;
-    margin-top: 4px;
     border: 1px solid var(--p-content-border-color, #ddd);
     border-radius: 6px;
     background: var(--p-content-background, #fff);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     overflow: hidden;
+}
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    height: 4px;
 }
 .dropdown-empty {
     padding: 0.75rem;
