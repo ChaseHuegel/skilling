@@ -14,10 +14,6 @@
                     </div>
                 </div>
                 <div class="banner-actions">
-                    <button class="btn btn-secondary" @click="confirmCancel">Cancel</button>
-                    <button class="btn btn-primary" :disabled="saving" @click="save">
-                        {{ saving ? 'Saving...' : 'Save Changes' }}
-                    </button>
                 </div>
             </div>
 
@@ -56,6 +52,8 @@
             </div>
         </div>
 
+        <StickyActionBanner :visible="isDirty" :saving="saving" @save="save" @cancel="confirmCancel" />
+
         <!-- Cancel confirm dialog -->
         <div v-if="showCancelDialog" class="modal-overlay" @click.self="showCancelDialog = false">
             <div class="modal">
@@ -81,6 +79,7 @@ import DisplaySection from '../components/skills/DisplaySection.vue';
 import ProgressionSection from '../components/skills/ProgressionSection.vue';
 import XpSourcesSection from '../components/skills/XpSourcesSection.vue';
 import AbilitiesSection from '../components/skills/AbilitiesSection.vue';
+import StickyActionBanner from '../components/common/StickyActionBanner.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -94,6 +93,9 @@ const error = ref<string | null>(null);
 const showCancelDialog = ref(false);
 
 const fieldErrors = reactive<Record<string, string>>({});
+const cleanForm = ref('');
+
+const isDirty = computed(() => JSON.stringify(form) !== cleanForm.value);
 
 function clearFieldError(field: string) {
     delete fieldErrors[field];
@@ -235,6 +237,10 @@ function formAbilityToApi(ab: any): any {
 }
 
 onMounted(async () => {
+    if (isNew) {
+        await nextTick();
+        cleanForm.value = JSON.stringify(form);
+    }
     if (!isNew && skillId) {
         loading.value = true;
         try {
@@ -243,6 +249,7 @@ onMounted(async () => {
                 data.abilities = data.abilities.map(apiAbilityToForm);
             }
             Object.assign(form, data);
+            cleanForm.value = JSON.stringify(form);
             await nextTick();
             const hash = route.hash;
             if (hash && hash.startsWith('#ability-')) {

@@ -8,9 +8,6 @@
             <div class="header-actions">
                 <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-secondary" @click="cancelTags">Cancel</button>
                 <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
-                <button v-if="isDirty" class="btn btn-primary" :disabled="saving" @click="saveTags">
-                    {{ saving ? 'Saving...' : 'Save Changes' }}
-                </button>
             </div>
         </div>
 
@@ -38,6 +35,8 @@
             <TagListEditor v-model="filteredTags" :suggestions="suggestions" />
         </div>
 
+        <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveTags" @cancel="fetchTags" />
+
         <!-- Reset confirm dialog -->
         <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
             <div class="modal">
@@ -57,6 +56,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { api } from '../api/client';
 import { useStagingStore } from '../stores/staging';
 import TagListEditor from '../components/tags/TagListEditor.vue';
+import StickyActionBanner from '../components/common/StickyActionBanner.vue';
 
 const staging = useStagingStore();
 const loading = ref(true);

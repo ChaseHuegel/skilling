@@ -5,9 +5,6 @@
             <div class="header-actions">
                 <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-secondary" @click="cancelConfig">Cancel</button>
                 <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
-                <button v-if="isDirty" class="btn btn-primary" :disabled="saving" @click="saveConfig">
-                    {{ saving ? 'Saving...' : 'Save Changes' }}
-                </button>
             </div>
         </div>
 
@@ -52,6 +49,8 @@
             </ConfigSection>
         </div>
 
+        <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveConfig" @cancel="fetchConfig" />
+
         <!-- Web disable confirm dialog -->
         <div v-if="showWebDisableDialog" class="modal-overlay" @click.self="showWebDisableDialog = false">
             <div class="modal">
@@ -84,6 +83,7 @@ import { api } from '../api/client';
 import { useStagingStore } from '../stores/staging';
 import ConfigSection from '../components/config/ConfigSection.vue';
 import AppInput from '../components/common/AppInput.vue';
+import StickyActionBanner from '../components/common/StickyActionBanner.vue';
 
 const staging = useStagingStore();
 const loading = ref(true);
