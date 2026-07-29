@@ -314,7 +314,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Handle `ISSUE-010.md`
 - [x] Handle `ISSUE-011.md`
 - [x] Handle `ISSUE-012.md`
-- [ ] Improve visual hierarchy in the ability editor cards — colored section gutters, differentiated card types, depth layering, per-section collapse, section icons
+- [x] Improve visual hierarchy in the ability editor cards — colored section gutters, differentiated card types, depth layering, per-section collapse, section icons
   - See `ISSUE-021.md` for full development plan
 - [x] Three damage-cancelling mechanics (`CancelDamageMechanic`, `DodgeMechanic`, `BlockDamageMechanic`) have nearly identical logic — refactor into a shared base
   - See `ISSUE-043.md` for full development plan

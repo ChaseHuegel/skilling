@@ -182,6 +182,33 @@ const pendingRemoveAbility = ref<number | null>(null)
 const newFailureReason = ref<Record<number, string>>({})
 const loreDragIndex = ref<string | null>(null)
 const pendingState = ref<Record<number, string>>({})
+const sectionExpanded = ref<Record<string, boolean>>({})
+
+function toggleSection(abilityIdx: number, sectionKey: string) {
+  const key = `${abilityIdx}-${sectionKey}`
+  sectionExpanded.value[key] = !sectionExpanded.value[key]
+}
+
+function isSectionExpanded(abilityIdx: number, sectionKey: string): boolean {
+  const key = `${abilityIdx}-${sectionKey}`
+  return sectionExpanded.value[key] !== false
+}
+
+function sectionCount(ability: Ability, sectionKey: string): number | null {
+  switch (sectionKey) {
+    case 'lore': return ability.lore.length
+    case 'requirements': return null
+    case 'mechanics': return ability.mechanics.length
+    case 'feedback': return null
+    case 'particles': return ability.feedback.particles.length
+    case 'sounds': return ability.feedback.sounds.length
+    case 'on-failure': {
+      const of = ability.onFailure
+      return of ? Object.keys(of.reasons).length : 0
+    }
+    default: return null
+  }
+}
 
 function toggleExpand(idx: number) {
   expanded.value[idx] = !expanded.value[idx]
@@ -648,522 +675,584 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
           />
         </div>
 
-        <div class="section-block">
-          <label class="section-label">Lore Lines</label>
-          <div
-            v-for="(line, lIdx) in ability.lore"
-            :key="lIdx"
-            class="lore-line-block"
-            :class="{ 'lore-drag-over': loreDragIndex === idx + '-' + lIdx }"
-            draggable="true"
-            @dragstart="onLoreDragStart(idx, lIdx)"
-            @dragover="onLoreDragOver($event, idx, lIdx)"
-            @dragend="onLoreDragEnd"
-          >
-            <div class="lore-line-row">
-              <span class="lore-drag-handle" title="Drag to reorder">&#8801;</span>
-              <AppCombobox
-                :model-value="line"
-                :suggestions="loreSuggestions(idx)"
-                placeholder="{chain_break} / &a green / &l bold / &o italic"
-                :name="'lore-' + idx + '-' + lIdx"
-                @update:model-value="updateLoreLine(idx, lIdx, $event)"
-              />
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeLoreLine(idx, lIdx)"
-              >
-                &times;
-              </button>
-            </div>
-            <div class="lore-preview" v-html="renderedLore(line)"></div>
+        <div class="section-block section-block--lore">
+          <div class="section-header" @click="toggleSection(idx, 'lore')">
+            <span class="section-toggle">{{ isSectionExpanded(idx, 'lore') ? '▼' : '▶' }}</span>
+            <svg class="section-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="2" y="2" width="12" height="12" rx="1"/>
+              <line x1="4.5" y1="6" x2="11.5" y2="6"/>
+              <line x1="4.5" y1="8.5" x2="11.5" y2="8.5"/>
+              <line x1="4.5" y1="11" x2="9" y2="11"/>
+            </svg>
+            <label class="section-label">Lore Lines</label>
+            <span class="section-count">({{ ability.lore.length }})</span>
           </div>
-          <button
-            class="btn btn-primary btn-sm"
-            @click="addLoreLine(idx)"
-          >
-            + Add Lore Line
-          </button>
-        </div>
-
-        <div class="section-block">
-          <label class="section-label">Requirements</label>
-
-          <div class="field-row">
-            <label class="field-label">Cooldown (s)</label>
-            <input
-              class="field-input"
-              type="number"
-              step="any"
-              min="0"
-              :value="ability.requirements.cooldown"
-              @input="updateRequirement(idx, { cooldown: Number(($event.target as HTMLInputElement).value) })"
-            />
-          </div>
-
-          <div class="states-group">
-            <label class="field-label">States</label>
-            <div class="states-chips">
-              <span v-for="(state, sIdx) in ability.requirements.state" :key="sIdx" class="state-chip">
-                {{ state }}
-                <button class="btn btn-ghost btn-sm chip-remove" @click="removeState(idx, sIdx)">&times;</button>
-              </span>
-            </div>
-            <div class="state-add-row">
-              <AppCombobox
-                :model-value="pendingState[idx] || ''"
-                :suggestions="STATE_OPTIONS as unknown as string[]"
-                placeholder="is_sneaking or custom state"
-                :name="'state-' + idx"
-                @update:model-value="addState(idx, $event)"
-              />
-            </div>
-          </div>
-
-          <div class="sub-section">
-            <label class="sub-label">Items</label>
+          <template v-if="isSectionExpanded(idx, 'lore')">
             <div
-              v-for="(item, iIdx) in ability.requirements.items"
-              :key="iIdx"
-              class="item-card"
+              v-for="(line, lIdx) in ability.lore"
+              :key="lIdx"
+              class="lore-line-block"
+              :class="{ 'lore-drag-over': loreDragIndex === idx + '-' + lIdx }"
+              draggable="true"
+              @dragstart="onLoreDragStart(idx, lIdx)"
+              @dragover="onLoreDragOver($event, idx, lIdx)"
+              @dragend="onLoreDragEnd"
             >
-              <div class="item-fields">
-                <div class="item-field">
-                  <label class="field-label-sm">Action</label>
-                  <select
-                    class="field-input-sm"
-                    :value="item.action"
-                    @change="updateItem(idx, iIdx, { action: ($event.target as HTMLSelectElement).value })"
-                  >
-                    <option value="possession">possession</option>
-                    <option value="cost">cost</option>
-                  </select>
-                </div>
-                <div class="item-field">
-                  <label class="field-label-sm">Tag</label>
-                  <AppCombobox
-                    :model-value="item.tag"
-                    :suggestions="tagSuggestions"
-                    placeholder="#minecraft:logs or minecraft:stone"
-                    :name="'tag-' + idx + '-' + iIdx"
-                    @update:model-value="updateItem(idx, iIdx, { tag: $event })"
-                  />
-                </div>
-                <div class="item-field">
-                  <label class="field-label-sm">Slot</label>
-                  <AppCombobox
-                    :model-value="item.slot"
-                    :suggestions="SLOT_SUGGESTIONS"
-                    placeholder="HAND"
-                    :name="'slot-' + idx + '-' + iIdx"
-                    @update:model-value="updateItem(idx, iIdx, { slot: $event })"
-                  />
-                </div>
-                <div class="item-field">
-                  <label class="field-label-sm">Amount</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    min="1"
-                    :value="item.amount"
-                    @input="updateItem(idx, iIdx, { amount: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
-                <div class="item-field">
-                  <label class="field-label-sm">Item Cooldown</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    min="0"
-                    :value="item.itemCooldown"
-                    @input="updateItem(idx, iIdx, { itemCooldown: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
+              <div class="lore-line-row">
+                <span class="lore-drag-handle" title="Drag to reorder">&#8801;</span>
+                <AppCombobox
+                  :model-value="line"
+                  :suggestions="loreSuggestions(idx)"
+                  placeholder="{chain_break} / &a green / &l bold / &o italic"
+                  :name="'lore-' + idx + '-' + lIdx"
+                  @update:model-value="updateLoreLine(idx, lIdx, $event)"
+                />
                 <button
                   class="btn btn-ghost btn-sm"
-                  style="color: var(--p-red-500, #ef4444); align-self: flex-end"
-                  @click="removeItem(idx, iIdx)"
+                  style="color: var(--p-red-500, #ef4444)"
+                  @click="removeLoreLine(idx, lIdx)"
                 >
                   &times;
                 </button>
               </div>
+              <div class="lore-preview" v-html="renderedLore(line)"></div>
             </div>
             <button
               class="btn btn-primary btn-sm"
-              @click="addItem(idx)"
+              @click="addLoreLine(idx)"
             >
-              + Add Item
+              + Add Lore Line
             </button>
-          </div>
+          </template>
         </div>
 
-        <div class="section-block">
-          <label class="section-label">Mechanics</label>
-          <div
-            v-for="(mech, mIdx) in ability.mechanics"
-            :key="mIdx"
-            class="mechanic-card"
-          >
-            <div class="mechanic-header">
-              <span class="mechanic-title">Mechanic #{{ mIdx + 1 }}</span>
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeMechanic(idx, mIdx)"
-              >
-                &times;
-              </button>
+        <div class="section-block section-block--requirements">
+          <div class="section-header" @click="toggleSection(idx, 'requirements')">
+            <span class="section-toggle">{{ isSectionExpanded(idx, 'requirements') ? '▼' : '▶' }}</span>
+            <svg class="section-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.2">
+              <path d="M3 2.5h10L13 8a6 6 0 01-5 5.5A6 6 0 013 8L3 2.5z"/>
+              <line x1="5.5" y1="7" x2="7.5" y2="9"/>
+              <line x1="7.5" y1="9" x2="10.5" y2="5.5"/>
+            </svg>
+            <label class="section-label">Requirements</label>
+          </div>
+          <template v-if="isSectionExpanded(idx, 'requirements')">
+            <div class="field-row">
+              <label class="field-label">Cooldown (s)</label>
+              <input
+                class="field-input"
+                type="number"
+                step="any"
+                min="0"
+                :value="ability.requirements.cooldown"
+                @input="updateRequirement(idx, { cooldown: Number(($event.target as HTMLInputElement).value) })"
+              />
             </div>
 
-            <div class="mechanic-body">
-              <div class="field-row">
-                <label class="field-label">Type</label>
+            <div class="states-group">
+              <label class="field-label">States</label>
+              <div class="states-chips">
+                <span v-for="(state, sIdx) in ability.requirements.state" :key="sIdx" class="state-chip">
+                  {{ state }}
+                  <button class="btn btn-ghost btn-sm chip-remove" @click="removeState(idx, sIdx)">&times;</button>
+                </span>
+              </div>
+              <div class="state-add-row">
                 <AppCombobox
-                  :model-value="mech.type"
-                  :suggestions="MECHANIC_SUGGESTIONS"
-                  placeholder="core:yield_multiplier"
-                  :name="'mech-' + idx + '-' + mIdx"
-                  @update:model-value="updateMechanic(idx, mIdx, { type: $event })"
+                  :model-value="pendingState[idx] || ''"
+                  :suggestions="STATE_OPTIONS as unknown as string[]"
+                  placeholder="is_sneaking or custom state"
+                  :name="'state-' + idx"
+                  @update:model-value="addState(idx, $event)"
                 />
               </div>
+            </div>
 
-              <div class="sub-section">
-                <label class="sub-label">Filters</label>
-                <FilterBuilder
-                  :model-value="mech.filters"
-                  :tag-suggestions="tagSuggestions"
-                  @update:model-value="updateMechanic(idx, mIdx, { filters: $event })"
-                />
-              </div>
-
-              <div class="sub-section">
-                <label class="sub-label">Parameters</label>
-                <div
-                  v-for="(param, pIdx) in mech.params"
-                  :key="pIdx"
-                  class="param-entry"
-                >
-                  <div class="param-header">
+            <div class="sub-section">
+              <label class="sub-label">Items</label>
+              <div
+                v-for="(item, iIdx) in ability.requirements.items"
+                :key="iIdx"
+                class="item-card"
+              >
+                <div class="item-fields">
+                  <div class="item-field">
+                    <label class="field-label-sm">Action</label>
+                    <select
+                      class="field-input-sm"
+                      :value="item.action"
+                      @change="updateItem(idx, iIdx, { action: ($event.target as HTMLSelectElement).value })"
+                    >
+                      <option value="possession">possession</option>
+                      <option value="cost">cost</option>
+                    </select>
+                  </div>
+                  <div class="item-field">
+                    <label class="field-label-sm">Tag</label>
                     <AppCombobox
-                      :model-value="param.name"
-                      :suggestions="MECHANIC_PARAM_NAMES[mech.type] || []"
-                      placeholder="Parameter name"
-                      :name="'param-' + idx + '-' + mIdx + '-' + pIdx"
-                      @update:model-value="updateMechanicParamName(idx, mIdx, pIdx, $event)"
+                      :model-value="item.tag"
+                      :suggestions="tagSuggestions"
+                      placeholder="#minecraft:logs or minecraft:stone"
+                      :name="'tag-' + idx + '-' + iIdx"
+                      @update:model-value="updateItem(idx, iIdx, { tag: $event })"
+                    />
+                  </div>
+                  <div class="item-field">
+                    <label class="field-label-sm">Slot</label>
+                    <AppCombobox
+                      :model-value="item.slot"
+                      :suggestions="SLOT_SUGGESTIONS"
+                      placeholder="HAND"
+                      :name="'slot-' + idx + '-' + iIdx"
+                      @update:model-value="updateItem(idx, iIdx, { slot: $event })"
+                    />
+                  </div>
+                  <div class="item-field">
+                    <label class="field-label-sm">Amount</label>
+                    <input
+                      class="field-input-sm"
+                      type="number"
+                      step="any"
+                      min="1"
+                      :value="item.amount"
+                      @input="updateItem(idx, iIdx, { amount: Number(($event.target as HTMLInputElement).value) })"
+                    />
+                  </div>
+                  <div class="item-field">
+                    <label class="field-label-sm">Item Cooldown</label>
+                    <input
+                      class="field-input-sm"
+                      type="number"
+                      step="any"
+                      min="0"
+                      :value="item.itemCooldown"
+                      @input="updateItem(idx, iIdx, { itemCooldown: Number(($event.target as HTMLInputElement).value) })"
+                    />
+                  </div>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    style="color: var(--p-red-500, #ef4444); align-self: flex-end"
+                    @click="removeItem(idx, iIdx)"
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+              <button
+                class="btn btn-primary btn-sm"
+                @click="addItem(idx)"
+              >
+                + Add Item
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <div class="section-block section-block--mechanics">
+          <div class="section-header" @click="toggleSection(idx, 'mechanics')">
+            <span class="section-toggle">{{ isSectionExpanded(idx, 'mechanics') ? '▼' : '▶' }}</span>
+            <svg class="section-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.2">
+              <circle cx="8" cy="8" r="3"/>
+              <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.76 3.76l1.41 1.41M10.83 10.83l1.41 1.41M3.76 12.24l1.41-1.41M10.83 5.17l1.41-1.41" stroke-linecap="round"/>
+            </svg>
+            <label class="section-label">Mechanics</label>
+            <span class="section-count">({{ ability.mechanics.length }})</span>
+          </div>
+          <template v-if="isSectionExpanded(idx, 'mechanics')">
+            <div
+              v-for="(mech, mIdx) in ability.mechanics"
+              :key="mIdx"
+              class="mechanic-card"
+            >
+              <div class="mechanic-header">
+                <span class="mechanic-title">Mechanic #{{ mIdx + 1 }}</span>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444)"
+                  @click="removeMechanic(idx, mIdx)"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div class="mechanic-body">
+                <div class="field-row">
+                  <label class="field-label">Type</label>
+                  <AppCombobox
+                    :model-value="mech.type"
+                    :suggestions="MECHANIC_SUGGESTIONS"
+                    placeholder="core:yield_multiplier"
+                    :name="'mech-' + idx + '-' + mIdx"
+                    @update:model-value="updateMechanic(idx, mIdx, { type: $event })"
+                  />
+                </div>
+
+                <div class="sub-section">
+                  <label class="sub-label">Filters</label>
+                  <FilterBuilder
+                    :model-value="mech.filters"
+                    :tag-suggestions="tagSuggestions"
+                    @update:model-value="updateMechanic(idx, mIdx, { filters: $event })"
+                  />
+                </div>
+
+                <div class="sub-section">
+                  <label class="sub-label">Parameters</label>
+                  <div
+                    v-for="(param, pIdx) in mech.params"
+                    :key="pIdx"
+                    class="param-entry"
+                  >
+                    <div class="param-header">
+                      <AppCombobox
+                        :model-value="param.name"
+                        :suggestions="MECHANIC_PARAM_NAMES[mech.type] || []"
+                        placeholder="Parameter name"
+                        :name="'param-' + idx + '-' + mIdx + '-' + pIdx"
+                        @update:model-value="updateMechanicParamName(idx, mIdx, pIdx, $event)"
+                      />
+                      <button
+                        class="btn btn-ghost btn-sm"
+                        style="color: var(--p-red-500, #ef4444)"
+                        @click="removeMechanicParam(idx, mIdx, pIdx)"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                    <EvaluatorParameter
+                      :model-value="param.evaluator"
+                      :label="param.name || 'param'"
+                      :name="param.name || 'param'"
+                      @update:model-value="updateMechanicParamEvaluator(idx, mIdx, pIdx, $event)"
+                    />
+                  </div>
+                  <button
+                    class="btn btn-primary btn-sm"
+                    @click="addMechanicParam(idx, mIdx)"
+                  >
+                    + Add Parameter
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              @click="addMechanic(idx)"
+            >
+              + Add Mechanic
+            </button>
+          </template>
+        </div>
+
+        <div class="section-block section-block--feedback">
+          <div class="section-header" @click="toggleSection(idx, 'feedback')">
+            <span class="section-toggle">{{ isSectionExpanded(idx, 'feedback') ? '▼' : '▶' }}</span>
+            <svg class="section-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.2">
+              <path d="M4 8a4 4 0 018 0c0 2 1 3 1 3H3s1-1 1-3z"/>
+              <line x1="6.5" y1="12" x2="9.5" y2="12" stroke-linecap="round"/>
+              <line x1="8" y1="2" x2="8" y2="3.5" stroke-linecap="round"/>
+            </svg>
+            <label class="section-label">Feedback</label>
+          </div>
+          <template v-if="isSectionExpanded(idx, 'feedback')">
+            <div class="feedback-toggles">
+              <label class="toggle-check">
+                <input
+                  type="checkbox"
+                  :checked="ability.feedback.actionBar"
+                  @change="updateFeedback(idx, { actionBar: ($event.target as HTMLInputElement).checked })"
+                />
+                Action Bar
+              </label>
+              <label class="toggle-check">
+                <input
+                  type="checkbox"
+                  :checked="ability.feedback.chat"
+                  @change="updateFeedback(idx, { chat: ($event.target as HTMLInputElement).checked })"
+                />
+                Chat
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label class="field-label">Message</label>
+              <input
+                class="field-input"
+                type="text"
+                placeholder="&aSkill activated!"
+                :value="ability.feedback.message"
+                @input="updateFeedback(idx, { message: ($event.target as HTMLInputElement).value })"
+              />
+            </div>
+
+            <div class="sub-section">
+              <div class="section-header section-header--sm" @click="toggleSection(idx, 'particles')">
+                <span class="section-toggle">{{ isSectionExpanded(idx, 'particles') ? '▼' : '▶' }}</span>
+                <label class="sub-label" style="margin-bottom: 0; cursor: pointer">Particles</label>
+                <span class="section-count">({{ ability.feedback.particles.length }})</span>
+              </div>
+              <template v-if="isSectionExpanded(idx, 'particles')">
+                <div
+                  v-for="(particle, pIdx) in ability.feedback.particles"
+                  :key="pIdx"
+                  class="particle-card"
+                >
+                  <div class="particle-type-row">
+                    <AppCombobox
+                      :model-value="particle.type"
+                      :suggestions="PARTICLE_SUGGESTIONS"
+                      placeholder="minecraft:flame"
+                      :name="'particle-' + idx + '-' + pIdx"
+                      @update:model-value="updateParticle(idx, pIdx, { type: $event })"
                     />
                     <button
                       class="btn btn-ghost btn-sm"
-                      style="color: var(--p-red-500, #ef4444)"
-                      @click="removeMechanicParam(idx, mIdx, pIdx)"
+                      style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
+                      @click="removeParticle(idx, pIdx)"
                     >
                       &times;
                     </button>
                   </div>
-                  <EvaluatorParameter
-                    :model-value="param.evaluator"
-                    :label="param.name || 'param'"
-                    :name="param.name || 'param'"
-                    @update:model-value="updateMechanicParamEvaluator(idx, mIdx, pIdx, $event)"
-                  />
+                  <div class="particle-fields">
+                    <div class="particle-field">
+                      <label class="field-label-sm">Count</label>
+                      <input
+                        class="field-input-sm"
+                        type="number"
+                        step="any"
+                        min="1"
+                        :value="particle.count"
+                        @input="updateParticle(idx, pIdx, { count: Number(($event.target as HTMLInputElement).value) })"
+                      />
+                    </div>
+                    <div class="particle-field">
+                      <label class="field-label-sm">Target</label>
+                      <select
+                        class="field-input-sm"
+                        :value="particle.target"
+                        @change="updateParticle(idx, pIdx, { target: ($event.target as HTMLSelectElement).value })"
+                      >
+                        <option value="self">self</option>
+                        <option value="target">target</option>
+                      </select>
+                    </div>
+                    <div class="particle-field">
+                      <label class="field-label-sm">Offset X</label>
+                      <input
+                        class="field-input-sm"
+                        type="number"
+                        step="any"
+                        :value="particle.offsetX"
+                        @input="updateParticle(idx, pIdx, { offsetX: Number(($event.target as HTMLInputElement).value) })"
+                      />
+                    </div>
+                    <div class="particle-field">
+                      <label class="field-label-sm">Offset Y</label>
+                      <input
+                        class="field-input-sm"
+                        type="number"
+                        step="any"
+                        :value="particle.offsetY"
+                        @input="updateParticle(idx, pIdx, { offsetY: Number(($event.target as HTMLInputElement).value) })"
+                      />
+                    </div>
+                    <div class="particle-field">
+                      <label class="field-label-sm">Offset Z</label>
+                      <input
+                        class="field-input-sm"
+                        type="number"
+                        step="any"
+                        :value="particle.offsetZ"
+                        @input="updateParticle(idx, pIdx, { offsetZ: Number(($event.target as HTMLInputElement).value) })"
+                      />
+                    </div>
+                    <div class="particle-field">
+                      <label class="field-label-sm">Speed</label>
+                      <input
+                        class="field-input-sm"
+                        type="number"
+                        step="any"
+                        :value="particle.speed"
+                        @input="updateParticle(idx, pIdx, { speed: Number(($event.target as HTMLInputElement).value) })"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <button
                   class="btn btn-primary btn-sm"
-                  @click="addMechanicParam(idx, mIdx)"
+                  @click="addParticle(idx)"
                 >
-                  + Add Parameter
+                  + Add Particle
                 </button>
-              </div>
+              </template>
             </div>
-          </div>
-          <button
-            class="btn btn-primary btn-sm"
-            @click="addMechanic(idx)"
-          >
-            + Add Mechanic
-          </button>
-        </div>
 
-        <div class="section-block">
-          <label class="section-label">Feedback</label>
-
-          <div class="feedback-toggles">
-            <label class="toggle-check">
-              <input
-                type="checkbox"
-                :checked="ability.feedback.actionBar"
-                @change="updateFeedback(idx, { actionBar: ($event.target as HTMLInputElement).checked })"
-              />
-              Action Bar
-            </label>
-            <label class="toggle-check">
-              <input
-                type="checkbox"
-                :checked="ability.feedback.chat"
-                @change="updateFeedback(idx, { chat: ($event.target as HTMLInputElement).checked })"
-              />
-              Chat
-            </label>
-          </div>
-
-          <div class="field-row">
-            <label class="field-label">Message</label>
-            <input
-              class="field-input"
-              type="text"
-              placeholder="&aSkill activated!"
-              :value="ability.feedback.message"
-              @input="updateFeedback(idx, { message: ($event.target as HTMLInputElement).value })"
-            />
-          </div>
-
-          <div class="sub-section">
-            <label class="sub-label">Particles</label>
-            <div
-              v-for="(particle, pIdx) in ability.feedback.particles"
-              :key="pIdx"
-              class="particle-card"
-            >
-              <div class="particle-type-row">
-                <AppCombobox
-                  :model-value="particle.type"
-                  :suggestions="PARTICLE_SUGGESTIONS"
-                  placeholder="minecraft:flame"
-                  :name="'particle-' + idx + '-' + pIdx"
-                  @update:model-value="updateParticle(idx, pIdx, { type: $event })"
-                />
-                <button
-                  class="btn btn-ghost btn-sm"
-                  style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
-                  @click="removeParticle(idx, pIdx)"
+            <div class="sub-section">
+              <div class="section-header section-header--sm" @click="toggleSection(idx, 'sounds')">
+                <span class="section-toggle">{{ isSectionExpanded(idx, 'sounds') ? '▼' : '▶' }}</span>
+                <label class="sub-label" style="margin-bottom: 0; cursor: pointer">Sounds</label>
+                <span class="section-count">({{ ability.feedback.sounds.length }})</span>
+              </div>
+              <template v-if="isSectionExpanded(idx, 'sounds')">
+                <div
+                  v-for="(sound, sIdx) in ability.feedback.sounds"
+                  :key="sIdx"
+                  class="sound-card"
                 >
-                  &times;
-                </button>
-              </div>
-              <div class="particle-fields">
-                <div class="particle-field">
-                  <label class="field-label-sm">Count</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    min="1"
-                    :value="particle.count"
-                    @input="updateParticle(idx, pIdx, { count: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
-                <div class="particle-field">
-                  <label class="field-label-sm">Target</label>
-                  <select
-                    class="field-input-sm"
-                    :value="particle.target"
-                    @change="updateParticle(idx, pIdx, { target: ($event.target as HTMLSelectElement).value })"
-                  >
-                    <option value="self">self</option>
-                    <option value="target">target</option>
-                  </select>
-                </div>
-                <div class="particle-field">
-                  <label class="field-label-sm">Offset X</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    :value="particle.offsetX"
-                    @input="updateParticle(idx, pIdx, { offsetX: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
-                <div class="particle-field">
-                  <label class="field-label-sm">Offset Y</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    :value="particle.offsetY"
-                    @input="updateParticle(idx, pIdx, { offsetY: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
-                <div class="particle-field">
-                  <label class="field-label-sm">Offset Z</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    :value="particle.offsetZ"
-                    @input="updateParticle(idx, pIdx, { offsetZ: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
-                <div class="particle-field">
-                  <label class="field-label-sm">Speed</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    :value="particle.speed"
-                    @input="updateParticle(idx, pIdx, { speed: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
-              </div>
-            </div>
-            <button
-              class="btn btn-primary btn-sm"
-              @click="addParticle(idx)"
-            >
-              + Add Particle
-            </button>
-          </div>
-
-          <div class="sub-section">
-            <label class="sub-label">Sounds</label>
-            <div
-              v-for="(sound, sIdx) in ability.feedback.sounds"
-              :key="sIdx"
-              class="sound-card"
-            >
-              <div class="sound-type-row">
-                <AppCombobox
-                  :model-value="sound.type"
-                  :suggestions="SOUND_SUGGESTIONS"
-                  placeholder="minecraft:entity_experience_orb_pickup"
-                  :name="'sound-' + idx + '-' + sIdx"
-                  @update:model-value="updateSound(idx, sIdx, { type: $event })"
-                />
-                <button
-                  class="btn btn-ghost btn-sm"
-                  style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
-                  @click="removeSound(idx, sIdx)"
-                >
-                  &times;
-                </button>
-              </div>
-              <div class="sound-fields">
-                <div class="sound-field">
-                  <label class="field-label-sm">Volume</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    :value="sound.volume"
-                    @input="updateSound(idx, sIdx, { volume: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
-                <div class="sound-field">
-                  <label class="field-label-sm">Pitch</label>
-                  <input
-                    class="field-input-sm"
-                    type="number"
-                    step="any"
-                    :value="sound.pitch"
-                    @input="updateSound(idx, sIdx, { pitch: Number(($event.target as HTMLInputElement).value) })"
-                  />
-                </div>
-                <div class="sound-field">
-                  <label class="field-label-sm">Target</label>
-                  <select
-                    class="field-input-sm"
-                    :value="sound.target"
-                    @change="updateSound(idx, sIdx, { target: ($event.target as HTMLSelectElement).value })"
-                  >
-                    <option value="self">self</option>
-                    <option value="target">target</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <button
-              class="btn btn-primary btn-sm"
-              @click="addSound(idx)"
-            >
-              + Add Sound
-            </button>
-          </div>
-        </div>
-
-        <div class="section-block">
-          <label class="section-label">On Failure</label>
-
-          <div v-for="(fb, reason) in getOnFailure(idx).reasons" :key="reason" class="failure-card">
-            <div class="failure-header">
-              <span class="failure-reason-label">{{ FAILURE_REASON_LABELS[reason] || reason }}</span>
-              <button
-                class="btn btn-ghost btn-sm"
-                style="color: var(--p-red-500, #ef4444)"
-                @click="removeFailureReason(idx, reason)"
-              >
-                &times;
-              </button>
-            </div>
-            <div class="failure-body">
-              <div class="field-row">
-                <label class="field-label">Action Bar</label>
-                <input
-                  class="field-input"
-                  type="text"
-                  :placeholder="failurePlaceholder(reason)"
-                  :value="fb.actionBar"
-                  @input="updateFailureActionBar(idx, reason, ($event.target as HTMLInputElement).value)"
-                />
-              </div>
-              <div class="sub-section">
-                <label class="sub-label">Sounds</label>
-                <div v-for="(sound, sIdx) in fb.sounds" :key="sIdx" class="sound-card">
                   <div class="sound-type-row">
                     <AppCombobox
                       :model-value="sound.type"
                       :suggestions="SOUND_SUGGESTIONS"
-                      placeholder="minecraft:block_note_block_bass"
-                      :name="'of-sound-' + idx + '-' + reason + '-' + sIdx"
-                      @update:model-value="updateFailureSound(idx, reason, sIdx, { type: $event })"
+                      placeholder="minecraft:entity_experience_orb_pickup"
+                      :name="'sound-' + idx + '-' + sIdx"
+                      @update:model-value="updateSound(idx, sIdx, { type: $event })"
                     />
-                    <button class="btn btn-ghost btn-sm" style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
-                      @click="removeFailureSound(idx, reason, sIdx)">&times;</button>
+                    <button
+                      class="btn btn-ghost btn-sm"
+                      style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
+                      @click="removeSound(idx, sIdx)"
+                    >
+                      &times;
+                    </button>
                   </div>
                   <div class="sound-fields">
                     <div class="sound-field">
                       <label class="field-label-sm">Volume</label>
-                      <input class="field-input-sm" type="number" step="any"
+                      <input
+                        class="field-input-sm"
+                        type="number"
+                        step="any"
                         :value="sound.volume"
-                        @input="updateFailureSound(idx, reason, sIdx, { volume: Number(($event.target as HTMLInputElement).value) })" />
+                        @input="updateSound(idx, sIdx, { volume: Number(($event.target as HTMLInputElement).value) })"
+                      />
                     </div>
                     <div class="sound-field">
                       <label class="field-label-sm">Pitch</label>
-                      <input class="field-input-sm" type="number" step="any"
+                      <input
+                        class="field-input-sm"
+                        type="number"
+                        step="any"
                         :value="sound.pitch"
-                        @input="updateFailureSound(idx, reason, sIdx, { pitch: Number(($event.target as HTMLInputElement).value) })" />
+                        @input="updateSound(idx, sIdx, { pitch: Number(($event.target as HTMLInputElement).value) })"
+                      />
                     </div>
                     <div class="sound-field">
                       <label class="field-label-sm">Target</label>
-                      <select class="field-input-sm"
+                      <select
+                        class="field-input-sm"
                         :value="sound.target"
-                        @change="updateFailureSound(idx, reason, sIdx, { target: ($event.target as HTMLSelectElement).value })">
+                        @change="updateSound(idx, sIdx, { target: ($event.target as HTMLSelectElement).value })"
+                      >
                         <option value="self">self</option>
                         <option value="target">target</option>
                       </select>
                     </div>
                   </div>
                 </div>
-                <button class="btn btn-primary btn-sm" @click="addFailureSound(idx, reason)">+ Add Sound</button>
+                <button
+                  class="btn btn-primary btn-sm"
+                  @click="addSound(idx)"
+                >
+                  + Add Sound
+                </button>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <div class="section-block section-block--on-failure">
+          <div class="section-header" @click="toggleSection(idx, 'on-failure')">
+            <span class="section-toggle">{{ isSectionExpanded(idx, 'on-failure') ? '▼' : '▶' }}</span>
+            <svg class="section-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.2">
+              <circle cx="8" cy="8" r="6"/>
+              <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke-linecap="round"/>
+              <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke-linecap="round"/>
+            </svg>
+            <label class="section-label">On Failure</label>
+            <span class="section-count">({{ Object.keys(getOnFailure(idx).reasons).length }})</span>
+          </div>
+          <template v-if="isSectionExpanded(idx, 'on-failure')">
+            <div v-for="(fb, reason) in getOnFailure(idx).reasons" :key="reason" class="failure-card">
+              <div class="failure-header">
+                <span class="failure-reason-label">{{ FAILURE_REASON_LABELS[reason] || reason }}</span>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  style="color: var(--p-red-500, #ef4444)"
+                  @click="removeFailureReason(idx, reason)"
+                >
+                  &times;
+                </button>
+              </div>
+              <div class="failure-body">
+                <div class="field-row">
+                  <label class="field-label">Action Bar</label>
+                  <input
+                    class="field-input"
+                    type="text"
+                    :placeholder="failurePlaceholder(reason)"
+                    :value="fb.actionBar"
+                    @input="updateFailureActionBar(idx, reason, ($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+                <div class="sub-section">
+                  <label class="sub-label">Sounds</label>
+                  <div v-for="(sound, sIdx) in fb.sounds" :key="sIdx" class="sound-card">
+                    <div class="sound-type-row">
+                      <AppCombobox
+                        :model-value="sound.type"
+                        :suggestions="SOUND_SUGGESTIONS"
+                        placeholder="minecraft:block_note_block_bass"
+                        :name="'of-sound-' + idx + '-' + reason + '-' + sIdx"
+                        @update:model-value="updateFailureSound(idx, reason, sIdx, { type: $event })"
+                      />
+                      <button class="btn btn-ghost btn-sm" style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
+                        @click="removeFailureSound(idx, reason, sIdx)">&times;</button>
+                    </div>
+                    <div class="sound-fields">
+                      <div class="sound-field">
+                        <label class="field-label-sm">Volume</label>
+                        <input class="field-input-sm" type="number" step="any"
+                          :value="sound.volume"
+                          @input="updateFailureSound(idx, reason, sIdx, { volume: Number(($event.target as HTMLInputElement).value) })" />
+                      </div>
+                      <div class="sound-field">
+                        <label class="field-label-sm">Pitch</label>
+                        <input class="field-input-sm" type="number" step="any"
+                          :value="sound.pitch"
+                          @input="updateFailureSound(idx, reason, sIdx, { pitch: Number(($event.target as HTMLInputElement).value) })" />
+                      </div>
+                      <div class="sound-field">
+                        <label class="field-label-sm">Target</label>
+                        <select class="field-input-sm"
+                          :value="sound.target"
+                          @change="updateFailureSound(idx, reason, sIdx, { target: ($event.target as HTMLSelectElement).value })">
+                          <option value="self">self</option>
+                          <option value="target">target</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary btn-sm" @click="addFailureSound(idx, reason)">+ Add Sound</button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="add-failure-row">
-            <select v-model="newFailureReason[idx]" class="field-input-sm">
-              <option value="" disabled>Select reason...</option>
-              <option v-for="opt in FAILURE_REASON_OPTIONS" :key="opt" :value="opt">
-                {{ FAILURE_REASON_LABELS[opt] }}
-              </option>
-            </select>
-            <button
-              class="btn btn-primary btn-sm"
-              :disabled="!newFailureReason[idx]"
-              @click="addFailureReason(idx)"
-            >
-              + Add
-            </button>
-          </div>
+            <div class="add-failure-row">
+              <select v-model="newFailureReason[idx]" class="field-input-sm">
+                <option value="" disabled>Select reason...</option>
+                <option v-for="opt in FAILURE_REASON_OPTIONS" :key="opt" :value="opt">
+                  {{ FAILURE_REASON_LABELS[opt] }}
+                </option>
+              </select>
+              <button
+                class="btn btn-primary btn-sm"
+                :disabled="!newFailureReason[idx]"
+                @click="addFailureReason(idx)"
+              >
+                + Add
+              </button>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -1298,18 +1387,35 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
 
 .section-block {
   border-top: 1px solid var(--p-content-border-color);
+  border-left: 4px solid transparent;
   padding-top: 0.75rem;
+  padding-left: 1rem;
+  margin-left: -0.25rem;
+  transition: background 0.15s ease;
+}
+
+.section-block--lore { border-left-color: var(--p-cyan-400); --section-accent: var(--p-cyan-400); }
+.section-block--requirements { border-left-color: var(--p-orange-400); --section-accent: var(--p-orange-400); }
+.section-block--mechanics { border-left-color: var(--p-purple-400); --section-accent: var(--p-purple-400); }
+.section-block--feedback { border-left-color: var(--p-green-400); --section-accent: var(--p-green-400); }
+.section-block--on-failure { border-left-color: var(--p-red-400); --section-accent: var(--p-red-400); }
+
+.section-block {
+  background: color-mix(in srgb, var(--section-accent) 3%, var(--p-content-background));
 }
 
 .section-label {
-  display: block;
+  display: inline;
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--p-text-color);
-  margin-bottom: 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+.section-block--lore .section-label { color: var(--p-cyan-400); }
+.section-block--requirements .section-label { color: var(--p-orange-400); }
+.section-block--mechanics .section-label { color: var(--p-purple-400); }
+.section-block--feedback .section-label { color: var(--p-green-400); }
+.section-block--on-failure .section-label { color: var(--p-red-400); }
 
 .sub-section {
   margin-top: 0.5rem;
@@ -1415,7 +1521,19 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
   border-radius: 4px;
   padding: 0.5rem;
   margin-bottom: 0.5rem;
-  background: var(--p-content-background);
+}
+
+.item-card { border-left: 3px solid var(--p-orange-400); }
+.mechanic-card { border-left: 3px solid var(--p-purple-400); }
+.particle-card { border-left: 3px solid var(--p-green-400); }
+.sound-card { border-left: 3px solid var(--p-cyan-400); }
+
+.item-card,
+.mechanic-card,
+.particle-card,
+.sound-card,
+.failure-card {
+  background: color-mix(in srgb, var(--section-accent) 7%, var(--p-content-background));
 }
 
 .mechanic-header {
@@ -1487,10 +1605,12 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
 
 .param-entry {
   border: 1px solid var(--p-content-border-color);
+  border-left: 2px dotted var(--p-indigo-300);
   border-radius: 4px;
   padding: 0.5rem;
-  background: var(--p-content-background);
+  margin-left: 0.5rem;
   margin-bottom: 0.5rem;
+  background: color-mix(in srgb, var(--section-accent) 10%, var(--p-content-background));
 }
 
 .param-header {
@@ -1506,10 +1626,10 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
 
 .failure-card {
   border: 1px solid var(--p-content-border-color);
+  border-left: 3px solid var(--p-red-400);
   border-radius: 4px;
   padding: 0.5rem;
   margin-bottom: 0.5rem;
-  background: var(--p-content-background);
 }
 .failure-header {
   display: flex;
@@ -1532,6 +1652,44 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
   gap: 0.5rem;
   align-items: center;
   margin-top: 0.5rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0.5rem;
+}
+.section-header:hover .section-label {
+  opacity: 0.8;
+}
+.section-header--sm {
+  margin-bottom: 0.35rem;
+}
+.section-header--sm .section-label {
+  font-size: 0.8rem;
+}
+.section-toggle {
+  font-size: 0.65rem;
+  color: var(--p-form-field-placeholder-color);
+  flex-shrink: 0;
+  width: 0.75rem;
+  text-align: center;
+}
+.section-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--p-form-field-placeholder-color);
+  margin-left: 0.25rem;
+}
+.section-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.section-header:hover .section-icon {
+  opacity: 1;
 }
 
 .feedback-toggles {
