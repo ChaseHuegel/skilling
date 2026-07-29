@@ -268,4 +268,4 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Handle `ISSUE-009.md`
 - [x] Handle `ISSUE-010.md`
 - [x] Handle `ISSUE-011.md`
-- [ ] Handle `ISSUE-012.md`
+- [x] Handle `ISSUE-012.md`

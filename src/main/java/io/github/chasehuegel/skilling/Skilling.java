@@ -220,6 +220,10 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:aoe_effect", AoeEffectMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
         mechReg.register("core:projectile", ProjectileMechanic.class, List.of("speed", "damage"));
         mechReg.register("core:teleport", TeleportMechanic.class, List.of("range"));
+        mechReg.register("core:block_damage", BlockDamageMechanic.class, List.of("chance"));
+        mechReg.register("core:thorns_damage", ThornsDamageMechanic.class, List.of("damage"));
+        mechReg.register("core:dodge", DodgeMechanic.class, List.of("chance"));
+        mechReg.register("core:lifesteal", LifestealMechanic.class, List.of("percentage"));
 
         var trigReg = registries.getTriggerRegistry();
         trigReg.register("block_break", BlockBreakTrigger.class);
