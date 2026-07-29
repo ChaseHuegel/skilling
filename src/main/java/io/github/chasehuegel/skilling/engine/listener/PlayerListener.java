@@ -4,6 +4,7 @@ import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
+import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,10 +18,13 @@ public final class PlayerListener implements Listener {
 
     private final ProfileManager profileManager;
     private final AsyncBatchWorker asyncBatchWorker;
+    private final RequirementEngine requirementEngine;
 
-    public PlayerListener(ProfileManager profileManager, AsyncBatchWorker asyncBatchWorker) {
+    public PlayerListener(ProfileManager profileManager, AsyncBatchWorker asyncBatchWorker,
+                          RequirementEngine requirementEngine) {
         this.profileManager = profileManager;
         this.asyncBatchWorker = asyncBatchWorker;
+        this.requirementEngine = requirementEngine;
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -31,6 +35,7 @@ public final class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        requirementEngine.clearCooldowns(player);
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
         if (profile != null && profile.isDirty()) {
             CompletableFuture.runAsync(() -> {

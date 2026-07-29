@@ -130,7 +130,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-028.md` for full development plan
 - [x] `ModifyFurnaceOutputMechanic` silently drops overflow items — `player.getInventory().addItem()` return value discarded
   - See `ISSUE-029.md` for full development plan
-- [ ] Cooldown entries in `RequirementEngine` are never cleaned up on player quit — unbounded map growth
+- [x] Cooldown entries in `RequirementEngine` are never cleaned up on player quit — unbounded map growth
   - See `ISSUE-030.md` for full development plan
 - [ ] `PlayerProfile.getXpMap()` exposes mutable `ConcurrentHashMap` to `AsyncBatchWorker` while `addXp()` concurrently modifies it
   - See `ISSUE-031.md` for full development plan
