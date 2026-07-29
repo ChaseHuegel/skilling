@@ -184,7 +184,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - `Bukkit.broadcast(Component)` did not properly render Adventure components; switched to iterating players with `player.sendMessage(Component)`
 - [x] Skills Guide Book — vanilla+ GUI access via crafted item with auto-unlocked recipe
   - See `ISSUE-004.md` for full development plan
-- [ ] Runtime config modification (`/skills set <key> <value>`)
+- [x] Runtime config modification (`/skills set <key> <value>`)
   - See `ISSUE-005.md` for full development plan
 - [ ] Per-player logging preferences (`/skills log xp|levels|unlocks|abilities <true/false>`)
   - See `ISSUE-006.md` for full development plan

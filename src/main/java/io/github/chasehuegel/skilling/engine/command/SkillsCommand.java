@@ -22,6 +22,7 @@ import org.incendo.cloud.paper.PaperCommandManager;
 import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
 import org.incendo.cloud.paper.util.sender.Source;
 import org.incendo.cloud.parser.standard.IntegerParser;
+import org.incendo.cloud.parser.standard.StringParser;
 import java.util.HashSet;
 
 public final class SkillsCommand {
@@ -99,6 +100,8 @@ public final class SkillsCommand {
                     sender.sendMessage(Component.text("/skills help", NamedTextColor.YELLOW)
                             .append(Component.text(" - Show this help", NamedTextColor.WHITE)));
                     if (sender.hasPermission("skilling.admin")) {
+                        sender.sendMessage(Component.text("/skills set <key> <value>", NamedTextColor.YELLOW)
+                                .append(Component.text(" - Modify a config value at runtime", NamedTextColor.WHITE)));
                         sender.sendMessage(Component.text("/skills reload", NamedTextColor.YELLOW)
                                 .append(Component.text(" - Reload the plugin configuration and skills", NamedTextColor.WHITE)));
                         sender.sendMessage(Component.text("/skills setlevel <player> <skill> <level>", NamedTextColor.YELLOW)
@@ -143,6 +146,22 @@ public final class SkillsCommand {
                     String skillId = ctx.get("skill");
                     int amount = ctx.get("amount");
                     addXp(ctx.sender().source(), playerName, skillId, amount);
+                }));
+
+        commandManager.command(commandManager.commandBuilder("skills")
+                .literal("set")
+                .permission("skilling.admin")
+                .required("key", ConfigKeyParser.configKeyParser())
+                .required("value", StringParser.stringParser())
+                .handler(ctx -> {
+                    String key = ctx.get("key");
+                    String value = ctx.get("value");
+                    var config = plugin.getConfig();
+                    config.set(key, parseConfigValue(value));
+                    plugin.saveConfig();
+                    plugin.reloadConfigSettings();
+                    ctx.sender().source().sendMessage(
+                            MINI_MESSAGE.deserialize("<green>Set <yellow>" + key + " <green>to <yellow>" + value));
                 }));
 
         commandManager.command(commandManager.commandBuilder("skills")
@@ -368,6 +387,17 @@ public final class SkillsCommand {
                     sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage())));
             }
         });
+    }
+
+    private static Object parseConfigValue(String raw) {
+        if (raw.equalsIgnoreCase("true")) return true;
+        if (raw.equalsIgnoreCase("false")) return false;
+        try {
+            if (raw.contains(".")) return Double.parseDouble(raw);
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            return raw;
+        }
     }
 
     private int getLevelForXp(SkillDefinition skill, long xp) {
