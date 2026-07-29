@@ -4,11 +4,13 @@ import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
+import org.bukkit.inventory.ItemStack;
 import java.util.Map;
 
 /**
  * Grants bonus furnace output items directly into the player's inventory on {@link FurnaceExtractEvent}.
  * Only activates when the multiplier is &gt; 1.0.
+ * Overflow items that don't fit in the inventory are dropped at the player's feet.
  *
  * <p><b>YAML key:</b> {@code modify_furnace_output}
  * <p><b>Optional parameters:</b> {@code multiplier} (default 1.0; bonus items = original &times; (multiplier - 1))
@@ -26,7 +28,11 @@ public final class ModifyFurnaceOutputMechanic implements SkillMechanic {
         if (bonus > 0) {
             var drops = extractEvent.getBlock().getDrops();
             if (!drops.isEmpty()) {
-                player.getInventory().addItem(drops.iterator().next().asQuantity(bonus));
+                ItemStack bonusItem = drops.iterator().next().asQuantity(bonus);
+                Map<Integer, ItemStack> overflow = player.getInventory().addItem(bonusItem);
+                for (ItemStack leftover : overflow.values()) {
+                    player.getWorld().dropItemNaturally(player.getLocation(), leftover);
+                }
             }
         }
         return true;
