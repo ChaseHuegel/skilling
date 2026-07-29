@@ -111,6 +111,30 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Web) The "save changes" banner at the bottom of the screen should be styled like the apply & reload banner
 - [x] (Web) The "apply & reload" banner does not appear after responding to the save changes confirmation dialog that is prompted after navigating away from a page that has unsaved changes
 - [x] (Web or Plugin?) When using "apply & reload" when a player has the `/skills` menu open, the web GUI reports there was an error and the reload seems to not take effect at all
+- [ ] `/skills reload` does not persist the new `TagResolver` into `SkillManager` — `tags.yml` changes are invisible after reload
+  - `LockdownManager.reload()` creates a local `TagResolver` that is never stored back
+- [ ] XP reward evaluator in `SkillEventListener.grantXp()` hardcodes `source.reward().evaluate(1, 1)` — XP rewards don't scale with player level
+- [ ] `ProjectileMechanic` sets `skilling_damage` metadata on snowballs but no listener ever reads it — damage parameter is dead code
+- [ ] `PoisonPillTag.key` uses lazy initialization without `volatile` or synchronization — thread-unsafe
+- [ ] `CancelDamageMechanic` return value is inconsistent with `DodgeMechanic`/`BlockDamageMechanic`
+  - `CancelDamageMechanic` returns `true` even on a failed roll, consuming resources; the others return `false`
+  - `CancelDamageMechanic` does not verify `getEntity().equals(player)` — applies to all entities, not just the player
+- [ ] `XpBonusMechanic` is a no-op stub — returns `true` with no actual effect
+- [ ] `ModifyBrewTimeMechanic` hooks `BrewEvent` (fires when brewing finishes) but modifying brew time on completion affects the next batch, not the current one
+- [ ] `ModifyFurnaceOutputMechanic` silently drops overflow items — `player.getInventory().addItem()` return value discarded
+- [ ] Cooldown entries in `RequirementEngine` are never cleaned up on player quit — unbounded map growth
+- [ ] `PlayerProfile.getXpMap()` exposes mutable `ConcurrentHashMap` to `AsyncBatchWorker` while `addXp()` concurrently modifies it
+- [ ] `Skilling.titleStayDuration` and `globalXpModifier` are not `volatile` — stale values possible after reload
+- [ ] `RideHorseTrigger` uses `PlayerInteractEntityEvent` — fires on any entity interaction, not just mounting. Should be `VehicleMountEvent`
+- [ ] `LevelUpTrigger` maps to `PlayerLevelChangeEvent` (vanilla Minecraft XP levels) — will never fire for Skilling's custom skill level-ups
+- [ ] `ApplyStatusMechanic` does not verify `getDamager().equals(player)` — could fire when player is the damage receiver
+- [ ] `BlockDamageMechanic` uses `<` instead of `<=` for chance comparison — `chance: 100` will fail ~1% of the time due to `nextDouble(100)` bound
+- [ ] `TeleportMechanic.findSafeLocation()` mutates `Location` in-place with chained `add()`/`subtract()` calls — fragile and confusing
+- [ ] `RequirementEngine` state checks (`checkState()`) use `default -> true` — unknown states silently pass
+- [ ] `LoreResolver` silently passes through unresolved placeholders as raw `{placeholder}` text instead of warning or throwing
+- [ ] `CustomTagLoader` does not log a warning when circular tag references are detected (silently returns empty set)
+- [ ] `DatabaseManager` does not set `PRAGMA foreign_keys = ON` — future schema evolution with foreign keys would silently break
+- [ ] `PlayerListener.onPlayerQuit` has a race window: profile modified by concurrent thread after flush but before unload — XP loss on quit
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -269,3 +293,17 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Handle `ISSUE-010.md`
 - [x] Handle `ISSUE-011.md`
 - [x] Handle `ISSUE-012.md`
+- [ ] Three damage-cancelling mechanics (`CancelDamageMechanic`, `DodgeMechanic`, `BlockDamageMechanic`) have nearly identical logic — refactor into a shared base
+- [ ] `ModifyAttributeMechanic`, `ArmorBonusMechanic`, `SpeedBonusMechanic`, `KnockbackResistMechanic` use hardcoded `JavaPlugin.getPlugin()` lookup — inject plugin instance instead
+- [ ] `ArmorBonusMechanic`, `SpeedBonusMechanic`, `KnockbackResistMechanic` hardcode 6000-tick (5 minute) duration with no configurable `duration` param
+  - `ArmorBonusMechanic` Javadoc says "Permanently" but is temporary — fix documentation
+- [ ] `AoeEffectMechanic`, `CrowdControlMechanic`, `ApplyStatusMechanic` use deprecated `PotionEffectType.getByName()` — migrate to `Registry.POTION_EFFECT_TYPE.get(NamespacedKey)`
+- [ ] `MilestoneEvaluator` accepts `TreeMap` without defensive copy — mutable input stored directly in singleton registry
+- [ ] YAML config key literals scattered across `Skilling.java` — extract as `private static final` constants
+- [ ] 6 trigger implementations use fully-qualified class names inline instead of imports for the event class — inconsistent with the other 13 triggers
+- [ ] 6 trigger implementations have grammatically incorrect Javadocs ("collect xp" → "collects XP", "enchant item" → "enchants an item", etc.)
+- [ ] `AsyncBatchWorker` 240-second (4 minute) persistence interval — evaluate reducing for lower data-loss risk
+- [ ] `SkillingAPI.getProfile(UUID)` returns `CompletableFuture` but performs a synchronous lookup — fix to match contract (either truly async or return `PlayerProfile` directly)
+- [ ] `Registries.registerMechanic()` and `registerTrigger()` accept `Class<?>`, while `registerEvaluator()` accepts `Object` — make API consistent with compile-time type safety
+- [ ] `getLevelForXp()` O(maxLevel) linear scan duplicated in `SkillEventListener` and `LevelUpDispatcher` — centralize on `SkillDefinition`
+- [ ] Test coverage gaps: all 25 mechanics untested, all 19 triggers untested, requirement engine lifecycle (Check/Execute/Consume) uncovered, no serialization tests, no `BossBarPool`/`FanfareDispatcher`/`LevelUpDispatcher` tests
