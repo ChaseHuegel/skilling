@@ -21,6 +21,7 @@ public final class ApplyStatusMechanic implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return false;
+        if (!damageEvent.getDamager().equals(player)) return false;
         if (!(damageEvent.getEntity() instanceof LivingEntity target)) return false;
 
         String effectName = (String) params.getOrDefault("effect", "");

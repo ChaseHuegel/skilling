@@ -140,7 +140,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-033.md` for full development plan
 - [x] `LevelUpTrigger` maps to `PlayerLevelChangeEvent` (vanilla Minecraft XP levels) — will never fire for Skilling's custom skill level-ups
   - See `ISSUE-034.md` for full development plan
-- [ ] `ApplyStatusMechanic` does not verify `getDamager().equals(player)` — could fire when player is the damage receiver
+- [x] `ApplyStatusMechanic` does not verify `getDamager().equals(player)` — could fire when player is the damage receiver
   - See `ISSUE-035.md` for full development plan
 - [ ] `BlockDamageMechanic` uses `<` instead of `<=` for chance comparison — `chance: 100` will fail ~1% of the time due to `nextDouble(100)` bound
   - See `ISSUE-036.md` for full development plan
