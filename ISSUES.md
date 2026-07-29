@@ -144,7 +144,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-035.md` for full development plan
 - [x] `BlockDamageMechanic` uses `<` instead of `<=` for chance comparison — `chance: 100` will fail ~1% of the time due to `nextDouble(100)` bound
   - See `ISSUE-036.md` for full development plan
-- [ ] `TeleportMechanic.findSafeLocation()` mutates `Location` in-place with chained `add()`/`subtract()` calls — fragile and confusing
+- [x] `TeleportMechanic.findSafeLocation()` mutates `Location` in-place with chained `add()`/`subtract()` calls — fragile and confusing
   - See `ISSUE-037.md` for full development plan
 - [ ] `RequirementEngine` state checks (`checkState()`) use `default -> true` — unknown states silently pass
   - See `ISSUE-038.md` for full development plan

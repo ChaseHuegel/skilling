@@ -42,12 +42,14 @@ public final class TeleportMechanic implements SkillMechanic {
     private Location findSafeLocation(Location loc) {
         Location safe = loc.clone();
         safe.setY(safe.getY() + 1);
-        if (safe.getBlock().isEmpty() && safe.add(0, 1, 0).getBlock().isEmpty()) {
-            return safe.subtract(0, 1, 0);
+        Location above = safe.clone().add(0, 1, 0);
+        if (safe.getBlock().isEmpty() && above.getBlock().isEmpty()) {
+            return safe;
         }
         for (int y = 0; y > -3; y--) {
             Location check = loc.clone().add(0, y, 0);
-            if (check.getBlock().isEmpty() && check.add(0, 1, 0).getBlock().isEmpty()) {
+            Location aboveCheck = check.clone().add(0, 1, 0);
+            if (check.getBlock().isEmpty() && aboveCheck.getBlock().isEmpty()) {
                 return check;
             }
         }
