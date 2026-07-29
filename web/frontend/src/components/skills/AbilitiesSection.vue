@@ -6,6 +6,7 @@ import EvaluatorParameter from '../common/EvaluatorParameter.vue'
 import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 import { useRegistriesStore } from '../../stores/registries'
+import { parseAmpersandCodes, renderFormattedText } from '../../utils/minecraftColors'
 
 const registriesStore = useRegistriesStore()
 
@@ -296,6 +297,10 @@ function removeLoreLine(index: number, lineIdx: number) {
   const copy = [...ab.lore]
   copy.splice(lineIdx, 1)
   updateAbility(index, { lore: copy })
+}
+
+function renderedLore(text: string): string {
+  return renderFormattedText(parseAmpersandCodes(text))
 }
 
 function loreSuggestions(index: number): string[] {
@@ -648,28 +653,31 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
           <div
             v-for="(line, lIdx) in ability.lore"
             :key="lIdx"
-            class="lore-line-row"
+            class="lore-line-block"
             :class="{ 'lore-drag-over': loreDragIndex === idx + '-' + lIdx }"
             draggable="true"
             @dragstart="onLoreDragStart(idx, lIdx)"
             @dragover="onLoreDragOver($event, idx, lIdx)"
             @dragend="onLoreDragEnd"
           >
-            <span class="lore-drag-handle" title="Drag to reorder">&#8801;</span>
-            <AppCombobox
-              :model-value="line"
-              :suggestions="loreSuggestions(idx)"
-              placeholder="{chain_break} / &a green / &l bold / &o italic"
-              :name="'lore-' + idx + '-' + lIdx"
-              @update:model-value="updateLoreLine(idx, lIdx, $event)"
-            />
-            <button
-              class="btn btn-ghost btn-sm"
-              style="color: var(--p-red-500, #ef4444)"
-              @click="removeLoreLine(idx, lIdx)"
-            >
-              &times;
-            </button>
+            <div class="lore-line-row">
+              <span class="lore-drag-handle" title="Drag to reorder">&#8801;</span>
+              <AppCombobox
+                :model-value="line"
+                :suggestions="loreSuggestions(idx)"
+                placeholder="{chain_break} / &a green / &l bold / &o italic"
+                :name="'lore-' + idx + '-' + lIdx"
+                @update:model-value="updateLoreLine(idx, lIdx, $event)"
+              />
+              <button
+                class="btn btn-ghost btn-sm"
+                style="color: var(--p-red-500, #ef4444)"
+                @click="removeLoreLine(idx, lIdx)"
+              >
+                &times;
+              </button>
+            </div>
+            <div class="lore-preview" v-html="renderedLore(line)"></div>
           </div>
           <button
             class="btn btn-primary btn-sm"
@@ -1317,17 +1325,30 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
   letter-spacing: 0.03em;
 }
 
+.lore-line-block {
+  margin-bottom: 0.35rem;
+}
+.lore-line-block[draggable="true"] {
+  cursor: default;
+}
+.lore-line-block.lore-drag-over {
+  opacity: 0.5;
+}
 .lore-line-row {
   display: flex;
   gap: 0.4rem;
-  margin-bottom: 0.35rem;
   align-items: center;
 }
-.lore-line-row[draggable="true"] {
-  cursor: default;
-}
-.lore-line-row.lore-drag-over {
-  opacity: 0.5;
+.lore-preview {
+  margin-top: 0.2rem;
+  margin-left: 1.6rem;
+  padding: 0.2rem 0.5rem;
+  background: color-mix(in srgb, var(--p-primary-color) 5%, var(--p-content-background));
+  border: 1px dashed var(--p-content-border-color);
+  border-radius: 3px;
+  font-size: 0.8rem;
+  min-height: 1.2rem;
+  word-break: break-all;
 }
 .lore-drag-handle {
   cursor: grab;

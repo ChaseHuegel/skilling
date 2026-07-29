@@ -266,6 +266,6 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Plugin) The logs for the reload phases are overly verbose for typical server admins. Simplify to "Reloading..." and "Reload complete." UNLESS debug is enabled in the config, then stick to the current verbose phase logs
 - [x] (Web & Plugin) Add API for mechanics to report their supported parameter names so the web GUI can consume that to populate the parameter dropdowns in the skill editor automatically
 - [x] Handle `ISSUE-009.md`
-- [ ] Handle `ISSUE-010.md`
+- [x] Handle `ISSUE-010.md`
 - [ ] Handle `ISSUE-011.md`
 - [ ] Handle `ISSUE-012.md`
