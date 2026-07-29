@@ -126,7 +126,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-026.md` for full development plan
 - [x] `XpBonusMechanic` is a no-op stub — returns `true` with no actual effect
   - See `ISSUE-027.md` for full development plan
-- [ ] `ModifyBrewTimeMechanic` hooks `BrewEvent` (fires when brewing finishes) but modifying brew time on completion affects the next batch, not the current one
+- [x] `ModifyBrewTimeMechanic` hooks `BrewEvent` (fires when brewing finishes) but modifying brew time on completion affects the next batch, not the current one
   - See `ISSUE-028.md` for full development plan
 - [ ] `ModifyFurnaceOutputMechanic` silently drops overflow items — `player.getInventory().addItem()` return value discarded
   - See `ISSUE-029.md` for full development plan

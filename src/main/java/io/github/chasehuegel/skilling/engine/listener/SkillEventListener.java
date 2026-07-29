@@ -29,7 +29,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
-import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
@@ -173,20 +172,19 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
-     * Handles {@link BrewEvent} and routes it as a {@code brew_potion} trigger
-     * for nearby players.
+     * Handles {@link BrewingStartEvent} and routes it as a {@code brew_potion} trigger
+     * for nearby players. Fires when a new brewing cycle begins, which is the correct
+     * timing for mechanics that modify the current batch.
      *
-     * @param event the brew event
+     * @param event the brewing start event
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBrewPotion(BrewEvent event) {
-        if (event.getContents().getHolder() instanceof org.bukkit.block.BrewingStand stand) {
-            var location = stand.getLocation();
-            if (location.getWorld() != null) {
-                var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
-                for (Player player : players) {
-                    dispatch(player, event, "brew_potion");
-                }
+    public void onBrewPotion(org.bukkit.event.block.BrewingStartEvent event) {
+        var location = event.getBlock().getLocation();
+        if (location.getWorld() != null) {
+            var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
+            for (Player player : players) {
+                dispatch(player, event, "brew_potion");
             }
         }
     }
