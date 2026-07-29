@@ -118,7 +118,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-023.md` for full development plan
 - [x] `ProjectileMechanic` sets `skilling_damage` metadata on snowballs but no listener ever reads it — damage parameter is dead code
   - See `ISSUE-024.md` for full development plan
-- [ ] `PoisonPillTag.key` uses lazy initialization without `volatile` or synchronization — thread-unsafe
+- [x] `PoisonPillTag.key` uses lazy initialization without `volatile` or synchronization — thread-unsafe
   - See `ISSUE-025.md` for full development plan
 - [ ] `CancelDamageMechanic` return value is inconsistent with `DodgeMechanic`/`BlockDamageMechanic`
   - `CancelDamageMechanic` returns `true` even on a failed roll, consuming resources; the others return `false`

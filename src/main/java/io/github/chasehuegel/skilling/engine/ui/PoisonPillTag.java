@@ -7,7 +7,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 public final class PoisonPillTag {
 
-    private static NamespacedKey key;
+    private static volatile NamespacedKey key;
 
     private PoisonPillTag() {}
 
