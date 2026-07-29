@@ -621,7 +621,7 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
             <input
               class="field-input"
               type="text"
-              placeholder="Lore line text"
+              placeholder="{chain_break} / &a green / &l bold / &o italic"
               :value="line"
               @input="updateLoreLine(idx, lIdx, ($event.target as HTMLInputElement).value)"
             />
