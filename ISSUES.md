@@ -110,6 +110,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Web) The "save changes" banner at the bottom of the screen hides content behind it when scrolled to the bottom of a view (such as the skill editor page)
 - [x] (Web) The "save changes" banner at the bottom of the screen should be styled like the apply & reload banner
 - [x] (Web) The "apply & reload" banner does not appear after responding to the save changes confirmation dialog that is prompted after navigating away from a page that has unsaved changes
+- [ ] (Web or Plugin?) When using "apply & reload" when a player has the `/skills` menu open, the web GUI reports there was an error and the reload seems to not take effect at all
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -259,4 +260,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Plugin) In a new ISSUES-XXX.md document, build a proposal for a comprehensive collection of mechanic and trigger implementations that could provide thorough coverage for features and events available in Minecraft and the Paper API. The goal is to ship a complete library of options for skill designers.
   - See `ISSUE-012.md` for full proposal
 - [x] (Project) `gradlew run` should implicitly build the web frontend so it is always current
-- [x] (Web) Use the trigger and mechanic registries to populate the default options for their skill editor dropdowns 
+- [x] (Web) Use the trigger and mechanic registries to populate the default options for their skill editor dropdowns
+- [ ] (Web) The placeholder text for the on_failure cooldown action bar text should have an example showing the interpolation `{time}` can be used
+- [ ] (Web) The placeholder text for the on_failure missing item action bar text should have an example showing the interpolations `{amount}` and `{item}` can be used
+- [ ] (Plugin) The logs for the reload phases are overly verbose for typical server admins. Simplify to "Reloading..." and "Reload complete." UNLESS debug is enabled in the config, then stick to the current verbose phase logs
