@@ -136,7 +136,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-031.md` for full development plan
 - [x] `Skilling.titleStayDuration` and `globalXpModifier` are not `volatile` — stale values possible after reload
   - See `ISSUE-032.md` for full development plan
-- [ ] `RideHorseTrigger` uses `PlayerInteractEntityEvent` — fires on any entity interaction, not just mounting. Should be `VehicleMountEvent`
+- [x] `RideHorseTrigger` uses `PlayerInteractEntityEvent` — fires on any entity interaction, not just mounting. Should be `VehicleMountEvent`
   - See `ISSUE-033.md` for full development plan
 - [ ] `LevelUpTrigger` maps to `PlayerLevelChangeEvent` (vanilla Minecraft XP levels) — will never fire for Skilling's custom skill level-ups
   - See `ISSUE-034.md` for full development plan

@@ -260,8 +260,10 @@ public final class SkillEventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onRideHorse(org.bukkit.event.player.PlayerInteractEntityEvent event) {
-        dispatch(event.getPlayer(), event, "ride_horse");
+    public void onRideHorse(org.bukkit.event.vehicle.VehicleEnterEvent event) {
+        if (event.getEntered() instanceof Player player) {
+            dispatch(player, event, "ride_horse");
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
