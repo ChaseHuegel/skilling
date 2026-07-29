@@ -7,7 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import { useStagingStore } from './stores/staging';
 import { useRegistriesStore } from './stores/registries';
@@ -17,10 +18,14 @@ import PendingChangesBanner from './components/layout/PendingChangesBanner.vue';
 const authStore = useAuthStore();
 const stagingStore = useStagingStore();
 const registriesStore = useRegistriesStore();
+const route = useRoute();
 authStore.checkSession();
 onMounted(() => {
     stagingStore.fetchStatus();
     registriesStore.fetch();
+});
+watch(() => route.path, () => {
+    stagingStore.fetchStatus();
 });
 
 const darkMode = ref(document.documentElement.classList.contains('app-dark'));

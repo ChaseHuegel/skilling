@@ -31,10 +31,9 @@ defineEmits<{
     left: 0;
     right: 0;
     z-index: 900;
-    background: var(--p-content-background);
+    background: color-mix(in srgb, var(--p-primary-color) 8%, var(--p-content-background));
     border-top: 1px solid var(--p-content-border-color);
-    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
-    padding: 0.75rem 1.5rem;
+    padding: 0.4rem 1.5rem;
 }
 
 .banner-inner {
@@ -43,16 +42,20 @@ defineEmits<{
     justify-content: space-between;
     max-width: 700px;
     margin: 0 auto;
+    font-size: 0.825rem;
 }
 
 .banner-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--p-primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--p-text-muted-color);
+    font-weight: 500;
 }
 
 .banner-actions {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
 }
 </style>
