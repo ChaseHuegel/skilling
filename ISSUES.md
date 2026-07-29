@@ -138,7 +138,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-032.md` for full development plan
 - [x] `RideHorseTrigger` uses `PlayerInteractEntityEvent` — fires on any entity interaction, not just mounting. Should be `VehicleMountEvent`
   - See `ISSUE-033.md` for full development plan
-- [ ] `LevelUpTrigger` maps to `PlayerLevelChangeEvent` (vanilla Minecraft XP levels) — will never fire for Skilling's custom skill level-ups
+- [x] `LevelUpTrigger` maps to `PlayerLevelChangeEvent` (vanilla Minecraft XP levels) — will never fire for Skilling's custom skill level-ups
   - See `ISSUE-034.md` for full development plan
 - [ ] `ApplyStatusMechanic` does not verify `getDamager().equals(player)` — could fire when player is the damage receiver
   - See `ISSUE-035.md` for full development plan

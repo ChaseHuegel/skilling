@@ -15,6 +15,7 @@ import io.github.chasehuegel.skilling.engine.feedback.FanfareDispatcher;
 import io.github.chasehuegel.skilling.engine.feedback.LevelUpDispatcher;
 import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -313,6 +314,9 @@ public final class SkillEventListener implements Listener {
                     int newLevel = getLevelForXp(skill, profile.getXp(skill.id()));
                     showXpBossBar(player, skill, profile);
                     if (newLevel > oldLevel) {
+                        Bukkit.getPluginManager().callEvent(
+                                new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
+                                        player, skill.id(), newLevel));
                         broadcastLevelUp(player, skill, newLevel);
                     }
                     debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey + ")");
