@@ -108,7 +108,8 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Plugin) Perform a comprehensive code review of the entire plugin and cross-reference with the skill schema. Identify any gaps, bugs, or regressions and document it all in a comprehensive new ISSUE-XXX.md document and reference it in ISSUES.md under a new improvement bullet point.
   - See `ISSUE-013.md` for full review (34 issues: 7 critical, 15 moderate, 12 minor)
 - [x] (Web) The "save changes" banner at the bottom of the screen hides content behind it when scrolled to the bottom of a view (such as the skill editor page)
-- [ ] (Web) The "save changes" banner at the bottom of the screen does not <!-- truncated -- clarify intended meaning -->
+- [ ] (Web) The "save changes" banner at the bottom of the screen should be styled like the apply & reload banner
+- [ ] (Web) The "apply & reload" banner does not appear after responding to the save changes confirmation dialog that is prompted after navigating away from a page that has unsaved changes
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
