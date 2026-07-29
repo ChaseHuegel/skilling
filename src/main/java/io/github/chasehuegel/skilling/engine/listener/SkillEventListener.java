@@ -497,7 +497,8 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
-     * Applies custom damage metadata from {@link ProjectileMechanic} when a Skilling projectile hits an entity.
+     * Applies custom projectile damage from {@link ProjectileMechanic} when a Skilling snowball hits an entity.
+     * Damage is stored via PersistentDataContainer on the snowball entity.
      *
      * @param event the projectile hit event
      */
@@ -505,8 +506,9 @@ public final class SkillEventListener implements Listener {
     public void onProjectileHit(org.bukkit.event.entity.ProjectileHitEvent event) {
         if (event.getHitEntity() == null) return;
         if (!(event.getEntity() instanceof Projectile projectile)) return;
-        if (!projectile.hasMetadata("skilling_damage")) return;
-        double damage = projectile.getMetadata("skilling_damage").get(0).asDouble();
+        var pdc = projectile.getPersistentDataContainer();
+        if (!pdc.has(io.github.chasehuegel.skilling.engine.mechanic.impl.ProjectileMechanic.DAMAGE_KEY, PersistentDataType.DOUBLE)) return;
+        double damage = pdc.get(io.github.chasehuegel.skilling.engine.mechanic.impl.ProjectileMechanic.DAMAGE_KEY, PersistentDataType.DOUBLE);
         if (damage <= 0) return;
         org.bukkit.entity.LivingEntity target = (org.bukkit.entity.LivingEntity) event.getHitEntity();
         if (projectile.getShooter() instanceof org.bukkit.entity.LivingEntity shooter) {

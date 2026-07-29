@@ -116,7 +116,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-022.md` for full development plan
 - [x] XP reward evaluator in `SkillEventListener.grantXp()` hardcodes `source.reward().evaluate(1, 1)` — XP rewards don't scale with player level
   - See `ISSUE-023.md` for full development plan
-- [ ] `ProjectileMechanic` sets `skilling_damage` metadata on snowballs but no listener ever reads it — damage parameter is dead code
+- [x] `ProjectileMechanic` sets `skilling_damage` metadata on snowballs but no listener ever reads it — damage parameter is dead code
   - See `ISSUE-024.md` for full development plan
 - [ ] `PoisonPillTag.key` uses lazy initialization without `volatile` or synchronization — thread-unsafe
   - See `ISSUE-025.md` for full development plan
