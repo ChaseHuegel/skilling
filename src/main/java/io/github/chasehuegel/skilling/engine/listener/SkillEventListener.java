@@ -306,6 +306,7 @@ public final class SkillEventListener implements Listener {
                 }
                 int oldLevel = getLevelForXp(skill, profile.getXp(skill.id()));
                 double xp = source.reward().evaluate(oldLevel, 1) * plugin.getGlobalXpModifier();
+                xp *= io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.getMultiplier(player.getUniqueId());
                 if (xp > 0) {
                     long rounded = Math.round(xp);
                     profile.addXp(skill.id(), rounded);

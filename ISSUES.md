@@ -124,7 +124,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - `CancelDamageMechanic` returns `true` even on a failed roll, consuming resources; the others return `false`
   - `CancelDamageMechanic` does not verify `getEntity().equals(player)` — applies to all entities, not just the player
   - See `ISSUE-026.md` for full development plan
-- [ ] `XpBonusMechanic` is a no-op stub — returns `true` with no actual effect
+- [x] `XpBonusMechanic` is a no-op stub — returns `true` with no actual effect
   - See `ISSUE-027.md` for full development plan
 - [ ] `ModifyBrewTimeMechanic` hooks `BrewEvent` (fires when brewing finishes) but modifying brew time on completion affects the next batch, not the current one
   - See `ISSUE-028.md` for full development plan
