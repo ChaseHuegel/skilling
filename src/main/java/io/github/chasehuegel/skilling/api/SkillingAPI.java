@@ -7,7 +7,6 @@ import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
-import java.util.concurrent.CompletableFuture;
 import java.util.UUID;
 
 /**
@@ -100,8 +99,7 @@ public final class SkillingAPI {
         return bossBarPool;
     }
 
-    public CompletableFuture<PlayerProfile> getProfile(UUID playerId) {
-        PlayerProfile profile = profileManager.getProfile(playerId);
-        return CompletableFuture.completedFuture(profile);
+    public PlayerProfile getProfile(UUID playerId) {
+        return profileManager.getProfile(playerId);
     }
 }

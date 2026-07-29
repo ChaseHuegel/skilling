@@ -2,9 +2,10 @@ package io.github.chasehuegel.skilling.engine.trigger.impl;
 
 import io.github.chasehuegel.skilling.engine.trigger.SkillTrigger;
 import org.bukkit.event.Event;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 /**
- * Trigger fired when a player sneak.
+ * Triggers when a player starts or stops sneaking.
  *
  * <p><b>YAML key:</b> {@code sneak}
  */
@@ -13,5 +14,5 @@ public record SneakTrigger() implements SkillTrigger {
     public String getKey() { return "sneak"; }
 
     @Override
-    public Class<? extends Event> getEventClass() { return org.bukkit.event.player.PlayerToggleSneakEvent.class; }
+    public Class<? extends Event> getEventClass() { return PlayerToggleSneakEvent.class; }
 }

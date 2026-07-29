@@ -56,7 +56,7 @@ public final class SkillMenuBuilder {
 
     public List<Component> buildSkillLore(SkillDefinition skill, PlayerProfile profile) {
         long currentXp = profile.getXp(skill.id());
-        int level = getLevelForXp(skill, currentXp);
+        int level = skill.getLevelForXp(currentXp);
         var lore = new ArrayList<Component>();
         TextColor skillColor = resolveColor(skill.display().color());
 
@@ -120,7 +120,7 @@ public final class SkillMenuBuilder {
 
     private ItemStack buildSkillIcon(SkillDefinition skill, PlayerProfile profile) {
         long currentXp = profile.getXp(skill.id());
-        int level = getLevelForXp(skill, currentXp);
+        int level = skill.getLevelForXp(currentXp);
         boolean unlocked = level > 0;
 
         Material material = Material.matchMaterial(skill.display().icon());
@@ -160,14 +160,6 @@ public final class SkillMenuBuilder {
         } catch (IllegalArgumentException e) {
             return null;
         }
-    }
-
-    private int getLevelForXp(SkillDefinition skill, long xp) {
-        for (int level = 1; level <= skill.maxLevel(); level++) {
-            double required = skill.progression().evaluator().evaluate(level, 0);
-            if (xp < (long) required) return level - 1;
-        }
-        return skill.maxLevel();
     }
 
     public static Component formatAbilityLine(SkillDefinition.Ability ability, int playerLevel) {

@@ -2,9 +2,10 @@ package io.github.chasehuegel.skilling.engine.trigger.impl;
 
 import io.github.chasehuegel.skilling.engine.trigger.SkillTrigger;
 import org.bukkit.event.Event;
+import org.bukkit.event.enchantment.EnchantItemEvent;
 
 /**
- * Trigger fired when a player enchant item.
+ * Triggers when a player enchants an item at an enchanting table.
  *
  * <p><b>YAML key:</b> {@code enchant_item}
  */
@@ -13,5 +14,5 @@ public record EnchantItemTrigger() implements SkillTrigger {
     public String getKey() { return "enchant_item"; }
 
     @Override
-    public Class<? extends Event> getEventClass() { return org.bukkit.event.enchantment.EnchantItemEvent.class; }
+    public Class<? extends Event> getEventClass() { return EnchantItemEvent.class; }
 }

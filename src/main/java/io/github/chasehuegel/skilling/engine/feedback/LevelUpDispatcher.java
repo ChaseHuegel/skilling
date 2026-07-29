@@ -35,7 +35,7 @@ public final class LevelUpDispatcher {
     public static void showXpBossBar(Player player, SkillDefinition skill, PlayerProfile profile, BossBarPool bossBarPool, Skilling plugin) {
         String skillId = skill.id();
         long totalXp = profile.getXp(skillId);
-        int level = getLevelForXp(skill, totalXp);
+        int level = skill.getLevelForXp(totalXp);
         int maxLevel = skill.maxLevel();
 
         if (level >= maxLevel) {
@@ -245,10 +245,6 @@ public final class LevelUpDispatcher {
     }
 
     public static int getLevelForXp(SkillDefinition skill, long xp) {
-        for (int level = 1; level <= skill.maxLevel(); level++) {
-            double required = skill.progression().evaluator().evaluate(level, 0);
-            if (xp < (long) required) return level - 1;
-        }
-        return skill.maxLevel();
+        return skill.getLevelForXp(xp);
     }
 }

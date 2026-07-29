@@ -23,7 +23,7 @@ public final class MilestoneEvaluator implements ParameterEvaluator {
      * @param milestones an ordered map of level → value thresholds
      */
     public MilestoneEvaluator(TreeMap<Integer, Double> milestones) {
-        this.milestones = milestones;
+        this.milestones = new TreeMap<>(milestones);
     }
 
     @Override

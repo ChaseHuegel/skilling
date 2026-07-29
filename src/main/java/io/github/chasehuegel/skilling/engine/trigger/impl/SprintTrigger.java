@@ -2,9 +2,10 @@ package io.github.chasehuegel.skilling.engine.trigger.impl;
 
 import io.github.chasehuegel.skilling.engine.trigger.SkillTrigger;
 import org.bukkit.event.Event;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 
 /**
- * Trigger fired when a player sprint.
+ * Triggers when a player starts or stops sprinting.
  *
  * <p><b>YAML key:</b> {@code sprint}
  */
@@ -13,5 +14,5 @@ public record SprintTrigger() implements SkillTrigger {
     public String getKey() { return "sprint"; }
 
     @Override
-    public Class<? extends Event> getEventClass() { return org.bukkit.event.player.PlayerToggleSprintEvent.class; }
+    public Class<? extends Event> getEventClass() { return PlayerToggleSprintEvent.class; }
 }

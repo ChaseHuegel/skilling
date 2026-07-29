@@ -15,7 +15,7 @@ import java.util.logging.Level;
 
 public final class AsyncBatchWorker implements Runnable {
 
-    private static final long INTERVAL_TICKS = 20 * 240;
+    private static final long INTERVAL_TICKS = 20 * 60;
 
     private final Skilling plugin;
     private final DatabaseManager databaseManager;

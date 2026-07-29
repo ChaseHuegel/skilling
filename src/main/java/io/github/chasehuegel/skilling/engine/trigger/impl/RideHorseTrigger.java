@@ -2,9 +2,10 @@ package io.github.chasehuegel.skilling.engine.trigger.impl;
 
 import io.github.chasehuegel.skilling.engine.trigger.SkillTrigger;
 import org.bukkit.event.Event;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 
 /**
- * Trigger fired when a player mounts a vehicle.
+ * Triggers when a player mounts a vehicle.
  *
  * <p><b>YAML key:</b> {@code ride_horse}
  */
@@ -13,5 +14,5 @@ public record RideHorseTrigger() implements SkillTrigger {
     public String getKey() { return "ride_horse"; }
 
     @Override
-    public Class<? extends Event> getEventClass() { return org.bukkit.event.vehicle.VehicleEnterEvent.class; }
+    public Class<? extends Event> getEventClass() { return VehicleEnterEvent.class; }
 }

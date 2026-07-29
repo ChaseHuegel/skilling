@@ -305,13 +305,13 @@ public final class SkillEventListener implements Listener {
                     debug("  [" + skill.id() + "] XP source filters failed, skipping");
                     continue;
                 }
-                int oldLevel = getLevelForXp(skill, profile.getXp(skill.id()));
+                int oldLevel = skill.getLevelForXp(profile.getXp(skill.id()));
                 double xp = source.reward().evaluate(oldLevel, 1) * plugin.getGlobalXpModifier();
                 xp *= io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.getMultiplier(player.getUniqueId());
                 if (xp > 0) {
                     long rounded = Math.round(xp);
                     profile.addXp(skill.id(), rounded);
-                    int newLevel = getLevelForXp(skill, profile.getXp(skill.id()));
+                    int newLevel = skill.getLevelForXp(profile.getXp(skill.id()));
                     showXpBossBar(player, skill, profile);
                     if (newLevel > oldLevel) {
                         Bukkit.getPluginManager().callEvent(
@@ -335,7 +335,7 @@ public final class SkillEventListener implements Listener {
         debug("fireAbilities for " + player.getName() + " on " + triggerKey);
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             for (SkillDefinition.Ability ability : skill.abilities()) {
-                int skillLevel = getLevelForXp(skill, profile.getXp(skill.id()));
+                int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
                 debug("  ability=" + ability.id() + " skillLevel=" + skillLevel
                         + " unlockLevel=" + ability.unlockLevel());
                 if (skillLevel < ability.unlockLevel()) {
@@ -544,14 +544,6 @@ public final class SkillEventListener implements Listener {
             result.put(paramEntry.getKey(), paramEntry.getValue().evaluate(level, unlockLevel));
         }
         return result;
-    }
-
-    private int getLevelForXp(SkillDefinition skill, long xp) {
-        for (int level = 1; level <= skill.maxLevel(); level++) {
-            double required = skill.progression().evaluator().evaluate(level, 0);
-            if (xp < (long) required) return level - 1;
-        }
-        return skill.maxLevel();
     }
 
     private void debug(String msg) {

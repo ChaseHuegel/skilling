@@ -325,21 +325,21 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-045.md` for full development plan
 - [x] `AoeEffectMechanic`, `CrowdControlMechanic`, `ApplyStatusMechanic` use deprecated `PotionEffectType.getByName()` — migrate to `Registry.POTION_EFFECT_TYPE.get(NamespacedKey)`
   - See `ISSUE-046.md` for full development plan
-- [ ] `MilestoneEvaluator` accepts `TreeMap` without defensive copy — mutable input stored directly in singleton registry
+- [x] `MilestoneEvaluator` accepts `TreeMap` without defensive copy — mutable input stored directly in singleton registry
   - See `ISSUE-047.md` for full development plan
-- [ ] YAML config key literals scattered across `Skilling.java` — extract as `private static final` constants
+- [x] YAML config key literals scattered across `Skilling.java` — extract as `private static final` constants
   - See `ISSUE-048.md` for full development plan
-- [ ] 6 trigger implementations use fully-qualified class names inline instead of imports for the event class — inconsistent with the other 13 triggers
+- [x] 6 trigger implementations use fully-qualified class names inline instead of imports for the event class — inconsistent with the other 13 triggers
   - See `ISSUE-049.md` for full development plan
-- [ ] 6 trigger implementations have grammatically incorrect Javadocs ("collect xp" → "collects XP", "enchant item" → "enchants an item", etc.)
+- [x] 6 trigger implementations have grammatically incorrect Javadocs ("collect xp" → "collects XP", "enchant item" → "enchants an item", etc.)
   - See `ISSUE-050.md` for full development plan
-- [ ] `AsyncBatchWorker` 240-second (4 minute) persistence interval — evaluate reducing for lower data-loss risk
+- [x] `AsyncBatchWorker` 240-second (4 minute) persistence interval — evaluate reducing for lower data-loss risk
   - See `ISSUE-051.md` for full development plan
-- [ ] `SkillingAPI.getProfile(UUID)` returns `CompletableFuture` but performs a synchronous lookup — fix to match contract (either truly async or return `PlayerProfile` directly)
+- [x] `SkillingAPI.getProfile(UUID)` returns `CompletableFuture` but performs a synchronous lookup — fix to match contract (either truly async or return `PlayerProfile` directly)
   - See `ISSUE-052.md` for full development plan
-- [ ] `Registries.registerMechanic()` and `registerTrigger()` accept `Class<?>`, while `registerEvaluator()` accepts `Object` — make API consistent with compile-time type safety
+- [x] `Registries.registerMechanic()` and `registerTrigger()` accept `Class<?>`, while `registerEvaluator()` accepts `Object` — make API consistent with compile-time type safety
   - See `ISSUE-053.md` for full development plan
-- [ ] `getLevelForXp()` O(maxLevel) linear scan duplicated in `SkillEventListener` and `LevelUpDispatcher` — centralize on `SkillDefinition`
+- [x] `getLevelForXp()` O(maxLevel) linear scan duplicated in `SkillEventListener` and `LevelUpDispatcher` — centralize on `SkillDefinition`
   - See `ISSUE-054.md` for full development plan
 - [ ] Test coverage gaps: all 25 mechanics untested, all 19 triggers untested, requirement engine lifecycle (Check/Execute/Consume) uncovered, no serialization tests, no `BossBarPool`/`FanfareDispatcher`/`LevelUpDispatcher` tests
   - See `ISSUE-055.md` for full development plan

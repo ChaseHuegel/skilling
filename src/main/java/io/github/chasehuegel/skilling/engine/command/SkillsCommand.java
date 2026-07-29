@@ -258,10 +258,10 @@ public final class SkillsCommand {
                 sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
                 return;
             }
-            int oldLevel = getLevelForXp(def, profile.getXp(skillId));
+            int oldLevel = def.getLevelForXp(profile.getXp(skillId));
             long xp = (long) def.progression().evaluator().evaluate(level, 0);
             profile.setXp(skillId, xp);
-            int actualLevel = getLevelForXp(def, profile.getXp(skillId));
+            int actualLevel = def.getLevelForXp(profile.getXp(skillId));
             sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + actualLevel + "."));
             showXpBossBar(target, def, profile);
             if (actualLevel > oldLevel) {
@@ -320,9 +320,9 @@ public final class SkillsCommand {
                 sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
                 return;
             }
-            int oldLevel = getLevelForXp(def, profile.getXp(skillId));
+            int oldLevel = def.getLevelForXp(profile.getXp(skillId));
             profile.addXp(skillId, amount);
-            int newLevel = getLevelForXp(def, profile.getXp(skillId));
+            int newLevel = def.getLevelForXp(profile.getXp(skillId));
             sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + "."));
             showXpBossBar(target, def, profile);
             if (newLevel > oldLevel) {
@@ -432,10 +432,6 @@ public final class SkillsCommand {
         } catch (NumberFormatException e) {
             return raw;
         }
-    }
-
-    private int getLevelForXp(SkillDefinition skill, long xp) {
-        return LevelUpDispatcher.getLevelForXp(skill, xp);
     }
 
     private void showXpBossBar(Player player, SkillDefinition skill, PlayerProfile profile) {

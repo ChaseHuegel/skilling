@@ -196,4 +196,18 @@ public record SkillDefinition(
             List<Map<String, Object>> particles,
             List<Map<String, Object>> sounds
     ) {}
+
+    /**
+     * Computes the level corresponding to the given raw XP for this skill's progression curve.
+     *
+     * @param xp the total raw XP
+     * @return the computed level (0 to maxLevel)
+     */
+    public int getLevelForXp(long xp) {
+        for (int level = 1; level <= maxLevel; level++) {
+            double required = progression.evaluator().evaluate(level, 0);
+            if (xp < (long) required) return level - 1;
+        }
+        return maxLevel;
+    }
 }

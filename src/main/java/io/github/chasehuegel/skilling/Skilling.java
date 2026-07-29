@@ -53,6 +53,13 @@ public final class Skilling extends JavaPlugin {
     /** Key used to tag fireworks spawned by Skilling for visual-only damage suppression. */
     public static final NamespacedKey FIREWORK_KEY = NamespacedKey.fromString("skilling:visual_firework");
 
+    private static final String CONFIG_DEBUG_LOGGING = "debug_logging";
+    private static final String CONFIG_TITLES_STAY_DURATION = "titles.stay_duration";
+    private static final String CONFIG_GLOBAL_XP_MODIFIER = "global_xp_modifier";
+    private static final String CONFIG_DEBOUNCER_INTERVAL_MS = "debouncer.interval_ms";
+    private static final String CONFIG_BOSSBAR_MAX_ACTIVE = "bossbar.max_active";
+    private static final String CONFIG_BOSSBAR_FADE_TICKS = "bossbar.fade_ticks";
+
     private Registries registries;
     private DatabaseManager databaseManager;
     private ProfileManager profileManager;
@@ -99,12 +106,12 @@ public final class Skilling extends JavaPlugin {
         }
 
         var config = (YamlConfiguration) getConfig();
-        this.debugLogging = config.getBoolean("debug_logging", false);
+        this.debugLogging = config.getBoolean(CONFIG_DEBUG_LOGGING, false);
         if (debugLogging) {
             getLogger().info("Debug logging enabled.");
         }
-        this.titleStayDuration = config.getInt("titles.stay_duration", 5000);
-        this.globalXpModifier = config.getDouble("global_xp_modifier", 1.0);
+        this.titleStayDuration = config.getInt(CONFIG_TITLES_STAY_DURATION, 5000);
+        this.globalXpModifier = config.getDouble(CONFIG_GLOBAL_XP_MODIFIER, 1.0);
 
         this.registries = new Registries(
                 new MechanicRegistry(),
@@ -145,10 +152,10 @@ public final class Skilling extends JavaPlugin {
         skillsGuideBook.register();
 
         // Feedback systems
-        int debounceMs = config.getInt("debouncer.interval_ms", 500);
+        int debounceMs = config.getInt(CONFIG_DEBOUNCER_INTERVAL_MS, 500);
         this.feedbackDebouncer = new FeedbackDebouncer(debounceMs);
-        int maxBars = config.getInt("bossbar.max_active", 2);
-        int fadeTicks = config.getInt("bossbar.fade_ticks", 40);
+        int maxBars = config.getInt(CONFIG_BOSSBAR_MAX_ACTIVE, 2);
+        int fadeTicks = config.getInt(CONFIG_BOSSBAR_FADE_TICKS, 40);
         this.bossBarPool = new BossBarPool(maxBars, fadeTicks);
 
         // Requirements engine
@@ -356,8 +363,8 @@ public final class Skilling extends JavaPlugin {
     public void reloadConfigSettings() {
         reloadConfig();
         var config = (YamlConfiguration) getConfig();
-        this.debugLogging = config.getBoolean("debug_logging", false);
-        this.titleStayDuration = config.getInt("titles.stay_duration", 5000);
-        this.globalXpModifier = config.getDouble("global_xp_modifier", 1.0);
+        this.debugLogging = config.getBoolean(CONFIG_DEBUG_LOGGING, false);
+        this.titleStayDuration = config.getInt(CONFIG_TITLES_STAY_DURATION, 5000);
+        this.globalXpModifier = config.getDouble(CONFIG_GLOBAL_XP_MODIFIER, 1.0);
     }
 }
