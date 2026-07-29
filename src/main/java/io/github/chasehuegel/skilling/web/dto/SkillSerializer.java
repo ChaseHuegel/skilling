@@ -164,10 +164,11 @@ public final class SkillSerializer {
         }
 
         Map<String, Object> fbMap = map(raw, "feedback");
+        Map<String, Object> notify = map(fbMap, "notify");
         var feedback = new SkillDetailDTO.FeedbackDTO(
-            boolVal(fbMap, "action_bar", false),
-            boolVal(fbMap, "chat", false),
-            str(fbMap, "message", ""),
+            boolVal(notify, "action_bar", false),
+            boolVal(notify, "chat", false),
+            str(notify, "message", ""),
             listMap(fbMap, "particles"),
             listMap(fbMap, "sounds")
         );
@@ -226,9 +227,11 @@ public final class SkillSerializer {
         m.put("mechanics", mechanics);
 
         Map<String, Object> fbMap = new LinkedHashMap<>();
-        fbMap.put("action_bar", a.feedback().actionBar());
-        fbMap.put("chat", a.feedback().chat());
-        fbMap.put("message", a.feedback().message());
+        Map<String, Object> notify = new LinkedHashMap<>();
+        notify.put("action_bar", a.feedback().actionBar());
+        notify.put("chat", a.feedback().chat());
+        notify.put("message", a.feedback().message());
+        fbMap.put("notify", notify);
         fbMap.put("particles", a.feedback().particles() != null ? a.feedback().particles() : List.of());
         fbMap.put("sounds", a.feedback().sounds() != null ? a.feedback().sounds() : List.of());
         m.put("feedback", fbMap);
