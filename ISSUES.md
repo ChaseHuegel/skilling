@@ -293,6 +293,8 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Handle `ISSUE-010.md`
 - [x] Handle `ISSUE-011.md`
 - [x] Handle `ISSUE-012.md`
+- [ ] Improve visual hierarchy in the ability editor cards — colored section gutters, differentiated card types, depth layering, per-section collapse, section icons
+  - See `ISSUE-021.md` for full development plan
 - [ ] Three damage-cancelling mechanics (`CancelDamageMechanic`, `DodgeMechanic`, `BlockDamageMechanic`) have nearly identical logic — refactor into a shared base
 - [ ] `ModifyAttributeMechanic`, `ArmorBonusMechanic`, `SpeedBonusMechanic`, `KnockbackResistMechanic` use hardcoded `JavaPlugin.getPlugin()` lookup — inject plugin instance instead
 - [ ] `ArmorBonusMechanic`, `SpeedBonusMechanic`, `KnockbackResistMechanic` hardcode 6000-tick (5 minute) duration with no configurable `duration` param
