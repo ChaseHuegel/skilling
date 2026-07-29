@@ -47,8 +47,9 @@
 
         <div v-else class="abilities-grid">
             <AbilityCard
-                v-for="a in filteredAbilities"
+                v-for="(a, idx) in filteredAbilities"
                 :key="a.skillId + '-' + a.ability.id"
+                :index="idx"
                 :ability="a.ability"
                 :skill-id="a.skillId"
                 :skill-display-name="a.skillDisplayName"

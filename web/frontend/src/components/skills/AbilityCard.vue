@@ -1,5 +1,5 @@
 <template>
-    <div class="ability-card" :style="{ '--skill-color': (skillColor || 'white').toLowerCase() }" @click="openSkill">
+    <div class="ability-card" :style="{ '--skill-color': (skillColor || 'white').toLowerCase(), animationDelay: (index * 50) + 'ms' }" @click="openSkill">
         <div class="ability-header">
             <span class="ability-name">{{ ability.displayName || ability.id }}</span>
             <span class="ability-type-badge" :class="isActive ? 'badge-active' : 'badge-passive'">
@@ -36,6 +36,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
+    index: number;
     ability: {
         id: string;
         displayName?: string;
@@ -73,6 +74,11 @@ function openSkill() {
     cursor: pointer;
     transition: all 0.2s ease;
     overflow: hidden;
+    animation: cardEnter 0.35s ease both;
+}
+@keyframes cardEnter {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 .ability-card:hover {
     transform: translateY(-2px);
