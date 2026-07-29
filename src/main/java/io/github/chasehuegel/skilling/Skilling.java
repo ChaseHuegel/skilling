@@ -224,6 +224,13 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:thorns_damage", ThornsDamageMechanic.class, List.of("damage"));
         mechReg.register("core:dodge", DodgeMechanic.class, List.of("chance"));
         mechReg.register("core:lifesteal", LifestealMechanic.class, List.of("percentage"));
+        mechReg.register("core:armor_bonus", ArmorBonusMechanic.class, List.of("amount"));
+        mechReg.register("core:knockback_resist", KnockbackResistMechanic.class, List.of("amount"));
+        mechReg.register("core:crowd_control", CrowdControlMechanic.class, List.of("effect", "duration", "amplifier", "radius"));
+        mechReg.register("core:execute", ExecuteMechanic.class, List.of("threshold"));
+        mechReg.register("core:auto_smelt", AutoSmeltMechanic.class, List.of("chance"));
+        mechReg.register("core:speed_bonus", SpeedBonusMechanic.class, List.of("multiplier"));
+        mechReg.register("core:xp_bonus", XpBonusMechanic.class, List.of("multiplier"));
 
         var trigReg = registries.getTriggerRegistry();
         trigReg.register("block_break", BlockBreakTrigger.class);
@@ -239,6 +246,12 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("fishing", FishingTrigger.class);
         trigReg.register("crop_grow", CropGrowTrigger.class);
         trigReg.register("breed_animals", BreedAnimalsTrigger.class);
+        trigReg.register("sprint", SprintTrigger.class);
+        trigReg.register("sneak", SneakTrigger.class);
+        trigReg.register("ride_horse", RideHorseTrigger.class);
+        trigReg.register("collect_xp", CollectXpTrigger.class);
+        trigReg.register("level_up", LevelUpTrigger.class);
+        trigReg.register("enchant_item", EnchantItemTrigger.class);
     }
 
     private void loadSkills() {

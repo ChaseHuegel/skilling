@@ -242,6 +242,38 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSprint(org.bukkit.event.player.PlayerToggleSprintEvent event) {
+        dispatch(event.getPlayer(), event, "sprint");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSneak(org.bukkit.event.player.PlayerToggleSneakEvent event) {
+        dispatch(event.getPlayer(), event, "sneak");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onRideHorse(org.bukkit.event.player.PlayerInteractEntityEvent event) {
+        dispatch(event.getPlayer(), event, "ride_horse");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCollectXp(org.bukkit.event.player.PlayerExpChangeEvent event) {
+        dispatch(event.getPlayer(), event, "collect_xp");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onLevelUp(org.bukkit.event.player.PlayerLevelChangeEvent event) {
+        dispatch(event.getPlayer(), event, "level_up");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEnchantItem(org.bukkit.event.enchantment.EnchantItemEvent event) {
+        if (event.getEnchanter() instanceof Player player) {
+            dispatch(player, event, "enchant_item");
+        }
+    }
+
     private void dispatch(Player player, Event event, String triggerKey) {
         if (plugin.isReloading()) return;
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
