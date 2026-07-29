@@ -103,6 +103,9 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] `DatabaseManager.initialize()` does not verify `PRAGMA journal_mode=WAL` succeeded (return value ignored)
 - [x] `DatabaseManager` has no `PRAGMA wal_checkpoint(TRUNCATE)` on shutdown
 - [x] `SkillEventListener.onCropGrow()` — event handler registered but body is empty; `crop_grow` trigger will never fire
+- [ ] (Web) If the cache in the browser is not disabled, the web GUI can sometimes fail to display. In browser network tools, `/` shows status 304 and `cached`; `index` and `primevue` show no status and have `NS_ERROR_CORRUPTED_CONTENT`
+- [ ] (Web or plugin?) The `vein_miner` ability of the `mining` skill has feedback configured, but it is not having any effect in-game. I don't know if this is because the web created invalid yml or the plugin's feedback impl regressed.
+- [ ] (Plugin) Perform a comprehensive code review of the entire plugin and cross-reference with the skill schema. Identify any gaps, bugs, or regressions and document it all in a comprehensive new ISSUE-XXX.md document and reference it in ISSUES.md under a new improvement bullet point.
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -235,3 +238,16 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Item slot field should use `AppCombobox` with prepopulated equipment slot options (HAND, OFF_HAND, FEET, LEGS, CHEST, HEAD)
 - [x] Saving a skill with a new ability that has only id/name/unlockLevel/one mechanic fails — `RequirementsDTO` has `state` (singular) but frontend sends `states` (plural), causing deserialization error
 - [x] Gap between skills nav button and flyout dropdown causes hover to break when moving mouse between them
+- [ ] (Web) There should be a "Cancel" button when there are unsaved changes pending on the Tags and Config page to discard/revert the pending changes similar to the Skills Editor page
+- [ ] (Web) When there are unsaved changes pending on the Tags, Config, or Skill Editor page, the "Save Changes" and "Cancel" buttons should be anchored to the bottom of the view in a warning banner. This should follow any scrolling up or down the page.
+- [ ] (Web) When there are unsaved changes pending on the Tags, Config, or Skills Editor page and a user tries to navigate away, a confirmation dialog should appear stating they have unsaved changes and ask if they would like to save (then completes the navigation), discard (then completes the navigation), or cancel (retains the pending changes and doesn't navigate)
+- [ ] (Web) The abilities page should animate the cards coming in just like the skills dashboard page does with the skill cards
+- [ ] (Web) The skills navigation flyout should extend directly off the edge of the navigation button instead of having vertical spacing between itself and the button
+- [ ] (Web) The `on_failure` feedback overrides should be configurable from the skill editor's ability editor cards. This should re-use the same kinds of controls as the existing feedback editors to share designs and capabilities. Create a development plan for this before starting work.
+- [ ] (Web) Review the skill schema and identify any gaps in what is currently configurable by the web GUI. If there are any gaps, build a comprehensive development plan in a new ISSUE-XXX.md document and reference it in a new improvement bullet point in ISSUES.md.  
+- [ ] (Web) Add drag-and-drop re-ordering to lore lines in the skill editor. Visual language should clearly indicate this is possible, such as by having some grabby drag handle on the left of the items
+- [ ] (Web) Research and build a development plan proposal to allow rendering minecraft's color codes (the `&` annotations) in-line of lore line text boxes, as well as adding some kind of lore preview flyout. Place the plan in a new ISSUE-XXX.md file and reference it in a new improvement bullet point in ISSUES.md
+- [ ] (Web) Change the lore line placeholder to provide examples of how paramters can be formatted using braces like `{chain_break}` and color code annotations like `&a`
+- [ ] (Web) Review the entire web project's visual designs. Identify any gaps, inconsistencies, or just general areas for improvement in comparison to similar configuration and data editor GUIs. Using that information, don't make any project changes or fixes immediately, but build a comprehensive design and development plan in a new ISSUE-XXX.md document and reference it in a new improvements bullet point in ISSUES.md.
+- [ ] (Plugin) In a new ISSUES-XXX.md document, build a proposal for a comprehensive collection of mechanic and trigger implementations that could provide thorough coverage for features and events available in Minecraft and the Paper API. The goal is to ship a complete library of options for skill designers.
+- [ ] (Project) `gradlew run` should implicitly build the web frontend so it is always current
