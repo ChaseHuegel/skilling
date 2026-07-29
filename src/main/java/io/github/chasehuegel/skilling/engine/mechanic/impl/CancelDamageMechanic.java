@@ -21,7 +21,7 @@ public final class CancelDamageMechanic implements SkillMechanic {
         if (!damageEvent.getEntity().equals(player)) return false;
         double chance = ((Number) params.getOrDefault("chance", 0.0)).doubleValue();
         if (chance <= 0) return false;
-        if (ThreadLocalRandom.current().nextDouble(100) < chance) {
+        if (ThreadLocalRandom.current().nextDouble(100) <= chance) {
             damageEvent.setCancelled(true);
             return true;
         }

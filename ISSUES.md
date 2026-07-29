@@ -142,7 +142,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-034.md` for full development plan
 - [x] `ApplyStatusMechanic` does not verify `getDamager().equals(player)` — could fire when player is the damage receiver
   - See `ISSUE-035.md` for full development plan
-- [ ] `BlockDamageMechanic` uses `<` instead of `<=` for chance comparison — `chance: 100` will fail ~1% of the time due to `nextDouble(100)` bound
+- [x] `BlockDamageMechanic` uses `<` instead of `<=` for chance comparison — `chance: 100` will fail ~1% of the time due to `nextDouble(100)` bound
   - See `ISSUE-036.md` for full development plan
 - [ ] `TeleportMechanic.findSafeLocation()` mutates `Location` in-place with chained `add()`/`subtract()` calls — fragile and confusing
   - See `ISSUE-037.md` for full development plan
