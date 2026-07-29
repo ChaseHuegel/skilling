@@ -54,6 +54,19 @@
 
         <StickyActionBanner :visible="isDirty" :saving="saving" @save="save" @cancel="confirmCancel" />
 
+        <!-- Leave confirm dialog -->
+        <div v-if="showLeaveDialog" class="modal-overlay" @click.self="showLeaveDialog = false">
+            <div class="modal">
+                <h3>Unsaved changes</h3>
+                <p>Would you like to save your changes before leaving?</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showLeaveDialog = false">Cancel</button>
+                    <button class="btn btn-danger" @click="leaveDiscard">Discard</button>
+                    <button class="btn btn-primary" @click="leaveSave">Save & Leave</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Cancel confirm dialog -->
         <div v-if="showCancelDialog" class="modal-overlay" @click.self="showCancelDialog = false">
             <div class="modal">
@@ -70,7 +83,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
 import { useSkillsStore } from '../stores/skills';
 import MinecraftIcon from '../components/common/MinecraftIcon.vue';
@@ -91,11 +104,22 @@ const loading = ref(false);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const showCancelDialog = ref(false);
+const showLeaveDialog = ref(false);
+let pendingNavigation: (() => void) | null = null;
 
 const fieldErrors = reactive<Record<string, string>>({});
 const cleanForm = ref('');
 
 const isDirty = computed(() => JSON.stringify(form) !== cleanForm.value);
+
+onBeforeRouteLeave((to, from, next) => {
+    if (!isDirty.value) {
+        next();
+        return;
+    }
+    showLeaveDialog.value = true;
+    pendingNavigation = () => next();
+});
 
 function clearFieldError(field: string) {
     delete fieldErrors[field];
@@ -303,6 +327,43 @@ function confirmCancel() {
 
 function discard() {
     router.push('/');
+}
+
+async function leaveSave() {
+    showLeaveDialog.value = false;
+    if (!validate()) {
+        pendingNavigation = null;
+        return;
+    }
+    saving.value = true;
+    try {
+        const payload: Record<string, any> = {
+            id: form.id,
+            displayName: form.displayName,
+            maxLevel: form.maxLevel,
+            icon: form.icon,
+            customModelData: form.customModelData,
+            color: form.color,
+            style: form.style,
+            progression: form.progression,
+            xpSources: form.xpSources,
+            abilities: (form.abilities || []).map(formAbilityToApi),
+        };
+        if (isNew) {
+            await api.skills.create(payload);
+        } else {
+            await api.skills.update(skillId || form.id, payload);
+        }
+    } catch { /* navigate anyway */ }
+    saving.value = false;
+    pendingNavigation?.();
+    pendingNavigation = null;
+}
+
+function leaveDiscard() {
+    showLeaveDialog.value = false;
+    pendingNavigation?.();
+    pendingNavigation = null;
 }
 </script>
 

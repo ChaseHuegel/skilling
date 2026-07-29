@@ -37,6 +37,19 @@
 
         <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveTags" @cancel="fetchTags" />
 
+        <!-- Leave confirm dialog -->
+        <div v-if="showLeaveDialog" class="modal-overlay" @click.self="showLeaveDialog = false">
+            <div class="modal">
+                <h3>Unsaved changes</h3>
+                <p>Would you like to save your changes before leaving?</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showLeaveDialog = false">Cancel</button>
+                    <button class="btn btn-danger" @click="leaveDiscard">Discard</button>
+                    <button class="btn btn-primary" @click="leaveSave">Save & Leave</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Reset confirm dialog -->
         <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
             <div class="modal">
@@ -53,6 +66,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
 import { useStagingStore } from '../stores/staging';
 import TagListEditor from '../components/tags/TagListEditor.vue';
@@ -66,8 +80,19 @@ const tags = reactive<Record<string, string[]>>({});
 const cleanTags = ref('');
 const searchQuery = ref('');
 const showResetDialog = ref(false);
+const showLeaveDialog = ref(false);
+let pendingNavigation: (() => void) | null = null;
 
 const isDirty = computed(() => JSON.stringify(tags) !== cleanTags.value);
+
+onBeforeRouteLeave((to, from, next) => {
+    if (!isDirty.value) {
+        next();
+        return;
+    }
+    showLeaveDialog.value = true;
+    pendingNavigation = () => next();
+});
 
 const filteredTags = computed({
     get: () => {
@@ -106,6 +131,23 @@ async function cancelTags() {
 function resetTags() {
     showResetDialog.value = false;
     fetchTags();
+}
+
+async function leaveSave() {
+    showLeaveDialog.value = false;
+    saving.value = true;
+    try {
+        await api.tags.update({ ...tags });
+    } catch { /* navigate anyway */ }
+    saving.value = false;
+    pendingNavigation?.();
+    pendingNavigation = null;
+}
+
+function leaveDiscard() {
+    showLeaveDialog.value = false;
+    pendingNavigation?.();
+    pendingNavigation = null;
 }
 
 async function fetchTags() {
