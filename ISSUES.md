@@ -254,4 +254,4 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-011.md` for full design review and improvement plan
 - [x] (Plugin) In a new ISSUES-XXX.md document, build a proposal for a comprehensive collection of mechanic and trigger implementations that could provide thorough coverage for features and events available in Minecraft and the Paper API. The goal is to ship a complete library of options for skill designers.
   - See `ISSUE-012.md` for full proposal
-- [ ] (Project) `gradlew run` should implicitly build the web frontend so it is always current
+- [x] (Project) `gradlew run` should implicitly build the web frontend so it is always current

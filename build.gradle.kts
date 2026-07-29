@@ -82,6 +82,7 @@ tasks {
     }
 
     runServer {
+        dependsOn(buildFrontend)
         minecraftVersion("1.21.8")
         jvmArgs("-Xms2G", "-Xmx2G")
     }
