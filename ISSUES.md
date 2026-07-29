@@ -120,7 +120,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-024.md` for full development plan
 - [x] `PoisonPillTag.key` uses lazy initialization without `volatile` or synchronization — thread-unsafe
   - See `ISSUE-025.md` for full development plan
-- [ ] `CancelDamageMechanic` return value is inconsistent with `DodgeMechanic`/`BlockDamageMechanic`
+- [x] `CancelDamageMechanic` return value is inconsistent with `DodgeMechanic`/`BlockDamageMechanic`
   - `CancelDamageMechanic` returns `true` even on a failed roll, consuming resources; the others return `false`
   - `CancelDamageMechanic` does not verify `getEntity().equals(player)` — applies to all entities, not just the player
   - See `ISSUE-026.md` for full development plan

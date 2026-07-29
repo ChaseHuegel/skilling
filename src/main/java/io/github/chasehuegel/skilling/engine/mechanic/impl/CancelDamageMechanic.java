@@ -18,11 +18,13 @@ public final class CancelDamageMechanic implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof EntityDamageEvent damageEvent)) return false;
+        if (!damageEvent.getEntity().equals(player)) return false;
         double chance = ((Number) params.getOrDefault("chance", 0.0)).doubleValue();
         if (chance <= 0) return false;
         if (ThreadLocalRandom.current().nextDouble(100) < chance) {
             damageEvent.setCancelled(true);
+            return true;
         }
-        return true;
+        return false;
     }
 }
