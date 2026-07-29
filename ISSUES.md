@@ -238,7 +238,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Item slot field should use `AppCombobox` with prepopulated equipment slot options (HAND, OFF_HAND, FEET, LEGS, CHEST, HEAD)
 - [x] Saving a skill with a new ability that has only id/name/unlockLevel/one mechanic fails — `RequirementsDTO` has `state` (singular) but frontend sends `states` (plural), causing deserialization error
 - [x] Gap between skills nav button and flyout dropdown causes hover to break when moving mouse between them
-- [ ] (Web) There should be a "Cancel" button when there are unsaved changes pending on the Tags and Config page to discard/revert the pending changes similar to the Skills Editor page
+- [x] (Web) There should be a "Cancel" button when there are unsaved changes pending on the Tags and Config page to discard/revert the pending changes similar to the Skills Editor page
 - [ ] (Web) When there are unsaved changes pending on the Tags, Config, or Skill Editor page, the "Save Changes" and "Cancel" buttons should be anchored to the bottom of the view in a warning banner. This should follow any scrolling up or down the page.
 - [ ] (Web) When there are unsaved changes pending on the Tags, Config, or Skills Editor page and a user tries to navigate away, a confirmation dialog should appear stating they have unsaved changes and ask if they would like to save (then completes the navigation), discard (then completes the navigation), or cancel (retains the pending changes and doesn't navigate)
 - [ ] (Web) The abilities page should animate the cards coming in just like the skills dashboard page does with the skill cards

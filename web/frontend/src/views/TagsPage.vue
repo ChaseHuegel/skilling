@@ -6,6 +6,7 @@
                 <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
             </div>
             <div class="header-actions">
+                <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-secondary" @click="cancelTags">Cancel</button>
                 <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
                 <button v-if="isDirty" class="btn btn-primary" :disabled="saving" @click="saveTags">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
@@ -96,6 +97,11 @@ const suggestions = [
 ];
 
 onMounted(fetchTags);
+
+async function cancelTags() {
+    await staging.discard();
+    window.location.reload();
+}
 
 function resetTags() {
     showResetDialog.value = false;

@@ -3,6 +3,7 @@
         <div class="page-header">
             <h1>Config</h1>
             <div class="header-actions">
+                <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-secondary" @click="cancelConfig">Cancel</button>
                 <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
                 <button v-if="isDirty" class="btn btn-primary" :disabled="saving" @click="saveConfig">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
@@ -105,6 +106,11 @@ const config = reactive({
 const isDirty = computed(() => JSON.stringify(config) !== cleanConfig.value);
 
 onMounted(fetchConfig);
+
+async function cancelConfig() {
+    await staging.discard();
+    window.location.reload();
+}
 
 function confirmReset() {
     showResetDialog.value = false;
