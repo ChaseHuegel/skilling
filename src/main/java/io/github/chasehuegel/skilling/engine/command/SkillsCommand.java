@@ -6,6 +6,7 @@ import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
 import io.github.chasehuegel.skilling.engine.feedback.LevelUpDispatcher;
 import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
+import io.github.chasehuegel.skilling.engine.profile.PlayerPreferences;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
@@ -110,6 +111,39 @@ public final class SkillsCommand {
                                 .append(Component.text(" - Add XP to a player's skill", NamedTextColor.WHITE)));
                         sender.sendMessage(Component.text("/skills reset <player> [skill]", NamedTextColor.YELLOW)
                                 .append(Component.text(" - Reset a player's skill(s). Omit skill to reset all.", NamedTextColor.WHITE)));
+                    }
+                }));
+
+        commandManager.command(commandManager.commandBuilder("skills")
+                .literal("log")
+                .permission("skilling.use")
+                .required("type", org.incendo.cloud.parser.standard.StringParser.stringParser())
+                .required("value", org.incendo.cloud.parser.standard.BooleanParser.booleanParser())
+                .handler(ctx -> {
+                    Source sender = ctx.sender();
+                    CommandSender commandSender = sender.source();
+                    if (!(commandSender instanceof Player player)) {
+                        commandSender.sendMessage(MINI_MESSAGE.deserialize("<red>Only players can use this command."));
+                        return;
+                    }
+                    String type = ctx.get("type");
+                    boolean value = ctx.get("value");
+                    PlayerProfile profile = profileManager.getOrCreate(player);
+                    PlayerPreferences prefs = profile.getPreferences();
+                    PlayerPreferences updated = switch (type) {
+                        case "xp" -> new PlayerPreferences(value, prefs.logLevels(), prefs.logUnlocks(), prefs.logAbilities());
+                        case "levels" -> new PlayerPreferences(prefs.logXp(), value, prefs.logUnlocks(), prefs.logAbilities());
+                        case "unlocks" -> new PlayerPreferences(prefs.logXp(), prefs.logLevels(), value, prefs.logAbilities());
+                        case "abilities" -> new PlayerPreferences(prefs.logXp(), prefs.logLevels(), prefs.logUnlocks(), value);
+                        default -> {
+                            player.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown log type: " + type + ". Use: xp, levels, unlocks, abilities"));
+                            yield prefs;
+                        }
+                    };
+                    if (updated != prefs) {
+                        profile.setPreferences(updated);
+                        profileManager.savePreferences(player.getUniqueId(), profile.getPreferencesJson());
+                        player.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + type + " logging to " + value));
                     }
                 }));
 

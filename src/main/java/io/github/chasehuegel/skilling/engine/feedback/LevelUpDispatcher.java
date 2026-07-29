@@ -2,6 +2,7 @@ package io.github.chasehuegel.skilling.engine.feedback;
 
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
+import io.github.chasehuegel.skilling.engine.profile.PlayerPreferences;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import net.kyori.adventure.text.Component;
@@ -92,7 +93,10 @@ public final class LevelUpDispatcher {
                 .toList();
 
         String levelUpMsg = "<yellow>" + displayName + " increased to " + newLevel + "</yellow>";
-        player.sendMessage(MINI_MESSAGE.deserialize(levelUpMsg));
+        PlayerPreferences prefs = getPreferences(player, plugin);
+        if (prefs.logLevels()) {
+            player.sendMessage(MINI_MESSAGE.deserialize(levelUpMsg));
+        }
         int stayMs = plugin.getTitleStayDuration();
         player.showTitle(Title.title(
                 MINI_MESSAGE.deserialize("<gold><bold>Level up!</bold></gold>"),
@@ -109,8 +113,10 @@ public final class LevelUpDispatcher {
             int idx = i;
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 Component line = SkillMenuBuilder.formatAbilityLine(unlockedAbilities.get(idx), newLevel);
-                String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
-                player.sendMessage(MINI_MESSAGE.deserialize(unlockMsg).append(line));
+                    String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
+                if (prefs.logUnlocks()) {
+                    player.sendMessage(MINI_MESSAGE.deserialize(unlockMsg).append(line));
+                }
                 player.showTitle(Title.title(
                         MINI_MESSAGE.deserialize("<gold><bold>New unlock!</bold></gold>"),
                         line.colorIfAbsent(NamedTextColor.WHITE),
@@ -183,6 +189,11 @@ public final class LevelUpDispatcher {
                             SkillMenuBuilder.formatAbilityLine(a, newLevel)));
         }
         plugin.getLogger().info(logMsg.toString());
+    }
+
+    private static PlayerPreferences getPreferences(Player player, Skilling plugin) {
+        PlayerProfile profile = plugin.getProfileManager().getProfile(player.getUniqueId());
+        return profile != null ? profile.getPreferences() : PlayerPreferences.DEFAULTS;
     }
 
     public static boolean isMajorLevelUp(SkillDefinition skill, int newLevel) {

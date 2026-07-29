@@ -63,6 +63,8 @@ public final class ProfileManager {
                 // Return empty profile on error
             }
 
+            loadPreferences(profile, playerUuid);
+
             profiles.put(playerUuid, profile);
             return profile;
         });
@@ -133,5 +135,40 @@ public final class ProfileManager {
      */
     public int size() {
         return profiles.size();
+    }
+
+    private void loadPreferences(PlayerProfile profile, UUID playerUuid) {
+        if (!databaseManager.isInitialized()) return;
+        String sql = "SELECT preferences FROM player_preferences WHERE player_uuid = ?";
+        try (Connection conn = databaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, playerUuid.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    profile.setPreferencesFromJson(rs.getString("preferences"));
+                }
+            }
+        } catch (Exception ignored) {
+            // Use defaults on error
+        }
+    }
+
+    /**
+     * Saves a player's preferences to the database.
+     *
+     * @param playerUuid the player's UUID
+     * @param json       the JSON-serialized preferences
+     */
+    public void savePreferences(UUID playerUuid, String json) {
+        if (!databaseManager.isInitialized()) return;
+        String sql = "INSERT INTO player_preferences (player_uuid, preferences) VALUES (?, ?) ON CONFLICT(player_uuid) DO UPDATE SET preferences = excluded.preferences";
+        try (Connection conn = databaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, playerUuid.toString());
+            stmt.setString(2, json);
+            stmt.executeUpdate();
+        } catch (Exception ignored) {
+            // Best-effort save
+        }
     }
 }

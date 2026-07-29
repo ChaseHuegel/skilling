@@ -60,6 +60,12 @@ public final class DatabaseManager {
                         PRIMARY KEY (player_uuid, skill_id)
                     )
                     """);
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS player_preferences (
+                        player_uuid TEXT NOT NULL PRIMARY KEY,
+                        preferences TEXT NOT NULL DEFAULT '{}'
+                    )
+                    """);
         }
     }
 

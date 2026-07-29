@@ -186,7 +186,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-004.md` for full development plan
 - [x] Runtime config modification (`/skills set <key> <value>`)
   - See `ISSUE-005.md` for full development plan
-- [ ] Per-player logging preferences (`/skills log xp|levels|unlocks|abilities <true/false>`)
+- [x] Per-player logging preferences (`/skills log xp|levels|unlocks|abilities <true/false>`)
   - See `ISSUE-006.md` for full development plan
 - [x] Web GUI — Administrative interface with Javalin backend, Vue 3 + PrimeVue frontend
   - See `ISSUE-007.md` for full development plan (Phases 1-7 implemented)

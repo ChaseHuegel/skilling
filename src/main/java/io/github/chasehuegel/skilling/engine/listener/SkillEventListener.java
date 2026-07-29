@@ -339,12 +339,16 @@ public final class SkillEventListener implements Listener {
                     boolean hasMsg = !abilityMsg.isBlank();
                     if (ability.feedback().actionBar() && hasMsg) {
                         FanfareDispatcher.sendActionBar(player, abilityMsg);
-                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize(abilityMsg));
+                        if (profile.getPreferences().logAbilities()) {
+                            player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                                    .deserialize(abilityMsg));
+                        }
                     }
                     if (ability.feedback().chat() && hasMsg && !ability.feedback().actionBar()) {
-                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize(abilityMsg));
+                        if (profile.getPreferences().logAbilities()) {
+                            player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                                    .deserialize(abilityMsg));
+                        }
                     }
 
                     if (ability.requirements().cooldown() > 0) {

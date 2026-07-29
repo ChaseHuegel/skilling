@@ -1,5 +1,6 @@
 package io.github.chasehuegel.skilling.engine.profile;
 
+import com.google.gson.Gson;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -19,10 +20,13 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class PlayerProfile {
 
+    private static final Gson GSON = new Gson();
+
     private final UUID playerId;
     private final ConcurrentHashMap<String, Long> xpMap;
     private final AtomicLong modCount;
     private volatile long savedModCount;
+    private volatile PlayerPreferences preferences;
 
     /**
      * Constructs a new player profile.
@@ -34,6 +38,52 @@ public final class PlayerProfile {
         this.xpMap = new ConcurrentHashMap<>();
         this.modCount = new AtomicLong(0);
         this.savedModCount = 0;
+        this.preferences = PlayerPreferences.DEFAULTS;
+    }
+
+    /**
+     * Returns the player's logging preferences.
+     *
+     * @return the player's preferences
+     */
+    public PlayerPreferences getPreferences() {
+        return preferences;
+    }
+
+    /**
+     * Sets the player's logging preferences and marks the profile as dirty.
+     *
+     * @param preferences the new preferences
+     */
+    public void setPreferences(PlayerPreferences preferences) {
+        this.preferences = preferences;
+        modCount.incrementAndGet();
+    }
+
+    /**
+     * Deserializes preferences from a JSON string.
+     *
+     * @param json the JSON string
+     */
+    public void setPreferencesFromJson(String json) {
+        if (json == null || json.isBlank()) {
+            this.preferences = PlayerPreferences.DEFAULTS;
+        } else {
+            try {
+                this.preferences = GSON.fromJson(json, PlayerPreferences.class);
+            } catch (Exception e) {
+                this.preferences = PlayerPreferences.DEFAULTS;
+            }
+        }
+    }
+
+    /**
+     * Serializes preferences to a JSON string.
+     *
+     * @return the JSON string
+     */
+    public String getPreferencesJson() {
+        return GSON.toJson(preferences);
     }
 
     /**
