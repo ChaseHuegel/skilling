@@ -74,6 +74,10 @@ public final class LockdownManager {
             var customTagLoader = new CustomTagLoader();
             customTagLoader.load(new File(plugin.getDataFolder(), "tags.yml"));
             var tagResolver = new TagResolver(customTagLoader);
+            skillManager.setTagResolver(tagResolver);
+            plugin.getRequirementEngine().setTagResolver(tagResolver);
+            plugin.getSkillEventListener().setTagResolver(tagResolver);
+            plugin.setCustomTagLoader(customTagLoader);
             skillManager.clear();
             skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
             if (debug) plugin.getLogger().info("Phase 4/6: Registries rebuilt.");

@@ -58,7 +58,7 @@ public final class SkillEventListener implements Listener {
     private final Skilling plugin;
     private final SkillManager skillManager;
     private final ProfileManager profileManager;
-    private final TagResolver tagResolver;
+    private TagResolver tagResolver;
     private final RequirementEngine requirementEngine;
     private final MechanicRegistry mechanicRegistry;
     private final FeedbackDebouncer feedbackDebouncer;
@@ -76,6 +76,15 @@ public final class SkillEventListener implements Listener {
         this.mechanicRegistry = mechanicRegistry;
         this.feedbackDebouncer = feedbackDebouncer;
         this.bossBarPool = bossBarPool;
+    }
+
+    /**
+     * Replaces the tag resolver used for filter matching.
+     *
+     * @param tagResolver the new tag resolver
+     */
+    public void setTagResolver(TagResolver tagResolver) {
+        this.tagResolver = tagResolver;
     }
 
     /**

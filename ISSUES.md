@@ -111,7 +111,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Web) The "save changes" banner at the bottom of the screen should be styled like the apply & reload banner
 - [x] (Web) The "apply & reload" banner does not appear after responding to the save changes confirmation dialog that is prompted after navigating away from a page that has unsaved changes
 - [x] (Web or Plugin?) When using "apply & reload" when a player has the `/skills` menu open, the web GUI reports there was an error and the reload seems to not take effect at all
-- [ ] `/skills reload` does not persist the new `TagResolver` into `SkillManager` — `tags.yml` changes are invisible after reload
+- [x] `/skills reload` does not persist the new `TagResolver` into `SkillManager` — `tags.yml` changes are invisible after reload
   - `LockdownManager.reload()` creates a local `TagResolver` that is never stored back
   - See `ISSUE-022.md` for full development plan
 - [ ] XP reward evaluator in `SkillEventListener.grantXp()` hardcodes `source.reward().evaluate(1, 1)` — XP rewards don't scale with player level

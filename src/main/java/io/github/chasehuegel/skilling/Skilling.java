@@ -65,6 +65,7 @@ public final class Skilling extends JavaPlugin {
     private LockdownManager lockdownManager;
     private SkillsCommand skillsCommand;
     private CustomTagLoader customTagLoader;
+    private SkillEventListener skillEventListener;
     private WebServer webServer;
     private volatile boolean reloading;
     private volatile boolean debugLogging;
@@ -170,11 +171,9 @@ public final class Skilling extends JavaPlugin {
         // Event listeners
         Bukkit.getPluginManager().registerEvents(new UIProtectionListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker), this);
-        Bukkit.getPluginManager().registerEvents(
-                new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
-                        registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool),
-                this
-        );
+        this.skillEventListener = new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
+                        registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool);
+        Bukkit.getPluginManager().registerEvents(skillEventListener, this);
 
         // BossBar TTL tick loop (every tick so fadeTicks config is in game ticks)
         Bukkit.getScheduler().runTaskTimer(this, bossBarPool::tickAll, 1L, 1L);
@@ -316,6 +315,18 @@ public final class Skilling extends JavaPlugin {
 
     public LockdownManager getLockdownManager() {
         return lockdownManager;
+    }
+
+    public SkillEventListener getSkillEventListener() {
+        return skillEventListener;
+    }
+
+    public CustomTagLoader getCustomTagLoader() {
+        return customTagLoader;
+    }
+
+    public void setCustomTagLoader(CustomTagLoader customTagLoader) {
+        this.customTagLoader = customTagLoader;
     }
 
     public boolean isReloading() {

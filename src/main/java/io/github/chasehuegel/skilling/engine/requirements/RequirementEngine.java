@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class RequirementEngine {
 
     private final Map<String, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
-    private final TagResolver tagResolver;
+    private TagResolver tagResolver;
 
     /**
      * Constructs a new requirement engine with the given tag resolver for item matching.
@@ -182,6 +182,15 @@ public final class RequirementEngine {
     private void applyCooldown(Player player, String abilityId, long durationMs) {
         cooldowns.computeIfAbsent(player.getUniqueId().toString(), k -> new ConcurrentHashMap<>())
                 .put(abilityId, System.currentTimeMillis() + durationMs);
+    }
+
+    /**
+     * Replaces the tag resolver used for item matching.
+     *
+     * @param tagResolver the new tag resolver
+     */
+    public void setTagResolver(TagResolver tagResolver) {
+        this.tagResolver = tagResolver;
     }
 
     /**

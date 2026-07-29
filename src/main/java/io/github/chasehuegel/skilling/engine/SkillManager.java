@@ -29,7 +29,7 @@ public final class SkillManager {
     private final EvaluatorRegistry evaluatorRegistry;
     private final MechanicRegistry mechanicRegistry;
     private final TriggerRegistry triggerRegistry;
-    private final TagResolver tagResolver;
+    private TagResolver tagResolver;
     private final Map<String, SkillDefinition> skills = new LinkedHashMap<>();
 
     /**
@@ -398,6 +398,15 @@ public final class SkillManager {
      */
     public SkillDefinition getSkill(String id) {
         return skills.get(id);
+    }
+
+    /**
+     * Replaces the tag resolver used for filter resolution.
+     *
+     * @param tagResolver the new tag resolver
+     */
+    public void setTagResolver(TagResolver tagResolver) {
+        this.tagResolver = tagResolver;
     }
 
     /**
