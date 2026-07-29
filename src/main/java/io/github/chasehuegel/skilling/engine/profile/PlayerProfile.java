@@ -1,6 +1,8 @@
 package io.github.chasehuegel.skilling.engine.profile;
 
 import com.google.gson.Gson;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -128,6 +130,17 @@ public final class PlayerProfile {
     }
 
     /**
+     * Returns a snapshot copy of the XP map for batch operations.
+     * The caller sees a consistent view of XP values even if the
+     * live map is concurrently modified by the main thread.
+     *
+     * @return a snapshot of the XP map
+     */
+    public Map<String, Long> getXpSnapshot() {
+        return new HashMap<>(xpMap);
+    }
+
+    /**
      * Returns the underlying XP map for batch operations.
      *
      * <p>Mutating the returned map directly bypasses dirty tracking.
@@ -135,7 +148,9 @@ public final class PlayerProfile {
      * profile hydration from the database.
      *
      * @return the XP map
+     * @deprecated Use {@link #getXpSnapshot()} for thread-safe reads.
      */
+    @Deprecated
     public ConcurrentHashMap<String, Long> getXpMap() {
         return xpMap;
     }

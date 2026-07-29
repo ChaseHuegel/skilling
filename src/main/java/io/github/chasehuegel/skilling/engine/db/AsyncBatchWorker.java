@@ -76,8 +76,9 @@ public final class AsyncBatchWorker implements Runnable {
             for (var entry : dirty.entrySet()) {
                 UUID uuid = entry.getKey();
                 PlayerProfile profile = entry.getValue();
+                Map<String, Long> xpSnapshot = profile.getXpSnapshot();
 
-                for (var xpEntry : profile.getXpMap().entrySet()) {
+                for (var xpEntry : xpSnapshot.entrySet()) {
                     stmt.setString(1, uuid.toString());
                     stmt.setString(2, xpEntry.getKey());
                     stmt.setLong(3, xpEntry.getValue());

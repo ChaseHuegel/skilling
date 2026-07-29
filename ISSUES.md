@@ -132,7 +132,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-029.md` for full development plan
 - [x] Cooldown entries in `RequirementEngine` are never cleaned up on player quit — unbounded map growth
   - See `ISSUE-030.md` for full development plan
-- [ ] `PlayerProfile.getXpMap()` exposes mutable `ConcurrentHashMap` to `AsyncBatchWorker` while `addXp()` concurrently modifies it
+- [x] `PlayerProfile.getXpMap()` exposes mutable `ConcurrentHashMap` to `AsyncBatchWorker` while `addXp()` concurrently modifies it
   - See `ISSUE-031.md` for full development plan
 - [ ] `Skilling.titleStayDuration` and `globalXpModifier` are not `volatile` — stale values possible after reload
   - See `ISSUE-032.md` for full development plan
