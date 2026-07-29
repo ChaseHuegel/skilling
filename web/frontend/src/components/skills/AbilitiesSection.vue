@@ -168,6 +168,7 @@ const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_grou
 const expanded = ref<Record<number, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)
 const newFailureReason = ref<Record<number, string>>({})
+const loreDragIndex = ref<string | null>(null)
 
 function toggleExpand(idx: number) {
   expanded.value[idx] = !expanded.value[idx]
@@ -253,6 +254,29 @@ function duplicateAbility(index: number) {
 function addLoreLine(index: number) {
   const ab = props.modelValue[index]
   updateAbility(index, { lore: [...ab.lore, ''] })
+}
+
+function onLoreDragStart(index: number, lineIdx: number) {
+  loreDragIndex.value = index + '-' + lineIdx
+}
+
+function onLoreDragOver(e: DragEvent, index: number, lineIdx: number) {
+  e.preventDefault()
+  const key = index + '-' + lineIdx
+  if (loreDragIndex.value === null || loreDragIndex.value === key) return
+  const parts = loreDragIndex.value.split('-')
+  const fromIdx = parseInt(parts[1], 10)
+  const toIdx = lineIdx
+  const ab = props.modelValue[index]
+  const copy = [...ab.lore]
+  const [removed] = copy.splice(fromIdx, 1)
+  copy.splice(toIdx, 0, removed)
+  updateAbility(index, { lore: copy })
+  loreDragIndex.value = key
+}
+
+function onLoreDragEnd() {
+  loreDragIndex.value = null
 }
 
 function removeLoreLine(index: number, lineIdx: number) {
@@ -587,7 +611,13 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
             v-for="(line, lIdx) in ability.lore"
             :key="lIdx"
             class="lore-line-row"
+            :class="{ 'lore-drag-over': loreDragIndex === idx + '-' + lIdx }"
+            draggable="true"
+            @dragstart="onLoreDragStart(idx, lIdx)"
+            @dragover="onLoreDragOver($event, idx, lIdx)"
+            @dragend="onLoreDragEnd"
           >
+            <span class="lore-drag-handle" title="Drag to reorder">&#8801;</span>
             <input
               class="field-input"
               type="text"
@@ -1252,6 +1282,24 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
   display: flex;
   gap: 0.4rem;
   margin-bottom: 0.35rem;
+  align-items: center;
+}
+.lore-line-row[draggable="true"] {
+  cursor: default;
+}
+.lore-line-row.lore-drag-over {
+  opacity: 0.5;
+}
+.lore-drag-handle {
+  cursor: grab;
+  color: var(--p-form-field-placeholder-color);
+  font-size: 1.1rem;
+  line-height: 1;
+  user-select: none;
+  flex-shrink: 0;
+}
+.lore-drag-handle:active {
+  cursor: grabbing;
 }
 
 .states-group {
