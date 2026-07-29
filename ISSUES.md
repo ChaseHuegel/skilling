@@ -341,5 +341,5 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-053.md` for full development plan
 - [x] `getLevelForXp()` O(maxLevel) linear scan duplicated in `SkillEventListener` and `LevelUpDispatcher` — centralize on `SkillDefinition`
   - See `ISSUE-054.md` for full development plan
-- [ ] Test coverage gaps: all 25 mechanics untested, all 19 triggers untested, requirement engine lifecycle (Check/Execute/Consume) uncovered, no serialization tests, no `BossBarPool`/`FanfareDispatcher`/`LevelUpDispatcher` tests
-  - See `ISSUE-055.md` for full development plan
+- [x] Test coverage gaps: all 25 mechanics untested, all 19 triggers untested, requirement engine lifecycle (Check/Execute/Consume) uncovered, no serialization tests, no `BossBarPool`/`FanfareDispatcher`/`LevelUpDispatcher` tests
+    - See `ISSUE-055.md` for full development plan
