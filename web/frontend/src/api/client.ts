@@ -63,4 +63,10 @@ export const api = {
         clear: () => apiFetch<any>('/api/staging', { method: 'DELETE' }),
     },
     reload: () => apiFetch<{ success: boolean; message: string; errors: string[] }>('/api/reload', { method: 'POST', body: JSON.stringify({ confirm: true }) }),
+    mechanics: {
+        list: () => apiFetch<{ mechanics: string[] }>('/api/mechanics'),
+    },
+    triggers: {
+        list: () => apiFetch<{ triggers: string[] }>('/api/triggers'),
+    },
 };

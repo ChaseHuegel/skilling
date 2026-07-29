@@ -130,6 +130,16 @@ public final class WebServer {
                 ctx.json(Map.of("status", "ok"));
             });
 
+            routes.get("/api/mechanics", ctx -> {
+                var keys = plugin.getRegistries().getMechanicRegistry().keys();
+                ctx.json(Map.of("mechanics", keys));
+            });
+
+            routes.get("/api/triggers", ctx -> {
+                var keys = plugin.getRegistries().getTriggerRegistry().keys();
+                ctx.json(Map.of("triggers", keys));
+            });
+
             app.start(config.port());
             plugin.getLogger().info("Web GUI started on port " + config.port());
         } catch (Exception e) {

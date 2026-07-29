@@ -72,4 +72,13 @@ public final class TriggerRegistry {
     public int size() {
         return registry.size();
     }
+
+    /**
+     * Returns all registered trigger keys.
+     *
+     * @return set of registry keys
+     */
+    public java.util.Set<String> keys() {
+        return registry.keySet();
+    }
 }

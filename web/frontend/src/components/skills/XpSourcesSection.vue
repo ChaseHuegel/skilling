@@ -5,6 +5,7 @@ import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
 import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
+import { useRegistriesStore } from '../../stores/registries'
 
 interface FilterEntry {
   target?: string
@@ -57,21 +58,17 @@ function executeRemoveSource() {
   pendingRemoveSource.value = null
 }
 
-const TRIGGER_OPTIONS = [
-  'block_break',
-  'block_place',
-  'entity_damage',
-  'entity_damage_taken',
-  'entity_kill',
-  'craft_item',
-  'furnace_extract',
-  'brew_potion',
-  'player_interact',
-  'consume_item',
-  'fishing',
-  'crop_grow',
-  'breed_animals',
-] as const
+const registriesStore = useRegistriesStore()
+
+const TRIGGER_OPTIONS = computed(() =>
+  registriesStore.triggers.length > 0 ? registriesStore.triggers : FALLBACK_TRIGGERS
+)
+
+const FALLBACK_TRIGGERS = [
+  'block_break', 'block_place', 'entity_damage', 'entity_damage_taken',
+  'entity_kill', 'craft_item', 'furnace_extract', 'brew_potion',
+  'player_interact', 'consume_item', 'fishing', 'crop_grow', 'breed_animals',
+]
 
 function updateSource(index: number, patch: Partial<XpSource>) {
   const copy = [...props.modelValue]
@@ -171,7 +168,7 @@ function duplicateSource(index: number) {
           <label class="field-label">Trigger</label>
           <AppCombobox
             :model-value="source.trigger"
-            :suggestions="TRIGGER_OPTIONS as unknown as string[]"
+            :suggestions="TRIGGER_OPTIONS"
             placeholder="Select or type trigger"
             :name="'trigger-' + idx"
             @update:model-value="updateSource(idx, { trigger: $event })"

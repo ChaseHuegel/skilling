@@ -5,6 +5,9 @@ import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
 import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
+import { useRegistriesStore } from '../../stores/registries'
+
+const registriesStore = useRegistriesStore()
 
 const PARTICLE_SUGGESTIONS = [
   'minecraft:flame', 'minecraft:smoke', 'minecraft:large_smoke', 'minecraft:campfire_cosy_smoke',
@@ -73,12 +76,14 @@ const MECHANIC_PARAM_NAMES: Record<string, string[]> = {
   'core:teleport': ['range'],
 }
 
-const MECHANIC_SUGGESTIONS = [
+const MECHANIC_SUGGESTIONS = computed(() =>
+  registriesStore.mechanics.length > 0 ? registriesStore.mechanics : FALLBACK_MECHANICS
+)
+
+const FALLBACK_MECHANICS = [
   'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
   'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
-  'core:modify_attribute', 'core:heal', 'core:feed', 'core:damage', 'core:experience',
-  'core:command', 'core:message', 'core:sound', 'core:particle', 'core:teleport',
-  'core:lightning', 'core:explosion', 'core:firework',
+  'core:modify_attribute',
 ]
 
 interface FilterEntry {

@@ -72,4 +72,13 @@ public final class MechanicRegistry {
     public int size() {
         return registry.size();
     }
+
+    /**
+     * Returns all registered mechanic keys.
+     *
+     * @return set of registry keys
+     */
+    public java.util.Set<String> keys() {
+        return registry.keySet();
+    }
 }

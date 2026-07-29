@@ -10,13 +10,18 @@
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from './stores/auth';
 import { useStagingStore } from './stores/staging';
+import { useRegistriesStore } from './stores/registries';
 import AppTopbar from './components/layout/AppTopbar.vue';
 import PendingChangesBanner from './components/layout/PendingChangesBanner.vue';
 
 const authStore = useAuthStore();
 const stagingStore = useStagingStore();
+const registriesStore = useRegistriesStore();
 authStore.checkSession();
-onMounted(() => stagingStore.fetchStatus());
+onMounted(() => {
+    stagingStore.fetchStatus();
+    registriesStore.fetch();
+});
 
 const darkMode = ref(document.documentElement.classList.contains('app-dark'));
 
