@@ -114,7 +114,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] `/skills reload` does not persist the new `TagResolver` into `SkillManager` — `tags.yml` changes are invisible after reload
   - `LockdownManager.reload()` creates a local `TagResolver` that is never stored back
   - See `ISSUE-022.md` for full development plan
-- [ ] XP reward evaluator in `SkillEventListener.grantXp()` hardcodes `source.reward().evaluate(1, 1)` — XP rewards don't scale with player level
+- [x] XP reward evaluator in `SkillEventListener.grantXp()` hardcodes `source.reward().evaluate(1, 1)` — XP rewards don't scale with player level
   - See `ISSUE-023.md` for full development plan
 - [ ] `ProjectileMechanic` sets `skilling_damage` metadata on snowballs but no listener ever reads it — damage parameter is dead code
   - See `ISSUE-024.md` for full development plan

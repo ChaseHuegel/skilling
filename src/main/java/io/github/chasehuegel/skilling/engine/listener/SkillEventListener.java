@@ -304,10 +304,10 @@ public final class SkillEventListener implements Listener {
                     debug("  [" + skill.id() + "] XP source filters failed, skipping");
                     continue;
                 }
-                double xp = source.reward().evaluate(1, 1) * plugin.getGlobalXpModifier();
+                int oldLevel = getLevelForXp(skill, profile.getXp(skill.id()));
+                double xp = source.reward().evaluate(oldLevel, 1) * plugin.getGlobalXpModifier();
                 if (xp > 0) {
                     long rounded = Math.round(xp);
-                    int oldLevel = getLevelForXp(skill, profile.getXp(skill.id()));
                     profile.addXp(skill.id(), rounded);
                     int newLevel = getLevelForXp(skill, profile.getXp(skill.id()));
                     showXpBossBar(player, skill, profile);
