@@ -64,7 +64,7 @@ export const api = {
     },
     reload: () => apiFetch<{ success: boolean; message: string; errors: string[] }>('/api/reload', { method: 'POST', body: JSON.stringify({ confirm: true }) }),
     mechanics: {
-        list: () => apiFetch<{ mechanics: string[] }>('/api/mechanics'),
+        list: () => apiFetch<{ mechanics: Record<string, string[]> }>('/api/mechanics'),
     },
     triggers: {
         list: () => apiFetch<{ triggers: string[] }>('/api/triggers'),

@@ -36,6 +36,7 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
@@ -205,20 +206,20 @@ public final class Skilling extends JavaPlugin {
         evalReg.register("polynomial", new PolynomialEvaluator(50, 2.5));
 
         var mechReg = registries.getMechanicRegistry();
-        mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class);
-        mechReg.register("core:chain_break", ChainBreakMechanic.class);
-        mechReg.register("core:modify_damage", ModifyDamageMechanic.class);
-        mechReg.register("core:apply_status", ApplyStatusMechanic.class);
-        mechReg.register("core:cancel_damage", CancelDamageMechanic.class);
-        mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class);
-        mechReg.register("core:modify_craft_output", ModifyCraftOutputMechanic.class);
-        mechReg.register("core:modify_furnace_output", ModifyFurnaceOutputMechanic.class);
-        mechReg.register("core:saturation_inject", SaturationInjectMechanic.class);
-        mechReg.register("core:modify_brew_time", ModifyBrewTimeMechanic.class);
-        mechReg.register("core:modify_potion_duration", ModifyPotionDurationMechanic.class);
-        mechReg.register("core:aoe_effect", AoeEffectMechanic.class);
-        mechReg.register("core:projectile", ProjectileMechanic.class);
-        mechReg.register("core:teleport", TeleportMechanic.class);
+        mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class, List.of("yield_chance"));
+        mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit", "exhaustion"));
+        mechReg.register("core:modify_damage", ModifyDamageMechanic.class, List.of("multiplier"));
+        mechReg.register("core:apply_status", ApplyStatusMechanic.class, List.of("effect", "duration", "amplifier"));
+        mechReg.register("core:cancel_damage", CancelDamageMechanic.class, List.of("chance"));
+        mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class, List.of("attribute", "amount", "duration"));
+        mechReg.register("core:modify_craft_output", ModifyCraftOutputMechanic.class, List.of("multiplier"));
+        mechReg.register("core:modify_furnace_output", ModifyFurnaceOutputMechanic.class, List.of("multiplier"));
+        mechReg.register("core:saturation_inject", SaturationInjectMechanic.class, List.of("saturation"));
+        mechReg.register("core:modify_brew_time", ModifyBrewTimeMechanic.class, List.of("multiplier"));
+        mechReg.register("core:modify_potion_duration", ModifyPotionDurationMechanic.class, List.of("multiplier"));
+        mechReg.register("core:aoe_effect", AoeEffectMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
+        mechReg.register("core:projectile", ProjectileMechanic.class, List.of("speed", "damage"));
+        mechReg.register("core:teleport", TeleportMechanic.class, List.of("range"));
 
         var trigReg = registries.getTriggerRegistry();
         trigReg.register("block_break", BlockBreakTrigger.class);

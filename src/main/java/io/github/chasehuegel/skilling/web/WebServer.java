@@ -131,8 +131,9 @@ public final class WebServer {
             });
 
             routes.get("/api/mechanics", ctx -> {
-                var keys = plugin.getRegistries().getMechanicRegistry().keys();
-                ctx.json(Map.of("mechanics", keys));
+                var reg = plugin.getRegistries().getMechanicRegistry();
+                var paramMap = reg.getAllParameterNames();
+                ctx.json(Map.of("mechanics", paramMap));
             });
 
             routes.get("/api/triggers", ctx -> {

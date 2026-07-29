@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import { api } from '../api/client';
 
 export const useRegistriesStore = defineStore('registries', () => {
-    const mechanics = ref<string[]>([]);
+    const mechanicKeys = ref<string[]>([]);
+    const mechanicParams = ref<Record<string, string[]>>({});
     const triggers = ref<string[]>([]);
     const loaded = ref(false);
 
@@ -14,7 +15,8 @@ export const useRegistriesStore = defineStore('registries', () => {
                 api.mechanics.list(),
                 api.triggers.list(),
             ]);
-            mechanics.value = mechRes.mechanics;
+            mechanicParams.value = mechRes.mechanics;
+            mechanicKeys.value = Object.keys(mechRes.mechanics);
             triggers.value = trigRes.triggers;
             loaded.value = true;
         } catch {
@@ -22,5 +24,5 @@ export const useRegistriesStore = defineStore('registries', () => {
         }
     }
 
-    return { mechanics, triggers, loaded, fetch };
+    return { mechanicKeys, mechanicParams, triggers, loaded, fetch };
 });

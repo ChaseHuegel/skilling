@@ -59,7 +59,23 @@ const SOUND_SUGGESTIONS = [
 
 const SLOT_SUGGESTIONS = ['HAND', 'OFF_HAND', 'FEET', 'LEGS', 'CHEST', 'HEAD']
 
-const MECHANIC_PARAM_NAMES: Record<string, string[]> = {
+const MECHANIC_SUGGESTIONS = computed(() =>
+  registriesStore.mechanicKeys.length > 0 ? registriesStore.mechanicKeys : FALLBACK_MECHANICS
+)
+
+const FALLBACK_MECHANICS = [
+  'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
+  'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
+  'core:modify_attribute',
+]
+
+const MECHANIC_PARAM_NAMES = computed(() =>
+  Object.keys(registriesStore.mechanicParams).length > 0
+    ? registriesStore.mechanicParams
+    : FALLBACK_PARAM_NAMES
+)
+
+const FALLBACK_PARAM_NAMES: Record<string, string[]> = {
   'core:yield_multiplier': ['yield_chance'],
   'core:chain_break': ['chain_limit', 'exhaustion'],
   'core:apply_status': ['effect', 'duration', 'amplifier'],
@@ -75,16 +91,6 @@ const MECHANIC_PARAM_NAMES: Record<string, string[]> = {
   'core:projectile': ['speed', 'damage'],
   'core:teleport': ['range'],
 }
-
-const MECHANIC_SUGGESTIONS = computed(() =>
-  registriesStore.mechanics.length > 0 ? registriesStore.mechanics : FALLBACK_MECHANICS
-)
-
-const FALLBACK_MECHANICS = [
-  'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
-  'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
-  'core:modify_attribute',
-]
 
 interface FilterEntry {
   target?: string
