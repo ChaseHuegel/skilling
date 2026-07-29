@@ -63,6 +63,9 @@ public final class WebServer {
                 ctx.res().setHeader("Access-Control-Allow-Origin", "*");
                 ctx.res().setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
                 ctx.res().setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                ctx.res().setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                ctx.res().setHeader("Pragma", "no-cache");
+                ctx.res().setHeader("Expires", "0");
             });
 
             routes.before("/api/*", ctx -> {
