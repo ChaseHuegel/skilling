@@ -267,5 +267,5 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Web & Plugin) Add API for mechanics to report their supported parameter names so the web GUI can consume that to populate the parameter dropdowns in the skill editor automatically
 - [x] Handle `ISSUE-009.md`
 - [x] Handle `ISSUE-010.md`
-- [ ] Handle `ISSUE-011.md`
+- [x] Handle `ISSUE-011.md`
 - [ ] Handle `ISSUE-012.md`
