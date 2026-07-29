@@ -1,48 +1,93 @@
-# ISSUE-011: Small Bug Fixes & Visual Tweaks
+# ISSUE-011: Web Frontend Visual Design Review
 
-**Scope:** Quick fixes that don't need a full development plan.
+## Description
 
----
+Comprehensive review of the Skilling web frontend visual design against
+comparable admin GUIs. Identifies gaps and improvement areas. No code
+changes are made — this is a planning document only.
 
-## 1. Tags Header `#c:#c:` Bug
+## Commendable Design Decisions
 
-**Observation:** The tag editor shows tag headers as `"#c:#c:ores"` instead of `"#c:ores"`. The `#c:` prefix is being prepended twice.
+- PrimeVue Aura theme provides a solid, themeable base
+- Skeleton loading states with shimmer animation on key views
+- Card entrance animations with staggered delays
+- `color-mix()` for dynamic skill-color theming (badges, borders, highlights)
+- MinecraftIcon CDN fallback chain (shimmer → letter fallback → texture)
+- Consistent modal pattern across all views
+- Leave-guard dialogs on dirty forms
+- Sticky save banners for unsaved changes
+- No PrimeVue components used directly — all custom HTML with scoped CSS
 
-**Root cause:** The `TagListEditor` component or the `TagHandler` API response is double-prefixing tags. The API returns tags as `"tags": { "#c:ores": [...] }` (with the prefix already in the key), and the frontend may be adding `#c:` again when rendering.
+## Critical Issues
 
-**File:** `src/components/tags/TagListEditor.vue`
+### 1. Mobile Responsiveness
 
-**Fix:** Remove the hardcoded `#c:` prefix from the tag name display, since the API already returns keys with the prefix.
+| Issue | Recommendation |
+|-------|---------------|
+| SkillEditorPage field rows will break on narrow screens | Add `@media (max-width: 640px)` to stack labels and inputs vertically |
+| Topbar nav links overflow on mobile | Implement hamburger menu or responsive nav collapse |
+| No mobile-first breakpoints in many components | Audit all views for <640px viewport behavior |
 
----
+### 2. Accessibility
 
-## 2. Ability Count Badge Text
+| Issue | Recommendation |
+|-------|---------------|
+| No skip-to-content link | Add `<a href="#main-content">` skip link |
+| Icon-only buttons lack `aria-label` | Add `aria-label` to all icon-only buttons (duplicate, delete, close) |
+| Modal dialogs lack focus trapping | Implement focus trap with `keydown` listener and `aria-modal="true"` |
+| Drag-and-drop is not keyboard accessible | Provide alternative reorder buttons (↑↓) or use `aria-grabbed` pattern |
+| No `aria-live` regions | Add to filtered lists, error banners, toast notifications |
+| No `<form>` elements | Wrap login and data entry in `<form>` for accessibility and autofill |
+| No `prefers-reduced-motion` query | Disable animations for users who prefer reduced motion |
 
-**Observation:** The ability count badge on skill cards shows just a number (e.g., `"3"`). It's unclear what this number means without context.
+### 3. Typography & Consistency
 
-**File:** `src/components/skills/SkillCard.vue`
+| Issue | Recommendation |
+|-------|---------------|
+| ~12 unique font sizes used ad-hoc | Define a type scale using CSS custom properties |
+| No global type scale | Create `--text-xs, --text-sm, --text-base, --text-lg, --text-xl` |
+| Heading hierarchy inconsistent across views | Ensure each page has exactly one `<h1>`, proper `<h2>`+ nesting |
+| SkillEditorPage has no `<h1>` | Add page title with skill name |
 
-**Fix:** Change the badge text from `{{ skill.abilityCount }}` to `{{ skill.abilityCount }} ability{{ skill.abilityCount !== 1 ? 'ies' : '' }}`. If space is limited, show it as a hover tooltip instead.
+### 4. Navigation & Routing
 
----
+| Issue | Recommendation |
+|-------|---------------|
+| No 404/not-found route | Add catch-all route with helpful message |
+| No breadcrumb navigation | Add breadcrumbs for deep views (SkillEditor) |
+| No back button in SkillEditor | Add explicit "Back to Dashboard" link |
+| No route-level loading indicator | Add top progress bar during route transitions |
 
-## 3. XP Sources Badge on Skill Cards
+### 5. Form Design
 
-**Observation:** Skill cards show ability count but not XP source count. XP sources are equally important for understanding a skill at a glance.
+| Issue | Recommendation |
+|-------|---------------|
+| Login form missing `<form>` element | Wrap in `<form>` with `@submit.prevent` |
+| No field-level validation messages | Add per-field error styling and messages |
+| No required field indicators | Add visual markers for required fields |
+| TagsPage missing empty state | Add "No tags defined" message when tags object is empty |
+| No clear button on search inputs | Add "×" clear button or Escape-to-clear |
 
-**File:** `src/components/skills/SkillCard.vue` and `SkillDetailDTO.java`
+### 6. Feedback & Error Handling
 
-**Fix:** 
-1. Add `xpSourceCount` field to `SkillSummaryDTO` in `SkillHandler.list()`
-2. Pass it through to the `SkillCard` component
-3. Display as a second badge alongside the ability count badge
+| Issue | Recommendation |
+|-------|---------------|
+| Save actions use `window.location.reload()` | Replace with proper state refresh where possible |
+| No offline/network error state | Add global connection-lost banner |
+| No retry button on Tags/Config load errors | Add retry CTA like Dashboard and AbilitiesPage |
+| Toast colors use hardcoded hex | Use `var(--p-green-600)` etc. for theme coherence |
 
----
+## Implementation Priority
 
-## 4. Ability Editor Regression
+1. Mobile responsiveness (SkillEditorPage & Topbar) — **High**
+2. `<form>` elements for accessibility — **High**
+3. Icon-button `aria-label` — **High**
+4. Modal focus trapping — **High**
+5. 404 route — **Medium**
+6. Type scale definition — **Medium**
+7. Field-level validation — **Medium**
+8. Drag-reorder keyboard alternative — **Medium**
+9. Reduced motion support — **Low**
+10. Breadcrumb navigation — **Low**
 
-**Observation:** Clicking to expand an ability card in the skill editor causes it to disappear. Abilities were editable before but this regressed.
-
-**Root cause:** Likely a Vue reactivity issue where the expand toggle incorrectly removes or hides the ability entry instead of toggling its expanded state.
-
-**File:** `src/components/skills/AbilitiesSection.vue`
+Risk: Very Low. Document only; no changes implemented.

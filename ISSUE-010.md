@@ -1,75 +1,79 @@
-# ISSUE-010: Theme Consistency Pass — Dark/Light Mode
+# ISSUE-010: Minecraft Color Code Rendering + Lore Preview Plan
 
-**Scope:** Comprehensive visual audit of all pages in both themes.
+## Description
 
----
+Proposal for rendering Minecraft `&` color codes inline in lore text
+inputs and adding a realistic lore preview flyout in the skill editor.
 
-## Known Issues
+## Current State
 
-| Area | Light Mode | Dark Mode |
-|------|-----------|-----------|
-| **MinecraftIcon slot** | Inventory slot `#1a1a2e` background is too dark against light surface | Correct — dark slot contrasts with dark surface |
-| **Skill cards** | Border/shadow visible | Border/shadow washes out — needs darker border or elevated background |
-| **Dropdowns/selects** | Correct | White background clashing — needs dark surface color |
-| **Tags page chips** | Dark backgrounds visible | OK |
-| **Config page inputs** | OK | White inputs on dark — needs dark styling |
-| **Filter builder inputs** | OK | Some inputs have light backgrounds |
+Lore lines in the web GUI are plain `<input>` text fields. Color codes
+like `&a`, `&l`, `&o` are displayed as literal text. The backend
+(`LegacyComponentSerializer.legacyAmpersand().deserialize()`) converts
+these to styled Adventure `Component` objects for in-game display, but
+the frontend has zero color code rendering infrastructure.
 
-## Audit Checklist
+## Proposed Solution
 
-Every visible component should be checked in both themes:
+### Phase 1: Color Code Utility
 
-- [ ] AppTopbar — brand, nav, theme toggle, user area, logout
-- [ ] PendingChangesBanner — text, buttons, error pill
-- [ ] Dashboard — header, subtitle, skill count badge, skeleton cards
-- [ ] Skill cards — border, shadow, hover, ability badge, XP badge
-- [ ] MinecraftIcon — slot background, glow ring, fallback circle
-- [ ] Login page — card, inputs, button
-- [ ] Skill editor — all sections, inputs, selects, buttons
-- [ ] Tags page — tag headers, chips, add/remove buttons, inputs
-- [ ] Config page — all sections, inputs, checkboxes, buttons
-- [ ] FilterBuilder — target/state/tool inputs
-- [ ] EvaluatorParameter — type dropdown, dynamic fields
-- [ ] SectionToolbar — add/duplicate/delete buttons
-- [ ] ToastNotification — success/error/info backgrounds
-- [ ] Empty/error states — centered cards
+Create `src/utils/minecraftColors.ts` with functions to:
 
-## Fix Strategy
+1. **`parseAmpersandCodes(text: string): FormattedSegment[]`**
+   - Parse `&`-prefixed color/format codes into an array of segments
+   - Each segment has: `{ text: string, color?: string, bold?: boolean, italic?: boolean, underline?: boolean, strikethrough?: boolean, obfuscated?: boolean }`
+   - Handle all standard codes: `&0-&f` (colors), `&l` (bold), `&o` (italic),
+     `&n` (underline), `&m` (strikethrough), `&k` (obfuscated), `&r` (reset)
 
-For each issue, apply CSS custom properties from the PrimeVue theme:
+2. **`renderFormattedText(segments: FormattedSegment[]): string`**
+   - Output HTML string with inline styles for use with `v-html`
+   - Map `&0`-`&f` to hex colors matching Minecraft's color palette
+   - Map `&l` → `font-weight: bold`, `&o` → `font-style: italic`, etc.
 
-```css
-/* Instead of hardcoded colors */
-background: #fff;                    /* BAD — broken in dark mode */
-background: var(--p-surface-section); /* GOOD — adapts to both themes */
+### Phase 2: Inline Rendering in Lore Inputs
 
-border: 1px solid #ddd;              /* BAD */
-border: 1px solid var(--p-surface-border); /* GOOD */
+Replace plain `<input>` fields in `AbilitiesSection.vue` with a custom
+`LoreLineEditor` component that:
+
+- Shows the raw text in an editable `<textarea>` or `<input>` for editing
+- Below/beside the input, renders a preview line using `v-html` with the
+  parsed color codes
+- The preview updates in real-time as the user types
+- Uses a monospace font to match Minecraft's visual style
+
+### Phase 3: Lore Preview Flyout
+
+Create a `LorePreviewFlyout.vue` component:
+
+- Appears as a popover/flyout when hovering or focusing a lore input
+- Shows all lore lines rendered with full color/formatting
+- Mimics the in-game item tooltip style:
+  - Dark purple/purple background (`#1a1a2e` or similar)
+  - White/colored text
+  - Item name at top in the skill's accent color
+  - Separator lines
+- Positioned to avoid viewport overflow
+
+### Phase 4: Integration
+
+- Add `LorePreviewFlyout` to `AbilitiesSection.vue` lore section
+- Consider adding a context toolbar with color code quick-insert buttons
+  (`&a` `&l` `&o` `&7` `&c` `&e`, etc.)
+
+## Minecraft Color Palette (for HTML mapping)
+
+```
+&0 → #000000  (black)       &8 → #555555  (dark gray)
+&1 → #0000AA  (dark blue)   &9 → #5555FF  (blue)
+&2 → #00AA00  (dark green)  &a → #55FF55  (green)
+&3 → #00AAAA  (dark aqua)   &b → #55FFFF  (aqua)
+&4 → #AA0000  (dark red)    &c → #FF5555  (red)
+&5 → #AA00AA  (dark purple) &d → #FF55FF  (light purple)
+&6 → #FFAA00  (gold)        &e → #FFFF55  (yellow)
+&7 → #AAAAAA  (gray)        &f → #FFFFFF  (white)
 ```
 
-For elements that need explicit overrides per theme, use the `.app-dark` class:
+## Risk
 
-```css
-.some-element {
-    background: var(--p-surface-section);
-}
-.app-dark .some-element {
-    background: var(--p-surface-hover);
-}
-```
-
-## Files to Review
-
-- `src/App.vue`
-- `src/components/layout/AppTopbar.vue`
-- `src/components/layout/PendingChangesBanner.vue`
-- `src/components/common/MinecraftIcon.vue`
-- `src/components/common/EvaluatorParameter.vue`
-- `src/components/common/FilterBuilder.vue`
-- `src/components/common/SectionToolbar.vue`
-- `src/components/common/ToastNotification.vue`
-- `src/components/skills/SkillCard.vue`
-- `src/components/skills/*.vue`
-- `src/components/tags/*.vue`
-- `src/components/config/ConfigSection.vue`
-- `src/views/*.vue`
+Low. All rendering is client-side only. No backend changes needed.
+The `v-html` directive is used carefully (only with controlled input).

@@ -1,109 +1,90 @@
-# ISSUE-009: Navigation, Banner & Topbar Polish
+# ISSUE-009: Skill Schema Gaps in Web GUI
 
-**Iteration** — Estimated: 1 day
+## Description
 
----
+Cross-reference every field in the YAML skill schema (`template-skill.yml`,
+`SkillDefinition.java`, `SkillManager.java`) against the web editor UI
+components to identify missing controls, data format mismatches, and
+extensibility gaps.
 
-## Overview
+## Gap Analysis
 
-Following the dashboard visual redesign (ISSUE-008), this issue polishes
-the remaining shared UI elements: the top navigation bar and the pending
-changes banner. These components appear on every page and have a
-disproportionate impact on the overall feel of the GUI.
+### Critical Gaps
 
----
+#### GAP 1: Particle `offset` Format Mismatch — Data Loss on Edit
 
-## What's Changed vs ISSUE-008
+**Problem:** The YAML/engine stores particle offset as `offset: [x, y, z]` (list),
+but the frontend `ParticleConfig` interface uses `offsetX`, `offsetY`, `offsetZ`
+(three separate number fields). When a skill is loaded from YAML, the `offset`
+array is mapped to `undefined` fields in the frontend form. Any edit to the
+particle drops the original offset values.
 
-The original ISSUE-008 plan included P0.3 (active nav link) and P2.12
-(theme toggle polish) as stretch goals. Those were deferred to avoid
-scope creep. This issue picks them up alongside the banner improvements
-that were always in the review notes but never formally planned.
+**Fix:** Add converter in `SkillEditorPage.vue` `apiAbilityToForm()` and
+`formAbilityToApi()` to translate between `offset: [x,y,z]` ↔ `offsetX/Y/Z`.
 
----
+#### GAP 2: `display.name` vs Root `display_name` — Wrong Name on Initial Load
 
-## Phase A: Active Nav Link + AppTopbar Polish
+**Problem:** Template YAML uses `display.name: "Mining"` but the DTO
+`fromMap()` reads `str(raw, "display_name", id)` which is null in the template,
+falling back to the skill ID. The initial load shows the ID instead of the
+display name.
 
-### File
+**Fix:** In `SkillSerializer.fromMap()`, fall back to `display.name` when root
+`display_name` is null.
 
-**`web/frontend/src/components/layout/AppTopbar.vue`**
+### Moderate Gaps
 
-### Changes
+#### GAP 3: Ability Requirements States Hardcoded to 4 Checkboxes
 
-| Area | Before | After |
-|------|--------|-------|
-| **Active link** | All nav links styled identically | Active route gets `var(--p-primary-color)` text + subtle background |
-| **Theme toggle** | Emoji `🌙`/`☀️` characters | Inline SVG sun/moon icons, swapped via `v-if`/`v-else` |
-| **User display** | Plain `{{ authStore.user }}` text | Small person SVG icon + username in muted style |
-| **Logout button** | Bordered button with hover background | Text link with underline-on-hover — visually quieter |
-| **Brand** | Text-only "Skilling" | Small pickaxe SVG icon next to the brand text |
+**Problem:** The ability requirements section uses hardcoded checkboxes for
+only 4 states (`is_sneaking`, `is_sprinting`, `is_in_water`, `is_on_ground`),
+but the engine accepts any arbitrary state string (e.g. `player_placed:false`,
+`is_gliding`, `has_effect:minecraft:speed`).
 
-### CSS Details
+**Fix:** Add a free-text fallback input or replace checkboxes with the same
+`AppCombobox` + tag-chip pattern used in `FilterBuilder`.
 
-```css
-/* Active link */
-.nav-link.router-link-active {
-    color: var(--p-primary-color);
-    background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
-}
-.nav-link.router-link-exact-active {
-    color: var(--p-primary-color);
-    font-weight: 600;
-}
+#### GAP 4: No Dynamic Registry Suggestions
 
-/* Theme toggle SVG */
-.theme-toggle svg {
-    width: 18px;
-    height: 18px;
-    display: block;
-}
-.theme-toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 4px;
-    color: var(--p-text-muted-color);
-}
-.theme-toggle:hover {
-    background: var(--p-surface-hover);
-    color: var(--p-text-color);
-}
-```
+**Problem:** Mechanic types, trigger types, particle types, sound types are
+hardcoded in frontend arrays. Custom mechanics/triggers added via the API
+are not discoverable in the UI.
 
----
+**Fix:** Add API endpoints (`GET /api/mechanics`, `GET /api/triggers`,
+`GET /api/evaluators`) and fetch them on app load.
 
-## Phase B: PendingChangesBanner Redesign
+### Minor Gaps
 
-### File
+#### GAP 5: Progression `milestone` Curve Offered but Unsupported
 
-**`web/frontend/src/components/layout/PendingChangesBanner.vue`**
+**Problem:** The `ProgressionSection` curve selector includes `milestone`
+but the engine only supports `polynomial`, `linear`, and `constant` for
+progression curves.
 
-### Changes
+**Fix:** Remove `milestone` from the progression curve selector.
 
-| Area | Before | After |
-|------|--------|-------|
-| **Text** | `"⚠️ 3 file(s) have pending changes."` | `"3 files changed"` with small edit SVG icon. The warning emoji is redundant with the yellow background |
-| **Button hierarchy** | Apply & Reload and Discard look equally important | Apply = filled primary button (high prominence), Discard = small text link (low prominence) |
-| **Error display** | Error text as block element below buttons, shifts layout | Inline error pill next to buttons, doesn't shift layout |
-| **Layout** | Simple flex row | `space-between` on mobile to prevent overflow, gap on desktop |
+#### GAP 6: No Lore Placeholder Autocomplete
 
-### Visual Structure
+**Problem:** The lore editor is a plain text input with no suggestions for
+available `{placeholder}` tokens based on mechanic parameters.
 
-```
-┌──────────────────────────────────────────────────────────┐
-│  ✏️ 3 files changed   [Apply & Reload]  Discard          │
-│                                         (error pill)     │
-└──────────────────────────────────────────────────────────┘
-```
+**Fix:** Add an `AppCombobox` or suggestion dropdown showing available
+placeholders from the ability's mechanics.
 
----
+#### GAP 7: YAML Comments Stripped on Save
 
-## Commit Plan
+**Problem:** SnakeYAML discards all comments on serialization. After the
+first web edit, all inline documentation comments in the skill YAML are lost.
 
-| # | Phase | Message |
-|---|-------|---------|
-| 1 | A | `feat(web): active nav link highlighting, SVG theme toggle, AppTopbar polish` |
-| 2 | B | `feat(web): PendingChangesBanner redesign — text, button hierarchy, inline error` |
+**Fix:** Accept as a known limitation; document it.
 
-Each commit verified with `npm run build` + full Playwright E2E suite.
+## Implementation Order
+
+1. **GAP 1** (Critical — data loss) → Particle offset converter
+2. **GAP 2** (Moderate — wrong display) → Fallback in `fromMap()`
+3. **GAP 3** (Moderate — blocked UX) → Free-text state input
+4. **GAP 4** (Moderate — discoverability) → API endpoints + fetch
+5. **GAP 5** (Minor) → Remove milestone from progression
+6. **GAP 6** (Minor) → Lore placeholder suggestions
+
+Risk: Low to Moderate. All changes are backward-compatible.
