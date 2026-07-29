@@ -180,6 +180,7 @@ const expanded = ref<Record<number, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)
 const newFailureReason = ref<Record<number, string>>({})
 const loreDragIndex = ref<string | null>(null)
+const pendingState = ref<Record<number, string>>({})
 
 function toggleExpand(idx: number) {
   expanded.value[idx] = !expanded.value[idx]
@@ -297,6 +298,17 @@ function removeLoreLine(index: number, lineIdx: number) {
   updateAbility(index, { lore: copy })
 }
 
+function loreSuggestions(index: number): string[] {
+  const ab = props.modelValue[index]
+  const params = new Set<string>()
+  for (const mech of ab.mechanics || []) {
+    for (const p of mech.params || []) {
+      if (p.name) params.add('{' + p.name + '}')
+    }
+  }
+  return Array.from(params)
+}
+
 function updateLoreLine(index: number, lineIdx: number, val: string) {
   const ab = props.modelValue[index]
   const copy = [...ab.lore]
@@ -304,10 +316,19 @@ function updateLoreLine(index: number, lineIdx: number, val: string) {
   updateAbility(index, { lore: copy })
 }
 
-function toggleState(index: number, state: string) {
+function addState(index: number, state: string) {
+  const trimmed = state.trim()
+  if (!trimmed) return
   const ab = props.modelValue[index]
-  const current = ab.requirements.state
-  const copy = current.includes(state) ? current.filter(s => s !== state) : [...current, state]
+  if (ab.requirements.state.includes(trimmed)) return
+  updateRequirement(index, { state: [...ab.requirements.state, trimmed] })
+  pendingState.value[index] = ''
+}
+
+function removeState(index: number, sIdx: number) {
+  const ab = props.modelValue[index]
+  const copy = [...ab.requirements.state]
+  copy.splice(sIdx, 1)
   updateRequirement(index, { state: copy })
 }
 
@@ -635,12 +656,12 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
             @dragend="onLoreDragEnd"
           >
             <span class="lore-drag-handle" title="Drag to reorder">&#8801;</span>
-            <input
-              class="field-input"
-              type="text"
+            <AppCombobox
+              :model-value="line"
+              :suggestions="loreSuggestions(idx)"
               placeholder="{chain_break} / &a green / &l bold / &o italic"
-              :value="line"
-              @input="updateLoreLine(idx, lIdx, ($event.target as HTMLInputElement).value)"
+              :name="'lore-' + idx + '-' + lIdx"
+              @update:model-value="updateLoreLine(idx, lIdx, $event)"
             />
             <button
               class="btn btn-ghost btn-sm"
@@ -675,19 +696,20 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
 
           <div class="states-group">
             <label class="field-label">States</label>
-            <div class="states-grid">
-              <label
-                v-for="state in STATE_OPTIONS"
-                :key="state"
-                class="state-check"
-              >
-                <input
-                  type="checkbox"
-                  :checked="ability.requirements.state.includes(state)"
-                  @change="toggleState(idx, state)"
-                />
+            <div class="states-chips">
+              <span v-for="(state, sIdx) in ability.requirements.state" :key="sIdx" class="state-chip">
                 {{ state }}
-              </label>
+                <button class="btn btn-ghost btn-sm chip-remove" @click="removeState(idx, sIdx)">&times;</button>
+              </span>
+            </div>
+            <div class="state-add-row">
+              <AppCombobox
+                :model-value="pendingState[idx] || ''"
+                :suggestions="STATE_OPTIONS as unknown as string[]"
+                placeholder="is_sneaking or custom state"
+                :name="'state-' + idx"
+                @update:model-value="addState(idx, $event)"
+              />
             </div>
           </div>
 
@@ -1323,19 +1345,45 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
   margin-top: 0.5rem;
 }
 
-.states-grid {
+.states-chips {
   display: flex;
-  gap: 1rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
-  margin-top: 0.25rem;
+  margin-bottom: 0.4rem;
 }
 
-.state-check {
-  display: flex;
+.state-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.85rem;
-  color: var(--p-form-field-placeholder-color);
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  background: var(--p-primary-color);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.app-dark .state-chip {
+  color: #000;
+}
+
+.chip-remove {
+  color: inherit !important;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.chip-remove:hover {
+  opacity: 1;
+}
+
+.state-add-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
 }
 
 .item-card,

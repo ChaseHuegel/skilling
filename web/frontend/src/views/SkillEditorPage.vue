@@ -221,11 +221,33 @@ const progressionForm = computed({
     set: (val: any) => { form.progression = val; },
 });
 
+function convertParticleOffsets(particles: any[]): any[] {
+    return (particles || []).map((p: any) => {
+        if (p.offset && Array.isArray(p.offset)) {
+            return { ...p, offsetX: p.offset[0] || 0, offsetY: p.offset[1] || 0, offsetZ: p.offset[2] || 0, offset: undefined };
+        }
+        return p;
+    });
+}
+
+function revertParticleOffsets(particles: any[]): any[] {
+    return (particles || []).map((p: any) => {
+        if (p.offsetX !== undefined || p.offsetY !== undefined || p.offsetZ !== undefined) {
+            return { ...p, offset: [p.offsetX || 0, p.offsetY || 0, p.offsetZ || 0], offsetX: undefined, offsetY: undefined, offsetZ: undefined };
+        }
+        return p;
+    });
+}
+
 function apiAbilityToForm(ab: any): any {
     return {
         ...ab,
         lore: ab.display?.lore || [],
         display: undefined,
+        feedback: ab.feedback ? {
+            ...ab.feedback,
+            particles: convertParticleOffsets(ab.feedback.particles),
+        } : ab.feedback,
         requirements: {
             ...ab.requirements,
             items: (ab.requirements?.items || []).map((item: any) => ({
@@ -249,6 +271,10 @@ function formAbilityToApi(ab: any): any {
         ...ab,
         lore: undefined,
         display: { lore: ab.lore || [] },
+        feedback: ab.feedback ? {
+            ...ab.feedback,
+            particles: revertParticleOffsets(ab.feedback.particles),
+        } : ab.feedback,
         mechanics: (ab.mechanics || []).map((m: any) => {
             const params: Record<string, any> = {};
             for (const p of m.params || []) {

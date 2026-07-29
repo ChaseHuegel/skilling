@@ -18,7 +18,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: ProgressionConfig]
 }>()
 
-const CURVE_OPTIONS = ['polynomial', 'linear', 'constant', 'milestone'] as const
+const CURVE_OPTIONS = ['polynomial', 'linear', 'constant'] as const
 
 function setCurve(curve: string) {
   emit('update:modelValue', { ...props.modelValue, curve })
@@ -127,11 +127,6 @@ function setParam(key: string, val: number) {
       </div>
     </template>
 
-    <template v-else-if="modelValue.curve === 'milestone'">
-      <div class="unsupported-notice">
-        Milestone progression is not supported; use polynomial or linear
-      </div>
-    </template>
   </div>
 </template>
 

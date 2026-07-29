@@ -37,7 +37,11 @@ public final class SkillSerializer {
 
     public static SkillDetailDTO fromMap(Map<String, Object> raw) {
         String id = str(raw, "id");
-        String displayName = str(raw, "display_name", id);
+        String displayName = str(raw, "display_name");
+        if (displayName == null) {
+            Map<String, Object> d = map(raw, "display");
+            displayName = str(d, "name", id);
+        }
         int maxLevel = intVal(raw, "max_level", 100);
 
         Map<String, Object> display = map(raw, "display");
