@@ -44,6 +44,10 @@ public final class PlayerListener implements Listener {
                 if (ex != null) {
                     Skilling.getInstance().getLogger().log(Level.WARNING, "Failed to flush dirty profiles on quit for " + player.getName(), ex);
                 }
+                // Check if profile was modified between async flush and now
+                if (profile.isDirty()) {
+                    asyncBatchWorker.flushDirtyProfiles();
+                }
                 profileManager.unloadProfile(player.getUniqueId());
             });
         } else {

@@ -44,9 +44,7 @@ public final class ModifyAttributeMechanic implements SkillMechanic {
         );
         instance.addTransientModifier(modifier);
         player.getScheduler().runDelayed(
-                org.bukkit.plugin.java.JavaPlugin.getPlugin(
-                        io.github.chasehuegel.skilling.Skilling.class
-                ),
+                io.github.chasehuegel.skilling.Skilling.getInstance(),
                 task -> instance.removeModifier(modifier),
                 null,
                 duration * 20L

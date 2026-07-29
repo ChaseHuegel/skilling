@@ -45,6 +45,9 @@ public final class DatabaseManager {
                     }
                 }
             }
+            try (var stmt = conn.createStatement()) {
+                stmt.execute("PRAGMA foreign_keys = ON;");
+            }
             createSchema(conn);
         }
     }

@@ -119,7 +119,11 @@ public final class RequirementEngine {
             case "is_sprinting" -> player.isSprinting();
             case "is_in_water" -> player.isInWater();
             case "is_on_ground" -> player.isOnGround();
-            default -> true; // unknown states pass through
+            default -> {
+                io.github.chasehuegel.skilling.Skilling.getInstance().getLogger().warning(
+                        "Unknown state check: '" + state + "' — failing requirement");
+                yield false;
+            }
         };
     }
 

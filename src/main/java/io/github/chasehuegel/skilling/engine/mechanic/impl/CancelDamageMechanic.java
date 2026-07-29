@@ -1,30 +1,18 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
-import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageEvent;
+import io.github.chasehuegel.skilling.engine.mechanic.BaseDamageCancelMechanic;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Cancels incoming damage with a percentage chance on {@link EntityDamageEvent}.
+ * Cancels incoming damage with a percentage chance.
  *
  * <p><b>YAML key:</b> {@code cancel_damage}
  * <p><b>Required parameters:</b> {@code chance} (0-100, percentage chance to negate damage)
  */
-public final class CancelDamageMechanic implements SkillMechanic {
+public final class CancelDamageMechanic extends BaseDamageCancelMechanic {
 
     @Override
-    public boolean execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof EntityDamageEvent damageEvent)) return false;
-        if (!damageEvent.getEntity().equals(player)) return false;
-        double chance = ((Number) params.getOrDefault("chance", 0.0)).doubleValue();
-        if (chance <= 0) return false;
-        if (ThreadLocalRandom.current().nextDouble(100) <= chance) {
-            damageEvent.setCancelled(true);
-            return true;
-        }
-        return false;
+    protected double getChance(Map<String, Object> params) {
+        return ((Number) params.getOrDefault("chance", 0.0)).doubleValue();
     }
 }

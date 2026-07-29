@@ -10,23 +10,24 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
 /**
- * Increases {@code GENERIC_KNOCKBACK_RESISTANCE}.
+ * Temporarily increases {@code GENERIC_KNOCKBACK_RESISTANCE} for the specified duration.
  *
  * <p>YAML key: {@code core:knockback_resist}
- * <br>Params: {@code amount} (0-1, resistance value)
+ * <br>Params: {@code amount} (0-1, resistance value), {@code duration} (optional, seconds, default 300)
  */
 public final class KnockbackResistMechanic implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         double amount = ((Number) params.getOrDefault("amount", 0.0)).doubleValue();
         if (amount <= 0) return false;
+        int duration = ((Number) params.getOrDefault("duration", 300.0)).intValue();
         AttributeInstance inst = player.getAttribute(Attribute.KNOCKBACK_RESISTANCE);
         if (inst == null) return false;
         var modifier = new AttributeModifier(UUID.randomUUID(), "skilling_knockback", amount, AttributeModifier.Operation.ADD_NUMBER);
         inst.addTransientModifier(modifier);
         player.getScheduler().runDelayed(
-            org.bukkit.plugin.java.JavaPlugin.getPlugin(io.github.chasehuegel.skilling.Skilling.class),
-            t -> inst.removeModifier(modifier), null, 6000L
+            io.github.chasehuegel.skilling.Skilling.getInstance(),
+            t -> inst.removeModifier(modifier), null, duration * 20L
         );
         return true;
     }

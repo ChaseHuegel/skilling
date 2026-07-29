@@ -2,6 +2,8 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import java.util.Map;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -22,7 +24,9 @@ public record CrowdControlMechanic() implements SkillMechanic {
         if (!de.getDamager().equals(player)) return false;
         String effectName = (String) params.get("effect");
         if (effectName == null || effectName.isBlank()) return false;
-        PotionEffectType type = PotionEffectType.getByName(effectName);
+        NamespacedKey effectKey = NamespacedKey.fromString(effectName.toLowerCase());
+        if (effectKey == null) return false;
+        PotionEffectType type = Registry.POTION_EFFECT_TYPE.get(effectKey);
         if (type == null) return false;
         int duration = ((Number) params.getOrDefault("duration", 3)).intValue() * 20;
         int amplifier = ((Number) params.getOrDefault("amplifier", 0)).intValue();

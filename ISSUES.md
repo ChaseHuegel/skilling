@@ -146,15 +146,15 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-036.md` for full development plan
 - [x] `TeleportMechanic.findSafeLocation()` mutates `Location` in-place with chained `add()`/`subtract()` calls — fragile and confusing
   - See `ISSUE-037.md` for full development plan
-- [ ] `RequirementEngine` state checks (`checkState()`) use `default -> true` — unknown states silently pass
+- [x] `RequirementEngine` state checks (`checkState()`) use `default -> true` — unknown states silently pass
   - See `ISSUE-038.md` for full development plan
-- [ ] `LoreResolver` silently passes through unresolved placeholders as raw `{placeholder}` text instead of warning or throwing
+- [x] `LoreResolver` silently passes through unresolved placeholders as raw `{placeholder}` text instead of warning or throwing
   - See `ISSUE-039.md` for full development plan
-- [ ] `CustomTagLoader` does not log a warning when circular tag references are detected (silently returns empty set)
+- [x] `CustomTagLoader` does not log a warning when circular tag references are detected (silently returns empty set)
   - See `ISSUE-040.md` for full development plan
-- [ ] `DatabaseManager` does not set `PRAGMA foreign_keys = ON` — future schema evolution with foreign keys would silently break
+- [x] `DatabaseManager` does not set `PRAGMA foreign_keys = ON` — future schema evolution with foreign keys would silently break
   - See `ISSUE-041.md` for full development plan
-- [ ] `PlayerListener.onPlayerQuit` has a race window: profile modified by concurrent thread after flush but before unload — XP loss on quit
+- [x] `PlayerListener.onPlayerQuit` has a race window: profile modified by concurrent thread after flush but before unload — XP loss on quit
   - See `ISSUE-042.md` for full development plan
 
 # Improvements
@@ -316,14 +316,14 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] Handle `ISSUE-012.md`
 - [ ] Improve visual hierarchy in the ability editor cards — colored section gutters, differentiated card types, depth layering, per-section collapse, section icons
   - See `ISSUE-021.md` for full development plan
-- [ ] Three damage-cancelling mechanics (`CancelDamageMechanic`, `DodgeMechanic`, `BlockDamageMechanic`) have nearly identical logic — refactor into a shared base
+- [x] Three damage-cancelling mechanics (`CancelDamageMechanic`, `DodgeMechanic`, `BlockDamageMechanic`) have nearly identical logic — refactor into a shared base
   - See `ISSUE-043.md` for full development plan
-- [ ] `ModifyAttributeMechanic`, `ArmorBonusMechanic`, `SpeedBonusMechanic`, `KnockbackResistMechanic` use hardcoded `JavaPlugin.getPlugin()` lookup — inject plugin instance instead
+- [x] `ModifyAttributeMechanic`, `ArmorBonusMechanic`, `SpeedBonusMechanic`, `KnockbackResistMechanic` use hardcoded `JavaPlugin.getPlugin()` lookup — inject plugin instance instead
   - See `ISSUE-044.md` for full development plan
-- [ ] `ArmorBonusMechanic`, `SpeedBonusMechanic`, `KnockbackResistMechanic` hardcode 6000-tick (5 minute) duration with no configurable `duration` param
+- [x] `ArmorBonusMechanic`, `SpeedBonusMechanic`, `KnockbackResistMechanic` hardcode 6000-tick (5 minute) duration with no configurable `duration` param
   - `ArmorBonusMechanic` Javadoc says "Permanently" but is temporary — fix documentation
   - See `ISSUE-045.md` for full development plan
-- [ ] `AoeEffectMechanic`, `CrowdControlMechanic`, `ApplyStatusMechanic` use deprecated `PotionEffectType.getByName()` — migrate to `Registry.POTION_EFFECT_TYPE.get(NamespacedKey)`
+- [x] `AoeEffectMechanic`, `CrowdControlMechanic`, `ApplyStatusMechanic` use deprecated `PotionEffectType.getByName()` — migrate to `Registry.POTION_EFFECT_TYPE.get(NamespacedKey)`
   - See `ISSUE-046.md` for full development plan
 - [ ] `MilestoneEvaluator` accepts `TreeMap` without defensive copy — mutable input stored directly in singleton registry
   - See `ISSUE-047.md` for full development plan

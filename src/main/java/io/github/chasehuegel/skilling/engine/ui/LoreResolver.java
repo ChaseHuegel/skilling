@@ -49,6 +49,10 @@ public final class LoreResolver {
                 double value = evaluator.evaluate(currentLevel, unlockLevel);
                 replacement = formatValue(value);
             } else {
+                var instance = io.github.chasehuegel.skilling.Skilling.getInstance();
+                if (instance != null) {
+                    instance.getLogger().warning("Unresolved lore placeholder: {" + placeholder + "}");
+                }
                 replacement = "{" + placeholder + "}";
             }
 

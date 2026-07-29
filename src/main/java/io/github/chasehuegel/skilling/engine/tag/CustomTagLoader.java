@@ -63,7 +63,10 @@ public final class CustomTagLoader {
         String fullKey = "#c:" + key;
         if (customTags.containsKey(fullKey)) return customTags.get(fullKey);
         if (!rawEntries.containsKey(key)) return EnumSet.noneOf(Material.class);
-        if (!resolving.add(key)) return EnumSet.noneOf(Material.class);
+        if (!resolving.add(key)) {
+            Bukkit.getLogger().warning("Circular tag reference detected: #c:" + key);
+            return EnumSet.noneOf(Material.class);
+        }
 
         EnumSet<Material> materials = EnumSet.noneOf(Material.class);
         for (String entry : rawEntries.get(key)) {
