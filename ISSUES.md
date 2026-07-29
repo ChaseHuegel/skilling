@@ -134,7 +134,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-030.md` for full development plan
 - [x] `PlayerProfile.getXpMap()` exposes mutable `ConcurrentHashMap` to `AsyncBatchWorker` while `addXp()` concurrently modifies it
   - See `ISSUE-031.md` for full development plan
-- [ ] `Skilling.titleStayDuration` and `globalXpModifier` are not `volatile` — stale values possible after reload
+- [x] `Skilling.titleStayDuration` and `globalXpModifier` are not `volatile` — stale values possible after reload
   - See `ISSUE-032.md` for full development plan
 - [ ] `RideHorseTrigger` uses `PlayerInteractEntityEvent` — fires on any entity interaction, not just mounting. Should be `VehicleMountEvent`
   - See `ISSUE-033.md` for full development plan

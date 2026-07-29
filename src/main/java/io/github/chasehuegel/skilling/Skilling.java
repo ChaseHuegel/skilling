@@ -69,8 +69,8 @@ public final class Skilling extends JavaPlugin {
     private WebServer webServer;
     private volatile boolean reloading;
     private volatile boolean debugLogging;
-    private int titleStayDuration;
-    private double globalXpModifier;
+    private volatile int titleStayDuration;
+    private volatile double globalXpModifier;
 
     /**
      * Returns the plugin singleton instance.
