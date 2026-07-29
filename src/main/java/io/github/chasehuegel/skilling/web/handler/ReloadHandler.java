@@ -1,5 +1,6 @@
 package io.github.chasehuegel.skilling.web.handler;
 
+import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.http.Context;
@@ -10,10 +11,12 @@ import java.util.concurrent.Callable;
 
 public final class ReloadHandler {
 
+    private final Skilling plugin;
     private final StagingManager stagingManager;
     private final LockdownManager lockdownManager;
 
-    public ReloadHandler(StagingManager stagingManager, LockdownManager lockdownManager) {
+    public ReloadHandler(Skilling plugin, StagingManager stagingManager, LockdownManager lockdownManager) {
+        this.plugin = plugin;
         this.stagingManager = stagingManager;
         this.lockdownManager = lockdownManager;
     }
@@ -47,7 +50,7 @@ public final class ReloadHandler {
             // Trigger reload lockdown sequence on the main thread
             try {
                 org.bukkit.Bukkit.getScheduler().callSyncMethod(
-                    null,
+                    plugin,
                     (Callable<Void>) () -> {
                         lockdownManager.reload();
                         return null;

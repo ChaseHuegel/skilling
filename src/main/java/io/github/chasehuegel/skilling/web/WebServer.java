@@ -57,7 +57,7 @@ public final class WebServer {
             var skillHandler = new SkillHandler(skillManager, stagingManager, skillsDir);
             var tagHandler = new TagHandler(stagingManager, new File(plugin.getDataFolder(), "tags.yml"));
             var configHandler = new ConfigHandler(stagingManager, new File(plugin.getDataFolder(), "config.yml"));
-            var reloadHandler = new ReloadHandler(stagingManager, lockdownManager);
+            var reloadHandler = new ReloadHandler(plugin, stagingManager, lockdownManager);
 
             routes.before(ctx -> {
                 ctx.res().setHeader("Access-Control-Allow-Origin", "*");
