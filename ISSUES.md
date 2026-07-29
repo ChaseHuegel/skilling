@@ -264,3 +264,8 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Web) The placeholder text for the on_failure cooldown action bar text should have an example showing the interpolation `{time}` can be used
 - [x] (Web) The placeholder text for the on_failure missing item action bar text should have an example showing the interpolations `{amount}` and `{item}` can be used
 - [x] (Plugin) The logs for the reload phases are overly verbose for typical server admins. Simplify to "Reloading..." and "Reload complete." UNLESS debug is enabled in the config, then stick to the current verbose phase logs
+- [ ] (Web & Plugin) Add API for mechanics to report their supported parameter names so the web GUI can consume that to populate the parameter dropdowns in the skill editor automatically
+- [ ] Handle `ISSUE-009.md`
+- [ ] Handle `ISSUE-010.md`
+- [ ] Handle `ISSUE-011.md`
+- [ ] Handle `ISSUE-012.md`

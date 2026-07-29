@@ -47,15 +47,12 @@ changes are made — this is a planning document only.
 | ~12 unique font sizes used ad-hoc | Define a type scale using CSS custom properties |
 | No global type scale | Create `--text-xs, --text-sm, --text-base, --text-lg, --text-xl` |
 | Heading hierarchy inconsistent across views | Ensure each page has exactly one `<h1>`, proper `<h2>`+ nesting |
-| SkillEditorPage has no `<h1>` | Add page title with skill name |
 
 ### 4. Navigation & Routing
 
 | Issue | Recommendation |
 |-------|---------------|
 | No 404/not-found route | Add catch-all route with helpful message |
-| No breadcrumb navigation | Add breadcrumbs for deep views (SkillEditor) |
-| No back button in SkillEditor | Add explicit "Back to Dashboard" link |
 | No route-level loading indicator | Add top progress bar during route transitions |
 
 ### 5. Form Design
@@ -89,5 +86,3 @@ changes are made — this is a planning document only.
 8. Drag-reorder keyboard alternative — **Medium**
 9. Reduced motion support — **Low**
 10. Breadcrumb navigation — **Low**
-
-Risk: Very Low. Document only; no changes implemented.
