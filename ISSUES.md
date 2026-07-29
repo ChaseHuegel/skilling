@@ -105,7 +105,8 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] `SkillEventListener.onCropGrow()` — event handler registered but body is empty; `crop_grow` trigger will never fire
 - [x] (Web) If the cache in the browser is not disabled, the web GUI can sometimes fail to display. In browser network tools, `/` shows status 304 and `cached`; `index` and `primevue` show no status and have `NS_ERROR_CORRUPTED_CONTENT`
 - [x] (Web or plugin?) The `vein_miner` ability of the `mining` skill has feedback configured, but it is not having any effect in-game. I don't know if this is because the web created invalid yml or the plugin's feedback impl regressed.
-- [ ] (Plugin) Perform a comprehensive code review of the entire plugin and cross-reference with the skill schema. Identify any gaps, bugs, or regressions and document it all in a comprehensive new ISSUE-XXX.md document and reference it in ISSUES.md under a new improvement bullet point.
+- [x] (Plugin) Perform a comprehensive code review of the entire plugin and cross-reference with the skill schema. Identify any gaps, bugs, or regressions and document it all in a comprehensive new ISSUE-XXX.md document and reference it in ISSUES.md under a new improvement bullet point.
+  - See `ISSUE-013.md` for full review (34 issues: 7 critical, 15 moderate, 12 minor)
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
