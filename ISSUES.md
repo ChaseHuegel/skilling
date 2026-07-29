@@ -256,3 +256,4 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Plugin) In a new ISSUES-XXX.md document, build a proposal for a comprehensive collection of mechanic and trigger implementations that could provide thorough coverage for features and events available in Minecraft and the Paper API. The goal is to ship a complete library of options for skill designers.
   - See `ISSUE-012.md` for full proposal
 - [x] (Project) `gradlew run` should implicitly build the web frontend so it is always current
+- [ ] (Web) Use the trigger and mechanic registries to populate the default options for their skill editor dropdowns 
