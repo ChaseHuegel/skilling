@@ -25,6 +25,7 @@ import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
+import io.github.chasehuegel.skilling.engine.ui.SkillsGuideBook;
 import io.github.chasehuegel.skilling.engine.ui.UIProtectionListener;
 import io.github.chasehuegel.skilling.web.WebServer;
 import io.github.chasehuegel.skilling.web.config.WebConfig;
@@ -136,6 +137,10 @@ public final class Skilling extends JavaPlugin {
 
         // UI
         this.skillMenuBuilder = new SkillMenuBuilder(skillManager);
+
+        // Skills Guide Book
+        var skillsGuideBook = new SkillsGuideBook(this, profileManager, skillMenuBuilder);
+        skillsGuideBook.register();
 
         // Feedback systems
         int debounceMs = config.getInt("debouncer.interval_ms", 500);

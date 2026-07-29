@@ -29,6 +29,11 @@ titles:
 # Global XP multiplier applied to all XP gains. Default: 1.0
 global_xp_modifier: 1.0
 
+# Skills Guide Book — a craftable item that opens the skill menu on right-click
+# Recipe: book + compass = enchanted book
+skills_guide_book:
+  enabled: true
+
 # Web-based administration interface
 # Disabled by default. Enable only if you need the browser GUI.
 # WARNING: Credentials are stored in plaintext. Use a reverse proxy (nginx, Caddy)

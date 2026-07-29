@@ -182,7 +182,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - The broadcast message string had an unclosed `<yellow>` tag followed by a second `<yellow>` opening — MiniMessage's strict nesting parser rendered the raw tags as literal text
   - The skill display name was also hardcoded to `<light green>` instead of using the actual `skillColorName`
   - `Bukkit.broadcast(Component)` did not properly render Adventure components; switched to iterating players with `player.sendMessage(Component)`
-- [ ] Skills Guide Book — vanilla+ GUI access via crafted item with auto-unlocked recipe
+- [x] Skills Guide Book — vanilla+ GUI access via crafted item with auto-unlocked recipe
   - See `ISSUE-004.md` for full development plan
 - [ ] Runtime config modification (`/skills set <key> <value>`)
   - See `ISSUE-005.md` for full development plan
