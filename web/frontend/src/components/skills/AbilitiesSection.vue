@@ -508,6 +508,12 @@ function addFailureReason(index: number) {
   newFailureReason.value[index] = ''
 }
 
+function failurePlaceholder(reason: string): string {
+  if (reason === 'cooldown') return "&cCooling down: {time}s";
+  if (reason === 'missing_item') return "&cRequires {amount}x {item}";
+  return '&c' + reason + ' message...';
+}
+
 const FAILURE_REASON_LABELS: Record<string, string> = {
   cooldown: 'Cooldown',
   missing_item: 'Missing Item',
@@ -1059,7 +1065,7 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
                 <input
                   class="field-input"
                   type="text"
-                  :placeholder="'&c' + reason + ' message...'"
+                  :placeholder="failurePlaceholder(reason)"
                   :value="fb.actionBar"
                   @input="updateFailureActionBar(idx, reason, ($event.target as HTMLInputElement).value)"
                 />

@@ -44,11 +44,12 @@ public final class LockdownManager {
      * Performs the full reload lockdown sequence. Must be called from the main thread.
      */
     public void reload() {
-        plugin.getLogger().info("Starting reload lockdown...");
+        boolean debug = plugin.isDebugLogging();
+        plugin.getLogger().info("Reloading...");
 
         // Phase 1: Freeze
         plugin.setReloading(true);
-        plugin.getLogger().info("Phase 1/6: Freeze — interactions locked.");
+        if (debug) plugin.getLogger().info("Phase 1/6: Freeze — interactions locked.");
 
         // Phase 2: Close GUIs
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -57,11 +58,11 @@ public final class LockdownManager {
                 player.closeInventory();
             }
         }
-        plugin.getLogger().info("Phase 2/6: GUIs closed.");
+        if (debug) plugin.getLogger().info("Phase 2/6: GUIs closed.");
 
         // Phase 3: Flush DB
         asyncBatchWorker.flushDirtyProfiles();
-        plugin.getLogger().info("Phase 3/6: Database flushed.");
+        if (debug) plugin.getLogger().info("Phase 3/6: Database flushed.");
 
         // Phase 4: Rebuild
         try {
@@ -75,7 +76,7 @@ public final class LockdownManager {
             var tagResolver = new TagResolver(customTagLoader);
             skillManager.clear();
             skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
-            plugin.getLogger().info("Phase 4/6: Registries rebuilt.");
+            if (debug) plugin.getLogger().info("Phase 4/6: Registries rebuilt.");
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to rebuild registries during reload", e);
         }
@@ -84,10 +85,11 @@ public final class LockdownManager {
         for (PlayerProfile profile : profileManager.getAllProfiles().values()) {
             profile.markSaved();
         }
-        plugin.getLogger().info("Phase 5/6: UI caches invalidated.");
+        if (debug) plugin.getLogger().info("Phase 5/6: UI caches invalidated.");
 
         // Phase 6: Unlock
         plugin.setReloading(false);
-        plugin.getLogger().info("Phase 6/6: Unlocked. Reload complete.");
+        if (debug) plugin.getLogger().info("Phase 6/6: Unlocked.");
+        plugin.getLogger().info("Reload complete.");
     }
 }

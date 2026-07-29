@@ -6,6 +6,7 @@ import io.javalin.http.Context;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 public final class ReloadHandler {
 
@@ -43,11 +44,18 @@ public final class ReloadHandler {
                 return;
             }
 
-            // Trigger reload lockdown sequence
+            // Trigger reload lockdown sequence on the main thread
             try {
-                lockdownManager.reload();
+                org.bukkit.Bukkit.getScheduler().callSyncMethod(
+                    null,
+                    (Callable<Void>) () -> {
+                        lockdownManager.reload();
+                        return null;
+                    }
+                ).get();
             } catch (Exception e) {
-                errors.add("Reload error: " + e.getMessage());
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                errors.add("Reload error: " + cause.getMessage());
             }
 
             // Clear staging on success
