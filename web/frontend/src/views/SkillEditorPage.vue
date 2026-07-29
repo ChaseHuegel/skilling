@@ -372,6 +372,7 @@ function leaveDiscard() {
     max-width: 900px;
     margin: 0 auto;
     padding: 1.5rem;
+    padding-bottom: 4rem;
 }
 .editor-banner {
     display: flex;

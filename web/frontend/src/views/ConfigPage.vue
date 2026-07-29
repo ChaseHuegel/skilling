@@ -205,6 +205,7 @@ async function doSaveConfig() {
     max-width: 700px;
     margin: 0 auto;
     padding: 1.5rem;
+    padding-bottom: 4rem;
 }
 .page-header {
     display: flex;
