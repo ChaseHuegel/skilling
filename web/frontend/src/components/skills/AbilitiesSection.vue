@@ -118,6 +118,15 @@ interface SoundConfig {
   target: string
 }
 
+interface FailureFeedback {
+  actionBar: string
+  sounds: SoundConfig[]
+}
+
+interface OnFailure {
+  reasons: Record<string, FailureFeedback>
+}
+
 interface Ability {
   id: string
   displayName: string
@@ -129,6 +138,7 @@ interface Ability {
     items: RequirementItem[]
   }
   mechanics: MechanicEntry[]
+  onFailure?: OnFailure
   feedback: {
     actionBar: boolean
     chat: boolean
@@ -157,6 +167,7 @@ const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_grou
 
 const expanded = ref<Record<number, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)
+const newFailureReason = ref<Record<number, string>>({})
 
 function toggleExpand(idx: number) {
   expanded.value[idx] = !expanded.value[idx]
@@ -179,6 +190,7 @@ function emptyAbility(): Ability {
       items: [],
     },
     mechanics: [],
+    onFailure: { reasons: {} },
     feedback: {
       actionBar: false,
       chat: false,
@@ -399,6 +411,78 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
   const copy = [...ab.feedback.sounds]
   copy[sIdx] = { ...copy[sIdx], ...patch }
   updateFeedback(index, { sounds: copy })
+}
+
+const FAILURE_REASON_OPTIONS = ['cooldown', 'missing_item', 'missing_state']
+
+function getOnFailure(index: number): OnFailure {
+  return props.modelValue[index].onFailure || { reasons: {} }
+}
+
+function updateOnFailure(index: number, patch: Partial<OnFailure>) {
+  const ab = props.modelValue[index]
+  updateAbility(index, { onFailure: { ...getOnFailure(index), ...patch } })
+}
+
+function setFailureReason(index: number, reason: string, fb: FailureFeedback) {
+  const of = getOnFailure(index)
+  const reasons = { ...of.reasons, [reason]: fb }
+  updateOnFailure(index, { reasons })
+}
+
+function removeFailureReason(index: number, reason: string) {
+  const of = getOnFailure(index)
+  const reasons = { ...of.reasons }
+  delete reasons[reason]
+  updateOnFailure(index, { reasons })
+}
+
+function updateFailureActionBar(index: number, reason: string, val: string) {
+  const of = getOnFailure(index)
+  const fb = of.reasons[reason] || { actionBar: '', sounds: [] }
+  setFailureReason(index, reason, { ...fb, actionBar: val })
+}
+
+function addFailureSound(index: number, reason: string) {
+  const of = getOnFailure(index)
+  const fb = of.reasons[reason] || { actionBar: '', sounds: [] }
+  setFailureReason(index, reason, {
+    ...fb,
+    sounds: [...fb.sounds, { type: '', volume: 1, pitch: 1, target: 'self' }],
+  })
+}
+
+function removeFailureSound(index: number, reason: string, sIdx: number) {
+  const of = getOnFailure(index)
+  const fb = of.reasons[reason]
+  if (!fb) return
+  const copy = [...fb.sounds]
+  copy.splice(sIdx, 1)
+  setFailureReason(index, reason, { ...fb, sounds: copy })
+}
+
+function updateFailureSound(index: number, reason: string, sIdx: number, patch: Partial<SoundConfig>) {
+  const of = getOnFailure(index)
+  const fb = of.reasons[reason]
+  if (!fb) return
+  const copy = [...fb.sounds]
+  copy[sIdx] = { ...copy[sIdx], ...patch }
+  setFailureReason(index, reason, { ...fb, sounds: copy })
+}
+
+function addFailureReason(index: number) {
+  const reason = newFailureReason.value[index]
+  if (!reason) return
+  const of = getOnFailure(index)
+  if (of.reasons[reason]) return
+  setFailureReason(index, reason, { actionBar: '', sounds: [] })
+  newFailureReason.value[index] = ''
+}
+
+const FAILURE_REASON_LABELS: Record<string, string> = {
+  cooldown: 'Cooldown',
+  missing_item: 'Missing Item',
+  missing_state: 'Missing State',
 }
 </script>
 
@@ -919,6 +1003,91 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
             </button>
           </div>
         </div>
+
+        <div class="section-block">
+          <label class="section-label">On Failure</label>
+
+          <div v-for="(fb, reason) in getOnFailure(idx).reasons" :key="reason" class="failure-card">
+            <div class="failure-header">
+              <span class="failure-reason-label">{{ FAILURE_REASON_LABELS[reason] || reason }}</span>
+              <button
+                class="btn btn-ghost btn-sm"
+                style="color: var(--p-red-500, #ef4444)"
+                @click="removeFailureReason(idx, reason)"
+              >
+                &times;
+              </button>
+            </div>
+            <div class="failure-body">
+              <div class="field-row">
+                <label class="field-label">Action Bar</label>
+                <input
+                  class="field-input"
+                  type="text"
+                  :placeholder="'&c' + reason + ' message...'"
+                  :value="fb.actionBar"
+                  @input="updateFailureActionBar(idx, reason, ($event.target as HTMLInputElement).value)"
+                />
+              </div>
+              <div class="sub-section">
+                <label class="sub-label">Sounds</label>
+                <div v-for="(sound, sIdx) in fb.sounds" :key="sIdx" class="sound-card">
+                  <div class="sound-type-row">
+                    <AppCombobox
+                      :model-value="sound.type"
+                      :suggestions="SOUND_SUGGESTIONS"
+                      placeholder="minecraft:block_note_block_bass"
+                      :name="'of-sound-' + idx + '-' + reason + '-' + sIdx"
+                      @update:model-value="updateFailureSound(idx, reason, sIdx, { type: $event })"
+                    />
+                    <button class="btn btn-ghost btn-sm" style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
+                      @click="removeFailureSound(idx, reason, sIdx)">&times;</button>
+                  </div>
+                  <div class="sound-fields">
+                    <div class="sound-field">
+                      <label class="field-label-sm">Volume</label>
+                      <input class="field-input-sm" type="number" step="any"
+                        :value="sound.volume"
+                        @input="updateFailureSound(idx, reason, sIdx, { volume: Number(($event.target as HTMLInputElement).value) })" />
+                    </div>
+                    <div class="sound-field">
+                      <label class="field-label-sm">Pitch</label>
+                      <input class="field-input-sm" type="number" step="any"
+                        :value="sound.pitch"
+                        @input="updateFailureSound(idx, reason, sIdx, { pitch: Number(($event.target as HTMLInputElement).value) })" />
+                    </div>
+                    <div class="sound-field">
+                      <label class="field-label-sm">Target</label>
+                      <select class="field-input-sm"
+                        :value="sound.target"
+                        @change="updateFailureSound(idx, reason, sIdx, { target: ($event.target as HTMLSelectElement).value })">
+                        <option value="self">self</option>
+                        <option value="target">target</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-primary btn-sm" @click="addFailureSound(idx, reason)">+ Add Sound</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="add-failure-row">
+            <select v-model="newFailureReason[idx]" class="field-input-sm">
+              <option value="" disabled>Select reason...</option>
+              <option v-for="opt in FAILURE_REASON_OPTIONS" :key="opt" :value="opt">
+                {{ FAILURE_REASON_LABELS[opt] }}
+              </option>
+            </select>
+            <button
+              class="btn btn-primary btn-sm"
+              :disabled="!newFailureReason[idx]"
+              @click="addFailureReason(idx)"
+            >
+              + Add
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1199,6 +1368,36 @@ function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
 
 .param-name-input {
   flex: 1;
+}
+
+.failure-card {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: var(--p-content-background);
+}
+.failure-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.failure-reason-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--p-primary-color);
+}
+.failure-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.add-failure-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
 }
 
 .feedback-toggles {

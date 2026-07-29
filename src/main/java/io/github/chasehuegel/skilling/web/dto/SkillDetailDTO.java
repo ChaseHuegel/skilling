@@ -40,6 +40,7 @@ public record SkillDetailDTO(
         AbilityDisplayDTO display,
         RequirementsDTO requirements,
         List<MechanicEntryDTO> mechanics,
+        OnFailureDTO onFailure,
         FeedbackDTO feedback
     ) {}
 
@@ -72,6 +73,15 @@ public record SkillDetailDTO(
         boolean chat,
         String message,
         List<Map<String, Object>> particles,
+        List<Map<String, Object>> sounds
+    ) {}
+
+    public record OnFailureDTO(
+        Map<String, FailureFeedbackDTO> reasons
+    ) {}
+
+    public record FailureFeedbackDTO(
+        String actionBar,
         List<Map<String, Object>> sounds
     ) {}
 

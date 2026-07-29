@@ -163,6 +163,7 @@ public final class SkillSerializer {
             }
         }
 
+        // Parse feedback
         Map<String, Object> fbMap = map(raw, "feedback");
         Map<String, Object> notify = map(fbMap, "notify");
         var feedback = new SkillDetailDTO.FeedbackDTO(
@@ -173,9 +174,45 @@ public final class SkillSerializer {
             listMap(fbMap, "sounds")
         );
 
+        // Parse on_failure
+        SkillDetailDTO.OnFailureDTO onFailure = parseOnFailureDTO(map(raw, "on_failure"));
+
         return new SkillDetailDTO.AbilityDTO(id, displayName, unlockLevel,
             new SkillDetailDTO.AbilityDisplayDTO(lore),
-            requirements, mechanics, feedback);
+            requirements, mechanics, onFailure, feedback);
+    }
+
+    private static SkillDetailDTO.OnFailureDTO parseOnFailureDTO(Map<String, Object> raw) {
+        if (raw == null || raw.isEmpty()) return new SkillDetailDTO.OnFailureDTO(Map.of());
+        Map<String, SkillDetailDTO.FailureFeedbackDTO> reasons = new LinkedHashMap<>();
+        for (var entry : raw.entrySet()) {
+            Map<String, Object> reasonMap = castMap(entry.getValue());
+            String actionBar = str(reasonMap, "action_bar", "");
+            List<Map<String, Object>> sounds = listMap(reasonMap, "sounds");
+            if (sounds == null) sounds = List.of();
+            reasons.put(entry.getKey(), new SkillDetailDTO.FailureFeedbackDTO(actionBar, sounds));
+        }
+        return new SkillDetailDTO.OnFailureDTO(reasons);
+    }
+
+    private static Map<String, Object> onFailureToMap(SkillDetailDTO.OnFailureDTO dto) {
+        if (dto == null || dto.reasons() == null || dto.reasons().isEmpty()) return Map.of();
+        Map<String, Object> result = new LinkedHashMap<>();
+        for (var entry : dto.reasons().entrySet()) {
+            Map<String, Object> reasonMap = new LinkedHashMap<>();
+            String actionBar = entry.getValue().actionBar();
+            if (actionBar != null && !actionBar.isBlank()) {
+                reasonMap.put("action_bar", actionBar);
+            }
+            List<Map<String, Object>> sounds = entry.getValue().sounds();
+            if (sounds != null && !sounds.isEmpty()) {
+                reasonMap.put("sounds", sounds);
+            }
+            if (!reasonMap.isEmpty()) {
+                result.put(entry.getKey(), reasonMap);
+            }
+        }
+        return result;
     }
 
     private static Map<String, Object> abilityToMap(SkillDetailDTO.AbilityDTO a) {
@@ -235,6 +272,11 @@ public final class SkillSerializer {
         fbMap.put("particles", a.feedback().particles() != null ? a.feedback().particles() : List.of());
         fbMap.put("sounds", a.feedback().sounds() != null ? a.feedback().sounds() : List.of());
         m.put("feedback", fbMap);
+
+        Map<String, Object> ofMap = onFailureToMap(a.onFailure());
+        if (!ofMap.isEmpty()) {
+            m.put("on_failure", ofMap);
+        }
 
         return m;
     }
@@ -322,6 +364,16 @@ public final class SkillSerializer {
             case "polynomial" -> Map.of("polynomial", ev.params());
             default -> Map.of("constant", Map.of("value", 0));
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    static Map<String, Object> castMap(Object obj) {
+        if (obj instanceof Map<?, ?> m) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            m.forEach((k, v) -> result.put(k.toString(), v));
+            return result;
+        }
+        return new LinkedHashMap<>();
     }
 
     static String str(Map<String, Object> map, String key) {
