@@ -153,6 +153,7 @@ public final class SkillMenuBuilder {
         ItemStack pane = new ItemStack(material);
         pane.editMeta(meta -> {
             meta.displayName(Component.empty());
+            meta.setHideTooltip(true);
             if (filler.customModelData() > 0) {
                 meta.setCustomModelData(filler.customModelData());
             }

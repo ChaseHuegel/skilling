@@ -12,3 +12,4 @@ See AGENTS.md §Issue Resolution Workflow for details.
 
 # Improvements
 - [x] Review and ensure all documentation across the project is up to date
+- [x] (plugin) Hide the tooltip for chest GUI filler items
