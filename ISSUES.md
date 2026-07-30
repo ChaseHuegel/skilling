@@ -17,6 +17,6 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Plugin) Add tab autocomplete support to `/skills log`
   - Ensure these aren't logged to the console or broadcast to other players
 - [x] (Plugin) Players logging profile preferences should all be true by default except for XP gains
-- [ ] (Plugin) The skill guide recipe should be `book` + `coal` and shapeless
+- [x] (Plugin) The skill guide recipe should be `book` + `coal` and shapeless
 - [ ] (Plugin) Ensure all documentation in `docs/` is accurate and up to date with the plugin's actual src
 - [ ] (Plugin & Design) The default bundled skills are missing level 75 abilities - follow the framework in SKILL-DESIGN-FRAMEWORK.md to craft well-fitting abilities and update the bundled skill ymls in the plugin appropriately.
