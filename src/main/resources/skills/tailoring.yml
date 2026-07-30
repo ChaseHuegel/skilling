@@ -1,0 +1,131 @@
+id: "tailoring"
+max_level: 100
+
+display:
+  name: "Tailoring"
+  icon: "minecraft:leather_chestplate"
+  color: "YELLOW"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "craft_item"
+    reward:
+      constant: 10.0
+
+  - trigger: "item_damage"
+    reward:
+      constant: 1.0
+
+abilities:
+  - id: "spinner"
+    display_name: "Spinner"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases output when crafting wool and carpet."
+    mechanics:
+      - type: "core:modify_craft_output"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.0
+              step: 0.005
+              max: 1.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "reinforced_stitch"
+    display_name: "Reinforced Stitch"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Armor lasts &a{chance}% &7longer."
+    mechanics:
+      - type: "core:durability_save"
+        parameters:
+          chance:
+            linear:
+              base: 10.0
+              step: 0.3
+              max: 40.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "padded_linings"
+    display_name: "Padded Linings"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Gain &a{amount} &7bonus armor from tailored gear."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.005
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "dye_master"
+    display_name: "Dye Master"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Chance for double output on colored items and banners."
+    mechanics:
+      - type: "core:yield_multiplier"
+        parameters:
+          yield_chance:
+            linear:
+              base: 5.0
+              step: 0.3
+              max: 35.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "nimble_fingers"
+    display_name: "Nimble Fingers"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Chance &a{chance}% &7to dodge incoming damage."
+    mechanics:
+      - type: "core:dodge"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.3
+              max: 35.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "legendary_tailor"
+    display_name: "Legendary Tailor"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Doubles output on all armor and fabric crafting."
+    mechanics:
+      - type: "core:modify_craft_output"
+        parameters:
+          multiplier:
+            constant: 2.0
+    feedback:
+      notify:
+        action_bar: false

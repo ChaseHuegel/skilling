@@ -1,0 +1,137 @@
+id: "masonry"
+max_level: 100
+
+display:
+  name: "Masonry"
+  icon: "minecraft:stone_bricks"
+  color: "YELLOW"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "furnace_extract"
+    reward:
+      constant: 5.0
+
+  - trigger: "block_place"
+    filters:
+      - target: "#c:stone_products"
+    reward:
+      constant: 1.0
+
+abilities:
+  - id: "stone_folding"
+    display_name: "Stone Folding"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases smelting output for stone and clay."
+    mechanics:
+      - type: "core:modify_furnace_output"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.0
+              step: 0.005
+              max: 1.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "kiln_master"
+    display_name: "Kiln Master"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Gain bonus XP from smelting stone and ores."
+    mechanics:
+      - type: "core:xp_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.5
+              step: 0.01
+              max: 2.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "reinforced_walls"
+    display_name: "Reinforced Walls"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Bonus stone brick output when crafting."
+    mechanics:
+      - type: "core:modify_craft_output"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.0
+              step: 0.008
+              max: 1.75
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "geometric_eye"
+    display_name: "Geometric Eye"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Place stone blocks &a{amplifier}x &7faster."
+    mechanics:
+      - type: "core:haste_effect"
+        filters:
+          - target: "#c:stone_products"
+        parameters:
+          amplifier:
+            linear:
+              base: 1
+              step: 0.01
+              max: 3
+          duration:
+            constant: 300.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "glaze_artisan"
+    display_name: "Glaze Artisan"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Doubles terracotta and glass output from smelting."
+    mechanics:
+      - type: "core:modify_furnace_output"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.0
+              step: 0.015
+              max: 2.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "master_mason"
+    display_name: "Master Mason"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Triples stone brick output when crafting."
+    mechanics:
+      - type: "core:modify_craft_output"
+        parameters:
+          multiplier:
+            constant: 3.0
+    feedback:
+      notify:
+        action_bar: false

@@ -1,0 +1,176 @@
+id: "building"
+max_level: 100
+
+display:
+  name: "Building"
+  icon: "minecraft:bricks"
+  color: "YELLOW"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "block_place"
+    reward:
+      constant: 2.0
+
+  - trigger: "craft_item"
+    reward:
+      constant: 6.0
+
+abilities:
+  - id: "scaffolding"
+    display_name: "Scaffolding"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Place blocks &a{amplifier}x &7faster."
+    mechanics:
+      - type: "core:haste_effect"
+        filters:
+          - state: "is_sneaking"
+        parameters:
+          amplifier:
+            linear:
+              base: 1
+              step: 0.005
+              max: 2
+          duration:
+            constant: 300.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "structural_knowledge"
+    display_name: "Structural Knowledge"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Gain bonus XP from placing blocks."
+    mechanics:
+      - type: "core:xp_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.5
+              step: 0.015
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "swift_build"
+    display_name: "Swift Build"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster while carrying building materials."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.3
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "reinforced_structure"
+    display_name: "Reinforced Structure"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Gain knockback resistance while building."
+    mechanics:
+      - type: "core:modify_attribute"
+        parameters:
+          attribute:
+            constant: 3.0
+          amount:
+            linear:
+              base: 0.2
+              step: 0.005
+              max: 0.8
+          duration:
+            constant: 600.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "architects_vision"
+    display_name: "Architect's Vision"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Sneak-paste to place a &a{radius}&7-block radius of blocks."
+    requirements:
+      cooldown: 15.0
+      state:
+        - "is_sneaking"
+      exhaustion:
+        amount: 4.0
+        minimum: 6.0
+    on_failure:
+      cooldown:
+        action_bar: "&eArchitect's Vision cooling down: {time}s"
+        sounds:
+          - type: "BLOCK_NOTE_BLOCK_BASS"
+            volume: 1.0
+            pitch: 0.5
+      exhaustion:
+        action_bar: "&cToo exhausted to build!"
+        sounds:
+          - type: "ENTITY_PLAYER_BURP"
+            volume: 0.5
+            pitch: 0.5
+            target: "self"
+    mechanics:
+      - type: "core:area_harvest"
+        parameters:
+          radius:
+            milestones:
+              75: 1
+              85: 2
+              95: 3
+              100: 4
+          max_blocks:
+            constant: 64.0
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&e✦ Architect's Vision ✦"
+      particles:
+        - type: "BLOCK_CRACK"
+          count: 20
+          offset: [1.0, 0.5, 1.0]
+          speed: 0.1
+          target: "target"
+      sounds:
+        - type: "ENTITY_ENDERMAN_TELEPORT"
+          volume: 0.3
+          pitch: 1.5
+          target: "self"
+
+  - id: "master_builder"
+    display_name: "Master Builder"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Multiplies output for decorative blocks."
+    mechanics:
+      - type: "core:modify_craft_output"
+        parameters:
+          multiplier:
+            constant: 2.5
+    feedback:
+      notify:
+        action_bar: false

@@ -64,3 +64,22 @@ custom_tags:
   veinminer:
     - "#c:stone"
     - "#c:ores"
+
+  stone_products:
+    - "#minecraft:stone_bricks"
+    - "#minecraft:walls"
+    - "#minecraft:slabs"
+    - "#minecraft:stairs"
+    - "minecraft:stone"
+    - "minecraft:smooth_stone"
+    - "minecraft:stone_bricks"
+    - "minecraft:chiseled_stone_bricks"
+    - "minecraft:cracked_stone_bricks"
+    - "minecraft:mossy_stone_bricks"
+    - "minecraft:stone_slab"
+    - "minecraft:smooth_stone_slab"
+    - "minecraft:cut_sandstone"
+    - "minecraft:cut_red_sandstone"
+    - "minecraft:terracotta"
+    - "minecraft:glass"
+    - "minecraft:glass_pane"

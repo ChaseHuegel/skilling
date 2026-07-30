@@ -1,0 +1,145 @@
+id: "cooking"
+max_level: 100
+
+display:
+  name: "Cooking"
+  icon: "minecraft:furnace"
+  color: "YELLOW"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "furnace_extract"
+    reward:
+      constant: 4.0
+
+  - trigger: "consume_item"
+    reward:
+      constant: 2.0
+
+abilities:
+  - id: "seasoning"
+    display_name: "Seasoning"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Cooked food gives &a{saturation} &7extra saturation."
+    mechanics:
+      - type: "core:saturation_inject"
+        parameters:
+          saturation:
+            linear:
+              base: 1.0
+              step: 0.02
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "heat_control"
+    display_name: "Heat Control"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Increases food output from smelting by &a{multiplier}x&7."
+    mechanics:
+      - type: "core:modify_furnace_output"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.0
+              step: 0.005
+              max: 1.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "nutritionist"
+    display_name: "Nutritionist"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7All food gives &a{saturation} &7extra saturation."
+    mechanics:
+      - type: "core:saturation_inject"
+        parameters:
+          saturation:
+            linear:
+              base: 1.0
+              step: 0.02
+              max: 3.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "hearty_stew"
+    display_name: "Hearty Stew"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Eating cooked food gives &a{saturation} &7extra saturation."
+    mechanics:
+      - type: "core:saturation_inject"
+        parameters:
+          saturation:
+            linear:
+              base: 2.0
+              step: 0.03
+              max: 5.0
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&6✦ Hearty Stew — Deeply satisfying! ✦"
+
+  - id: "gourmand"
+    display_name: "Gourmand"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7After eating, move &a{multiplier}x &7faster for 10 seconds."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "master_chef"
+    display_name: "Master Chef"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7All food gives &a{saturation} &7extra saturation."
+        - "&7Move &a{multiplier}x &7faster after eating."
+    mechanics:
+      - type: "core:saturation_inject"
+        parameters:
+          saturation:
+            constant: 6.0
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            constant: 1.15
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&6✦ Master Chef — Peak nourishment! ✦"
+      sounds:
+        - type: "ENTITY_PLAYER_LEVELUP"
+          volume: 0.5
+          pitch: 1.5
+          target: "self"
