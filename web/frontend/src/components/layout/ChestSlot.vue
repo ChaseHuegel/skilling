@@ -1,5 +1,18 @@
 <template>
   <div
+    v-if="navRole"
+    class="chest-slot slot-nav"
+  >
+    <div class="slot-background">
+      <span v-if="navRole === 'prev'" class="nav-arrow">&#9664;</span>
+      <MinecraftIcon v-else-if="navRole === 'indicator' && navIcon" :material="navIcon" :size="32" />
+      <span v-else-if="navRole === 'indicator'" class="nav-dot">&#9679;</span>
+      <span v-else class="nav-arrow">&#9654;</span>
+    </div>
+  </div>
+
+  <div
+    v-else
     class="chest-slot"
     :class="{
       'slot-occupied': !!skill,
@@ -8,8 +21,8 @@
     }"
     :data-slot-index="slotIndex"
     :draggable="!!skill"
-    :tabindex="!skill ? 0 : -1"
-    :role="!skill ? 'button' : undefined"
+    :tabindex="0"
+    role="button"
     :aria-label="slotAriaLabel"
     @dragstart="onDragStart"
     @dragenter.prevent="onDragEnter"
@@ -25,7 +38,7 @@
     @keydown.space.prevent="onClick"
   >
     <div class="slot-background">
-      <MinecraftIcon v-if="skill" :material="skill.icon || 'minecraft:barrier'" :color="skill.color" :size="36" />
+      <MinecraftIcon v-if="skill" :material="skill.icon || 'minecraft:barrier'" :color="skill.color" :size="64" class="fill-icon" />
     </div>
   </div>
 </template>
@@ -51,6 +64,8 @@ const props = defineProps<{
   skill: SlotSkill | null
   slotIndex: number
   pageIndex: number
+  navRole?: 'prev' | 'next' | 'indicator' | null
+  navIcon?: string
 }>()
 
 const emit = defineEmits<{
@@ -170,11 +185,13 @@ function onClick() {
 
 .chest-slot:hover {
   border-color: var(--p-text-muted-color, #555);
+  z-index: 1;
 }
 
 .chest-slot:focus {
   outline: 2px solid var(--p-primary-color, #3b82f6);
   outline-offset: 2px;
+  z-index: 2;
 }
 
 .chest-slot.slot-occupied {
@@ -184,6 +201,7 @@ function onClick() {
 .chest-slot.slot-drag-over {
   border-color: #55ff55;
   background: rgba(85, 255, 85, 0.08);
+  z-index: 3;
 }
 
 .app-dark .chest-slot.slot-drag-over {
@@ -195,6 +213,13 @@ function onClick() {
   background: var(--p-content-background, #1a1a2e);
 }
 
+.chest-slot.slot-nav {
+  cursor: default;
+  border-color: var(--p-content-border-color, #2a2a3e);
+  background: var(--p-content-background, #1a1a2e);
+  pointer-events: none;
+}
+
 .slot-background {
   display: flex;
   align-items: center;
@@ -202,5 +227,27 @@ function onClick() {
   width: 100%;
   height: 100%;
   position: relative;
+}
+
+.slot-background :deep(.fill-icon) {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.slot-background :deep(.fill-icon .mc-image) {
+  padding: 2px;
+}
+
+.nav-arrow {
+  font-size: 1.3rem;
+  color: var(--p-text-muted-color, #888);
+  line-height: 1;
+}
+
+.nav-dot {
+  font-size: 0.6rem;
+  color: var(--p-text-muted-color, #888);
 }
 </style>

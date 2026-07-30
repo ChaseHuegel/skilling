@@ -7,21 +7,14 @@
         :skill="getSlotSkill(slotIdx - 1)"
         :slot-index="slotIdx - 1"
         :page-index="pageIndex"
+        :nav-role="getNavRole(slotIdx - 1)"
+        :nav-icon="navIcon"
         @assign="onAssign"
         @swap="onSwap"
         @remove="onRemove"
         @tooltip-show="onTooltipShow"
         @tooltip-hide="onTooltipHide"
       />
-    </div>
-    <div class="chest-navbar">
-      <button class="nav-btn" :disabled="pageIndex <= 0" @click="$emit('prevPage')">
-        &#9664;
-      </button>
-      <span class="nav-label" v-html="renderedPageLabel"></span>
-      <button class="nav-btn" :disabled="pageIndex >= totalPages - 1" @click="$emit('nextPage')">
-        &#9654;
-      </button>
     </div>
     <SkillTooltip
       :skill="tooltipSkill"
@@ -36,11 +29,11 @@
 import { computed, ref, reactive, provide } from 'vue'
 import ChestSlot, { type SlotSkill } from './ChestSlot.vue'
 import SkillTooltip from './SkillTooltip.vue'
-import { parseAmpersandCodes, renderFormattedText } from '../../utils/minecraftColors'
 
 export interface ChestGridPage {
   label: string
   slots: Record<number, string>
+  icon?: string
 }
 
 const dragState = reactive({ sourceSlot: null as number | null, dropReceived: false })
@@ -71,13 +64,23 @@ const gridStyle = computed(() => ({
   gridTemplateRows: `repeat(${props.rows}, 1fr)`,
 }))
 
-const renderedPageLabel = computed(() => {
-  if (!props.page) return ''
-  return renderFormattedText(parseAmpersandCodes(props.page.label))
-})
+const prevSlot = computed(() => (props.rows - 1) * 9)
+const indicatorSlot = computed(() => (props.rows - 1) * 9 + 4)
+const nextSlot = computed(() => (props.rows - 1) * 9 + 8)
+
+const navIcon = computed(() => props.page?.icon || 'minecraft:book')
+
+function getNavRole(slotIndex: number): 'prev' | 'next' | 'indicator' | null {
+  if (slotIndex === prevSlot.value) return 'prev'
+  if (slotIndex === indicatorSlot.value) return 'indicator'
+  if (slotIndex === nextSlot.value) return 'next'
+  return null
+}
 
 function getSlotSkill(slotIndex: number): SlotSkill | null {
   if (!props.page) return null
+  const navRole = getNavRole(slotIndex)
+  if (navRole) return null
   const skillId = props.page.slots[slotIndex]
   if (!skillId) return null
   return props.skillMap[skillId] || null
@@ -133,42 +136,5 @@ function onTooltipHide() {
   gap: 2px;
   width: 100%;
   aspect-ratio: 9 / 6;
-}
-
-.chest-navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 8px 4px 0;
-  gap: 8px;
-}
-
-.nav-btn {
-  background: var(--p-content-background, #1a1a2e);
-  border: 1px solid var(--p-content-border-color, #333);
-  color: var(--p-text-color, #ccc);
-  padding: 4px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: background 0.15s;
-}
-
-.nav-btn:hover:not(:disabled) {
-  background: var(--p-content-hover-background, #2a2a4e);
-}
-
-.nav-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.nav-label {
-  flex: 1;
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--p-text-color, #ccc);
 }
 </style>
