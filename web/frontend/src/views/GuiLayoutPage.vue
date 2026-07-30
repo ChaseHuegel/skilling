@@ -178,8 +178,8 @@ function discardChanges() {
   store.fetch()
 }
 
-function onAddPage(label: string) {
-  store.addPage(label)
+function onAddPage(label: string, icon = 'minecraft:book', customModelData = 0) {
+  store.addPage(label, icon, customModelData)
   activePage.value = store.layout!.pages.length - 1
 }
 

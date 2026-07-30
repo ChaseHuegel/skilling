@@ -24,13 +24,19 @@ public record GuiLayoutDTO(
         return new GuiLayoutDTO(
             "&8\u2692 &6Skills &8\u2692",
             6,
-            List.of(new GuiPageDTO("&6Skills", Collections.emptyMap())),
+            List.of(new GuiPageDTO("&6Skills", Collections.emptyMap(), "minecraft:book", 0)),
             1
         );
     }
 
     public record GuiPageDTO(
         String label,
-        Map<Integer, String> slots
-    ) {}
+        Map<Integer, String> slots,
+        String icon,
+        int customModelData
+    ) {
+        public GuiPageDTO {
+            if (icon == null) icon = "minecraft:book";
+        }
+    }
 }

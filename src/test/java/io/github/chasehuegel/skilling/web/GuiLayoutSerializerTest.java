@@ -130,8 +130,8 @@ class GuiLayoutSerializerTest {
             "&6Skills",
             6,
             java.util.List.of(
-                new GuiLayoutDTO.GuiPageDTO("&eCombat", Map.of(0, "swords", 5, "archery")),
-                new GuiLayoutDTO.GuiPageDTO("&aGathering", Map.of(0, "mining"))
+                new GuiLayoutDTO.GuiPageDTO("&eCombat", Map.of(0, "swords", 5, "archery"), "minecraft:book", 0),
+                new GuiLayoutDTO.GuiPageDTO("&aGathering", Map.of(0, "mining"), "minecraft:book", 0)
             ),
             1
         );
@@ -187,9 +187,27 @@ class GuiLayoutSerializerTest {
     }
 
     @Test
+    void parseLegacyFormatPreservesIconAndCmd() {
+        String yaml = """
+            pages:
+              gathering:
+                title: "&6Gathering"
+                icon: "minecraft:iron_pickaxe"
+                custom_model_data: 1001
+                skills:
+                  mining: 0
+            """;
+
+        GuiLayoutDTO dto = GuiLayoutSerializer.parse(yaml);
+        assertEquals(1, dto.pages().size());
+        assertEquals("minecraft:iron_pickaxe", dto.pages().get(0).icon());
+        assertEquals(1001, dto.pages().get(0).customModelData());
+    }
+
+    @Test
     void serializedYamlContainsExpectedKeys() {
         GuiLayoutDTO dto = new GuiLayoutDTO("Test", 3, java.util.List.of(
-            new GuiLayoutDTO.GuiPageDTO("Page1", Map.of(0, "skill_a"))
+            new GuiLayoutDTO.GuiPageDTO("Page1", Map.of(0, "skill_a"), "minecraft:book", 0)
         ), 1);
 
         String yaml = GuiLayoutSerializer.serialize(dto);
@@ -225,7 +243,7 @@ class GuiLayoutSerializerTest {
                 0, "mining",
                 5, "woodcutting",
                 22, "farming"
-            ))
+            ), "minecraft:book", 0)
         ), 1);
 
         String yaml = GuiLayoutSerializer.serialize(dto);

@@ -5,6 +5,8 @@ import { api } from '../api/client'
 export interface GuiPageDTO {
   label: string
   slots: Record<number, string>
+  icon?: string
+  customModelData?: number
 }
 
 export interface GuiLayoutDTO {
@@ -65,11 +67,11 @@ export const useGuiLayoutStore = defineStore('guiLayout', () => {
     }
   }
 
-  function addPage(label: string) {
+  function addPage(label: string, icon = 'minecraft:book', customModelData = 0) {
     if (!layout.value) return
     layout.value = {
       ...layout.value,
-      pages: [...layout.value.pages, { label, slots: {} }],
+      pages: [...layout.value.pages, { label, slots: {}, icon, customModelData }],
     }
   }
 
@@ -126,6 +128,8 @@ export const useGuiLayoutStore = defineStore('guiLayout', () => {
     copy.splice(index + 1, 0, {
       label: source.label + ' (copy)',
       slots: { ...source.slots },
+      icon: source.icon,
+      customModelData: source.customModelData,
     })
     layout.value = { ...layout.value, pages: copy }
   }

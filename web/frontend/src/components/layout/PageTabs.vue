@@ -14,6 +14,20 @@
       @drop.prevent="onDrop(idx)"
       @dragend="onDragEnd"
     >
+      <div class="tab-actions-dropdown" v-if="pages.length > 1">
+        <button class="tab-actions-toggle" title="Page actions" @click.stop="toggleActions(idx)">&#8942;</button>
+        <div class="tab-actions-menu" v-if="actionsOpen === idx" @click.stop>
+          <button class="action-item" @click.stop="emit('duplicate', idx); actionsOpen = null">
+            Duplicate
+          </button>
+          <button class="action-item" @click.stop="emit('clearSlots', idx); actionsOpen = null">
+            Clear slots
+          </button>
+        </div>
+      </div>
+
+      <MinecraftIcon v-if="page.icon" :material="page.icon || 'minecraft:book'" :size="18" />
+
       <span
         class="page-tab-label"
         @dblclick="startRename(idx)"
@@ -29,6 +43,7 @@
         @keydown.escape="cancelRename"
         v-focus
       />
+
       <button
         class="tab-remove-btn"
         title="Remove page"
@@ -37,17 +52,6 @@
       >
         &times;
       </button>
-      <div class="tab-actions-dropdown" v-if="pages.length > 1">
-        <button class="tab-actions-toggle" title="Page actions" @click.stop="toggleActions(idx)">&#8942;</button>
-        <div class="tab-actions-menu" v-if="actionsOpen === idx" @click.stop>
-          <button class="action-item" @click.stop="emit('duplicate', idx); actionsOpen = null">
-            Duplicate
-          </button>
-          <button class="action-item" @click.stop="emit('clearSlots', idx); actionsOpen = null">
-            Clear slots
-          </button>
-        </div>
-      </div>
     </div>
     <button class="tab-add-btn" title="Add page" @click="showAddModal = true">
       + Add Page
@@ -55,18 +59,40 @@
 
     <!-- Add page modal -->
     <div v-if="showAddModal" class="modal-overlay" @click.self="showAddModal = false">
-      <div class="modal-dialog modal-sm">
+      <div class="modal-dialog">
         <h3 class="modal-title">New page</h3>
-        <input
-          ref="addInput"
-          class="modal-input"
-          type="text"
-          v-model="newPageLabel"
-          placeholder="Page label"
-          @keydown.enter="executeAdd"
-          @keydown.escape="showAddModal = false"
-          v-focus
-        />
+        <label class="modal-field">
+          <span class="modal-field-label">Label</span>
+          <input
+            class="modal-input"
+            type="text"
+            v-model="newPageLabel"
+            placeholder="Page label"
+            @keydown.enter="executeAdd"
+            @keydown.escape="showAddModal = false"
+            v-focus
+          />
+        </label>
+        <label class="modal-field">
+          <span class="modal-field-label">Icon material</span>
+          <input
+            class="modal-input"
+            type="text"
+            v-model="newPageIcon"
+            placeholder="minecraft:book"
+          />
+          <MinecraftIcon v-if="newPageIcon" :material="newPageIcon" :size="24" class="modal-icon-preview" />
+        </label>
+        <label class="modal-field">
+          <span class="modal-field-label">Custom model data</span>
+          <input
+            class="modal-input"
+            type="number"
+            v-model.number="newPageCmd"
+            placeholder="0"
+            min="0"
+          />
+        </label>
         <div class="modal-actions">
           <button class="btn btn-secondary btn-sm" @click="showAddModal = false">Cancel</button>
           <button class="btn btn-primary btn-sm" :disabled="!newPageLabel.trim()" @click="executeAdd">Add</button>
@@ -91,9 +117,12 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
 import { stripAmpersandCodes } from '../../utils/minecraftColors'
+import MinecraftIcon from '../common/MinecraftIcon.vue'
 
 export interface PageTabData {
   label: string
+  icon?: string
+  customModelData?: number
 }
 
 const props = defineProps<{
@@ -103,7 +132,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   select: [index: number]
-  add: [label: string]
+  add: [label: string, icon: string, customModelData: number]
   remove: [index: number]
   rename: [index: number, label: string]
   duplicate: [index: number]
@@ -119,6 +148,8 @@ const pendingLabel = ref('')
 const showAddModal = ref(false)
 const addInput = ref<HTMLInputElement | null>(null)
 const newPageLabel = ref('New Page')
+const newPageIcon = ref('minecraft:book')
+const newPageCmd = ref(0)
 const actionsOpen = ref<number | null>(null)
 const dragSourceIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
@@ -167,10 +198,12 @@ function executeRemove() {
 function executeAdd() {
   const label = newPageLabel.value.trim()
   if (label) {
-    emit('add', label)
+    emit('add', label, newPageIcon.value || 'minecraft:book', newPageCmd.value)
   }
   showAddModal.value = false
   newPageLabel.value = 'New Page'
+  newPageIcon.value = 'minecraft:book'
+  newPageCmd.value = 0
 }
 
 function onDragStart(idx: number, e: DragEvent) {
@@ -223,17 +256,19 @@ const vFocus = {
 <style scoped>
 .page-tabs {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 4px;
   padding: 4px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .page-tab {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 6px;
   background: var(--p-content-background, #1a1a2e);
@@ -243,6 +278,7 @@ const vFocus = {
   transition: all 0.15s;
   user-select: none;
   position: relative;
+  flex-shrink: 0;
 }
 
 .page-tab:active {
@@ -267,6 +303,7 @@ const vFocus = {
 .page-tab-label {
   pointer-events: none;
   cursor: inherit;
+  white-space: nowrap;
 }
 
 .page-tab-rename-input {
@@ -290,6 +327,7 @@ const vFocus = {
   padding: 0 2px;
   opacity: 0.6;
   transition: opacity 0.15s;
+  margin-left: 2px;
 }
 
 .tab-remove-btn:hover {
@@ -324,7 +362,7 @@ const vFocus = {
 .tab-actions-menu {
   position: absolute;
   top: 100%;
-  right: 0;
+  left: 0;
   z-index: 100;
   min-width: 120px;
   background: var(--p-content-background, #1a1a2e);
@@ -370,6 +408,7 @@ const vFocus = {
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-add-btn:hover {
@@ -397,12 +436,8 @@ const vFocus = {
   width: 90%;
 }
 
-.modal-sm {
-  max-width: 280px;
-}
-
 .modal-title {
-  margin: 0 0 8px;
+  margin: 0 0 12px;
   color: var(--p-text-color, #fff);
   font-size: 1rem;
   font-weight: 600;
@@ -412,6 +447,19 @@ const vFocus = {
   margin: 0 0 12px;
   color: var(--p-text-muted-color, #aaa);
   font-size: 0.85rem;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.modal-field-label {
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color, #aaa);
+  font-weight: 500;
 }
 
 .modal-input {
@@ -424,16 +472,20 @@ const vFocus = {
   color: var(--p-text-color, #fff);
   outline: none;
   box-sizing: border-box;
-  margin-bottom: 12px;
 }
 
 .modal-input:focus {
   border-color: var(--p-primary-color, #3b82f6);
 }
 
+.modal-icon-preview {
+  margin-top: 4px;
+}
+
 .modal-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  margin-top: 4px;
 }
 </style>

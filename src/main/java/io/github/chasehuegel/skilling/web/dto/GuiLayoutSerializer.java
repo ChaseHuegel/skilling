@@ -73,7 +73,9 @@ public final class GuiLayoutSerializer {
         for (var pageMap : pagesList) {
             String label = str(pageMap, "label", "&6Page");
             Map<Integer, String> slots = parseSlotsMap(pageMap.get("slots"));
-            pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots));
+            String icon = str(pageMap, "icon", "minecraft:book");
+            int cmd = intVal(pageMap, "custom_model_data", 0);
+            pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots, icon, cmd));
         }
 
         return new GuiLayoutDTO(title, rows, pages, version);
@@ -90,7 +92,9 @@ public final class GuiLayoutSerializer {
             Map<String, Object> pageMap = (Map<String, Object>) (Map<?, ?>) pageData;
             String label = str(pageMap, "title", pageEntry.getKey());
             Map<Integer, String> slots = parseLegacySkills(pageMap.get("skills"));
-            pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots));
+            String icon = str(pageMap, "icon", "minecraft:book");
+            int cmd = intVal(pageMap, "custom_model_data", 0);
+            pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots, icon, cmd));
         }
 
         return new GuiLayoutDTO(title, rows, pages, version);
@@ -161,8 +165,8 @@ public final class GuiLayoutSerializer {
             String pageKey = "page_" + pageIdx++;
             Map<String, Object> pageMap = new LinkedHashMap<>();
             pageMap.put("title", page.label());
-            pageMap.put("icon", "minecraft:book");
-            pageMap.put("custom_model_data", 0);
+            pageMap.put("icon", page.icon() != null ? page.icon() : "minecraft:book");
+            pageMap.put("custom_model_data", page.customModelData());
             pageMap.put("rows", 0);
 
             // Invert slots: slot_index → skill_id becomes skill_id → slot_index
