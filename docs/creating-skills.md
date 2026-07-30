@@ -90,11 +90,12 @@ Each entry defines an unlockable ability with mechanics.
 
 | Key | Type | Description |
 |---|---|---|
-| `COOLDOWN` | section | Feedback when ability is on cooldown |
-| `STATE` | section | Feedback when player state requirements are not met |
-| `ITEMS` | section | Feedback when item requirements are not met |
+| `cooldown` | section | Feedback when ability is on cooldown |
+| `missing_item` | section | Feedback when item requirements are not met |
+| `missing_state` | section | Feedback when player state requirements are not met |
+| `insufficient_items` | section | Feedback when items are held but not enough |
 
-Each key maps to a `FailureReason` enum value and supports the same sub-keys as `feedback` (`notify`, `particles`, `sounds`).
+Each key supports the same sub-keys as `feedback` (`action_bar`, `sounds`).
 
 #### requirements
 

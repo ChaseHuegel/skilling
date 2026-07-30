@@ -22,13 +22,15 @@ plugins/Skilling/
 ## Basic Commands
 
 | Command | Permission | Description |
-|---|---|---|---|
+|---|---|---|
+| `/skills` | `skilling.use` | Opens the skill overview GUI, or shows skill progress with a skill name |
 | `/skills help` | `skilling.use` | Shows command usage information |
-| `/skills` | `skilling.use` | Opens the skill overview GUI |
-| `/skills <skill>` | `skilling.use` | Shows XP and level progress for a skill |
+| `/skills log <type> <true/false>` | `skilling.use` | Set logging preferences (xp, levels, unlocks, abilities) |
 | `/skills setlevel <player> <skill> <level>` | `skilling.admin` | Sets a player's skill level |
 | `/skills addxp <player> <skill> <amount>` | `skilling.admin` | Adds XP to a player's skill |
-| `/skills reset <player> <skill>` | `skilling.admin` | Resets a player's skill progress |
+| `/skills reset <player> [skill]` | `skilling.admin` | Resets a player's skill(s). Omit skill to reset all. |
+| `/skills set <key> <value>` | `skilling.admin` | Modify a config value at runtime |
+| `/skills reload` | `skilling.admin` | Reload the plugin configuration and skills |
 
 ## Creating Your First Skill
 

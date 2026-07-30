@@ -26,6 +26,18 @@ Breaks connected blocks of the same type up to a limit (vein mining).
 
 **Event:** `BlockBreakEvent`
 
+### core:block_damage
+
+Damages blocks in an area for instant breaking.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) of block damage |
+
+**Event:** `BlockBreakEvent`
+
 ### core:modify_damage
 
 Multiplies outgoing entity damage.
@@ -75,6 +87,38 @@ Temporarily modifies a player attribute.
 | `attribute` | string | — | Attribute name (e.g., `GENERIC_MOVEMENT_SPEED`) |
 | `amount` | double | `0` | Modifier value |
 | `duration` | double | `5` | Duration in seconds |
+
+### core:armor_bonus
+
+Applies a temporary armor bonus attribute modifier.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `amount` | double | `0` | Additional armor points |
+
+### core:knockback_resist
+
+Applies a temporary knockback resistance attribute modifier.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `amount` | double | `0` | Knockback resistance (0-1) |
+
+### core:speed_bonus
+
+Applies a temporary movement speed attribute modifier.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Speed multiplier |
+
+**Event:** `PlayerToggleSprintEvent`
 
 ### core:modify_craft_output
 
@@ -174,6 +218,90 @@ Short-range teleport in the player's looking direction.
 
 **Event:** `PlayerInteractEvent`
 
+### core:thorns_damage
+
+Reflects a percentage of incoming damage back to the attacker.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `percentage` | double | `0` | Damage reflection percentage (0-100) |
+
+**Event:** `EntityDamageEvent`
+
+### core:dodge
+
+Chance to completely dodge incoming damage.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Dodge probability (0-100%) |
+
+**Event:** `EntityDamageEvent`
+
+### core:lifesteal
+
+Heals the player for a percentage of damage dealt.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `percentage` | double | `0.1` | Heal percentage of damage dealt |
+
+**Event:** `EntityDamageByEntityEvent`
+
+### core:crowd_control
+
+Applies slowness to nearby enemies within a radius on damage.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `effect` | string | `SLOWNESS` | Potion effect type |
+| `duration` | double | `3` | Duration in seconds |
+| `amplifier` | double | `0` | Effect amplifier |
+| `radius` | double | `5` | Effect radius in blocks |
+
+**Event:** `EntityDamageByEntityEvent`
+
+### core:execute
+
+Instantly kills targets below a health threshold.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `threshold` | double | `0` | Health percentage threshold (0-100) |
+
+**Event:** `EntityDamageByEntityEvent`
+
+### core:auto_smelt
+
+Automatically smelts mined blocks.
+
+**Parameters:** None
+
+**Event:** `BlockBreakEvent`
+
+### core:xp_bonus
+
+Applies a multiplicative XP bonus to all XP gains for a duration.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | XP multiplier applied to all gains |
+| `duration` | double | `60` | Duration in seconds |
+
+**Event:** Varies (triggered by ability activation)
+
 ## Built-In Triggers
 
 | Key | Event | Description |
@@ -189,8 +317,14 @@ Short-range teleport in the player's looking direction.
 | `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
 | `fishing` | `PlayerFishEvent` | Fishing |
-| `crop_grow` | `BlockGrowEvent` | Natural crop growth (fully implemented) |
+| `crop_grow` | `BlockGrowEvent` | Natural crop growth |
 | `breed_animals` | `EntityBreedEvent` | Breeding animals |
+| `sprint` | `PlayerToggleSprintEvent` | Player starts/stops sprinting |
+| `sneak` | `PlayerToggleSneakEvent` | Player starts/stops sneaking |
+| `ride_horse` | `VehicleEnterEvent` | Player mounts a vehicle |
+| `collect_xp` | `PlayerExpChangeEvent` | Collecting vanilla XP orbs |
+| `level_up` | `PlayerLevelChangeEvent` | Vanilla Minecraft level change |
+| `enchant_item` | `EnchantItemEvent` | Enchanting an item at an enchanting table |
 
 ## Built-In Evaluators
 
@@ -198,5 +332,5 @@ Short-range teleport in the player's looking direction.
 |---|---|
 | `constant` | Fixed value regardless of level |
 | `linear` | Scales linearly with level above unlock |
-| `milestone` | Tiered values at specific level thresholds |
+| `milestones` | Tiered values at specific level thresholds |
 | `polynomial` | Power curve for XP progression |

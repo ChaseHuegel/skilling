@@ -88,7 +88,7 @@ api.getRegistries().registerTrigger("my_custom_event", MyCustomTrigger.class);
 
 ### Constructor Requirements
 
-Both `SkillMechanic` and `SkillTrigger` implementations **must** have a public no-argument constructor. The registries use `Class::newInstance()` to instantiate them at runtime. `ParameterEvaluator` implementations are registered as instances (not classes) and have no such constraint.
+Both `SkillMechanic` and `SkillTrigger` implementations **must** have a public no-argument constructor. The registries use `Class::newInstance()` to instantiate them at runtime. `ParameterEvaluator` implementations are registered as instances and have no such constraint.
 
 ## Registering a Custom Evaluator
 
@@ -110,8 +110,10 @@ public class LogisticEvaluator implements ParameterEvaluator {
 }
 
 SkillingAPI api = Bukkit.getServicesManager().load(SkillingAPI.class);
-api.getRegistries().registerEvaluator("logistic", new LogisticEvaluator(10, 0.5));
+api.getRegistries().registerEvaluator("logistic", LogisticEvaluator.class);
 ```
+
+> Evaluators can be registered either as instances (`registerEvaluator(key, instance)`) or as classes (`registerEvaluator(key, class)`). The class variant is preferred as it enables fresh instantiation per evaluation context.
 
 ## PlaceholderAPI
 
@@ -138,10 +140,6 @@ Expose dynamic ability parameters for display in scoreboards and chat:
 
 Example: `%skilling_evaluator_mining_geologist_yield_chance%` returns the current yield chance for Geologist.
 
-## Vault Economy
-
-When Vault is detected, abilities can use economy-based requirements. See `docs/configuration.md` for economy config keys.
-
 ## API Reference
 
 ### SkillingAPI
@@ -155,7 +153,7 @@ When Vault is detected, abilities can use economy-based requirements. See `docs/
 | `getRequirementEngine()` | `RequirementEngine` | Check/consume pipeline |
 | `getFeedbackDebouncer()` | `FeedbackDebouncer` | Spam throttle |
 | `getBossBarPool()` | `BossBarPool` | LRU Boss Bar cache |
-| `getProfile(UUID)` | `CompletableFuture<PlayerProfile>` | Synchronous in-memory cache lookup wrapped in `CompletableFuture`; does not block the main thread but does not perform async I/O either |
+| `getProfile(UUID)` | `PlayerProfile` | Synchronous in-memory cache lookup (returns null if not loaded) |
 
 ### Registries
 
@@ -163,7 +161,8 @@ When Vault is detected, abilities can use economy-based requirements. See `docs/
 |---|---|
 | `registerMechanic(String, Class<?>)` | Register a SkillMechanic implementation |
 | `registerTrigger(String, Class<?>)` | Register a SkillTrigger implementation |
-| `registerEvaluator(String, Object)` | Register a ParameterEvaluator instance |
+| `registerEvaluator(String, Class<?>)` | Register a ParameterEvaluator implementation by class |
+| `registerEvaluator(String, Object)` | Register a ParameterEvaluator instance (deprecated) |
 | `getMechanicRegistry()` | Direct access to mechanic registry |
 | `getTriggerRegistry()` | Direct access to trigger registry |
 | `getEvaluatorRegistry()` | Direct access to evaluator registry |
