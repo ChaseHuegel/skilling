@@ -157,7 +157,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] `PlayerListener.onPlayerQuit` has a race window: profile modified by concurrent thread after flush but before unload — XP loss on quit
   - See `ISSUE-042.md` for full development plan
 - [x] (Plugin) Bundled skills are re-generating after the first run if they are deleted (use a config flag to determine if this is the first run or not)
-- [ ] (Plugin) Review the bundled skill ymls, they appear to have some schema issues that prevents editing them in the web GUI
+- [x] (Plugin) Review the bundled skill ymls, they appear to have some schema issues that prevents editing them in the web GUI
 - [x] (Plugin) The crossed-out mark for unlocked skills in the lore snippets is grey; it should be red.
 - [ ] (Plugin) If possible, lets hide the default attributes from the lore of items in the skill chest GUI (ex: "When in Main Hand", damage, attack speed, etc.)
 - [x] (Plugin) The auto-complete for online player names in commands is no longer functioning

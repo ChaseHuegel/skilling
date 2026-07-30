@@ -54,7 +54,12 @@ public final class SkillSerializer {
         var progression = new SkillDetailDTO.ProgressionDTO(
             str(prog, "curve", "polynomial"),
             doubleVal(prog, "base_xp", 50.0),
-            doubleVal(prog, "exponent", 2.5)
+            doubleVal(prog, "exponent", 2.5),
+            prog.containsKey("base") ? doubleVal(prog, "base", 0) : null,
+            prog.containsKey("step") ? doubleVal(prog, "step", 0) : null,
+            prog.containsKey("min") ? doubleVal(prog, "min", 0) : null,
+            prog.containsKey("max") ? doubleVal(prog, "max", 0) : null,
+            prog.containsKey("value") ? doubleVal(prog, "value", 0) : null
         );
 
         List<SkillDetailDTO.XpSourceDTO> xpSources = new ArrayList<>();
@@ -97,8 +102,22 @@ public final class SkillSerializer {
 
         Map<String, Object> prog = new LinkedHashMap<>();
         prog.put("curve", dto.progression().curve());
-        prog.put("base_xp", dto.progression().baseXp());
-        prog.put("exponent", dto.progression().exponent());
+        var p = dto.progression();
+        switch (p.curve()) {
+            case "linear" -> {
+                if (p.base() != null) prog.put("base", p.base());
+                if (p.step() != null) prog.put("step", p.step());
+                if (p.min() != null) prog.put("min", p.min());
+                if (p.max() != null) prog.put("max", p.max());
+            }
+            case "constant" -> {
+                if (p.value() != null) prog.put("value", p.value());
+            }
+            default -> {
+                prog.put("base_xp", p.baseXp());
+                prog.put("exponent", p.exponent());
+            }
+        }
         root.put("progression", prog);
 
         List<Map<String, Object>> xpSources = new ArrayList<>();
