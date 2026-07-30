@@ -1,0 +1,153 @@
+id: "farming"
+max_level: 100
+
+display:
+  name: "Farming"
+  icon: "minecraft:iron_hoe"
+  color: "GREEN"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "block_break"
+    filters:
+      - target: "#minecraft:crops"
+      - state: "player_placed:false"
+    reward:
+      constant: 4.0
+
+  - trigger: "crop_grow"
+    reward:
+      constant: 2.0
+
+abilities:
+  - id: "green_thumb"
+    display_name: "Green Thumb"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases crop yield by &a{yield_chance}%&7."
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#minecraft:crops"
+          - tool: "#minecraft:hoes"
+        parameters:
+          yield_chance:
+            linear:
+              base: 0.5
+              step: 0.5
+              max: 50.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "seasoned_hand"
+    display_name: "Seasoned Hand"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Harvested food gives extra saturation."
+    mechanics:
+      - type: "core:saturation_inject"
+        parameters:
+          saturation:
+            linear:
+              base: 1.0
+              step: 0.02
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "harvest_wave"
+    display_name: "Harvest Wave"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Harvest up to &a{chain_limit} &7connected crops at once."
+    requirements:
+      cooldown: 8.0
+      state:
+        - "is_sneaking"
+      items:
+        - action: "possession"
+          tag: "#minecraft:hoes"
+          slot: "MAIN_HAND"
+    on_failure:
+      cooldown:
+        action_bar: "&cHarvest Wave cooling down: {time}s"
+        sounds:
+          - type: "BLOCK_NOTE_BLOCK_BASS"
+            volume: 1.0
+            pitch: 0.5
+    mechanics:
+      - type: "core:chain_break"
+        filters:
+          - target: "#minecraft:crops"
+        parameters:
+          chain_limit:
+            milestones:
+              25: 3
+              50: 5
+              75: 7
+              100: 9
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&a✦ Harvest Wave! ✦"
+      particles:
+        - type: "BLOCK_CRACK"
+          count: 12
+          offset: [0.5, 0.5, 0.5]
+          speed: 0.1
+          target: "target"
+      sounds:
+        - type: "ITEM_CROP_PLANT"
+          volume: 0.5
+          pitch: 1.2
+          target: "self"
+
+  - id: "nutrient_rich"
+    display_name: "Nutrient Rich"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Chance for bonus crops from harvesting."
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#minecraft:crops"
+        parameters:
+          yield_chance:
+            linear:
+              base: 1.0
+              step: 0.02
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "living_earth"
+    display_name: "Living Earth"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Harvested crops auto-replant."
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#minecraft:crops"
+        parameters:
+          yield_chance:
+            constant: 100.0
+    feedback:
+      notify:
+        action_bar: false

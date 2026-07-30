@@ -105,6 +105,15 @@ public final class Skilling extends JavaPlugin {
             saveResource("template-skill.yml", false);
         }
 
+        String[] bundledSkills = {"mining.yml", "woodcutting.yml", "excavation.yml",
+                                  "farming.yml", "fishing.yml", "archery.yml"};
+        for (String skill : bundledSkills) {
+            if (!new File(getDataFolder(), "skills/" + skill).exists()) {
+                getLogger().info("Generating default " + skill + "...");
+                saveResource("skills/" + skill, false);
+            }
+        }
+
         var config = (YamlConfiguration) getConfig();
         this.debugLogging = config.getBoolean(CONFIG_DEBUG_LOGGING, false);
         if (debugLogging) {

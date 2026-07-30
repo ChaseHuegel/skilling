@@ -45,6 +45,22 @@ custom_tags:
     - "#minecraft:base_stone_overworld"
     - "#minecraft:base_stone_nether"
 
+  excavatable:
+    - "minecraft:dirt"
+    - "minecraft:grass_block"
+    - "minecraft:gravel"
+    - "minecraft:sand"
+    - "minecraft:sandstone"
+    - "minecraft:red_sand"
+    - "minecraft:red_sandstone"
+    - "minecraft:clay"
+    - "minecraft:soul_sand"
+    - "minecraft:soul_soil"
+    - "minecraft:podzol"
+    - "minecraft:mycelium"
+    - "minecraft:coarse_dirt"
+    - "minecraft:rooted_dirt"
+
   veinminer:
     - "#c:stone"
     - "#c:ores"

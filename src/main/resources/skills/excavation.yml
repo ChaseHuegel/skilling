@@ -1,0 +1,143 @@
+id: "excavation"
+max_level: 100
+
+display:
+  name: "Excavation"
+  icon: "minecraft:iron_shovel"
+  color: "GREEN"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "block_break"
+    filters:
+      - target: "#c:excavatable"
+      - state: "player_placed:false"
+    reward:
+      constant: 3.0
+
+abilities:
+  - id: "dig_double"
+    display_name: "Dig Double"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases dirt/gravel/sand yield by &a{yield_chance}%&7."
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#c:excavatable"
+          - tool: "#minecraft:shovels"
+        parameters:
+          yield_chance:
+            linear:
+              base: 0.5
+              step: 0.5
+              max: 50.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "quick_dig"
+    display_name: "Quick Dig"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Increases digging speed by &a{multiplier}x&7."
+    mechanics:
+      - type: "core:speed_bonus"
+        filters:
+          - tool: "#minecraft:shovels"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.2
+              step: 0.003
+              max: 1.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "wide_sweep"
+    display_name: "Wide Sweep"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Sneak-mine to break a 3x3 area of soft blocks."
+    requirements:
+      cooldown: 10.0
+      state:
+        - "is_sneaking"
+      items:
+        - action: "possession"
+          tag: "#minecraft:shovels"
+          slot: "MAIN_HAND"
+    on_failure:
+      cooldown:
+        action_bar: "&cWide Sweep cooling down: {time}s"
+        sounds:
+          - type: "BLOCK_NOTE_BLOCK_BASS"
+            volume: 1.0
+            pitch: 0.5
+    mechanics:
+      - type: "core:block_damage"
+        parameters:
+          chance:
+            constant: 100.0
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&e✦ Wide Sweep! ✦"
+      particles:
+        - type: "BLOCK_CRACK"
+          count: 20
+          offset: [1.0, 0.5, 1.0]
+          speed: 0.2
+          target: "target"
+      sounds:
+        - type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR"
+          volume: 0.5
+          pitch: 1.5
+          target: "self"
+
+  - id: "fossil_hunter"
+    display_name: "Fossil Hunter"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Bonus flint and bone drops from gravel and sand."
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#minecraft:sand"
+        parameters:
+          yield_chance:
+            linear:
+              base: 1.0
+              step: 0.03
+              max: 4.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "excavator"
+    display_name: "Excavator"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Wide Sweep cooldown removed, 5x5 area."
+    mechanics:
+      - type: "core:block_damage"
+        parameters:
+          chance:
+            constant: 100.0
+    feedback:
+      notify:
+        action_bar: false

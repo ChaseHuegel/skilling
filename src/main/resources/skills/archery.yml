@@ -1,0 +1,138 @@
+id: "archery"
+max_level: 100
+
+display:
+  name: "Archery"
+  icon: "minecraft:bow"
+  color: "RED"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage"
+    filters:
+      - target: "#minecraft:arrows"
+    reward:
+      constant: 5.0
+
+  - trigger: "entity_kill"
+    filters:
+      - target: "#minecraft:arrows"
+    reward:
+      constant: 15.0
+
+abilities:
+  - id: "steady_hand"
+    display_name: "Steady Hand"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases bow damage by &a{multiplier}x&7."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "#minecraft:arrows"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.0045
+              max: 1.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "quick_reload"
+    display_name: "Quick Reload"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Reduces bow draw time."
+    mechanics:
+      - type: "core:speed_bonus"
+        filters:
+          - tool: "#minecraft:bows"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.1
+              step: 0.003
+              max: 1.4
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "piercing_shot"
+    display_name: "Piercing Shot"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Arrows pierce through targets."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "#minecraft:arrows"
+        parameters:
+          multiplier:
+            milestones:
+              25: 1.5
+              50: 2.0
+              75: 2.5
+              100: 3.0
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&c✦ Piercing Shot! ✦"
+      sounds:
+        - type: "ENTITY_ARROW_HIT_PLAYER"
+          volume: 0.5
+          pitch: 1.2
+          target: "self"
+
+  - id: "mark_target"
+    display_name: "Mark Target"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Arrow hits apply slowness to targets."
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - target: "#minecraft:arrows"
+        parameters:
+          effect:
+            constant: 1.0
+          duration:
+            linear:
+              base: 2.0
+              step: 0.03
+              max: 5.0
+          amplifier:
+            constant: 1.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "eagle_eye"
+    display_name: "Eagle Eye"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Critical hits on distant targets for massive damage."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "#minecraft:arrows"
+        parameters:
+          multiplier:
+            constant: 3.5
+    feedback:
+      notify:
+        action_bar: false

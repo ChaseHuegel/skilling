@@ -1,0 +1,119 @@
+id: "fishing"
+max_level: 100
+
+display:
+  name: "Fishing"
+  icon: "minecraft:fishing_rod"
+  color: "GREEN"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "fishing"
+    reward:
+      constant: 10.0
+
+abilities:
+  - id: "angler"
+    display_name: "Angler"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases treasure catch rate by &a{multiplier}x&7."
+    mechanics:
+      - type: "core:yield_multiplier"
+        parameters:
+          yield_chance:
+            linear:
+              base: 1.0
+              step: 0.015
+              max: 2.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "light_line"
+    display_name: "Light Line"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Fishing rod durability loss reduced by &a{durability}%&7."
+    mechanics:
+      - type: "core:modify_attribute"
+        parameters:
+          attribute:
+            constant: 1.0
+          amount:
+            linear:
+              base: 0.5
+              step: 0.005
+              max: 1.0
+          duration:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "lucky_catch"
+    display_name: "Lucky Catch"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Better enchantments and loot from fishing treasure."
+    mechanics:
+      - type: "core:yield_multiplier"
+        parameters:
+          yield_chance:
+            linear:
+              base: 1.0
+              step: 0.02
+              max: 2.0
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&b✦ Lucky Catch! ✦"
+      sounds:
+        - type: "ENTITY_PLAYER_LEVELUP"
+          volume: 0.5
+          pitch: 1.5
+          target: "self"
+
+  - id: "sea_bounty"
+    display_name: "Sea Bounty"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Doubles fish catches."
+    mechanics:
+      - type: "core:yield_multiplier"
+        parameters:
+          yield_chance:
+            linear:
+              base: 1.0
+              step: 0.01
+              max: 2.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "leviathan"
+    display_name: "Leviathan"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Guaranteed max-size catches and rare treasure."
+    mechanics:
+      - type: "core:yield_multiplier"
+        parameters:
+          yield_chance:
+            constant: 100.0
+    feedback:
+      notify:
+        action_bar: false

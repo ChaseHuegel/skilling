@@ -1,0 +1,157 @@
+id: "woodcutting"
+max_level: 100
+
+display:
+  name: "Woodcutting"
+  icon: "minecraft:iron_axe"
+  color: "GREEN"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "block_break"
+    filters:
+      - target: "#minecraft:logs"
+      - state: "player_placed:false"
+    reward:
+      constant: 7.0
+
+abilities:
+  - id: "lumberjack"
+    display_name: "Lumberjack"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases log yield by &a{yield_chance}%&7."
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#minecraft:logs"
+          - tool: "#minecraft:axes"
+        parameters:
+          yield_chance:
+            linear:
+              base: 0.5
+              step: 0.5
+              max: 50.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "efficient_swing"
+    display_name: "Efficient Swing"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Increases axe swing speed by &a{multiplier}x&7."
+    mechanics:
+      - type: "core:speed_bonus"
+        filters:
+          - tool: "#minecraft:axes"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.1
+              step: 0.002
+              max: 1.3
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "timber_feller"
+    display_name: "Timber Feller"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Sneak-mine to fell entire trees &a{chain_limit} &7blocks at once."
+        - "&7Exhaustion cost: &c{exhaustion}&7."
+    requirements:
+      cooldown: 10.0
+      state:
+        - "is_sneaking"
+      items:
+        - action: "possession"
+          tag: "#minecraft:axes"
+          slot: "MAIN_HAND"
+    on_failure:
+      cooldown:
+        action_bar: "&cTimber Feller cooling down: {time}s"
+        sounds:
+          - type: "BLOCK_NOTE_BLOCK_BASS"
+            volume: 1.0
+            pitch: 0.5
+    mechanics:
+      - type: "core:chain_break"
+        filters:
+          - target: "#minecraft:logs"
+        parameters:
+          chain_limit:
+            milestones:
+              25: 3
+              50: 8
+              75: 16
+              100: 32
+          exhaustion:
+            linear:
+              base: 2.0
+              step: -0.05
+              min: 0.5
+    feedback:
+      notify:
+        action_bar: true
+        chat: true
+        message: "&2✦ Timber Feller Activated! ✦"
+      particles:
+        - type: "BLOCK_CRACK"
+          count: 15
+          offset: [0.5, 0.5, 0.5]
+          speed: 0.1
+          target: "target"
+      sounds:
+        - type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR"
+          volume: 0.5
+          pitch: 1.2
+          target: "self"
+
+  - id: "forest_bounty"
+    display_name: "Forest Bounty"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Increases sapling drops from leaves."
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#minecraft:leaves"
+        parameters:
+          yield_chance:
+            linear:
+              base: 1.0
+              step: 0.02
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "ancient_timber"
+    display_name: "Ancient Timber"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Doubles plank output from crafting."
+    mechanics:
+      - type: "core:modify_craft_output"
+        filters:
+          - target: "#minecraft:planks"
+        parameters:
+          multiplier:
+            constant: 2.0
+    feedback:
+      notify:
+        action_bar: false

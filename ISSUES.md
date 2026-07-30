@@ -347,7 +347,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - See `ISSUE-056.md` for full development plan
 - [x] Gradle maven-publish configuration: publish API artifact to JitPack for addon developer consumption
     - See `ISSUE-057.md` for full development plan
-- [ ] Pre-built skill configurations: ship 6 production-ready skills (Mining, Woodcutting, Excavation, Farming, Fishing, Archery) following the SKILL-DESIGN-FRAMEWORK.md 6-tier milestone progression
+- [x] Pre-built skill configurations: ship 6 production-ready skills (Mining, Woodcutting, Excavation, Farming, Fishing, Archery) following the SKILL-DESIGN-FRAMEWORK.md 6-tier milestone progression
     - See `ISSUE-058.md` for full development plan
 - [ ] External plugin integration: soft-dependency hooks for PlaceholderAPI, Vault economy, and bStats metrics
     - See `ISSUE-059.md` for full development plan
