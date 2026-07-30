@@ -147,6 +147,26 @@ abilities:
       notify:
         action_bar: false
 
+  - id: "sturdy_miner"
+    display_name: "Sturdy Miner"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Gain &a{amount} &7armor while mining."
+    mechanics:
+      - type: "core:armor_bonus"
+        filters:
+          - tool: "#minecraft:pickaxes"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.01
+              max: 1.0
+    feedback:
+      notify:
+        action_bar: false
+
   - id: "perfect_yield"
     display_name: "Perfect Yield"
     unlock_level: 100

@@ -135,6 +135,24 @@ abilities:
       notify:
         action_bar: false
 
+  - id: "hearty_meal"
+    display_name: "Hearty Meal"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7All food gives &a{saturation} &7extra saturation."
+    mechanics:
+      - type: "core:saturation_inject"
+        parameters:
+          saturation:
+            linear:
+              base: 1.0
+              step: 0.03
+              max: 4.0
+    feedback:
+      notify:
+        action_bar: false
+
   - id: "living_earth"
     display_name: "Living Earth"
     unlock_level: 100

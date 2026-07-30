@@ -120,6 +120,26 @@ abilities:
       notify:
         action_bar: false
 
+  - id: "fleet_footed"
+    display_name: "Fleet-Footed"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster while wielding a bow."
+    mechanics:
+      - type: "core:speed_bonus"
+        filters:
+          - tool: "#minecraft:bows"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+
   - id: "eagle_eye"
     display_name: "Eagle Eye"
     unlock_level: 100

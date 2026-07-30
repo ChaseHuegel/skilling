@@ -139,6 +139,26 @@ abilities:
       notify:
         action_bar: false
 
+  - id: "iron_bark"
+    display_name: "Iron Bark"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Gain &a{amount} &7armor while wielding an axe."
+    mechanics:
+      - type: "core:armor_bonus"
+        filters:
+          - tool: "#minecraft:axes"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.01
+              max: 1.0
+    feedback:
+      notify:
+        action_bar: false
+
   - id: "ancient_timber"
     display_name: "Ancient Timber"
     unlock_level: 100
