@@ -1,0 +1,151 @@
+id: "light_weapons"
+max_level: 100
+
+display:
+  name: "Light Weapons"
+  icon: "minecraft:golden_sword"
+  color: "RED"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage"
+    filters:
+      - target: "#c:light_weapons"
+    reward:
+      constant: 5.0
+
+  - trigger: "entity_kill"
+    filters:
+      - target: "#c:light_weapons"
+    reward:
+      constant: 20.0
+
+abilities:
+  - id: "quick_strike"
+    display_name: "Quick Strike"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases attack damage by &a{multiplier}x&7 with light weapons."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "#c:light_weapons"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.004
+              max: 1.4
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "nimble"
+    display_name: "Nimble"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster while wielding light weapons."
+    mechanics:
+      - type: "core:speed_bonus"
+        filters:
+          - target: "#c:light_weapons"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "bleed"
+    display_name: "Bleed"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Light attacks poison targets for &a{duration}s&7."
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - target: "#c:light_weapons"
+        parameters:
+          effect:
+            constant: 19.0
+          duration:
+            linear:
+              base: 3.0
+              step: 0.04
+              max: 7.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "vampiric_strike"
+    display_name: "Vampiric Strike"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Heal &a{percentage}% &7of damage dealt to enemies."
+    mechanics:
+      - type: "core:lifesteal"
+        filters:
+          - target: "#c:light_weapons"
+        parameters:
+          percentage:
+            linear:
+              base: 3.0
+              step: 0.06
+              max: 10.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "evasive"
+    display_name: "Evasive"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Chance &a{chance}% &7to dodge attacks while wielding light weapons."
+    mechanics:
+      - type: "core:dodge"
+        filters:
+          - target: "#c:light_weapons"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 25.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "blade_dancer"
+    display_name: "Blade Dancer"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Massive damage boost with light weapons."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "#c:light_weapons"
+        parameters:
+          multiplier:
+            constant: 2.5
+    feedback:
+      notify:
+        action_bar: false

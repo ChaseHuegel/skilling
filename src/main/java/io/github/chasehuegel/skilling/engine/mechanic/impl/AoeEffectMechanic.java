@@ -1,8 +1,6 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -14,18 +12,14 @@ import java.util.Map;
  * Applies a potion effect to all living entities within a radius of the player, excluding the player themselves.
  *
  * <p><b>YAML key:</b> {@code aoe_effect}
- * <p><b>Required parameters:</b> {@code effect} (potion effect type name, e.g. {@code speed} or {@code minecraft:speed})
+ * <p><b>Required parameters:</b> {@code effect} (legacy numeric potion effect ID, e.g. {@code 3} for Haste)
  * <p><b>Optional parameters:</b> {@code radius} (default 5.0), {@code duration} (default 5s), {@code amplifier} (default 0)
  */
 public final class AoeEffectMechanic implements SkillMechanic {
 
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
-        String effectName = (String) params.getOrDefault("effect", "");
-        if (effectName.isBlank()) return false;
-        NamespacedKey effectKey = NamespacedKey.fromString(effectName.toLowerCase());
-        if (effectKey == null) return false;
-        PotionEffectType type = Registry.POTION_EFFECT_TYPE.get(effectKey);
+        PotionEffectType type = PotionEffectResolver.resolve(params.get("effect"));
         if (type == null) return false;
 
         double radius = ((Number) params.getOrDefault("radius", 5.0)).doubleValue();

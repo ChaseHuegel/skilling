@@ -1,0 +1,138 @@
+id: "medium_armor"
+max_level: 100
+
+display:
+  name: "Medium Armor"
+  icon: "minecraft:iron_chestplate"
+  color: "BLUE"
+  style: "SOLID"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage_taken"
+    reward:
+      constant: 3.0
+
+abilities:
+  - id: "tempered_guard"
+    display_name: "Tempered Guard"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Gain &a{amount} &7bonus armor."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.005
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "deflect"
+    display_name: "Deflect"
+    unlock_level: 15
+    display:
+      lore:
+        - "&a{chance}% &7chance to deflect damage."
+    mechanics:
+      - type: "core:block_damage"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 25.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "counter"
+    display_name: "Counter"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Attackers take &a{damage} &7damage."
+    mechanics:
+      - type: "core:thorns_damage"
+        parameters:
+          damage:
+            linear:
+              base: 1.0
+              step: 0.02
+              max: 4.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "swift_recovery"
+    display_name: "Swift Recovery"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster when hit."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.2
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "endurance"
+    display_name: "Endurance"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Reduced damage taken from all sources."
+    mechanics:
+      - type: "core:cancel_damage"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 30.0
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&b✦ Endured! ✦"
+      sounds:
+        - type: "ITEM_SHIELD_BLOCK"
+          volume: 0.4
+          pitch: 1.2
+          target: "self"
+
+  - id: "iron_will"
+    display_name: "Iron Will"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Gain significant armor and damage reduction."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            constant: 0.4
+      - type: "core:cancel_damage"
+        parameters:
+          chance:
+            constant: 10.0
+    feedback:
+      notify:
+        action_bar: false

@@ -1,0 +1,167 @@
+id: "heavy_weapons"
+max_level: 100
+
+display:
+  name: "Heavy Weapons"
+  icon: "minecraft:iron_sword"
+  color: "RED"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage"
+    filters:
+      - target: "#c:heavy_weapons"
+    reward:
+      constant: 5.0
+
+  - trigger: "entity_kill"
+    filters:
+      - target: "#c:heavy_weapons"
+    reward:
+      constant: 20.0
+
+abilities:
+  - id: "heavy_strikes"
+    display_name: "Heavy Strikes"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases melee damage by &a{multiplier}x&7."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "#c:heavy_weapons"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.003
+              max: 1.35
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "stun_impact"
+    display_name: "Stun Impact"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Heavy hits slow targets for &a{duration}s&7."
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - target: "#c:heavy_weapons"
+        parameters:
+          effect:
+            constant: 2.0
+          duration:
+            linear:
+              base: 2.0
+              step: 0.02
+              max: 4.0
+          amplifier:
+            constant: 1.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "cleave"
+    display_name: "Cleave"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Attacks apply weakness to nearby enemies."
+    mechanics:
+      - type: "core:crowd_control"
+        filters:
+          - target: "#c:heavy_weapons"
+        parameters:
+          effect:
+            constant: 18.0
+          radius:
+            linear:
+              base: 2.0
+              step: 0.03
+              max: 5.0
+          duration:
+            constant: 3.0
+          amplifier:
+            linear:
+              base: 0
+              step: 0.01
+              max: 1
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "berserker"
+    display_name: "Berserker"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Heal &a{percentage}% &7of damage dealt to enemies."
+    mechanics:
+      - type: "core:lifesteal"
+        filters:
+          - target: "#c:heavy_weapons"
+        parameters:
+          percentage:
+            linear:
+              base: 2.0
+              step: 0.05
+              max: 8.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "execute"
+    display_name: "Execute"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Enemies below &a{threshold}% &7health are instantly killed."
+    mechanics:
+      - type: "core:execute"
+        filters:
+          - target: "#c:heavy_weapons"
+        parameters:
+          threshold:
+            linear:
+              base: 3.0
+              step: 0.05
+              max: 7.0
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&c✦ Execute! ✦"
+      sounds:
+        - type: "ENTITY_PLAYER_ATTACK_CRIT"
+          volume: 0.5
+          pitch: 0.8
+          target: "self"
+
+  - id: "master_at_arms"
+    display_name: "Master at Arms"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Massive damage boost with heavy weapons."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "#c:heavy_weapons"
+        parameters:
+          multiplier:
+            constant: 2.0
+    feedback:
+      notify:
+        action_bar: false

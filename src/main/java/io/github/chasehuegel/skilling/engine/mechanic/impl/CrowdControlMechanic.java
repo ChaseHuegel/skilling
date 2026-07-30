@@ -2,8 +2,6 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import java.util.Map;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -15,18 +13,14 @@ import org.bukkit.potion.PotionEffectType;
  * Applies an AoE status effect to nearby entities when damaging a target.
  *
  * <p>YAML key: {@code core:crowd_control}
- * <br>Params: {@code effect}, {@code duration} (default 3), {@code amplifier} (default 0), {@code radius} (default 5)
+ * <br>Params: {@code effect} (legacy numeric potion effect ID), {@code duration} (default 3), {@code amplifier} (default 0), {@code radius} (default 5)
  */
 public record CrowdControlMechanic() implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof EntityDamageByEntityEvent de)) return false;
         if (!de.getDamager().equals(player)) return false;
-        String effectName = (String) params.get("effect");
-        if (effectName == null || effectName.isBlank()) return false;
-        NamespacedKey effectKey = NamespacedKey.fromString(effectName.toLowerCase());
-        if (effectKey == null) return false;
-        PotionEffectType type = Registry.POTION_EFFECT_TYPE.get(effectKey);
+        PotionEffectType type = PotionEffectResolver.resolve(params.get("effect"));
         if (type == null) return false;
         int duration = ((Number) params.getOrDefault("duration", 3)).intValue() * 20;
         int amplifier = ((Number) params.getOrDefault("amplifier", 0)).intValue();

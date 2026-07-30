@@ -1,0 +1,138 @@
+id: "heavy_armor"
+max_level: 100
+
+display:
+  name: "Heavy Armor"
+  icon: "minecraft:diamond_chestplate"
+  color: "BLUE"
+  style: "SOLID"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage_taken"
+    reward:
+      constant: 3.0
+
+abilities:
+  - id: "steel_plating"
+    display_name: "Steel Plating"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Gain &a{amount} &7bonus armor."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.005
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "fortified"
+    display_name: "Fortified"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Gain &a{amount} &7knockback resistance."
+    mechanics:
+      - type: "core:knockback_resist"
+        parameters:
+          amount:
+            linear:
+              base: 0.1
+              step: 0.003
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "thorns"
+    display_name: "Thorns"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Attackers take &a{damage} &7damage."
+    mechanics:
+      - type: "core:thorns_damage"
+        parameters:
+          damage:
+            linear:
+              base: 1.0
+              step: 0.015
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "shield_wall"
+    display_name: "Shield Wall"
+    unlock_level: 50
+    display:
+      lore:
+        - "&a{chance}% &7chance to block incoming damage."
+    mechanics:
+      - type: "core:block_damage"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 25.0
+    feedback:
+      notify:
+        action_bar: true
+        chat: false
+        message: "&b✦ Blocked! ✦"
+      sounds:
+        - type: "ITEM_SHIELD_BLOCK"
+          volume: 0.5
+          pitch: 1.0
+          target: "self"
+
+  - id: "immovable"
+    display_name: "Immovable"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Holds position, reducing knockback further."
+    mechanics:
+      - type: "core:knockback_resist"
+        parameters:
+          amount:
+            linear:
+              base: 0.2
+              step: 0.005
+              max: 0.7
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "juggernaut"
+    display_name: "Juggernaut"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Massive armor and knockback resistance."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            constant: 0.5
+      - type: "core:knockback_resist"
+        parameters:
+          amount:
+            constant: 0.5
+    feedback:
+      notify:
+        action_bar: false

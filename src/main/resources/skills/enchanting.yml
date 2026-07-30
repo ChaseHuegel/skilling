@@ -1,0 +1,131 @@
+id: "enchanting"
+max_level: 100
+
+display:
+  name: "Enchanting"
+  icon: "minecraft:enchanting_table"
+  color: "PURPLE"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "enchant_item"
+    reward:
+      constant: 15.0
+
+  - trigger: "collect_xp"
+    reward:
+      constant: 1.0
+
+abilities:
+  - id: "arcane_knowledge"
+    display_name: "Arcane Knowledge"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Gain bonus XP from enchanting."
+    mechanics:
+      - type: "core:xp_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.5
+              step: 0.015
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "durable_enchantments"
+    display_name: "Durable Enchantments"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Enchanted items last &a{chance}% &7longer."
+    mechanics:
+      - type: "core:durability_save"
+        parameters:
+          chance:
+            linear:
+              base: 10.0
+              step: 0.3
+              max: 40.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "experience_attraction"
+    display_name: "Experience Attraction"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7XP orbs travel &a{multiplier}x &7faster toward you."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "ancient_secrets"
+    display_name: "Ancient Secrets"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Doubles enchanted book output from crafting."
+    mechanics:
+      - type: "core:modify_craft_output"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.0
+              step: 0.01
+              max: 2.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "soulbound_armor"
+    display_name: "Soulbound Armor"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Gain &a{amount} &7armor while holding enchanted gear."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.01
+              max: 1.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "master_enchanter"
+    display_name: "Master Enchanter"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Triples enchanted book output from crafting."
+    mechanics:
+      - type: "core:modify_craft_output"
+        parameters:
+          multiplier:
+            constant: 3.0
+    feedback:
+      notify:
+        action_bar: false
