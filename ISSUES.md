@@ -343,3 +343,15 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-054.md` for full development plan
 - [x] Test coverage gaps: all 25 mechanics untested, all 19 triggers untested, requirement engine lifecycle (Check/Execute/Consume) uncovered, no serialization tests, no `BossBarPool`/`FanfareDispatcher`/`LevelUpDispatcher` tests
     - See `ISSUE-055.md` for full development plan
+- [ ] CI/CD Pipeline: GitHub Actions workflows for build, test, frontend type-check/lint, Playwright E2E, and automated releases
+    - See `ISSUE-056.md` for full development plan
+- [ ] Gradle maven-publish configuration: publish API artifact to JitPack for addon developer consumption
+    - See `ISSUE-057.md` for full development plan
+- [ ] Pre-built skill configurations: ship 6 production-ready skills (Mining, Woodcutting, Excavation, Farming, Fishing, Archery) following the SKILL-DESIGN-FRAMEWORK.md 6-tier milestone progression
+    - See `ISSUE-058.md` for full development plan
+- [ ] External plugin integration: soft-dependency hooks for PlaceholderAPI, Vault economy, and bStats metrics
+    - See `ISSUE-059.md` for full development plan
+- [ ] Separate `skilling-api` Gradle module: publish a slim zero-dependency API JAR for addon developers
+    - See `ISSUE-060.md` for full development plan
+- [ ] Minor polish: verify and implement `crop_grow` trigger handler; add evaluator output placeholders to PlaceholderAPI expansion
+    - See `ISSUE-061.md` for full development plan
