@@ -14,11 +14,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Web) Some config options are missing from the config editor page. Come up with a development plan then ensure all config options are supported.
 
 # Improvements
-- [x] (Plugin) Add tab autocomplete support to `/skills log`
-  - Ensure these aren't logged to the console or broadcast to other players
-- [x] (Plugin) Players logging profile preferences should all be true by default except for XP gains
-- [x] (Plugin) The skill guide recipe should be `book` + `coal` and shapeless
-- [x] (Plugin) Ensure all documentation in `docs/` is accurate and up to date with the plugin's actual src
-- [x] (Plugin - Design) The default bundled skills are missing level 75 abilities - follow the framework in SKILL-DESIGN-FRAMEWORK.md to craft well-fitting abilities and update the bundled skill ymls in the plugin appropriately.
-- [x] (Plugin - Design) Draft a plan and development proposal in a new issue markdown document to introduce additional filter states that may be useful for designing abilities. These must be possible to implement utilizing Paper APIs. → See `ISSUE-067.md`
-- [x] (Web) Add Web GUI editor for gui.yml layout — see `ISSUE-063.md`
+- [ ] handle `ISSUE-064.md`
+- [ ] handle `ISSUE-065.md`
+- [ ] handle `ISSUE-066.md`
+- [ ] handle `ISSUE-067.md`
