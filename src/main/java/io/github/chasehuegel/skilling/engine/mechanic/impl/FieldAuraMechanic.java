@@ -20,7 +20,7 @@ public final class FieldAuraMechanic implements SkillMechanic {
         var effect = new PotionEffect(type, duration, amplifier);
         player.addPotionEffect(effect);
         for (LivingEntity target : player.getLocation().getNearbyLivingEntities(radius)) {
-            if (target instanceof Player || target.getUniqueId().equals(player.getUniqueId())) continue;
+            if (target.getUniqueId().equals(player.getUniqueId())) continue;
             target.addPotionEffect(effect);
         }
         return true;

@@ -58,7 +58,7 @@ Applies a potion effect to the damaged entity on hit.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | — | Potion effect type (e.g., `SLOWNESS`, `POISON`) |
+| `effect` | double | — | Legacy numeric potion effect ID (e.g., `2` for Slowness, `10` for Regeneration) |
 | `duration` | double | `3` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier (0 = level I) |
 
@@ -84,7 +84,7 @@ Temporarily modifies a player attribute.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `attribute` | string | — | Attribute name (e.g., `GENERIC_MOVEMENT_SPEED`) |
+| `attribute` | double | — | Legacy numeric attribute ID (1=MAX_HEALTH, 2=FOLLOW_RANGE, 3=KNOCKBACK_RESISTANCE, 4=MOVEMENT_SPEED, 5=FLYING_SPEED, 6=ARMOR, 7=ARMOR_TOUGHNESS, 8=ATTACK_DAMAGE, 9=ATTACK_SPEED, 10=LUCK) |
 | `amount` | double | `0` | Modifier value |
 | `duration` | double | `5` | Duration in seconds |
 
@@ -182,13 +182,13 @@ Modifies the duration of brewed potion effects.
 
 ### core:aoe_effect
 
-Applies a potion effect to all entities within a radius.
+Applies a potion effect to all entities within a radius (excluding the player).
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | — | Potion effect type |
+| `effect` | double | — | Legacy numeric potion effect ID |
 | `radius` | double | `5` | Effect radius in blocks |
 | `duration` | double | `5` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
@@ -256,13 +256,13 @@ Heals the player for a percentage of damage dealt.
 
 ### core:crowd_control
 
-Applies slowness to nearby enemies within a radius on damage.
+Applies a potion effect to nearby enemies within a radius on damaging an entity.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | `SLOWNESS` | Potion effect type |
+| `effect` | double | — | Legacy numeric potion effect ID |
 | `duration` | double | `3` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
 | `radius` | double | `5` | Effect radius in blocks |
@@ -372,6 +372,80 @@ Applies the HASTE potion effect to the player, increasing mining/digging speed.
 
 **Event:** `BlockBreakEvent`
 
+### core:repair_discount
+
+Reduces the experience level cost of anvil repairs.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `discount` | double | `0` | Percentage discount (0-100) |
+
+**Event:** `PrepareAnvilEvent`
+
+### core:modify_tame_chance
+
+Multiplies the chance of successfully taming an animal.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Taming chance multiplier |
+
+**Event:** `EntityTameEvent`
+
+### core:projectile_return
+
+Chance to recover thrown projectiles (tridents, snowballs, eggs) after they hit.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Recovery probability (0-100%) |
+
+**Event:** `ProjectileHitEvent`
+
+### core:modify_enchant_cost
+
+Reduces the experience level cost of enchanting at an enchanting table.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `discount` | double | `0` | Percentage discount (0-100) |
+
+**Event:** `EnchantItemEvent`
+
+### core:field_aura
+
+Applies a potion effect to the player and all nearby living entities within a radius.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `effect` | double | — | Legacy numeric potion effect ID (e.g., `10` for Regeneration) |
+| `radius` | double | `8` | Aura radius in blocks |
+| `duration` | double | `5` | Duration in seconds |
+| `amplifier` | double | `0` | Effect amplifier |
+
+**Event:** Varies (triggered by ability activation)
+
+### core:modify_jump
+
+Temporarily increases the player's jump strength.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Jump multiplier (1.5 = 50% higher) |
+| `duration` | double | `300` | Duration in seconds |
+
 ## Built-In Triggers
 
 | Key | Event | Description |
@@ -397,6 +471,35 @@ Applies the HASTE potion effect to the player, increasing mining/digging speed.
 | `enchant_item` | `EnchantItemEvent` | Enchanting an item at an enchanting table |
 | `shoot_bow` | `EntityShootBowEvent` | Shooting a bow or crossbow |
 | `item_damage` | `PlayerItemDamageEvent` | Item durability loss |
+| `player_shear` | `PlayerShearEntityEvent` | Shearing a sheep or other shearable entity |
+| `player_tame` | `EntityTameEvent` | Taming a wild animal |
+| `launch_projectile` | `ProjectileLaunchEvent` | Launching a projectile (trident, snowball, etc.) |
+
+## Built-In State Filters
+
+State filters are evaluated per-ability and per-XP source in YAML. The filter syntax is `key:value` in the `state:` field.
+
+| Key | Value(s) | Description |
+|---|---|---|
+| `is_sneaking` | *(none)* | Player is sneaking |
+| `is_sprinting` | *(none)* | Player is sprinting |
+| `is_in_water` | *(none)* | Player is in water |
+| `is_on_ground` | *(none)* | Player is on the ground |
+| `is_on_fire` | *(none)* | Player is on fire |
+| `is_riding` | *(none)* | Player is riding a vehicle/mount |
+| `is_blocking` | *(none)* | Player is blocking with a shield |
+| `player_placed` | `false` | Block was not placed by a player |
+| `dimension` | `overworld`, `nether`, `end` | Player's current dimension |
+| `weather` | `clear`, `rain`, `thunder` | Current weather in player's world |
+| `time` | `day`, `night` | Time of day in player's world |
+| `light_level` | `below:N`, `above:N`, `exactly:N` | Block light level comparison |
+| `health` | `below:N%`, `above:N%` | Player health percentage |
+| `hunger` | `below:N`, `above:N` | Player food level |
+| `biome` | `minecraft:biome_id` | Player's current biome |
+| `target_type` | `minecraft:entity_id` | Type of entity being damaged |
+| `offhand` | `empty`, `weapon` | Offhand item state |
+| `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
+| `armor` | `empty` | All armor slots are empty |
 
 ## Built-In Evaluators
 

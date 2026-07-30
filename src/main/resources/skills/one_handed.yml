@@ -1,0 +1,151 @@
+id: "one_handed"
+max_level: 100
+
+display:
+  name: "One Handed"
+  icon: "minecraft:iron_sword"
+  color: "RED"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage"
+    filters:
+      - state: "offhand:empty"
+    reward:
+      constant: 5.0
+
+  - trigger: "entity_kill"
+    filters:
+      - state: "offhand:empty"
+    reward:
+      constant: 20.0
+
+abilities:
+  - id: "precise_strikes"
+    display_name: "Precise Strikes"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases damage by &a{multiplier}x &7with a free offhand."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - state: "offhand:empty"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.003
+              max: 1.35
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "quick_hands"
+    display_name: "Quick Hands"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster with one hand free."
+    mechanics:
+      - type: "core:speed_bonus"
+        filters:
+          - state: "offhand:empty"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "parry"
+    display_name: "Parry"
+    unlock_level: 25
+    display:
+      lore:
+        - "&a{chance}% &7chance to dodge attacks with one hand free."
+    mechanics:
+      - type: "core:dodge"
+        filters:
+          - state: "offhand:empty"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 25.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "fencing"
+    display_name: "Fencing"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Attacks slow targets for &a{duration}s&7."
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - state: "offhand:empty"
+        parameters:
+          effect:
+            constant: 2.0
+          duration:
+            linear:
+              base: 2.0
+              step: 0.03
+              max: 5.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "duelist"
+    display_name: "Duelist"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Increased attack speed with one hand free."
+    mechanics:
+      - type: "core:lifesteal"
+        filters:
+          - state: "offhand:empty"
+        parameters:
+          percentage:
+            linear:
+              base: 2.0
+              step: 0.04
+              max: 8.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "blade_master"
+    display_name: "Blade Master"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Massive damage with a free offhand."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - state: "offhand:empty"
+        parameters:
+          multiplier:
+            constant: 2.0
+    feedback:
+      notify:
+        action_bar: false

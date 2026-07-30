@@ -1,0 +1,152 @@
+id: "acrobatics"
+max_level: 100
+
+display:
+  name: "Acrobatics"
+  icon: "minecraft:feather"
+  color: "WHITE"
+  style: "SOLID"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "sprint"
+    reward:
+      constant: 1.0
+
+  - trigger: "sneak"
+    reward:
+      constant: 1.0
+
+  - trigger: "entity_damage_taken"
+    reward:
+      constant: 2.0
+
+abilities:
+  - id: "light_feet"
+    display_name: "Light Feet"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "soft_landing"
+    display_name: "Soft Landing"
+    unlock_level: 15
+    display:
+      lore:
+        - "&a{chance}% &7chance to negate fall damage."
+    mechanics:
+      - type: "core:cancel_damage"
+        parameters:
+          chance:
+            linear:
+              base: 10.0
+              step: 0.3
+              max: 40.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "spring_step"
+    display_name: "Spring Step"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Jump &a{multiplier}x &7higher."
+    mechanics:
+      - type: "core:modify_jump"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.1
+              step: 0.003
+              max: 1.4
+          duration:
+            constant: 600.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "agile"
+    display_name: "Agile"
+    unlock_level: 50
+    display:
+      lore:
+        - "&a{chance}% &7chance to dodge attacks."
+    mechanics:
+      - type: "core:dodge"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 25.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "endurance"
+    display_name: "Endurance"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster and jump higher."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.003
+              max: 1.3
+      - type: "core:modify_jump"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.1
+              step: 0.004
+              max: 1.5
+          duration:
+            constant: 600.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "gravity_defier"
+    display_name: "Gravity Defier"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Permanent speed and jump boost."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            constant: 1.3
+      - type: "core:modify_jump"
+        parameters:
+          multiplier:
+            constant: 1.6
+          duration:
+            constant: 600.0
+    feedback:
+      notify:
+        action_bar: false

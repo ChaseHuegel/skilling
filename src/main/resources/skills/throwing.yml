@@ -1,0 +1,147 @@
+id: "throwing"
+max_level: 100
+
+display:
+  name: "Throwing"
+  icon: "minecraft:trident"
+  color: "RED"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "launch_projectile"
+    filters:
+      - target: "minecraft:trident"
+    reward:
+      constant: 8.0
+
+  - trigger: "entity_damage"
+    filters:
+      - target: "minecraft:trident"
+    reward:
+      constant: 5.0
+
+abilities:
+  - id: "precise_throw"
+    display_name: "Precise Throw"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases thrown trident damage by &a{multiplier}x&7."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "minecraft:trident"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.004
+              max: 1.4
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "return_chance"
+    display_name: "Return Chance"
+    unlock_level: 15
+    display:
+      lore:
+        - "&a{chance}% &7chance to recover thrown tridents."
+    mechanics:
+      - type: "core:projectile_return"
+        parameters:
+          chance:
+            linear:
+              base: 20.0
+              step: 0.5
+              max: 75.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "velocity"
+    display_name: "Velocity"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Increased damage from thrown weapons."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "minecraft:trident"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.1
+              step: 0.004
+              max: 1.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "trick_shot"
+    display_name: "Trick Shot"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Thrown weapons slow targets for &a{duration}s&7."
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - target: "minecraft:trident"
+        parameters:
+          effect:
+            constant: 2.0
+          duration:
+            linear:
+              base: 2.0
+              step: 0.03
+              max: 5.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "master_thrower"
+    display_name: "Master Thrower"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster after throwing."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "legendary_throw"
+    display_name: "Legendary Throw"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Massive damage with thrown weapons."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - target: "minecraft:trident"
+        parameters:
+          multiplier:
+            constant: 3.0
+    feedback:
+      notify:
+        action_bar: false

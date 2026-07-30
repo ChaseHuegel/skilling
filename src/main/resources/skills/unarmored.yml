@@ -1,0 +1,147 @@
+id: "unarmored"
+max_level: 100
+
+display:
+  name: "Unarmored"
+  icon: "minecraft:leather"
+  color: "BLUE"
+  style: "SOLID"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage_taken"
+    filters:
+      - state: "armor:empty"
+    reward:
+      constant: 5.0
+
+abilities:
+  - id: "nimble_defense"
+    display_name: "Nimble Defense"
+    unlock_level: 1
+    display:
+      lore:
+        - "&a{chance}% &7chance to dodge attacks."
+    mechanics:
+      - type: "core:dodge"
+        filters:
+          - state: "armor:empty"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.3
+              max: 35.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "bare_necessities"
+    display_name: "Bare Necessities"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster without armor."
+    mechanics:
+      - type: "core:speed_bonus"
+        filters:
+          - state: "armor:empty"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.003
+              max: 1.3
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "evasion"
+    display_name: "Evasion"
+    unlock_level: 25
+    display:
+      lore:
+        - "&a{chance}% &7chance to avoid all damage."
+    mechanics:
+      - type: "core:cancel_damage"
+        filters:
+          - state: "armor:empty"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 30.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "hardened_body"
+    display_name: "Hardened Body"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Gain &a{amount} &7natural armor."
+    mechanics:
+      - type: "core:armor_bonus"
+        filters:
+          - state: "armor:empty"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.005
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "deflection"
+    display_name: "Deflection"
+    unlock_level: 75
+    display:
+      lore:
+        - "&a{chance}% &7chance to block attacks."
+    mechanics:
+      - type: "core:block_damage"
+        filters:
+          - state: "armor:empty"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 25.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "enlightened_evasion"
+    display_name: "Enlightened Evasion"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Near-perfect dodge and speed without armor."
+    mechanics:
+      - type: "core:dodge"
+        filters:
+          - state: "armor:empty"
+        parameters:
+          chance:
+            constant: 50.0
+      - type: "core:speed_bonus"
+        filters:
+          - state: "armor:empty"
+        parameters:
+          multiplier:
+            constant: 1.3
+    feedback:
+      notify:
+        action_bar: false

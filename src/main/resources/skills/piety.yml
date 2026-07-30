@@ -1,0 +1,163 @@
+id: "piety"
+max_level: 100
+
+display:
+  name: "Piety"
+  icon: "minecraft:golden_apple"
+  color: "PURPLE"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage_taken"
+    reward:
+      constant: 3.0
+
+  - trigger: "breed_animals"
+    reward:
+      constant: 8.0
+
+abilities:
+  - id: "holy_light"
+    display_name: "Holy Light"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Radiates regeneration to nearby allies."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 10.0
+          radius:
+            linear:
+              base: 4.0
+              step: 0.05
+              max: 8.0
+          duration:
+            constant: 5.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "bless"
+    display_name: "Bless"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Attacks weaken targets for &a{duration}s&7."
+    mechanics:
+      - type: "core:apply_status"
+        parameters:
+          effect:
+            constant: 18.0
+          duration:
+            linear:
+              base: 2.0
+              step: 0.02
+              max: 4.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "sanctuary"
+    display_name: "Sanctuary"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Gain &a{amount} &7armor from faith."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.005
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "consecrate"
+    display_name: "Consecrate"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Radiates strength to nearby allies."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 5.0
+          radius:
+            linear:
+              base: 4.0
+              step: 0.05
+              max: 8.0
+          duration:
+            constant: 5.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "holy_protection"
+    display_name: "Holy Protection"
+    unlock_level: 75
+    display:
+      lore:
+        - "&a{chance}% &7chance to negate damage."
+    mechanics:
+      - type: "core:cancel_damage"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 25.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "divine_intervention"
+    display_name: "Divine Intervention"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Powerful aura of regeneration and resistance."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 10.0
+          radius:
+            constant: 10.0
+          duration:
+            constant: 10.0
+          amplifier:
+            constant: 1.0
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 11.0
+          radius:
+            constant: 10.0
+          duration:
+            constant: 10.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false

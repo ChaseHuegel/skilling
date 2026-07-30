@@ -1,0 +1,135 @@
+id: "husbandry"
+max_level: 100
+
+display:
+  name: "Husbandry"
+  icon: "minecraft:wheat"
+  color: "GREEN"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "breed_animals"
+    reward:
+      constant: 15.0
+
+  - trigger: "player_shear"
+    reward:
+      constant: 5.0
+
+  - trigger: "player_tame"
+    reward:
+      constant: 20.0
+
+abilities:
+  - id: "animal_bond"
+    display_name: "Animal Bond"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Gain bonus XP from breeding and shearing."
+    mechanics:
+      - type: "core:xp_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.5
+              step: 0.015
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "shearing_mastery"
+    display_name: "Shearing Mastery"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Gain &a{amount} &7bonus armor while near animals."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.005
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "gentle_hands"
+    display_name: "Gentle Hands"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Easier to tame wild animals."
+    mechanics:
+      - type: "core:modify_tame_chance"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.5
+              step: 0.02
+              max: 3.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "herd_growth"
+    display_name: "Herd Growth"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Gain &a{amount} &7knockback resistance from your herd."
+    mechanics:
+      - type: "core:knockback_resist"
+        parameters:
+          amount:
+            linear:
+              base: 0.1
+              step: 0.003
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "animal_whisperer"
+    display_name: "Animal Whisperer"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster with animals nearby."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.2
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "master_husbander"
+    display_name: "Master Husbander"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Tame any animal instantly."
+    mechanics:
+      - type: "core:modify_tame_chance"
+        parameters:
+          multiplier:
+            constant: 100.0
+    feedback:
+      notify:
+        action_bar: false

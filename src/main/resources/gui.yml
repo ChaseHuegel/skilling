@@ -15,85 +15,80 @@
 # Titles support Minecraft formatting codes (&0-&f, &l, &o, &n, &m, &k, &r).
 # ============================================================================
 
-# Global filler item for unassigned slots.
-# filler:
-#   material: "minecraft:black_stained_glass_pane"
-#   custom_model_data: 0
+filler:
+  material: "minecraft:black_stained_glass_pane"
+  custom_model_data: 0
 
-# pages:
-#   gathering:
-#     title: "&6Gathering"
-#     # Optional: separate inventory title from page indicator name.
-#     # Falls back to 'title' if not set. Supports & formatting codes.
-#     # gui_title: "&6Gathering Skills"
-#     icon: "minecraft:iron_pickaxe"
-#     custom_model_data: 1001
-#     # Number of inventory rows (0 = full 6-row chest, 1-6 = custom height)
-#     rows: 0
-#     skills:
-#       mining: 0
-#       woodcutting: 1
-#       excavation: 2
-#       farming: 3
-#       herbalism: 4
-#       husbandry: 5
-#
-#   combat:
-#     title: "&cCombat"
-#     icon: "minecraft:iron_sword"
-#     custom_model_data: 1002
-#     rows: 0
-#     skills:
-#       heavy_weapons: 0
-#       light_weapons: 1
-#       unarmed: 2
-#       archery: 3
-#       throwing: 4
-#       one_handed: 5
-#       dual_wield: 6
-#
-#   artisan:
-#     title: "&dArtisan"
-#     icon: "minecraft:crafting_table"
-#     custom_model_data: 1003
-#     rows: 0
-#     skills:
-#       smithing: 22
-#       carpentry: 23
-#       masonry: 24
-#       tailoring: 25
-#       cooking: 40
-#       building: 41
-#
-#   arcane:
-#     title: "&5Arcane"
-#     icon: "minecraft:ender_pearl"
-#     custom_model_data: 1004
-#     rows: 0
-#     skills:
-#       alchemy: 0
-#       enchanting: 1
-#       piety: 20
-#       bard: 21
-#       wizardry: 22
-#
-#   defense:
-#     title: "&bDefense"
-#     icon: "minecraft:shield"
-#     custom_model_data: 1005
-#     rows: 0
-#     skills:
-#       shields: 0
-#       heavy_armor: 1
-#       light_armor: 2
-#       medium_armor: 3
-#       unarmored: 4
-#
-#   mobility:
-#     title: "&eMobility"
-#     icon: "minecraft:elytra"
-#     custom_model_data: 1006
-#     rows: 0
-#     skills:
-#       riding: 0
-#       acrobatics: 1
+pages:
+  gathering:
+    title: "&6Gathering"
+    icon: "minecraft:iron_pickaxe"
+    custom_model_data: 1001
+    rows: 0
+    skills:
+      mining: 0
+      woodcutting: 1
+      excavation: 2
+      farming: 3
+      herbalism: 4
+      husbandry: 5
+
+  combat:
+    title: "&cCombat"
+    icon: "minecraft:iron_sword"
+    custom_model_data: 1002
+    rows: 0
+    skills:
+      heavy_weapons: 0
+      light_weapons: 1
+      unarmed: 2
+      archery: 3
+      throwing: 4
+      one_handed: 5
+      dual_wield: 6
+
+  artisan:
+    title: "&dArtisan"
+    icon: "minecraft:crafting_table"
+    custom_model_data: 1003
+    rows: 0
+    skills:
+      smithing: 22
+      carpentry: 23
+      masonry: 24
+      tailoring: 25
+      cooking: 40
+      building: 41
+
+  arcane:
+    title: "&5Arcane"
+    icon: "minecraft:ender_pearl"
+    custom_model_data: 1004
+    rows: 0
+    skills:
+      alchemy: 0
+      enchanting: 1
+      piety: 20
+      bard: 21
+      wizardry: 22
+
+  defense:
+    title: "&bDefense"
+    icon: "minecraft:shield"
+    custom_model_data: 1005
+    rows: 0
+    skills:
+      shields: 0
+      heavy_armor: 1
+      light_armor: 2
+      medium_armor: 3
+      unarmored: 4
+
+  mobility:
+    title: "&eMobility"
+    icon: "minecraft:elytra"
+    custom_model_data: 1006
+    rows: 0
+    skills:
+      riding: 0
+      acrobatics: 1

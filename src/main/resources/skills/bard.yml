@@ -1,0 +1,165 @@
+id: "bard"
+max_level: 100
+
+display:
+  name: "Bard"
+  icon: "minecraft:jukebox"
+  color: "PURPLE"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "craft_item"
+    reward:
+      constant: 10.0
+
+  - trigger: "player_interact"
+    reward:
+      constant: 2.0
+
+abilities:
+  - id: "melody_of_haste"
+    display_name: "Melody of Haste"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Music grants haste to nearby allies."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 3.0
+          radius:
+            linear:
+              base: 5.0
+              step: 0.05
+              max: 10.0
+          duration:
+            constant: 5.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "rhythm_of_strength"
+    display_name: "Rhythm of Strength"
+    unlock_level: 15
+    display:
+      lore:
+        - "&7Music grants strength to nearby allies."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 5.0
+          radius:
+            linear:
+              base: 5.0
+              step: 0.05
+              max: 10.0
+          duration:
+            constant: 5.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "ballad_of_endurance"
+    display_name: "Ballad of Endurance"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Music grants armor to the performer."
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount:
+            linear:
+              base: 0.0
+              step: 0.005
+              max: 0.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "song_of_protection"
+    display_name: "Song of Protection"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Music grants resistance to nearby allies."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 11.0
+          radius:
+            linear:
+              base: 5.0
+              step: 0.05
+              max: 10.0
+          duration:
+            constant: 5.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "war_march"
+    display_name: "War March"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Music grants speed to the performer."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "symphony"
+    display_name: "Symphony"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Powerful song of haste and strength."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 3.0
+          radius:
+            constant: 12.0
+          duration:
+            constant: 10.0
+          amplifier:
+            constant: 1.0
+      - type: "core:field_aura"
+        parameters:
+          effect:
+            constant: 5.0
+          radius:
+            constant: 12.0
+          duration:
+            constant: 10.0
+          amplifier:
+            constant: 0.0
+    feedback:
+      notify:
+        action_bar: false

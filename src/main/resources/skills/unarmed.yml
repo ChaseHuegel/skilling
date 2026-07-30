@@ -1,0 +1,147 @@
+id: "unarmed"
+max_level: 100
+
+display:
+  name: "Unarmed"
+  icon: "minecraft:player_head"
+  color: "RED"
+  style: "SEGMENTED_10"
+
+progression:
+  curve: "polynomial"
+  base_xp: 50
+  exponent: 2.5
+
+xp_sources:
+  - trigger: "entity_damage"
+    filters:
+      - state: "hand:empty"
+    reward:
+      constant: 5.0
+
+  - trigger: "entity_kill"
+    filters:
+      - state: "hand:empty"
+    reward:
+      constant: 25.0
+
+abilities:
+  - id: "iron_fist"
+    display_name: "Iron Fist"
+    unlock_level: 1
+    display:
+      lore:
+        - "&7Increases unarmed damage by &a{multiplier}x&7."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - state: "hand:empty"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.005
+              max: 1.5
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "lightning_reflexes"
+    display_name: "Lightning Reflexes"
+    unlock_level: 15
+    display:
+      lore:
+        - "&a{chance}% &7chance to dodge attacks."
+    mechanics:
+      - type: "core:dodge"
+        parameters:
+          chance:
+            linear:
+              base: 5.0
+              step: 0.2
+              max: 25.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "pressure_points"
+    display_name: "Pressure Points"
+    unlock_level: 25
+    display:
+      lore:
+        - "&7Unarmed strikes weaken targets for &a{duration}s&7."
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - state: "hand:empty"
+        parameters:
+          effect:
+            constant: 18.0
+          duration:
+            linear:
+              base: 3.0
+              step: 0.03
+              max: 6.0
+          amplifier:
+            constant: 1.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "chi_flow"
+    display_name: "Chi Flow"
+    unlock_level: 50
+    display:
+      lore:
+        - "&7Move &a{multiplier}x &7faster in combat."
+    mechanics:
+      - type: "core:speed_bonus"
+        parameters:
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.002
+              max: 1.25
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "counter_strike"
+    display_name: "Counter Strike"
+    unlock_level: 75
+    display:
+      lore:
+        - "&7Heal &a{percentage}% &7of unarmed damage dealt."
+    mechanics:
+      - type: "core:lifesteal"
+        filters:
+          - state: "hand:empty"
+        parameters:
+          percentage:
+            linear:
+              base: 3.0
+              step: 0.05
+              max: 10.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "master_martial_artist"
+    display_name: "Master Martial Artist"
+    unlock_level: 100
+    display:
+      lore:
+        - "&7Massive unarmed damage boost."
+    mechanics:
+      - type: "core:modify_damage"
+        filters:
+          - state: "hand:empty"
+        parameters:
+          multiplier:
+            constant: 2.5
+    feedback:
+      notify:
+        action_bar: false
