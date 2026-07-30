@@ -21,6 +21,7 @@ import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.registry.EvaluatorRegistry;
 import io.github.chasehuegel.skilling.engine.registry.MechanicRegistry;
+import io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry;
 import io.github.chasehuegel.skilling.engine.registry.TriggerRegistry;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
@@ -64,6 +65,7 @@ public final class Skilling extends JavaPlugin {
     private static final String CONFIG_CROP_GROW_RADIUS = "crop_grow.search_radius";
 
     private Registries registries;
+    private StateFilterRegistry stateFilterRegistry;
     private DatabaseManager databaseManager;
     private ProfileManager profileManager;
     private AsyncBatchWorker asyncBatchWorker;
@@ -146,6 +148,7 @@ public final class Skilling extends JavaPlugin {
                 new TriggerRegistry(),
                 new EvaluatorRegistry()
         );
+        this.stateFilterRegistry = new StateFilterRegistry();
         registerBuiltins();
 
         // Initialize database
@@ -212,7 +215,7 @@ public final class Skilling extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new UIProtectionListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker, requirementEngine), this);
         this.skillEventListener = new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
-                        registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool);
+                        registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool, stateFilterRegistry);
         Bukkit.getPluginManager().registerEvents(skillEventListener, this);
 
         // BossBar TTL tick loop (every tick so fadeTicks config is in game ticks)
@@ -276,6 +279,12 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:auto_replant", AutoReplantMechanic.class, List.of());
         mechReg.register("core:durability_save", DurabilitySaveMechanic.class, List.of("chance"));
         mechReg.register("core:haste_effect", HasteMechanic.class, List.of("amplifier", "duration"));
+        mechReg.register("core:repair_discount", RepairDiscountMechanic.class, List.of("discount"));
+        mechReg.register("core:modify_tame_chance", ModifyTameChanceMechanic.class, List.of("multiplier"));
+        mechReg.register("core:projectile_return", ProjectileReturnMechanic.class, List.of("chance"));
+        mechReg.register("core:modify_enchant_cost", ModifyEnchantCostMechanic.class, List.of("discount"));
+        mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
+        mechReg.register("core:modify_jump", ModifyJumpMechanic.class, List.of("multiplier", "duration"));
 
         var trigReg = registries.getTriggerRegistry();
         trigReg.register("block_break", BlockBreakTrigger.class);
@@ -299,6 +308,145 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("enchant_item", EnchantItemTrigger.class);
         trigReg.register("shoot_bow", ShootBowTrigger.class);
         trigReg.register("item_damage", ItemDamageTrigger.class);
+        trigReg.register("player_shear", ShearEntityTrigger.class);
+        trigReg.register("player_tame", TameEntityTrigger.class);
+        trigReg.register("launch_projectile", LaunchProjectileTrigger.class);
+
+        registerBuiltinStateFilters();
+    }
+
+    private void registerBuiltinStateFilters() {
+        var sf = stateFilterRegistry;
+
+        sf.register("is_sneaking", (p, e, v) -> p.isSneaking());
+        sf.register("is_sprinting", (p, e, v) -> p.isSprinting());
+        sf.register("is_in_water", (p, e, v) -> p.isInWater());
+        sf.register("is_on_ground", (p, e, v) -> p.isOnGround());
+        sf.register("is_on_fire", (p, e, v) -> p.getFireTicks() > 0);
+        sf.register("is_riding", (p, e, v) -> p.isInsideVehicle());
+        sf.register("is_blocking", (p, e, v) -> p.isBlocking());
+
+        sf.register("player_placed", (p, e, v) -> {
+            if (e instanceof org.bukkit.event.block.BlockBreakEvent be) {
+                return !be.getBlock().hasMetadata("player_placed");
+            }
+            return true;
+        });
+
+        sf.register("dimension", (p, e, v) -> {
+            var env = p.getWorld().getEnvironment();
+            return switch (v) {
+                case "overworld" -> env == org.bukkit.World.Environment.NORMAL;
+                case "nether" -> env == org.bukkit.World.Environment.NETHER;
+                case "end" -> env == org.bukkit.World.Environment.THE_END;
+                default -> false;
+            };
+        });
+
+        sf.register("weather", (p, e, v) -> switch (v) {
+            case "clear" -> p.getWorld().isClearWeather();
+            case "rain" -> p.getWorld().hasStorm();
+            case "thunder" -> p.getWorld().isThundering();
+            default -> false;
+        });
+
+        sf.register("time", (p, e, v) -> switch (v) {
+            case "day" -> p.getWorld().getTime() < 12300 || p.getWorld().getTime() > 23900;
+            case "night" -> p.getWorld().getTime() >= 13000 && p.getWorld().getTime() <= 23900;
+            default -> false;
+        });
+
+        sf.register("light_level", (p, e, v) -> {
+            String[] parts = v.split(":", 2);
+            if (parts.length < 2) return true;
+            int threshold;
+            try { threshold = Integer.parseInt(parts[1]); } catch (NumberFormatException ex) { return true; }
+            int light = p.getLocation().getBlock().getLightLevel();
+            return switch (parts[0]) {
+                case "below" -> light < threshold;
+                case "above" -> light > threshold;
+                case "exactly" -> light == threshold;
+                default -> true;
+            };
+        });
+
+        sf.register("health", (p, e, v) -> {
+            String[] parts = v.split(":", 2);
+            if (parts.length < 2) return true;
+            double healthPct = p.getHealth() / p.getMaxHealth() * 100;
+            String val = parts[1].endsWith("%") ? parts[1].substring(0, parts[1].length() - 1) : parts[1];
+            double threshold;
+            try { threshold = Double.parseDouble(val); } catch (NumberFormatException ex) { return true; }
+            return switch (parts[0]) {
+                case "below" -> healthPct < threshold;
+                case "above" -> healthPct > threshold;
+                default -> true;
+            };
+        });
+
+        sf.register("hunger", (p, e, v) -> {
+            String[] parts = v.split(":", 2);
+            if (parts.length < 2) return true;
+            int threshold;
+            try { threshold = Integer.parseInt(parts[1]); } catch (NumberFormatException ex) { return true; }
+            int food = p.getFoodLevel();
+            return switch (parts[0]) {
+                case "below" -> food < threshold;
+                case "above" -> food > threshold;
+                default -> true;
+            };
+        });
+
+        sf.register("biome", (p, e, v) -> {
+            var biome = p.getLocation().getBlock().getBiome();
+            var targetBiome = org.bukkit.Registry.BIOME.get(org.bukkit.NamespacedKey.fromString(v));
+            return targetBiome != null && biome == targetBiome;
+        });
+
+        sf.register("target_type", (p, e, v) -> {
+            if (!(e instanceof org.bukkit.event.entity.EntityDamageByEntityEvent de)) return true;
+            var entityType = de.getEntity().getType();
+            var key = org.bukkit.NamespacedKey.fromString(v);
+            if (key == null) return true;
+            var target = org.bukkit.Registry.ENTITY_TYPE.get(key);
+            return target != null && entityType == target;
+        });
+
+        sf.register("offhand", (p, e, v) -> {
+            var offhand = p.getInventory().getItemInOffHand().getType();
+            return switch (v) {
+                case "empty" -> offhand == org.bukkit.Material.AIR;
+                case "weapon" -> offhand.name().contains("SWORD") || offhand.name().contains("AXE")
+                        || offhand == org.bukkit.Material.TRIDENT || offhand == org.bukkit.Material.MACE;
+                default -> false;
+            };
+        });
+
+        sf.register("hand", (p, e, v) -> {
+            boolean mainEmpty = p.getInventory().getItemInMainHand().getType() == org.bukkit.Material.AIR;
+            boolean offEmpty = p.getInventory().getItemInOffHand().getType() == org.bukkit.Material.AIR;
+            return switch (v) {
+                case "empty" -> mainEmpty && offEmpty;
+                case "main_empty" -> mainEmpty;
+                case "off_empty" -> offEmpty;
+                default -> false;
+            };
+        });
+
+        sf.register("armor", (p, e, v) -> switch (v) {
+            case "empty" -> {
+                var armor = p.getInventory().getArmorContents();
+                boolean allEmpty = true;
+                for (var piece : armor) {
+                    if (piece != null && piece.getType() != org.bukkit.Material.AIR) {
+                        allEmpty = false;
+                        break;
+                    }
+                }
+                yield allEmpty;
+            }
+            default -> false;
+        });
     }
 
     private void loadSkills() {
@@ -354,6 +502,10 @@ public final class Skilling extends JavaPlugin {
 
     public RequirementEngine getRequirementEngine() {
         return requirementEngine;
+    }
+
+    public StateFilterRegistry getStateFilterRegistry() {
+        return stateFilterRegistry;
     }
 
     public FeedbackDebouncer getFeedbackDebouncer() {

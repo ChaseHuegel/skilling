@@ -64,11 +64,13 @@ public final class SkillEventListener implements Listener {
     private final MechanicRegistry mechanicRegistry;
     private final FeedbackDebouncer feedbackDebouncer;
     private final BossBarPool bossBarPool;
+    private io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry stateFilterRegistry;
 
     public SkillEventListener(Skilling plugin, SkillManager skillManager, ProfileManager profileManager,
                               TagResolver tagResolver, RequirementEngine requirementEngine,
                               MechanicRegistry mechanicRegistry, FeedbackDebouncer feedbackDebouncer,
-                              BossBarPool bossBarPool) {
+                              BossBarPool bossBarPool,
+                              io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry stateFilterRegistry) {
         this.plugin = plugin;
         this.skillManager = skillManager;
         this.profileManager = profileManager;
@@ -77,6 +79,7 @@ public final class SkillEventListener implements Listener {
         this.mechanicRegistry = mechanicRegistry;
         this.feedbackDebouncer = feedbackDebouncer;
         this.bossBarPool = bossBarPool;
+        this.stateFilterRegistry = stateFilterRegistry;
     }
 
     /**
@@ -306,6 +309,25 @@ public final class SkillEventListener implements Listener {
         dispatch(event.getPlayer(), event, "item_damage");
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onShearEntity(org.bukkit.event.player.PlayerShearEntityEvent event) {
+        dispatch(event.getPlayer(), event, "player_shear");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTameEntity(org.bukkit.event.entity.EntityTameEvent event) {
+        if (event.getOwner() instanceof Player player) {
+            dispatch(player, event, "player_tame");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onLaunchProjectile(org.bukkit.event.entity.ProjectileLaunchEvent event) {
+        if (event.getEntity().getShooter() instanceof Player player) {
+            dispatch(player, event, "launch_projectile");
+        }
+    }
+
     private void dispatch(Player player, Event event, String triggerKey) {
         if (plugin.isReloading()) return;
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
@@ -480,30 +502,11 @@ public final class SkillEventListener implements Listener {
         }
 
         if (filter.state() != null && !filter.state().isBlank()) {
-            boolean passed = switch (filter.state()) {
-                case "is_sneaking" -> player.isSneaking();
-                case "is_sprinting" -> player.isSprinting();
-                case "is_in_water" -> player.isInWater();
-                case "is_on_ground" -> player.isOnGround();
-                case "is_on_fire" -> player.getFireTicks() > 0;
-                case "is_riding" -> player.isInsideVehicle();
-                case "player_placed:false" -> {
-                    if (event instanceof BlockBreakEvent be) {
-                        yield !be.getBlock().hasMetadata("player_placed");
-                    }
-                    yield true;
-                }
-                case "dimension:overworld" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.NORMAL;
-                case "dimension:nether" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER;
-                case "dimension:end" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END;
-                case "weather:clear" -> player.getWorld().isClearWeather();
-                case "weather:rain" -> player.getWorld().hasStorm();
-                case "weather:thunder" -> player.getWorld().isThundering();
-                case "time:day" -> player.getWorld().getTime() < 12300 || player.getWorld().getTime() > 23900;
-                case "time:night" -> player.getWorld().getTime() >= 13000 && player.getWorld().getTime() <= 23900;
-                default -> matchParameterizedState(player, event, filter.state());
-            };
-            if (!passed) return false;
+            String state = filter.state();
+            int colonIdx = state.indexOf(':');
+            String key = colonIdx > 0 ? state.substring(0, colonIdx) : state;
+            String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
+            if (!stateFilterRegistry.evaluate(key, player, event, value)) return false;
         }
 
         if (filter.tool() != null && !filter.tool().isBlank()) {
@@ -578,6 +581,24 @@ public final class SkillEventListener implements Listener {
                 return projectileToMaterial(de.getDamager());
             }
         }
+        if (event instanceof org.bukkit.event.inventory.CraftItemEvent ce) {
+            return ce.getRecipe().getResult().getType();
+        }
+        if (event instanceof org.bukkit.event.inventory.FurnaceExtractEvent fe) {
+            return fe.getItemType();
+        }
+        if (event instanceof org.bukkit.event.player.PlayerItemConsumeEvent ce) {
+            return ce.getItem().getType();
+        }
+        if (event instanceof org.bukkit.event.enchantment.EnchantItemEvent ee) {
+            return ee.getItem().getType();
+        }
+        if (event instanceof org.bukkit.event.player.PlayerItemDamageEvent ide) {
+            return ide.getItem().getType();
+        }
+        if (event instanceof org.bukkit.event.entity.ProjectileLaunchEvent ple) {
+            return projectileToMaterial(ple.getEntity());
+        }
         return null;
     }
 
@@ -610,70 +631,7 @@ public final class SkillEventListener implements Listener {
         return result;
     }
 
-    private boolean matchParameterizedState(Player player, Event event, String state) {
-        String[] parts = state.split(":", 3);
-        if (parts.length < 2) return true;
 
-        return switch (parts[0]) {
-            case "light_level" -> {
-                if (parts.length < 3) yield true;
-                int threshold;
-                try { threshold = Integer.parseInt(parts[2]); } catch (NumberFormatException e) { yield true; }
-                int light = player.getLocation().getBlock().getLightLevel();
-                yield switch (parts[1]) {
-                    case "below" -> light < threshold;
-                    case "above" -> light > threshold;
-                    case "exactly" -> light == threshold;
-                    default -> true;
-                };
-            }
-            case "health" -> {
-                if (parts.length < 3) yield true;
-                double healthPct = player.getHealth() / player.getMaxHealth() * 100;
-                String val = parts[2].endsWith("%") ? parts[2].substring(0, parts[2].length() - 1) : parts[2];
-                double threshold;
-                try { threshold = Double.parseDouble(val); } catch (NumberFormatException e) { yield true; }
-                yield switch (parts[1]) {
-                    case "below" -> healthPct < threshold;
-                    case "above" -> healthPct > threshold;
-                    default -> true;
-                };
-            }
-            case "hunger" -> {
-                if (parts.length < 3) yield true;
-                int threshold;
-                try { threshold = Integer.parseInt(parts[2]); } catch (NumberFormatException e) { yield true; }
-                int food = player.getFoodLevel();
-                yield switch (parts[1]) {
-                    case "below" -> food < threshold;
-                    case "above" -> food > threshold;
-                    default -> true;
-                };
-            }
-            case "biome" -> {
-                String biomeKey = parts[1];
-                var biome = player.getLocation().getBlock().getBiome();
-                if (biomeKey.startsWith("#")) {
-                    yield true; // biome tag match not supported in this API version
-                }
-                var targetBiome = org.bukkit.Registry.BIOME.get(NamespacedKey.fromString(biomeKey));
-                yield targetBiome != null && biome == targetBiome;
-            }
-            case "target_type" -> {
-                String targetKey = parts[1];
-                if (!(event instanceof org.bukkit.event.entity.EntityDamageByEntityEvent de)) yield true;
-                var entityType = de.getEntity().getType();
-                if (targetKey.startsWith("#")) {
-                    yield true; // entity type tag match not supported in this API version
-                }
-                var key = NamespacedKey.fromString(targetKey);
-                if (key == null) yield true;
-                var targetEntity = org.bukkit.Registry.ENTITY_TYPE.get(key);
-                yield targetEntity != null && entityType == targetEntity;
-            }
-            default -> true;
-        };
-    }
 
     private void debug(String msg) {
         if (plugin.isDebugLogging()) {
