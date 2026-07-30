@@ -64,6 +64,7 @@ const emit = defineEmits<{
 const dragState = inject('dragState') as DragState
 const selectedSkillId = inject('selectedSkillId') as ReturnType<typeof ref<string | null>>
 const dragOver = ref(false)
+const dragEnterCounter = ref(0)
 
 const slotAriaLabel = computed(() => {
   if (props.skill) return `Slot ${props.slotIndex}: ${props.skill.displayName || props.skill.id}`
@@ -80,6 +81,7 @@ function onDragStart(e: DragEvent) {
 }
 
 function onDragEnter() {
+  dragEnterCounter.value++
   dragOver.value = true
 }
 
@@ -88,7 +90,11 @@ function onDragOver(e: DragEvent) {
 }
 
 function onDragLeave() {
-  dragOver.value = false
+  dragEnterCounter.value--
+  if (dragEnterCounter.value <= 0) {
+    dragEnterCounter.value = 0
+    dragOver.value = false
+  }
 }
 
 function onDrop(e: DragEvent) {
