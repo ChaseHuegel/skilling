@@ -14,6 +14,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.*;
 import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
 import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import io.github.chasehuegel.skilling.engine.command.SkillsCommand;
+import io.github.chasehuegel.skilling.engine.integration.IntegrationManager;
 import io.github.chasehuegel.skilling.engine.listener.PlayerListener;
 import io.github.chasehuegel.skilling.engine.listener.SkillEventListener;
 import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
@@ -74,6 +75,7 @@ public final class Skilling extends JavaPlugin {
     private CustomTagLoader customTagLoader;
     private SkillEventListener skillEventListener;
     private WebServer webServer;
+    private IntegrationManager integrationManager;
     private volatile boolean reloading;
     private volatile boolean debugLogging;
     private volatile int titleStayDuration;
@@ -179,6 +181,10 @@ public final class Skilling extends JavaPlugin {
         this.webServer = new WebServer(this, webConfig, skillManager, stagingManager, lockdownManager);
         this.webServer.start();
 
+        // External integrations
+        this.integrationManager = new IntegrationManager(this);
+        integrationManager.initialize();
+
         // Commands
         this.skillsCommand = new SkillsCommand(this, skillManager, profileManager, skillMenuBuilder,
                 lockdownManager, bossBarPool);
@@ -283,6 +289,9 @@ public final class Skilling extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (integrationManager != null) {
+            integrationManager.shutdown();
+        }
         if (webServer != null) {
             webServer.stop();
         }
@@ -331,6 +340,10 @@ public final class Skilling extends JavaPlugin {
 
     public LockdownManager getLockdownManager() {
         return lockdownManager;
+    }
+
+    public IntegrationManager getIntegrationManager() {
+        return integrationManager;
     }
 
     public SkillEventListener getSkillEventListener() {

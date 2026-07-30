@@ -36,6 +36,22 @@ Global settings for the Skilling engine.
 |---|---|---|---|
 | `global_xp_modifier` | double | `1.0` | Global XP multiplier applied to all XP gains across all skills |
 
+### economy
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `economy.enabled` | bool | `true` | Enable Vault economy integration (requires Vault) |
+| `economy.xp_reward_amount` | double | `50.0` | Currency earned per level-up |
+| `economy.currency_name` | string | `"Coins"` | Display name for currency in messages |
+| `economy.ability_cost_enabled` | bool | `false` | Allow abilities to cost currency per activation |
+
+### crop_grow
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `crop_grow.search_radius` | int | `10` | Radius in blocks to search for nearby players when a crop grows naturally |
+| `crop_grow.enabled` | bool | `true` | Enable the crop_grow trigger |
+
 ### debug_logging (global)
 
 | Key | Type | Default | Description |

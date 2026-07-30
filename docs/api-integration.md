@@ -101,6 +101,25 @@ SkillingAPI api = Bukkit.getServicesManager().load(SkillingAPI.class);
 api.getRegistries().registerEvaluator("logistic", new LogisticEvaluator(10, 0.5));
 ```
 
+## PlaceholderAPI
+
+Skilling registers a `%skilling_*%` placeholder expansion when PlaceholderAPI is detected:
+
+| Placeholder | Description | Example Output |
+|---|---|---|
+| `%skilling_level_{skill}%` | Player's level in a skill | `47` |
+| `%skilling_xp_{skill}%` | Raw XP in a skill | `12840` |
+| `%skilling_max_xp_{skill}%` | XP needed for next level | `15000` |
+| `%skilling_progress_{skill}%` | Percent to next level | `62.5` |
+| `%skilling_remaining_{skill}%` | XP remaining for next level | `2160` |
+| `%skilling_total_levels%` | Sum of all skill levels | `312` |
+
+Example: `%skilling_level_mining%` returns the player's current Mining level.
+
+## Vault Economy
+
+When Vault is detected, abilities can use economy-based requirements. See `docs/configuration.md` for economy config keys.
+
 ## API Reference
 
 ### SkillingAPI

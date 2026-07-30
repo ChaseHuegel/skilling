@@ -349,7 +349,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - See `ISSUE-057.md` for full development plan
 - [x] Pre-built skill configurations: ship 6 production-ready skills (Mining, Woodcutting, Excavation, Farming, Fishing, Archery) following the SKILL-DESIGN-FRAMEWORK.md 6-tier milestone progression
     - See `ISSUE-058.md` for full development plan
-- [ ] External plugin integration: soft-dependency hooks for PlaceholderAPI, Vault economy, and bStats metrics
+- [x] External plugin integration: soft-dependency hooks for PlaceholderAPI, Vault economy, and bStats metrics
     - See `ISSUE-059.md` for full development plan
 - [ ] Separate `skilling-api` Gradle module: publish a slim zero-dependency API JAR for addon developers
     - See `ISSUE-060.md` for full development plan

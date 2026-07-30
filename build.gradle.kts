@@ -9,6 +9,7 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.incendo.org/repository/maven-releases/")
+
 }
 
 dependencies {
@@ -31,6 +32,9 @@ dependencies {
     }
     implementation("org.slf4j:slf4j-api:2.0.17")
     implementation("org.slf4j:jul-to-slf4j:2.0.17")
+
+    // External integrations
+    implementation("org.bstats:bstats-bukkit:3.1.0")
 
     // Testing
     testImplementation("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
@@ -81,6 +85,7 @@ tasks {
         relocate("org.incendo.cloud", "io.github.chasehuegel.skilling.libs.cloud")
         relocate("io.javalin", "io.github.chasehuegel.skilling.libs.javalin")
         relocate("org.eclipse.jetty", "io.github.chasehuegel.skilling.libs.jetty")
+        relocate("org.bstats", "io.github.chasehuegel.skilling.libs.bstats")
         minimize()
     }
 
