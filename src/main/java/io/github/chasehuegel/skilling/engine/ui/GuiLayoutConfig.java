@@ -78,6 +78,8 @@ public final class GuiLayoutConfig {
                 continue;
             }
 
+            String guiTitle = pageSection.getString("gui_title", "");
+
             String icon = pageSection.getString("icon", "minecraft:book");
             int customModelData = pageSection.getInt("custom_model_data", 0);
             int rows = pageSection.getInt("rows", 0);
@@ -89,7 +91,7 @@ public final class GuiLayoutConfig {
             }
 
             // Pre-compute reserved slots for validation
-            GuiPage dummy = new GuiPage(pageId, title, icon, customModelData, rows, Map.of());
+            GuiPage dummy = new GuiPage(pageId, title, guiTitle, icon, customModelData, rows, Map.of());
             Set<Integer> reserved = Set.of(dummy.prevSlot(), dummy.indicatorSlot(), dummy.nextSlot());
             int maxSlot = dummy.inventorySize() - 1;
 
@@ -124,7 +126,7 @@ public final class GuiLayoutConfig {
                 }
             }
 
-            GuiPage guiPage = new GuiPage(pageId, title, icon, customModelData, rows, skillSlots);
+            GuiPage guiPage = new GuiPage(pageId, title, guiTitle, icon, customModelData, rows, skillSlots);
             pages.add(guiPage);
             pageById.put(pageId, guiPage);
         }

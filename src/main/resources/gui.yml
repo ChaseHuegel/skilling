@@ -11,6 +11,8 @@
 #   - Center column of last row: Page indicator icon
 #   - Last column of last row: Next-page arrow (auto-rendered)
 # - All unassigned slots show filler (configurable below).
+#
+# Titles support Minecraft formatting codes (&0-&f, &l, &o, &n, &m, &k, &r).
 # ============================================================================
 
 # Global filler item for unassigned slots.
@@ -20,7 +22,10 @@
 
 # pages:
 #   gathering:
-#     title: "Gathering"
+#     title: "&6Gathering"
+#     # Optional: separate inventory title from page indicator name.
+#     # Falls back to 'title' if not set. Supports & formatting codes.
+#     # gui_title: "&6Gathering Skills"
 #     icon: "minecraft:iron_pickaxe"
 #     custom_model_data: 1001
 #     # Number of inventory rows (0 = full 6-row chest, 1-6 = custom height)
@@ -34,7 +39,7 @@
 #       husbandry: 5
 #
 #   combat:
-#     title: "Combat"
+#     title: "&cCombat"
 #     icon: "minecraft:iron_sword"
 #     custom_model_data: 1002
 #     rows: 0
@@ -48,7 +53,7 @@
 #       dual_wield: 6
 #
 #   artisan:
-#     title: "Artisan"
+#     title: "&dArtisan"
 #     icon: "minecraft:crafting_table"
 #     custom_model_data: 1003
 #     rows: 0
@@ -61,7 +66,7 @@
 #       building: 41
 #
 #   arcane:
-#     title: "Arcane"
+#     title: "&5Arcane"
 #     icon: "minecraft:ender_pearl"
 #     custom_model_data: 1004
 #     rows: 0
@@ -73,7 +78,7 @@
 #       wizardry: 22
 #
 #   defense:
-#     title: "Defense"
+#     title: "&bDefense"
 #     icon: "minecraft:shield"
 #     custom_model_data: 1005
 #     rows: 0
@@ -85,7 +90,7 @@
 #       unarmored: 4
 #
 #   mobility:
-#     title: "Mobility"
+#     title: "&eMobility"
 #     icon: "minecraft:elytra"
 #     custom_model_data: 1006
 #     rows: 0

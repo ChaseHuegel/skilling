@@ -94,7 +94,7 @@ public final class SkillMenuBuilder {
             Inventory inventory = Bukkit.createInventory(
                     new SkillInventoryHolder(player, pageIndex, pageOrder, pageCount),
                     size,
-                    Component.text(page.title(), NamedTextColor.GOLD));
+                    LegacyComponentSerializer.legacyAmpersand().deserialize(page.displayTitle()));
 
             // Fill all slots with filler
             ItemStack filler = createFillerPane();
@@ -175,7 +175,7 @@ public final class SkillMenuBuilder {
         if (material == null) material = Material.BOOK;
         ItemStack item = new ItemStack(material);
         item.editMeta(meta -> {
-            meta.displayName(Component.text(page.title(), NamedTextColor.GOLD));
+            meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize(page.displayTitle()));
             int skillCount = page.skillSlots().size();
             meta.lore(List.of(
                     Component.text(skillCount + " skill(s)", NamedTextColor.GRAY)

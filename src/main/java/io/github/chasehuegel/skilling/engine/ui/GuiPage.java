@@ -12,7 +12,8 @@ import java.util.Map;
  * the last row automatically.
  *
  * @param id               unique page identifier matching the key in gui.yml
- * @param title            display name shown in the inventory title bar
+ * @param title            display name for the page indicator item
+ * @param guiTitle         inventory title bar text (optional, supports {@code &} color codes; falls back to {@code title})
  * @param icon             material string for the page indicator item
  * @param customModelData  optional custom model data for the page icon
  * @param rows             number of inventory rows (0 = full 6-row / 54-slot, 1–6 = custom)
@@ -21,6 +22,7 @@ import java.util.Map;
 public record GuiPage(
         String id,
         String title,
+        String guiTitle,
         String icon,
         int customModelData,
         int rows,
@@ -28,6 +30,16 @@ public record GuiPage(
 ) {
     public GuiPage {
         skillSlots = skillSlots != null ? Collections.unmodifiableMap(skillSlots) : Map.of();
+    }
+
+    /**
+     * Returns the effective inventory title, using {@code guiTitle} when
+     * set and non-blank, falling back to {@code title}.
+     *
+     * @return the display title for the inventory window
+     */
+    public String displayTitle() {
+        return guiTitle != null && !guiTitle.isBlank() ? guiTitle : title;
     }
 
     /**
