@@ -130,7 +130,7 @@ public final class SkillsCommand {
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("log")
                 .permission("skilling.use")
-                .required("type", org.incendo.cloud.parser.standard.StringParser.stringParser())
+                .required("type", LogTypeParser.logTypeParser())
                 .required("value", BooleanParser.booleanParser())
                 .handler(ctx -> {
                     Source sender = ctx.sender();
@@ -148,10 +148,7 @@ public final class SkillsCommand {
                         case "levels" -> new PlayerPreferences(prefs.logXp(), value, prefs.logUnlocks(), prefs.logAbilities());
                         case "unlocks" -> new PlayerPreferences(prefs.logXp(), prefs.logLevels(), value, prefs.logAbilities());
                         case "abilities" -> new PlayerPreferences(prefs.logXp(), prefs.logLevels(), prefs.logUnlocks(), value);
-                        default -> {
-                            player.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown log type: " + type + ". Use: xp, levels, unlocks, abilities"));
-                            yield prefs;
-                        }
+                        default -> prefs;
                     };
                     if (updated != prefs) {
                         profile.setPreferences(updated);

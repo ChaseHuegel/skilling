@@ -14,7 +14,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Web) Some config options are missing from the config editor page. Come up with a development plan then ensure all config options are supported.
 
 # Improvements
-- [ ] (Plugin) Add tab autocomplete support to `/skills log`
+- [x] (Plugin) Add tab autocomplete support to `/skills log`
   - Ensure these aren't logged to the console or broadcast to other players
 - [ ] (Plugin) Players logging profile preferences should all be true by default except for XP gains
 - [ ] (Plugin) The skill guide recipe should be `book` + `coal` and shapeless
