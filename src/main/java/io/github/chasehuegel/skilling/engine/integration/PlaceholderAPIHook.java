@@ -5,14 +5,10 @@ import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiFunction;
 
 public class PlaceholderAPIHook {
     private final Skilling plugin;
     private Object expansion;
-    private Method registerMethod;
 
     public PlaceholderAPIHook(Skilling plugin) {
         this.plugin = plugin;
@@ -44,7 +40,7 @@ public class PlaceholderAPIHook {
                         };
                     });
 
-            registerMethod = pluginClass.getMethod("registerPlaceholderExpansion", expansionClass);
+            Method registerMethod = pluginClass.getMethod("registerPlaceholderExpansion", expansionClass);
             registerMethod.invoke(null, expansion);
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to register PlaceholderAPI expansion: " + e.getMessage());
@@ -57,7 +53,7 @@ public class PlaceholderAPIHook {
         if (parts.length < 2) return "";
 
         String action = parts[0];
-        String skillId = parts[1];
+        String rest = parts[1];
 
         if (action.equals("total_levels")) {
             int total = 0;
@@ -70,13 +66,17 @@ public class PlaceholderAPIHook {
             return String.valueOf(total);
         }
 
-        SkillDefinition skill = plugin.getSkillManager().getSkill(skillId);
+        if (action.equals("evaluator")) {
+            return resolveEvaluator(player, rest);
+        }
+
+        SkillDefinition skill = plugin.getSkillManager().getSkill(rest);
         if (skill == null) return "0";
 
         PlayerProfile profile = plugin.getProfileManager().getProfile(player.getUniqueId());
         if (profile == null) return "0";
 
-        long xp = profile.getXp(skillId);
+        long xp = profile.getXp(rest);
         int level = skill.getLevelForXp(xp);
 
         return switch (action) {
@@ -98,6 +98,40 @@ public class PlaceholderAPIHook {
             }
             default -> "";
         };
+    }
+
+    private String resolveEvaluator(Object playerObj, String params) {
+        var player = (org.bukkit.entity.Player) playerObj;
+        String[] parts = params.split("_", 2);
+        if (parts.length < 2) return "0";
+
+        String skillId = parts[0];
+        String abilityParam = parts[1];
+
+        SkillDefinition skill = plugin.getSkillManager().getSkill(skillId);
+        if (skill == null) return "0";
+
+        PlayerProfile profile = plugin.getProfileManager().getProfile(player.getUniqueId());
+        if (profile == null) return "0";
+
+        int currentLevel = skill.getLevelForXp(profile.getXp(skillId));
+
+        for (SkillDefinition.Ability ability : skill.abilities()) {
+            String abilityKey = ability.id().replace('-', '_');
+            if (!abilityParam.startsWith(abilityKey + "_")) continue;
+
+            String paramName = abilityParam.substring(abilityKey.length() + 1);
+            for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
+                var evaluator = entry.parameters().get(paramName);
+                if (evaluator != null) {
+                    double result = evaluator.evaluate(currentLevel, ability.unlockLevel());
+                    return String.format("%.2f", result);
+                }
+            }
+            return "0";
+        }
+
+        return "0";
     }
 
     public void unregister() {

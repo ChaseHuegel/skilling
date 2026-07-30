@@ -29,6 +29,11 @@ titles:
 # Global XP multiplier applied to all XP gains. Default: 1.0
 global_xp_modifier: 1.0
 
+# Crop grow trigger configuration
+crop_grow:
+  # Radius (in blocks) to search for nearby players when a crop grows naturally
+  search_radius: 10
+
 # Skills Guide Book — a craftable item that opens the skill menu on right-click
 # Recipe: book + compass = enchanted book
 skills_guide_book:

@@ -128,6 +128,16 @@ Skilling registers a `%skilling_*%` placeholder expansion when PlaceholderAPI is
 
 Example: `%skilling_level_mining%` returns the player's current Mining level.
 
+### Evaluator Placeholders
+
+Expose dynamic ability parameters for display in scoreboards and chat:
+
+| Placeholder | Description | Example Output |
+|---|---|---|
+| `%skilling_evaluator_{skill}_{ability}_{param}%` | Dynamic evaluator output | `34.50` |
+
+Example: `%skilling_evaluator_mining_geologist_yield_chance%` returns the current yield chance for Geologist.
+
 ## Vault Economy
 
 When Vault is detected, abilities can use economy-based requirements. See `docs/configuration.md` for economy config keys.

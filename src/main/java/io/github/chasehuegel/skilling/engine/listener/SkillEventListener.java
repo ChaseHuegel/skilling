@@ -228,9 +228,11 @@ public final class SkillEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCropGrow(BlockGrowEvent event) {
+        if (plugin.isReloading()) return;
         var location = event.getBlock().getLocation();
         if (location.getWorld() != null) {
-            var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
+            int radius = plugin.getCropGrowRadius();
+            var players = location.getWorld().getNearbyPlayers(location, radius, p -> true);
             for (Player player : players) {
                 dispatch(player, event, "crop_grow");
             }

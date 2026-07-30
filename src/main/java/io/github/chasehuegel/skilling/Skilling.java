@@ -60,6 +60,7 @@ public final class Skilling extends JavaPlugin {
     private static final String CONFIG_DEBOUNCER_INTERVAL_MS = "debouncer.interval_ms";
     private static final String CONFIG_BOSSBAR_MAX_ACTIVE = "bossbar.max_active";
     private static final String CONFIG_BOSSBAR_FADE_TICKS = "bossbar.fade_ticks";
+    private static final String CONFIG_CROP_GROW_RADIUS = "crop_grow.search_radius";
 
     private Registries registries;
     private DatabaseManager databaseManager;
@@ -80,6 +81,7 @@ public final class Skilling extends JavaPlugin {
     private volatile boolean debugLogging;
     private volatile int titleStayDuration;
     private volatile double globalXpModifier;
+    private volatile int cropGrowRadius;
 
     /**
      * Returns the plugin singleton instance.
@@ -123,6 +125,7 @@ public final class Skilling extends JavaPlugin {
         }
         this.titleStayDuration = config.getInt(CONFIG_TITLES_STAY_DURATION, 5000);
         this.globalXpModifier = config.getDouble(CONFIG_GLOBAL_XP_MODIFIER, 1.0);
+        this.cropGrowRadius = config.getInt(CONFIG_CROP_GROW_RADIUS, 10);
 
         this.registries = new Registries(
                 new MechanicRegistry(),
@@ -382,11 +385,16 @@ public final class Skilling extends JavaPlugin {
         return globalXpModifier;
     }
 
+    public int getCropGrowRadius() {
+        return cropGrowRadius;
+    }
+
     public void reloadConfigSettings() {
         reloadConfig();
         var config = (YamlConfiguration) getConfig();
         this.debugLogging = config.getBoolean(CONFIG_DEBUG_LOGGING, false);
         this.titleStayDuration = config.getInt(CONFIG_TITLES_STAY_DURATION, 5000);
         this.globalXpModifier = config.getDouble(CONFIG_GLOBAL_XP_MODIFIER, 1.0);
+        this.cropGrowRadius = config.getInt(CONFIG_CROP_GROW_RADIUS, 10);
     }
 }
