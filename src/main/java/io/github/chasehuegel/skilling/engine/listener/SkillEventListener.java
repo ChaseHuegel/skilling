@@ -315,6 +315,12 @@ public final class SkillEventListener implements Listener {
                     profile.addXp(skill.id(), rounded);
                     int newLevel = skill.getLevelForXp(profile.getXp(skill.id()));
                     showXpBossBar(player, skill, profile);
+                    if (profile.getPreferences().logXp()) {
+                        String displayName = skill.display() != null && skill.display().name() != null
+                                ? skill.display().name() : skill.id();
+                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize("&a+" + rounded + " &7XP in &a" + displayName + " &7(" + triggerKey + ")"));
+                    }
                     if (newLevel > oldLevel) {
                         Bukkit.getPluginManager().callEvent(
                                 new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
