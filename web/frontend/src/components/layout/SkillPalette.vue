@@ -28,8 +28,6 @@
         draggable="true"
         @dragstart="onDragStart(skill, $event)"
         @dragend="onDragEnd"
-        @mouseenter="showTooltip(skill, $event)"
-        @mouseleave="hideTooltip"
         @click="toggleSelect(skill)"
       >
         <MinecraftIcon :material="skill.icon || 'minecraft:barrier'" :color="skill.color" :size="28" />
@@ -39,19 +37,12 @@
         No skills match "{{ query }}"
       </div>
     </div>
-    <SkillTooltip
-      :skill="tooltipSkill"
-      :visible="tooltipVisible"
-      :x="tooltipX"
-      :y="tooltipY"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue'
 import MinecraftIcon from '../common/MinecraftIcon.vue'
-import SkillTooltip from './SkillTooltip.vue'
 
 export interface PaletteSkill {
   id: string
@@ -113,24 +104,6 @@ function onDragEnd(e: DragEvent) {
     (e.target as HTMLElement).style.opacity = ''
   }
 }
-
-const tooltipVisible = ref(false)
-const tooltipSkill = ref<PaletteSkill | null>(null)
-const tooltipX = ref(0)
-const tooltipY = ref(0)
-
-function showTooltip(skill: PaletteSkill, e: MouseEvent) {
-  tooltipSkill.value = skill
-  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  tooltipX.value = rect.left + rect.width / 2
-  tooltipY.value = rect.top
-  tooltipVisible.value = true
-}
-
-function hideTooltip() {
-  tooltipVisible.value = false
-  tooltipSkill.value = null
-}
 </script>
 
 <style scoped>
@@ -168,7 +141,7 @@ function hideTooltip() {
   border: none;
   outline: none;
   color: var(--p-text-color, #fff);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .search-input::placeholder {
@@ -208,7 +181,7 @@ function hideTooltip() {
 
 .palette-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 4px;
   max-height: 300px;
   overflow-y: auto;
@@ -218,7 +191,7 @@ function hideTooltip() {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 8px;
   border-radius: 6px;
   cursor: grab;
   transition: background 0.1s;

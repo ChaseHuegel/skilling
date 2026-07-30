@@ -14,23 +14,10 @@
       @drop.prevent="onDrop(idx)"
       @dragend="onDragEnd"
     >
-      <div class="tab-actions-dropdown" v-if="pages.length > 1">
-        <button class="tab-actions-toggle" title="Page actions" @click.stop="toggleActions(idx)">&#8942;</button>
-        <div class="tab-actions-menu" v-if="actionsOpen === idx" @click.stop>
-          <button class="action-item" @click.stop="emit('duplicate', idx); actionsOpen = null">
-            Duplicate
-          </button>
-          <button class="action-item" @click.stop="emit('clearSlots', idx); actionsOpen = null">
-            Clear slots
-          </button>
-        </div>
-      </div>
-
-      <MinecraftIcon v-if="page.icon" :material="page.icon || 'minecraft:book'" :size="18" />
+      <MinecraftIcon :material="page.icon || 'minecraft:book'" :size="22" />
 
       <span
         class="page-tab-label"
-        @dblclick="startRename(idx)"
         v-if="renamingIndex !== idx"
       >{{ plainLabels[idx] }}</span>
       <input
@@ -44,14 +31,29 @@
         v-focus
       />
 
-      <button
-        class="tab-remove-btn"
-        title="Remove page"
-        @click.stop="confirmRemove(idx)"
-        v-if="pages.length > 1"
-      >
-        &times;
-      </button>
+      <div class="tab-inline-actions">
+        <button class="tab-action-btn" title="Rename" @click.stop="startRename(idx)">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M11.5 2.5a1.41 1.41 0 112 2l-8 8L2 12l.5-3.5 8-8z" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="tab-action-btn" title="Duplicate" @click.stop="emit('duplicate', idx)">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3.5" y="5.5" width="8" height="9" rx="1"/>
+            <path d="M5.5 5.5V3a1 1 0 011-1h5a1 1 0 011 1v6a1 1 0 01-1 1h-.5"/>
+          </svg>
+        </button>
+        <button
+          class="tab-action-btn tab-action-danger"
+          title="Remove page"
+          @click.stop="confirmRemove(idx)"
+          v-if="pages.length > 1"
+        >
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M3 4h10M6 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M5 4v8a1 1 0 001 1h4a1 1 0 001-1V4" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <button class="tab-add-btn" title="Add page" @click="showAddModal = true">
       + Add Page
@@ -75,13 +77,7 @@
         </label>
         <label class="modal-field">
           <span class="modal-field-label">Icon material</span>
-          <input
-            class="modal-input"
-            type="text"
-            v-model="newPageIcon"
-            placeholder="minecraft:book"
-          />
-          <MinecraftIcon v-if="newPageIcon" :material="newPageIcon" :size="24" class="modal-icon-preview" />
+          <MaterialPicker v-model="newPageIcon" />
         </label>
         <label class="modal-field">
           <span class="modal-field-label">Custom model data</span>
@@ -118,6 +114,7 @@
 import { ref, computed, nextTick } from 'vue'
 import { stripAmpersandCodes } from '../../utils/minecraftColors'
 import MinecraftIcon from '../common/MinecraftIcon.vue'
+import MaterialPicker from '../common/MaterialPicker.vue'
 
 export interface PageTabData {
   label: string
@@ -144,13 +141,10 @@ const emit = defineEmits<{
 const renamingIndex = ref<number | null>(null)
 const renameInput = ref<HTMLInputElement | null>(null)
 const confirmRemoveIndex = ref<number | null>(null)
-const pendingLabel = ref('')
 const showAddModal = ref(false)
-const addInput = ref<HTMLInputElement | null>(null)
 const newPageLabel = ref('New Page')
 const newPageIcon = ref('minecraft:book')
 const newPageCmd = ref(0)
-const actionsOpen = ref<number | null>(null)
 const dragSourceIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 
@@ -160,7 +154,6 @@ const plainLabels = computed(() =>
 
 async function startRename(idx: number) {
   renamingIndex.value = idx
-  pendingLabel.value = props.pages[idx].label
   await nextTick()
   renameInput.value?.focus()
   renameInput.value?.select()
@@ -179,12 +172,7 @@ function cancelRename() {
   renamingIndex.value = null
 }
 
-function toggleActions(idx: number) {
-  actionsOpen.value = actionsOpen.value === idx ? null : idx
-}
-
 function confirmRemove(idx: number) {
-  actionsOpen.value = null
   confirmRemoveIndex.value = idx
 }
 
@@ -258,22 +246,23 @@ const vFocus = {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 4px;
-  padding: 4px 0;
+  gap: 6px;
+  padding: 6px 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .page-tab {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: 6px;
+  padding: 6px 10px;
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 6px;
   background: var(--p-content-background, #1a1a2e);
   color: var(--p-text-color, #ccc);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   cursor: grab;
   transition: all 0.15s;
   user-select: none;
@@ -317,94 +306,53 @@ const vFocus = {
   outline: none;
 }
 
-.tab-remove-btn {
-  background: none;
-  border: none;
-  color: var(--p-red-500, #ef4444);
-  cursor: pointer;
-  font-size: 0.9rem;
-  line-height: 1;
-  padding: 0 2px;
-  opacity: 0.6;
-  transition: opacity 0.15s;
+.tab-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
   margin-left: 2px;
 }
 
-.tab-remove-btn:hover {
-  opacity: 1;
-}
-
-.tab-actions-dropdown {
-  position: relative;
-}
-
-.tab-actions-toggle {
-  background: none;
+.tab-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
   border: none;
+  border-radius: 3px;
+  background: transparent;
   color: var(--p-text-muted-color, #888);
   cursor: pointer;
-  font-size: 0.85rem;
-  line-height: 1;
-  padding: 0 2px;
-  opacity: 0.4;
-  transition: opacity 0.15s;
+  opacity: 0.5;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  padding: 0;
 }
 
-.page-tab:hover .tab-actions-toggle {
+.page-tab:hover .tab-action-btn {
   opacity: 0.8;
 }
 
-.tab-actions-toggle:hover {
+.tab-action-btn:hover {
   opacity: 1;
+  background: var(--p-content-hover-background, rgba(255,255,255,0.1));
   color: var(--p-text-color, #ccc);
 }
 
-.tab-actions-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 100;
-  min-width: 120px;
-  background: var(--p-content-background, #1a1a2e);
-  border: 1px solid var(--p-content-border-color, #333);
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  margin-top: 4px;
-}
-
-.action-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 6px 12px;
-  background: none;
-  border: none;
-  color: var(--p-text-color, #ccc);
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.action-item:hover:not(:disabled) {
-  background: var(--p-content-hover-background, #2a2a4e);
-}
-
-.action-item:disabled {
-  opacity: 0.3;
-  cursor: default;
+.tab-action-danger:hover {
+  color: var(--p-red-500, #ef4444);
 }
 
 .tab-add-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 6px 10px;
   border: 1px dashed var(--p-content-border-color, #555);
   border-radius: 6px;
   background: transparent;
   color: var(--p-primary-color, #3b82f6);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
@@ -432,7 +380,7 @@ const vFocus = {
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 8px;
   padding: 16px;
-  max-width: 320px;
+  max-width: 360px;
   width: 90%;
 }
 
@@ -476,10 +424,6 @@ const vFocus = {
 
 .modal-input:focus {
   border-color: var(--p-primary-color, #3b82f6);
-}
-
-.modal-icon-preview {
-  margin-top: 4px;
 }
 
 .modal-actions {

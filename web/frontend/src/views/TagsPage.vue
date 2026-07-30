@@ -1,9 +1,12 @@
 <template>
     <div class="tags-page">
         <div class="page-header">
-            <div class="header-left">
-                <h1>Tags</h1>
-                <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
+            <div>
+                <div class="header-left">
+                    <h1>Tags</h1>
+                    <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
+                </div>
+                <p class="page-subtitle">Manage custom item and block tags for skill definitions</p>
             </div>
 
         </div>
@@ -294,6 +297,12 @@ async function saveTags() {
 .loading {
     text-align: center;
     padding: 2rem;
+    color: var(--p-text-muted-color, #888);
+}
+
+.page-subtitle {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
     color: var(--p-text-muted-color, #888);
 }
 </style>

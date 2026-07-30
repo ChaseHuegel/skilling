@@ -1,7 +1,10 @@
 <template>
     <div class="config-page">
         <div class="page-header">
-            <h1>Config</h1>
+            <div>
+                <h1>Config</h1>
+                <p class="page-subtitle">Adjust global plugin settings and server preferences</p>
+            </div>
 
         </div>
 
@@ -242,6 +245,12 @@ async function doSaveConfig() {
 .loading {
     text-align: center;
     padding: 2rem;
+    color: var(--p-text-muted-color, #888);
+}
+
+.page-subtitle {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
     color: var(--p-text-muted-color, #888);
 }
 .config-sections {

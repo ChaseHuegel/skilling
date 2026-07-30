@@ -2,10 +2,12 @@
   <div
     v-if="navRole"
     class="chest-slot slot-nav"
+    :class="{ 'slot-nav-clickable': navRole !== 'indicator' }"
+    @click="onNavClick"
   >
     <div class="slot-background">
       <span v-if="navRole === 'prev'" class="nav-arrow">&#9664;</span>
-      <MinecraftIcon v-else-if="navRole === 'indicator' && navIcon" :material="navIcon" :size="32" />
+      <MinecraftIcon v-else-if="navRole === 'indicator' && navIcon" :material="navIcon" :size="64" class="fill-icon" />
       <span v-else-if="navRole === 'indicator'" class="nav-dot">&#9679;</span>
       <span v-else class="nav-arrow">&#9654;</span>
     </div>
@@ -72,6 +74,8 @@ const emit = defineEmits<{
   assign: [pageIndex: number, slot: number, skillId: string]
   swap: [pageIndex: number, fromSlot: number, toSlot: number]
   remove: [pageIndex: number, slot: number]
+  navPrev: []
+  navNext: []
   tooltipShow: [skill: SlotSkill, x: number, y: number]
   tooltipHide: []
 }>()
@@ -85,6 +89,11 @@ const slotAriaLabel = computed(() => {
   if (props.skill) return `Slot ${props.slotIndex}: ${props.skill.displayName || props.skill.id}`
   return `Slot ${props.slotIndex}: empty`
 })
+
+function onNavClick() {
+  if (props.navRole === 'prev') emit('navPrev')
+  else if (props.navRole === 'next') emit('navNext')
+}
 
 function onDragStart(e: DragEvent) {
   if (!props.skill) return
@@ -217,7 +226,14 @@ function onClick() {
   cursor: default;
   border-color: var(--p-content-border-color, #2a2a3e);
   background: var(--p-content-background, #1a1a2e);
-  pointer-events: none;
+}
+
+.chest-slot.slot-nav-clickable {
+  cursor: pointer;
+}
+
+.slot-nav-clickable:hover {
+  border-color: var(--p-primary-color, #3b82f6);
 }
 
 .slot-background {

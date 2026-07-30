@@ -1,7 +1,10 @@
 <template>
   <div class="gui-layout-page">
     <div class="page-header">
-      <h1 class="page-title">GUI Layout</h1>
+      <div>
+        <h1 class="page-title">Layout</h1>
+        <p class="page-subtitle">Arrange skills into a visual chest grid for the in-game menu</p>
+      </div>
     </div>
 
     <div v-if="store.error" class="error-banner">
@@ -37,6 +40,8 @@
             @assign="(pageIndex: number, slot: number, skillId: string) => store.setSlot(pageIndex, slot, skillId)"
             @swap="(pageIndex: number, fromSlot: number, toSlot: number) => store.swapSlots(pageIndex, fromSlot, toSlot)"
             @remove="(pageIndex: number, slot: number) => store.clearSlot(pageIndex, slot)"
+            @prev-page="activePage = Math.max(0, activePage - 1)"
+            @next-page="activePage = Math.min(store.layout.pages.length - 1, activePage + 1)"
           />
 
         <SkillPalette
@@ -224,6 +229,12 @@ function leaveDiscard() {
   font-weight: 700;
   margin: 0;
   color: var(--p-text-color, #fff);
+}
+
+.page-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color, #888);
 }
 
 .error-banner {
