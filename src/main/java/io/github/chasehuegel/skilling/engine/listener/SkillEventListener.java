@@ -322,6 +322,7 @@ public final class SkillEventListener implements Listener {
                                 .deserialize("&a+" + rounded + " &7XP in &a" + displayName + " &7(" + triggerKey + ")"));
                     }
                     if (newLevel > oldLevel) {
+                        profile.invalidatePageCache();
                         Bukkit.getPluginManager().callEvent(
                                 new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
                                         player, skill.id(), newLevel));

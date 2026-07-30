@@ -27,22 +27,42 @@ import java.util.Map;
  * {@link PlayerProfile}. The cache is invalidated when the player's
  * level changes, forcing a rebuild on the next menu open.
  *
+ * <p>If a {@link GuiLayoutConfig} is loaded from {@code gui.yml}, the
+ * builder produces a paginated multi-page chest GUI. Otherwise it
+ * falls back to the flat linear layout.
+ *
  * <p>Lore is dynamically injected via {@link LoreResolver} to display
  * real-time evaluator outputs based on the player's current level.
  */
 public final class SkillMenuBuilder {
 
     private static final int MENU_SIZE = 54;
+    private static final int SLOT_PREV = 45;
+    private static final int SLOT_INDICATOR = 49;
+    private static final int SLOT_NEXT = 53;
 
     private final SkillManager skillManager;
+    private volatile GuiLayoutConfig guiLayoutConfig;
 
-    public SkillMenuBuilder(SkillManager skillManager) {
+    public SkillMenuBuilder(SkillManager skillManager, GuiLayoutConfig guiLayoutConfig) {
         this.skillManager = skillManager;
+        this.guiLayoutConfig = guiLayoutConfig;
+    }
+
+    public void setGuiLayoutConfig(GuiLayoutConfig guiLayoutConfig) {
+        this.guiLayoutConfig = guiLayoutConfig;
     }
 
     public Inventory buildOverview(PlayerProfile profile) {
+        if (guiLayoutConfig.isPresent()) {
+            return buildPaginatedOverview(profile);
+        }
+        return buildFlatOverview(profile);
+    }
+
+    private Inventory buildFlatOverview(PlayerProfile profile) {
         var player = Bukkit.getPlayer(profile.getPlayerId());
-        Inventory inventory = Bukkit.createInventory(new SkillInventoryHolder(player), MENU_SIZE,
+        Inventory inventory = Bukkit.createInventory(new SkillInventoryHolder(player, -1, null, 0), MENU_SIZE,
                 Component.text("Skills", NamedTextColor.GOLD));
 
         int slot = 0;
@@ -53,6 +73,113 @@ public final class SkillMenuBuilder {
         }
 
         return inventory;
+    }
+
+    private Inventory buildPaginatedOverview(PlayerProfile profile) {
+        Map<Integer, Inventory> cached = profile.getCachedPageInventories();
+        if (cached != null && !cached.isEmpty()) {
+            return cached.get(0);
+        }
+
+        var player = Bukkit.getPlayer(profile.getPlayerId());
+        if (player == null) return buildFlatOverview(profile);
+
+        List<String> pageOrder = guiLayoutConfig.getPageOrder();
+        int pageCount = pageOrder.size();
+        Map<Integer, Inventory> inventories = new HashMap<>();
+
+        for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+            GuiPage page = guiLayoutConfig.getPage(pageOrder.get(pageIndex));
+            if (page == null) continue;
+
+            Inventory inventory = Bukkit.createInventory(
+                    new SkillInventoryHolder(player, pageIndex, pageOrder, pageCount),
+                    MENU_SIZE,
+                    Component.text(page.title(), NamedTextColor.GOLD));
+
+            // Fill all slots with filler glass
+            ItemStack filler = createFillerPane();
+            for (int slot = 0; slot < MENU_SIZE; slot++) {
+                inventory.setItem(slot, filler);
+            }
+
+            // Place navigation arrows
+            if (pageIndex > 0) {
+                inventory.setItem(SLOT_PREV, createNavItem("◀ Prev Page", false));
+            }
+            if (pageIndex < pageCount - 1) {
+                inventory.setItem(SLOT_NEXT, createNavItem("Next Page ▶", true));
+            }
+
+            // Place page indicator at slot 49
+            inventory.setItem(SLOT_INDICATOR, buildPageIcon(page));
+
+            // Place skill icons
+            for (var entry : page.skillSlots().entrySet()) {
+                String skillId = entry.getKey();
+                int slot = entry.getValue();
+                SkillDefinition skill = skillManager.getSkill(skillId);
+                if (skill == null) {
+                    Bukkit.getLogger().warning("Skill '" + skillId + "' from gui.yml not found in registry, skipping slot " + slot);
+                    continue;
+                }
+                inventory.setItem(slot, buildSkillIcon(skill, profile));
+            }
+
+            // Tag everything with poison pill
+            tagAllItems(inventory);
+
+            inventories.put(pageIndex, inventory);
+        }
+
+        profile.setCachedPageInventories(inventories);
+        return inventories.get(0);
+    }
+
+    private void tagAllItems(Inventory inventory) {
+        for (int slot = 0; slot < inventory.getSize(); slot++) {
+            ItemStack item = inventory.getItem(slot);
+            if (item != null) {
+                item.editMeta(meta -> PoisonPillTag.apply(meta));
+            }
+        }
+    }
+
+    private ItemStack createFillerPane() {
+        ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        pane.editMeta(meta -> {
+            meta.displayName(Component.empty());
+            PoisonPillTag.apply(meta);
+        });
+        return pane;
+    }
+
+    private ItemStack createNavItem(String name, boolean next) {
+        ItemStack arrow = new ItemStack(Material.ARROW);
+        arrow.editMeta(meta -> {
+            meta.displayName(Component.text(name, NamedTextColor.GOLD));
+            PoisonPillTag.apply(meta);
+        });
+        return arrow;
+    }
+
+    private ItemStack buildPageIcon(GuiPage page) {
+        Material material = Material.matchMaterial(page.icon());
+        if (material == null) material = Material.BOOK;
+        ItemStack item = new ItemStack(material);
+        item.editMeta(meta -> {
+            meta.displayName(Component.text(page.title(), NamedTextColor.GOLD));
+            int skillCount = page.skillSlots().size();
+            meta.lore(List.of(
+                    Component.text(skillCount + " skill(s)", NamedTextColor.GRAY)
+            ));
+            if (page.customModelData() > 0) {
+                meta.setCustomModelData(page.customModelData());
+            }
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            PoisonPillTag.apply(meta);
+        });
+        return item;
     }
 
     public List<Component> buildSkillLore(SkillDefinition skill, PlayerProfile profile) {

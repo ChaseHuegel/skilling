@@ -25,6 +25,7 @@ import io.github.chasehuegel.skilling.engine.registry.TriggerRegistry;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
+import io.github.chasehuegel.skilling.engine.ui.GuiLayoutConfig;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import io.github.chasehuegel.skilling.engine.ui.SkillsGuideBook;
 import io.github.chasehuegel.skilling.engine.ui.UIProtectionListener;
@@ -67,6 +68,7 @@ public final class Skilling extends JavaPlugin {
     private ProfileManager profileManager;
     private AsyncBatchWorker asyncBatchWorker;
     private SkillManager skillManager;
+    private GuiLayoutConfig guiLayoutConfig;
     private SkillMenuBuilder skillMenuBuilder;
     private RequirementEngine requirementEngine;
     private FeedbackDebouncer feedbackDebouncer;
@@ -111,6 +113,10 @@ public final class Skilling extends JavaPlugin {
             if (!new File(getDataFolder(), "template-skill.yml").exists()) {
                 getLogger().info("Generating default template-skill.yml...");
                 saveResource("template-skill.yml", false);
+            }
+            if (!new File(getDataFolder(), "gui.yml").exists()) {
+                getLogger().info("Generating default gui.yml...");
+                saveResource("gui.yml", false);
             }
 
             String[] bundledSkills = {"mining.yml", "woodcutting.yml", "excavation.yml",
@@ -167,7 +173,8 @@ public final class Skilling extends JavaPlugin {
         loadSkills();
 
         // UI
-        this.skillMenuBuilder = new SkillMenuBuilder(skillManager);
+        this.guiLayoutConfig = GuiLayoutConfig.load();
+        this.skillMenuBuilder = new SkillMenuBuilder(skillManager, guiLayoutConfig);
 
         // Skills Guide Book
         var skillsGuideBook = new SkillsGuideBook(this, profileManager, skillMenuBuilder);

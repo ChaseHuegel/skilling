@@ -7,6 +7,7 @@ import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
+import io.github.chasehuegel.skilling.engine.ui.GuiLayoutConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -86,8 +87,10 @@ public final class LockdownManager {
         }
 
         // Phase 5: Invalidate UI caches
+        plugin.getSkillMenuBuilder().setGuiLayoutConfig(GuiLayoutConfig.load());
         for (PlayerProfile profile : profileManager.getAllProfiles().values()) {
             profile.markSaved();
+            profile.invalidatePageCache();
         }
         if (debug) plugin.getLogger().info("Phase 5/6: UI caches invalidated.");
 

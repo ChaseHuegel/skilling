@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import org.bukkit.inventory.Inventory;
 
 /**
  * In-memory representation of a player's skill state.
@@ -30,6 +31,7 @@ public final class PlayerProfile implements PlayerProfileView {
     private final AtomicLong modCount;
     private volatile long savedModCount;
     private volatile PlayerPreferences preferences;
+    private volatile Map<Integer, Inventory> cachedPageInventories;
 
     /**
      * Constructs a new player profile.
@@ -188,5 +190,31 @@ public final class PlayerProfile implements PlayerProfileView {
      */
     public void markSaved() {
         this.savedModCount = modCount.get();
+    }
+
+    /**
+     * Returns the cached paginated page inventories, or null if not built.
+     *
+     * @return map of page index to inventory, or null
+     */
+    public Map<Integer, Inventory> getCachedPageInventories() {
+        return cachedPageInventories;
+    }
+
+    /**
+     * Stores the paginated page inventories in the profile cache.
+     *
+     * @param inventories map of page index to fully built inventory
+     */
+    public void setCachedPageInventories(Map<Integer, Inventory> inventories) {
+        this.cachedPageInventories = inventories;
+    }
+
+    /**
+     * Invalidates the page inventory cache, forcing a rebuild on the
+     * next menu open. Called on level change or plugin reload.
+     */
+    public void invalidatePageCache() {
+        this.cachedPageInventories = null;
     }
 }

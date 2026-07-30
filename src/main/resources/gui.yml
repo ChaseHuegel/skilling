@@ -1,0 +1,82 @@
+# ============================================================================
+# Skills GUI Layout Configuration
+# ============================================================================
+# Defines how skills are organized into pages and placed in the chest grid.
+# If this file is missing or empty, the plugin falls back to the default
+# flat sequential layout (current behavior).
+#
+# Each page renders as a full 54-slot chest inventory (6 rows x 9 columns).
+# - Slots 0-44 and 46-48, 50-52 are valid for skill placement.
+# - Slot 45 is reserved for the previous-page arrow (auto-rendered).
+# - Slot 49 is reserved for the page indicator icon.
+# - Slot 53 is reserved for the next-page arrow (auto-rendered).
+# - All unassigned slots show filler glass (BLACK_STAINED_GLASS_PANE by default).
+# ============================================================================
+
+# pages:
+#   gathering:
+#     title: "Gathering"
+#     icon: "minecraft:iron_pickaxe"
+#     custom_model_data: 1001
+#     skills:
+#       mining: 0
+#       woodcutting: 1
+#       excavation: 2
+#       farming: 3
+#       herbalism: 4
+#       husbandry: 5
+#
+#   combat:
+#     title: "Combat"
+#     icon: "minecraft:iron_sword"
+#     custom_model_data: 1002
+#     skills:
+#       heavy_weapons: 0
+#       light_weapons: 1
+#       unarmed: 2
+#       archery: 3
+#       throwing: 4
+#       one_handed: 5
+#       dual_wield: 6
+#
+#   artisan:
+#     title: "Artisan"
+#     icon: "minecraft:crafting_table"
+#     custom_model_data: 1003
+#     skills:
+#       smithing: 22
+#       carpentry: 23
+#       masonry: 24
+#       tailoring: 25
+#       cooking: 40
+#       building: 41
+#
+#   arcane:
+#     title: "Arcane"
+#     icon: "minecraft:ender_pearl"
+#     custom_model_data: 1004
+#     skills:
+#       alchemy: 0
+#       enchanting: 1
+#       piety: 20
+#       bard: 21
+#       wizardry: 22
+#
+#   defense:
+#     title: "Defense"
+#     icon: "minecraft:shield"
+#     custom_model_data: 1005
+#     skills:
+#       shields: 0
+#       heavy_armor: 1
+#       light_armor: 2
+#       medium_armor: 3
+#       unarmored: 4
+#
+#   mobility:
+#     title: "Mobility"
+#     icon: "minecraft:elytra"
+#     custom_model_data: 1006
+#     skills:
+#       riding: 0
+#       acrobatics: 1
