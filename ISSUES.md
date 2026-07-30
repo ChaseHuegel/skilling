@@ -379,5 +379,11 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-066.md` for full design plan
 - [ ] (Plugin) Add tab autocomplete support to `/skills log`
 - [ ] (Plugin) Players should be getting XP chat messages sent to them when their `/skills log xp true` is enabled
+  - Ensure these aren't logged to the console or broadcast to other players
 - [ ] (Plugin) Players logging profile preferences should all be true by default except for XP gains
 - [ ] (Plugin) The skill guide recipe should be `book` + `coal` and shapeless
+- [ ] (Plugin) Ensure all documentation in `docs/` is accurate and up to date with the plugin's actual src
+- [ ] (Plugin) Opening the foldouts for any of the archery abilities, except `percing_shot`, breaks the ability editor display in the skill editor. Not certain if there is an issue with the skill ymls or the web GUI.
+  - After checking other skills, wide_sweep from excavation is the only one that works there, timber_feller for woodcutting works, and harvest_wave for farming works. One similarity I can see from the GUI is all of them are the 3rd ability in their lists.
+- [ ] (Web) Some config options are missing from the config editor page. Come up with a development plan then ensure all config options are supported.
+- [ ] (Plugin & Design) The default bundled skills are missing level 75 abilities - follow the framework in SKILL-DESIGN-FRAMEWORK.md to craft well-fitting abilities and update the bundled skill ymls in the plugin appropriately.
