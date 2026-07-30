@@ -156,6 +156,18 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-041.md` for full development plan
 - [x] `PlayerListener.onPlayerQuit` has a race window: profile modified by concurrent thread after flush but before unload — XP loss on quit
   - See `ISSUE-042.md` for full development plan
+- [ ] (Plugin) Bundled skills are re-generating after the first run if they are deleted (use a config flag to determine if this is the first run or not)
+- [ ] (Plugin) Review the bundled skill ymls, they appear to have some schema issues that prevents editing them in the web GUI
+- [ ] (Plugin) The crossed-out mark for unlocked skills in the lore snippets is grey; it should be red.
+- [ ] (Plugin) If possible, lets hide the default attributes from the lore of items in the skill chest GUI (ex: "When in Main Hand", damage, attack speed, etc.)
+- [ ] (Plugin) The auto-complete for online player names in commands is no longer functioning
+- [ ] (Web) There is an issue with stacking notifications that comes close to a soft-lock: make a change to some content -> click "cancel" at the bottom banner -> click "discard" -> the unsaved changes popup opens behind the previous prompt, the previous prompt stays open. You have to click "keep editing" then you can respond to the unsaved changes prompt. This appears to be related to the cancel attempting a navigation. Cancel shouldn't perform any navigation.
+- [ ] (Web) Clicking cancel on the save changes bottom banner at the Tags or Config page does not prompt the confirmation dialog like the skills editor does
+- [ ] (Web) Now-obsolete buttons can sometimes appear at the headers of the pages (ex: reset button); these were obsoleted by the banner added to the bottom of the pages
+- [ ] (Web) The cancel button on the bottom banner should be themed appropriately as `danger`; ensure that all cancel/reset buttons are themed appropriately and consistently with the danger theme
+- [ ] (Plugin) The `/skills log` command does not show up in `/skills help`
+- [ ] (Plugin) The `/skills log` command does not provide useful usage feedback or failure information if arguments aren't supplied, or aren't supplied correctly
+- [ ] (Plugin) Both skill names and IDs are showing up in tab autocomplete, creating lots of visual noise. The autocomplete for skill parameters should just show IDs.
 
 # Improvements
 - [x] `/skills <skill>` should display the exact same lore displayed in the skill menu for a given skill. This will provide UX consistency and reduce code duplication.
@@ -355,3 +367,8 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - See `ISSUE-060.md` for full development plan
 - [x] Minor polish: verify and implement `crop_grow` trigger handler; add evaluator output placeholders to PlaceholderAPI expansion
     - See `ISSUE-061.md` for full development plan
+- [ ] (Plugin - Design) Draft a visual design plan for the skills chest GUI in a new issue markdown document. The current layout is too basic for large skill sets, the GUI should group or categorize skills and the plugin should be updated to allow server admins & designers to configure the layout in some way from a `gui.yml` file
+- [ ] (Web - Design) Draft a visual design plan for editing the proposed `gui.yml` layout. High level, a chest-like GUI layout should be presented and allow drag-drop of skill icons onto the grid, off the grid to remove, and between slots in the grid to swap them. This should be accessible as a new, additional page. Hovering over a skill in the grid would show a minecraft-like tooltip which displays in the same exact format as the plugin's lore snippets.
+- [ ] (Plugin - Design) Review the current bundled skills from a design perspective, using the `SKILL-DESIGN-FRAMEWORK.md` as the design framework and the plugin's source and paper API as a cross-reference for what is possible to implement; some of the abilities are currently impossible or simply don't have a mechanic that supports them yet. Draft findings and suggestions in a new issue markdown document. Lets also consider exhaustion as a valid cost that can be worked into ability designs to give more value to food in the game.
+- [ ] (Plugin & Web - Design) Draft a design and development plan in a new issue markdown document for incorporating a new addition to the skill schema in the form of specifying commands to be ran on level-up. These will support optional placeholders for `{level}`, `{player}`, `{skill_id}`, and `{skill_name}` that can be inserted into the commands. This will provide a flexible framework for designers to provide level-up rewards or bonuses to players.
+- [ ] (Plugin & Web - Design) Draft a design and development plan in a new issue markdown document for incorporating a new addition to the skill schema in the form skill lore lines. Similar to the ability lore, this should support any number of lines and allow editing from the web GUI. The plugin will display this before abilities in the chest GUI tooltips; the web GUI will display the formatted lore lines in the skill cards and the skill editor's header card; the web GUI will use the exact same visuals for editing and previewing these as the ability lore editor. This will provide a mechanism for designers to provide a description of skills.
