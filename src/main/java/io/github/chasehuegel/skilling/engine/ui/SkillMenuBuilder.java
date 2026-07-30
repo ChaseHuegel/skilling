@@ -202,7 +202,7 @@ public final class SkillMenuBuilder {
                 ? (long) skill.progression().evaluator().evaluate(level, 0) : 0;
         long xpForNext = level < skill.maxLevel()
                 ? (long) skill.progression().evaluator().evaluate(level + 1, 0) : 0;
-        int barWidth = 20;
+        int barWidth = 100;
         double progress = xpForNext > xpForCurrent
                 ? (double) (currentXp - xpForCurrent) / (xpForNext - xpForCurrent) : 0;
         progress = Math.min(Math.max(progress, 0), 1);
