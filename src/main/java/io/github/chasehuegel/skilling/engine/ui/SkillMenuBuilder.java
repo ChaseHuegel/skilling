@@ -303,12 +303,20 @@ public final class SkillMenuBuilder {
         boolean isActive = ability.requirements().cooldown() > 0
                 || !ability.requirements().state().isEmpty()
                 || !ability.requirements().items().isEmpty();
-        Component abilityPart = Component.text(
-                (unlocked ? "✔ " : "✗ ") + ability.displayName(),
-                unlocked ? NamedTextColor.GREEN : NamedTextColor.RED);
+
+        if (unlocked) {
+            Component namePart = Component.text("✔ " + ability.displayName(), NamedTextColor.GREEN);
+            Component typePart = Component.text(
+                    isActive ? " · Active" : " · Passive",
+                    NamedTextColor.DARK_GRAY);
+            return namePart.append(typePart);
+        }
+
+        Component lockPart = Component.text("❌ " + ability.unlockLevel(), NamedTextColor.RED);
+        Component namePart = Component.text(" · " + ability.displayName(), NamedTextColor.DARK_GRAY);
         Component typePart = Component.text(
                 isActive ? " · Active" : " · Passive",
                 NamedTextColor.DARK_GRAY);
-        return abilityPart.append(typePart);
+        return lockPart.append(namePart).append(typePart);
     }
 }
