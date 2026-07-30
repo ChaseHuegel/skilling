@@ -722,7 +722,15 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
                   &times;
                 </button>
               </div>
-              <div class="lore-preview" v-html="renderedLore(line)"></div>
+            </div>
+            <div v-if="ability.lore.length > 0" class="lore-full-preview">
+              <div class="full-preview-label">Preview:</div>
+              <div
+                v-for="(line, lIdx) in ability.lore"
+                :key="'full-' + lIdx"
+                class="full-preview-line"
+                v-html="renderedLore(line)"
+              />
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -1452,16 +1460,22 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
   gap: 0.4rem;
   align-items: center;
 }
-.lore-preview {
-  margin-top: 0.2rem;
-  margin-left: 1.6rem;
-  padding: 0.2rem 0.5rem;
-  background: color-mix(in srgb, var(--p-primary-color) 5%, var(--p-content-background));
-  border: 1px dashed var(--p-content-border-color);
-  border-radius: 3px;
-  font-size: 0.8rem;
-  min-height: 1.2rem;
-  word-break: break-all;
+.lore-full-preview {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 4px;
+}
+.full-preview-label {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 0.25rem;
+}
+.full-preview-line {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-bottom: 0.1rem;
 }
 .lore-drag-handle {
   cursor: grab;

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import MaterialPicker from '../common/MaterialPicker.vue'
-import { useDragReorder } from '../../composables/useDragReorder'
 
 interface DisplayConfig {
   icon: string
@@ -24,6 +23,7 @@ const STYLE_OPTIONS = ['SOLID', 'SEGMENTED_6', 'SEGMENTED_10', 'SEGMENTED_12', '
 const LORE_PLACEHOLDERS = ['{level}', '{max_level}', '{skill_name}', '{xp}']
 
 const loreExpanded = ref(true)
+const loreDragIndex = ref<number | null>(null)
 
 function setField<K extends keyof DisplayConfig>(key: K, val: DisplayConfig[K]) {
   emit('update:modelValue', { ...props.modelValue, [key]: val })
@@ -50,6 +50,27 @@ function insertPlaceholder(placeholder: string) {
   const newLore = [...(props.modelValue.lore || [])]
   newLore[newLore.length - 1] = placeholder
   setField('lore', newLore)
+}
+
+function onLoreDragStart(event: DragEvent, index: number) {
+  loreDragIndex.value = index
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+  }
+}
+
+function onLoreDragOver(event: DragEvent, index: number) {
+  event.preventDefault()
+  if (loreDragIndex.value === null || loreDragIndex.value === index) return
+  const lore = [...(props.modelValue.lore || [])]
+  const item = lore.splice(loreDragIndex.value, 1)[0]
+  lore.splice(index, 0, item)
+  loreDragIndex.value = index
+  setField('lore', lore)
+}
+
+function onLoreDragEnd() {
+  loreDragIndex.value = null
 }
 
 function renderedLore(line: string): string {
@@ -113,7 +134,7 @@ function renderedLore(line: string): string {
     <div class="lore-section">
       <div class="lore-header" @click="loreExpanded = !loreExpanded">
         <span class="lore-toggle">{{ loreExpanded ? '▼' : '▶' }}</span>
-        <span class="lore-title">Skill Lore</span>
+        <span class="lore-title">Lore Lines</span>
         <span class="lore-count">{{ (modelValue.lore || []).length }} lines</span>
       </div>
 
@@ -123,8 +144,12 @@ function renderedLore(line: string): string {
             v-for="(line, i) in modelValue.lore"
             :key="i"
             class="lore-row"
+            draggable="true"
+            @dragstart="onLoreDragStart($event, i)"
+            @dragover="onLoreDragOver($event, i)"
+            @dragend="onLoreDragEnd"
           >
-            <span class="lore-index">{{ i + 1 }}</span>
+            <span class="drag-handle" title="Drag to reorder">&#8801;</span>
             <input
               class="lore-input"
               type="text"
@@ -260,11 +285,15 @@ function renderedLore(line: string): string {
   align-items: center;
 }
 
-.lore-index {
-  font-size: 0.75rem;
-  color: var(--p-text-muted-color);
-  min-width: 1.2rem;
-  text-align: right;
+.drag-handle {
+  cursor: grab;
+  color: var(--p-text-muted-color, #888);
+  font-size: 1.1rem;
+  user-select: none;
+  flex-shrink: 0;
+}
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .lore-input {
@@ -347,7 +376,7 @@ function renderedLore(line: string): string {
 
 .chip {
   background: var(--p-primary-color, #3b82f6);
-  color: #fff;
+  color: var(--p-primary-contrast-color, #fff);
   border: none;
   border-radius: 4px;
   padding: 0.2rem 0.5rem;

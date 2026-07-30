@@ -5,7 +5,12 @@
                 v-for="(cmd, i) in localCommands"
                 :key="i"
                 class="command-row"
+                draggable="true"
+                @dragstart="onDragStart($event, i)"
+                @dragover="onDragOver($event, i)"
+                @dragend="onDragEnd"
             >
+                <span class="drag-handle" title="Drag to reorder">&#8801;</span>
                 <input
                     type="text"
                     :value="cmd"
@@ -48,6 +53,7 @@ const emit = defineEmits<{
 }>();
 
 const localCommands = ref<string[]>([...props.modelValue]);
+const dragIndex = ref<number | null>(null);
 
 watch(() => props.modelValue, (val) => {
     localCommands.value = [...val];
@@ -76,6 +82,26 @@ function insertPlaceholder(placeholder: string) {
     localCommands.value.push(placeholder);
     emitUpdate();
 }
+
+function onDragStart(event: DragEvent, index: number) {
+    dragIndex.value = index;
+    if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+    }
+}
+
+function onDragOver(event: DragEvent, index: number) {
+    event.preventDefault();
+    if (dragIndex.value === null || dragIndex.value === index) return;
+    const item = localCommands.value.splice(dragIndex.value, 1)[0];
+    localCommands.value.splice(index, 0, item);
+    dragIndex.value = index;
+    emitUpdate();
+}
+
+function onDragEnd() {
+    dragIndex.value = null;
+}
 </script>
 
 <style scoped>
@@ -93,6 +119,16 @@ function insertPlaceholder(placeholder: string) {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+}
+.drag-handle {
+    cursor: grab;
+    color: var(--p-text-muted-color, #888);
+    font-size: 1.1rem;
+    user-select: none;
+    flex-shrink: 0;
+}
+.drag-handle:active {
+    cursor: grabbing;
 }
 .command-input {
     flex: 1;
@@ -145,7 +181,7 @@ function insertPlaceholder(placeholder: string) {
 }
 .chip {
     background: var(--p-primary-color, #3b82f6);
-    color: #fff;
+    color: var(--p-primary-contrast-color, #fff);
     border: none;
     border-radius: 4px;
     padding: 0.2rem 0.5rem;

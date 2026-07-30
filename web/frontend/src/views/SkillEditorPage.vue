@@ -53,13 +53,13 @@
                 </fieldset>
 
                 <fieldset class="section">
-                    <legend>Abilities</legend>
-                    <AbilitiesSection v-model="form.abilities" :tagSuggestions="tagSuggestions" />
+                    <legend>Level-up Commands</legend>
+                    <LevelUpCommandsSection v-model="form.levelUpCommands" />
                 </fieldset>
 
                 <fieldset class="section">
-                    <legend>Level-Up Commands</legend>
-                    <LevelUpCommandsSection v-model="form.levelUpCommands" />
+                    <legend>Abilities</legend>
+                    <AbilitiesSection v-model="form.abilities" :tagSuggestions="tagSuggestions" />
                 </fieldset>
             </div>
         </div>
