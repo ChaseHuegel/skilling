@@ -58,16 +58,19 @@ Skilling is built to be extended. Addon developers can easily inject their own c
 ```java
 // 1. Implement the SkillMechanic interface
 public class LifestealMechanic implements SkillMechanic {
-    public LifestealMechanic(ConfigurationSection config) { ... }
-    
     @Override
-    public void execute(Player player, int currentLevel, int unlockLevel, Event event) {
-        // Your custom logic here
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return false;
+        double percentage = ((Number) params.getOrDefault("percentage", 0.1)).doubleValue();
+        double heal = damageEvent.getDamage() * percentage;
+        player.setHealth(Math.min(player.getHealth() + heal, player.getMaxHealth()));
+        return true;
     }
 }
 
 // 2. Register it with the API
-SkillingAPI.getRegistry().registerMechanic("myaddon:lifesteal", LifestealMechanic.class);
+SkillingAPI api = Bukkit.getServicesManager().load(SkillingAPI.class);
+api.getRegistries().registerMechanic("myaddon:lifesteal", LifestealMechanic.class);
 
 ```
 

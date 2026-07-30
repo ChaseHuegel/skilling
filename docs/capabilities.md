@@ -302,6 +302,76 @@ Applies a multiplicative XP bonus to all XP gains for a duration.
 
 **Event:** Varies (triggered by ability activation)
 
+### core:fishing_yield
+
+Grants bonus catch items when fishing.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `yield_chance` | double | `0` | Probability (0-100%) of bonus catch |
+
+**Event:** `PlayerFishEvent`
+
+### core:fishing_loot
+
+Multiplies the quality or quantity of loot from fishing treasure.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Loot multiplier |
+
+**Event:** `PlayerFishEvent`
+
+### core:area_harvest
+
+Breaks all matching blocks in a radius around the targeted block.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `radius` | double | `1` | Radius in blocks to harvest |
+| `max_blocks` | double | `8` | Maximum number of blocks to break |
+
+**Event:** `BlockBreakEvent`
+
+### core:auto_replant
+
+Automatically replants crops after harvesting.
+
+**Parameters:** None
+
+**Event:** `BlockBreakEvent`
+
+### core:durability_save
+
+Chance to negate durability loss on the held item when it takes damage.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) to save durability |
+
+**Event:** `PlayerItemDamageEvent`
+
+### core:haste_effect
+
+Applies the HASTE potion effect to the player, increasing mining/digging speed.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `amplifier` | double | `0` | Effect amplifier (0 = level I) |
+| `duration` | double | `300` | Duration in seconds |
+
+**Event:** `BlockBreakEvent`
+
 ## Built-In Triggers
 
 | Key | Event | Description |
@@ -325,6 +395,8 @@ Applies a multiplicative XP bonus to all XP gains for a duration.
 | `collect_xp` | `PlayerExpChangeEvent` | Collecting vanilla XP orbs |
 | `level_up` | `PlayerLevelChangeEvent` | Vanilla Minecraft level change |
 | `enchant_item` | `EnchantItemEvent` | Enchanting an item at an enchanting table |
+| `shoot_bow` | `EntityShootBowEvent` | Shooting a bow or crossbow |
+| `item_damage` | `PlayerItemDamageEvent` | Item durability loss |
 
 ## Built-In Evaluators
 

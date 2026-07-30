@@ -8,7 +8,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 -->
 
 # Bugs
-- [ ] The archery skill is not granting XP for damaging or killing entities with a bow
+- [x] The archery skill is not granting XP for damaging or killing entities with a bow
 
 # Improvements
-- [ ] Review and ensure all documentation across the project is up to date
+- [x] Review and ensure all documentation across the project is up to date

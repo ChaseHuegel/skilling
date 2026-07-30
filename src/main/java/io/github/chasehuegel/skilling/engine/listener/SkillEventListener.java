@@ -120,9 +120,16 @@ public final class SkillEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player player) {
+        Player player = resolvePlayerDamager(event);
+        if (player != null) {
             dispatch(player, event, "entity_damage");
         }
+    }
+
+    private Player resolvePlayerDamager(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player player) return player;
+        if (event.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player player) return player;
+        return null;
     }
 
     /**
@@ -563,9 +570,34 @@ public final class SkillEventListener implements Listener {
         if (event instanceof BlockBreakEvent be) return be.getBlock().getType();
         if (event instanceof BlockPlaceEvent pe) return pe.getBlockPlaced().getType();
         if (event instanceof EntityDamageByEntityEvent de) {
-            if (de.getEntity() instanceof org.bukkit.entity.LivingEntity le) {
-                return null;
+            return projectileToMaterial(de.getDamager());
+        }
+        if (event instanceof EntityDeathEvent ede) {
+            var lastDamage = ede.getEntity().getLastDamageCause();
+            if (lastDamage instanceof EntityDamageByEntityEvent de) {
+                return projectileToMaterial(de.getDamager());
             }
+        }
+        return null;
+    }
+
+    private Material projectileToMaterial(org.bukkit.entity.Entity damager) {
+        if (damager instanceof Projectile proj) {
+            return switch (proj.getType()) {
+                case ARROW -> Material.ARROW;
+                case SPECTRAL_ARROW -> Material.SPECTRAL_ARROW;
+                case SNOWBALL -> Material.SNOWBALL;
+                case EGG -> Material.EGG;
+                case TRIDENT -> Material.TRIDENT;
+                case FIREBALL -> Material.FIRE_CHARGE;
+                case SMALL_FIREBALL -> Material.FIRE_CHARGE;
+                case SHULKER_BULLET -> Material.SHULKER_SHELL;
+                case LLAMA_SPIT -> null;
+                case WITHER_SKULL -> Material.WITHER_SKELETON_SKULL;
+                case DRAGON_FIREBALL -> Material.DRAGON_BREATH;
+                case FISHING_BOBBER -> Material.FISHING_ROD;
+                default -> null;
+            };
         }
         return null;
     }

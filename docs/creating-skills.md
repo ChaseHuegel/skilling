@@ -28,6 +28,7 @@ xp_sources:
 | `progression` | Yes | section | XP curve configuration |
 | `xp_sources` | No | list | Actions that grant XP |
 | `abilities` | No | list | Unlockable abilities |
+| `level_up_commands` | No | list | Console commands executed on every level-up (supports `{player}`, `{level}`, `{skill_id}`, `{skill_name}` placeholders) |
 
 ### display
 
@@ -38,6 +39,7 @@ xp_sources:
 | `custom_model_data` | int | `0` | Custom model data for resource packs |
 | `color` | string | `"WHITE"` | BossBar color (GREEN, RED, BLUE, etc.) |
 | `style` | string | `"SOLID"` | BossBar style (SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20) |
+| `lore` | list | `[]` | Optional descriptive lore lines for the skill tooltip. Supports placeholders: `{level}`, `{max_level}`, `{skill_name}`, `{xp}` |
 
 ### progression
 
@@ -63,9 +65,37 @@ Each entry defines an action that grants XP.
 |---|---|---|
 | `target` | string | Material or tag filter (`minecraft:iron_ore` or `#c:ores`) |
 | `tool` | string | Material or tag filter for the item in the player's hand |
-| `state` | string | Player state condition (`is_sneaking`, `is_sprinting`, `is_on_ground`, `player_placed`) |
+| `state` | string | Player state condition (see available states below) |
 
-> The `player_placed` state checks whether a block was placed by a player (e.g., `player_placed:false` only triggers for naturally generated blocks).
+Available states:
+
+| State | Description |
+|---|---|
+| `is_sneaking` | Player is sneaking |
+| `is_sprinting` | Player is sprinting |
+| `is_in_water` | Player is in water |
+| `is_on_ground` | Player is on the ground |
+| `is_on_fire` | Player is on fire |
+| `is_riding` | Player is riding a vehicle/mount |
+| `player_placed:false` | Block was not placed by a player (natural generation only) |
+| `player_placed:true` | Block was placed by a player |
+| `dimension:overworld` | Player is in the Overworld |
+| `dimension:nether` | Player is in the Nether |
+| `dimension:end` | Player is in The End |
+| `weather:clear` | World has clear weather |
+| `weather:rain` | World has rain/storm |
+| `weather:thunder` | World has a thunderstorm |
+| `time:day` | World time is between dawn and dusk |
+| `time:night` | World time is between dusk and dawn |
+| `light_level:below:\<value\>` | Block light level is below the threshold (0-15) |
+| `light_level:above:\<value\>` | Block light level is above the threshold (0-15) |
+| `light_level:exactly:\<value\>` | Block light level is exactly the value (0-15) |
+| `health:below:\<pct\>%` | Player health percentage is below threshold |
+| `health:above:\<pct\>%` | Player health percentage is above threshold |
+| `hunger:below:\<value\>` | Player food level is below threshold (0-20) |
+| `hunger:above:\<value\>` | Player food level is above threshold (0-20) |
+| `biome:\<key\>` | Player is in a specific biome (e.g., `minecraft:plains`) |
+| `target_type:\<key\>` | Damaged entity type matches (e.g., `minecraft:zombie`, `#minecraft:skeletons`) |
 
 #### reward
 
@@ -100,10 +130,18 @@ Each key supports the same sub-keys as `feedback` (`action_bar`, `sounds`).
 #### requirements
 
 | Key | Type | Default | Description |
-|---|---|---|---|
+|---|---|---|---|---|
 | `cooldown` | double | `0` | Cooldown in seconds between uses |
-| `state` | list | `[]` | Required player states (`is_sneaking`, `is_sprinting`, `is_in_water`) |
+| `state` | list | `[]` | Required player states |
 | `items` | list | `[]` | Item requirements |
+| `exhaustion` | section | — | Hunger/food cost for ability activation |
+
+##### exhaustion
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `amount` | double | — | Hunger points to consume on use (0-20) |
+| `minimum` | double | — | Minimum food level required to activate (0-20) |
 
 ##### items
 
