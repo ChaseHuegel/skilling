@@ -243,7 +243,7 @@ function hideTooltip() {
 }
 
 .palette-item-selected {
-  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 25%, transparent);
+  background: transparent;
   border-color: var(--p-primary-color, #3b82f6);
 }
 
