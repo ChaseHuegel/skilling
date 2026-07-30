@@ -23,8 +23,8 @@
         @rename="(idx: number, label: string) => store.renamePage(idx, label)"
         @duplicate="(idx: number) => store.duplicatePage(idx)"
         @clear-slots="(idx: number) => store.clearPageSlots(idx)"
-        @move-left="(idx: number) => { store.movePage(idx, -1); activePage = Math.max(0, activePage - 1) }"
-        @move-right="(idx: number) => { store.movePage(idx, 1); activePage = Math.min(store.layout!.pages.length - 1, activePage + 1) }"
+        @move-left="(idx: number) => store.movePage(idx, -1)"
+        @move-right="(idx: number) => store.movePage(idx, 1)"
       />
 
       <div class="layout-main">

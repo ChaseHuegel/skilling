@@ -1,6 +1,5 @@
 <template>
   <div class="chest-grid-wrapper">
-    <div class="chest-titlebar" v-html="renderedTitle"></div>
     <div class="chest-grid" :style="gridStyle">
       <ChestSlot
         v-for="slotIdx in totalSlots"
@@ -69,12 +68,8 @@ const cols = 9
 
 const gridStyle = computed(() => ({
   gridTemplateColumns: `repeat(${cols}, 1fr)`,
-  gridTemplateRows: `repeat(${props.rows}, auto)`,
+  gridTemplateRows: `repeat(${props.rows}, 1fr)`,
 }))
-
-const renderedTitle = computed(() =>
-  renderFormattedText(parseAmpersandCodes(props.title))
-)
 
 const renderedPageLabel = computed(() => {
   if (!props.page) return ''
@@ -133,20 +128,11 @@ function onTooltipHide() {
   box-sizing: border-box;
 }
 
-.chest-titlebar {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #ffaa00;
-  text-align: center;
-  padding: 4px 0 8px;
-  width: 100%;
-}
-
 .chest-grid {
   display: grid;
   gap: 2px;
   width: 100%;
-  min-height: 0;
+  aspect-ratio: 9 / 6;
 }
 
 .chest-navbar {

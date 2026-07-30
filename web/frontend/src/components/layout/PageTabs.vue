@@ -4,15 +4,21 @@
       v-for="(page, idx) in pages"
       :key="idx"
       class="page-tab"
-      :class="{ 'page-tab-active': idx === activeIndex }"
+      :class="{ 'page-tab-active': idx === activeIndex, 'page-tab-drag-over': dragOverIndex === idx && dragOverIndex !== dragSourceIndex }"
+      draggable="true"
       @click="$emit('select', idx)"
+      @dragstart="onDragStart(idx, $event)"
+      @dragenter.prevent="onDragEnter(idx)"
+      @dragover.prevent
+      @dragleave="onDragLeave(idx)"
+      @drop.prevent="onDrop(idx)"
+      @dragend="onDragEnd"
     >
       <span
         class="page-tab-label"
-        v-html="renderedLabels[idx]"
         @dblclick="startRename(idx)"
         v-if="renamingIndex !== idx"
-      ></span>
+      >{{ plainLabels[idx] }}</span>
       <input
         v-else
         ref="renameInput"
@@ -40,17 +46,11 @@
           <button class="action-item" @click.stop="emit('clearSlots', idx); actionsOpen = null">
             Clear slots
           </button>
-          <button class="action-item" :disabled="idx === 0" @click.stop="emit('moveLeft', idx); actionsOpen = null">
-            Move left
-          </button>
-          <button class="action-item" :disabled="idx === pages.length - 1" @click.stop="emit('moveRight', idx); actionsOpen = null">
-            Move right
-          </button>
         </div>
       </div>
     </div>
     <button class="tab-add-btn" title="Add page" @click="showAddModal = true">
-      +
+      + Add Page
     </button>
 
     <!-- Add page modal -->
@@ -62,7 +62,7 @@
           class="modal-input"
           type="text"
           v-model="newPageLabel"
-          placeholder="&6Page label"
+          placeholder="Page label"
           @keydown.enter="executeAdd"
           @keydown.escape="showAddModal = false"
           v-focus
@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
-import { renderFormattedText, parseAmpersandCodes } from '../../utils/minecraftColors'
+import { stripAmpersandCodes } from '../../utils/minecraftColors'
 
 export interface PageTabData {
   label: string
@@ -118,11 +118,13 @@ const confirmRemoveIndex = ref<number | null>(null)
 const pendingLabel = ref('')
 const showAddModal = ref(false)
 const addInput = ref<HTMLInputElement | null>(null)
-const newPageLabel = ref('&fNew Page')
+const newPageLabel = ref('New Page')
 const actionsOpen = ref<number | null>(null)
+const dragSourceIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
 
-const renderedLabels = computed(() =>
-  props.pages.map(p => renderFormattedText(parseAmpersandCodes(p.label)))
+const plainLabels = computed(() =>
+  props.pages.map(p => stripAmpersandCodes(p.label))
 )
 
 async function startRename(idx: number) {
@@ -168,7 +170,47 @@ function executeAdd() {
     emit('add', label)
   }
   showAddModal.value = false
-  newPageLabel.value = '&fNew Page'
+  newPageLabel.value = 'New Page'
+}
+
+function onDragStart(idx: number, e: DragEvent) {
+  dragSourceIndex.value = idx
+  e.dataTransfer?.setData('text/plain', String(idx))
+  e.dataTransfer!.effectAllowed = 'move'
+}
+
+function onDragEnter(idx: number) {
+  if (idx !== dragSourceIndex.value) {
+    dragOverIndex.value = idx
+  }
+}
+
+function onDragLeave(idx: number) {
+  if (dragOverIndex.value === idx) {
+    dragOverIndex.value = null
+  }
+}
+
+function onDrop(idx: number) {
+  dragOverIndex.value = null
+  if (dragSourceIndex.value === null || dragSourceIndex.value === idx) return
+  const from = dragSourceIndex.value
+  const to = idx
+  if (from < to) {
+    for (let i = from; i < to; i++) {
+      emit('moveLeft', i + 1)
+    }
+  } else {
+    for (let i = from; i > to; i--) {
+      emit('moveRight', i - 1)
+    }
+  }
+  dragSourceIndex.value = null
+}
+
+function onDragEnd() {
+  dragOverIndex.value = null
+  dragSourceIndex.value = null
 }
 
 const vFocus = {
@@ -193,14 +235,18 @@ const vFocus = {
   gap: 4px;
   padding: 4px 10px;
   border: 1px solid var(--p-content-border-color, #333);
-  border-radius: 16px;
+  border-radius: 6px;
   background: var(--p-content-background, #1a1a2e);
   color: var(--p-text-color, #ccc);
   font-size: 0.8rem;
-  cursor: pointer;
+  cursor: grab;
   transition: all 0.15s;
   user-select: none;
   position: relative;
+}
+
+.page-tab:active {
+  cursor: grabbing;
 }
 
 .page-tab:hover {
@@ -211,11 +257,16 @@ const vFocus = {
   background: var(--p-primary-color, #3b82f6);
   border-color: var(--p-primary-color, #3b82f6);
   color: #fff;
-  box-shadow: 0 0 8px color-mix(in srgb, var(--p-primary-color, #3b82f6) 40%, transparent);
+}
+
+.page-tab-drag-over {
+  border-color: var(--p-primary-color, #3b82f6);
+  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 20%, transparent);
 }
 
 .page-tab-label {
   pointer-events: none;
+  cursor: inherit;
 }
 
 .page-tab-rename-input {
@@ -307,18 +358,18 @@ const vFocus = {
 }
 
 .tab-add-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
+  gap: 4px;
+  padding: 4px 10px;
   border: 1px dashed var(--p-content-border-color, #555);
-  border-radius: 50%;
+  border-radius: 6px;
   background: transparent;
   color: var(--p-primary-color, #3b82f6);
-  font-size: 1.1rem;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .tab-add-btn:hover {

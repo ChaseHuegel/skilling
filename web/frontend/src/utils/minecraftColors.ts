@@ -75,6 +75,10 @@ export function renderFormattedText(segments: FormattedSegment[]): string {
     }).join('')
 }
 
+export function stripAmpersandCodes(text: string): string {
+    return text.replace(/&[0-9a-fk-or]/gi, '')
+}
+
 function escapeHtml(str: string): string {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }

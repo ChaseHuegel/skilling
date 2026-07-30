@@ -147,8 +147,8 @@ function onClick() {
 <style scoped>
 .chest-slot {
   width: 100%;
-  aspect-ratio: 1;
-  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 4%, var(--p-content-background, #1a1a2e));
+  height: 100%;
+  background: var(--p-content-background, #1a1a2e);
   border: 2px solid var(--p-content-border-color, #2a2a3e);
   border-radius: 4px;
   cursor: pointer;
@@ -172,8 +172,7 @@ function onClick() {
 }
 
 .chest-slot.slot-occupied {
-  border-color: color-mix(in srgb, var(--p-primary-color, #3b82f6) 30%, var(--p-content-border-color, #3a3a5e));
-  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 6%, var(--p-content-background, #16162a));
+  border-color: var(--p-content-border-color, #3a3a5e);
 }
 
 .chest-slot.slot-drag-over {
