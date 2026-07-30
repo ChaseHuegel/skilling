@@ -129,7 +129,7 @@ function onTooltipHide() {
   border-radius: 8px;
   padding: 8px;
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   box-sizing: border-box;
 }
 

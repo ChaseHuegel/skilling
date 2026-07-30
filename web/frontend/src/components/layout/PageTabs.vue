@@ -208,9 +208,10 @@ const vFocus = {
 }
 
 .page-tab-active {
-  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 25%, transparent);
+  background: var(--p-primary-color, #3b82f6);
   border-color: var(--p-primary-color, #3b82f6);
-  color: white;
+  color: #fff;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--p-primary-color, #3b82f6) 40%, transparent);
 }
 
 .page-tab-label {

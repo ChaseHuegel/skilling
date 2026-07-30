@@ -32,6 +32,14 @@
         @mouseleave="hideTooltip"
         @click="toggleSelect(skill)"
       >
+        <svg class="drag-handle" viewBox="0 0 8 12" width="8" height="12" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="2" cy="2" r="1" />
+          <circle cx="6" cy="2" r="1" />
+          <circle cx="2" cy="6" r="1" />
+          <circle cx="6" cy="6" r="1" />
+          <circle cx="2" cy="10" r="1" />
+          <circle cx="6" cy="10" r="1" />
+        </svg>
         <MinecraftIcon :material="skill.icon || 'minecraft:barrier'" :color="skill.color" :size="28" />
         <span class="palette-item-name">{{ skill.displayName || skill.id }}</span>
       </div>
@@ -217,7 +225,7 @@ function hideTooltip() {
 .palette-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 6px 8px;
   border-radius: 6px;
   cursor: grab;
@@ -237,6 +245,16 @@ function hideTooltip() {
 .palette-item-selected {
   background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 25%, transparent);
   border-color: var(--p-primary-color, #3b82f6);
+}
+
+.drag-handle {
+  flex-shrink: 0;
+  opacity: 0.3;
+  transition: opacity 0.15s;
+}
+
+.palette-item:hover .drag-handle {
+  opacity: 0.7;
 }
 
 .palette-item-name {

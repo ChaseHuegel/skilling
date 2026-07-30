@@ -2,22 +2,6 @@
   <div class="gui-layout-page">
     <div class="page-header">
       <h1 class="page-title">GUI Layout</h1>
-      <div class="header-actions">
-        <button
-          class="btn btn-primary"
-          :disabled="!isDirty || store.saving"
-          @click="applyAndReload"
-        >
-          {{ store.saving ? 'Saving...' : 'Apply & Reload' }}
-        </button>
-        <button
-          class="btn btn-ghost"
-          :disabled="!isDirty"
-          @click="resetLayout"
-        >
-          Reset
-        </button>
-      </div>
     </div>
 
     <div v-if="store.error" class="error-banner">
@@ -33,14 +17,14 @@
       <PageTabs
         :pages="store.layout.pages"
         :active-index="activePage"
-        @select="activePage = $event; markDirty()"
+        @select="activePage = $event"
         @add="onAddPage"
         @remove="onRemovePage"
-        @rename="(idx: number, label: string) => { store.renamePage(idx, label); markDirty() }"
-        @duplicate="(idx: number) => { store.duplicatePage(idx); markDirty() }"
-        @clear-slots="(idx: number) => { store.clearPageSlots(idx); markDirty() }"
-        @move-left="(idx: number) => { store.movePage(idx, -1); activePage = Math.max(0, activePage - 1); markDirty() }"
-        @move-right="(idx: number) => { store.movePage(idx, 1); activePage = Math.min(store.layout!.pages.length - 1, activePage + 1); markDirty() }"
+        @rename="(idx: number, label: string) => store.renamePage(idx, label)"
+        @duplicate="(idx: number) => store.duplicatePage(idx)"
+        @clear-slots="(idx: number) => store.clearPageSlots(idx)"
+        @move-left="(idx: number) => { store.movePage(idx, -1); activePage = Math.max(0, activePage - 1) }"
+        @move-right="(idx: number) => { store.movePage(idx, 1); activePage = Math.min(store.layout!.pages.length - 1, activePage + 1) }"
       />
 
       <div class="layout-main">
@@ -53,16 +37,12 @@
             :page-index="activePage"
             :total-pages="store.layout.pages.length"
             :skill-map="skillMap"
-            @assign="(pageIndex: number, slot: number, skillId: string) => { store.setSlot(pageIndex, slot, skillId); markDirty() }"
-            @swap="(pageIndex: number, fromSlot: number, toSlot: number) => { store.swapSlots(pageIndex, fromSlot, toSlot); markDirty() }"
-            @remove="(pageIndex: number, slot: number) => { store.clearSlot(pageIndex, slot); markDirty() }"
+            @assign="(pageIndex: number, slot: number, skillId: string) => store.setSlot(pageIndex, slot, skillId)"
+            @swap="(pageIndex: number, fromSlot: number, toSlot: number) => store.swapSlots(pageIndex, fromSlot, toSlot)"
+            @remove="(pageIndex: number, slot: number) => store.clearSlot(pageIndex, slot)"
             @prev-page="activePage = Math.max(0, activePage - 1)"
             @next-page="activePage = Math.min(store.layout.pages.length - 1, activePage + 1)"
           />
-          <div class="pending-indicator" v-if="isDirty">
-            <span class="pending-dot"></span>
-            Unsaved changes
-          </div>
         </div>
 
         <SkillPalette
@@ -70,23 +50,53 @@
         />
       </div>
     </template>
+
+    <StickyActionBanner :visible="isDirty" :saving="store.saving" @save="applyAndReload" @cancel="confirmCancel" />
+
+    <div v-if="showCancelDialog" class="modal-overlay" @click.self="showCancelDialog = false">
+      <div class="modal">
+        <h3>Discard changes?</h3>
+        <p>Any unsaved changes to your GUI layout will be lost.</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" @click="showCancelDialog = false">Keep Editing</button>
+          <button class="btn btn-danger" @click="discardChanges">Discard</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showLeaveDialog" class="modal-overlay" @click.self="showLeaveDialog = false">
+      <div class="modal">
+        <h3>Unsaved changes</h3>
+        <p>Would you like to save your changes before leaving?</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" @click="showLeaveDialog = false">Cancel</button>
+          <button class="btn btn-danger" @click="leaveDiscard">Discard</button>
+          <button class="btn btn-primary" @click="leaveSave">Save & Leave</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, provide, reactive } from 'vue'
+import { ref, computed, onMounted, provide } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import { useGuiLayoutStore } from '../stores/gui-layout'
 import { useStagingStore } from '../stores/staging'
 import ChestGrid from '../components/layout/ChestGrid.vue'
 import PageTabs from '../components/layout/PageTabs.vue'
 import SkillPalette from '../components/layout/SkillPalette.vue'
+import StickyActionBanner from '../components/common/StickyActionBanner.vue'
 
 const store = useGuiLayoutStore()
 const stagingStore = useStagingStore()
 
 const activePage = ref(0)
-const dirtyFlag = ref(false)
 const selectedSkillId = ref<string | null>(null)
+const cleanSnapshot = ref('')
+const showCancelDialog = ref(false)
+const showLeaveDialog = ref(false)
+let pendingNavigation: (() => void) | null = null
 
 provide('selectedSkillId', selectedSkillId)
 
@@ -96,7 +106,7 @@ const currentPage = computed(() => {
 })
 
 const isDirty = computed(() => {
-  return dirtyFlag.value
+  return store.layout !== null && JSON.stringify(store.layout) !== cleanSnapshot.value
 })
 
 const skillMap = computed(() => {
@@ -129,12 +139,22 @@ const paletteSkills = computed(() => {
   }))
 })
 
-function markDirty() {
-  dirtyFlag.value = true
+function takeSnapshot() {
+  cleanSnapshot.value = store.layout ? JSON.stringify(store.layout) : ''
 }
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!isDirty.value) {
+    next()
+    return
+  }
+  showLeaveDialog.value = true
+  pendingNavigation = () => next()
+})
 
 onMounted(async () => {
   await store.fetch()
+  takeSnapshot()
   await stagingStore.fetchStatus()
 })
 
@@ -146,21 +166,24 @@ async function applyAndReload() {
       await stagingStore.applyAndReload()
       await store.fetch()
     }
-    dirtyFlag.value = false
+    takeSnapshot()
   } catch {
     // error is set in store
   }
 }
 
-function resetLayout() {
-  dirtyFlag.value = false
+function confirmCancel() {
+  showCancelDialog.value = true
+}
+
+function discardChanges() {
+  showCancelDialog.value = false
   store.fetch()
 }
 
 function onAddPage(label: string) {
   store.addPage(label)
   activePage.value = store.layout!.pages.length - 1
-  markDirty()
 }
 
 function onRemovePage(index: number) {
@@ -169,7 +192,21 @@ function onRemovePage(index: number) {
   if (activePage.value >= (store.layout?.pages.length || 0)) {
     activePage.value = Math.max(0, (store.layout?.pages.length || 1) - 1)
   }
-  markDirty()
+}
+
+async function leaveSave() {
+  showLeaveDialog.value = false
+  try {
+    await store.save()
+  } catch { /* navigate anyway */ }
+  pendingNavigation?.()
+  pendingNavigation = null
+}
+
+function leaveDiscard() {
+  showLeaveDialog.value = false
+  pendingNavigation?.()
+  pendingNavigation = null
 }
 </script>
 
@@ -178,25 +215,21 @@ function onRemovePage(index: number) {
   padding: 1.5rem;
   max-width: 900px;
   margin: 0 auto;
+  padding-bottom: 4rem;
 }
 
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .page-title {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
   color: var(--p-text-color, #fff);
-}
-
-.header-actions {
-  display: flex;
-  gap: 0.5rem;
 }
 
 .error-banner {
@@ -223,27 +256,6 @@ function onRemovePage(index: number) {
   gap: 8px;
 }
 
-.pending-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  color: var(--p-form-field-placeholder-color, #888);
-}
-
-.pending-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--p-primary-color, #3b82f6);
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
 .loading-skeleton {
   display: flex;
   gap: 1.5rem;
@@ -251,8 +263,8 @@ function onRemovePage(index: number) {
 }
 
 .skeleton-grid {
-  width: 480px;
-  height: 360px;
+  width: 520px;
+  height: 346px;
   background: var(--p-skeleton-background, var(--p-content-background, #1a1a2e));
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 8px;
@@ -261,7 +273,7 @@ function onRemovePage(index: number) {
 
 .skeleton-palette {
   width: 280px;
-  height: 360px;
+  height: 346px;
   background: var(--p-skeleton-background, var(--p-content-background, #1a1a2e));
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 8px;
@@ -279,5 +291,45 @@ function onRemovePage(index: number) {
     flex-direction: column;
     align-items: center;
   }
+}
+
+/* Modal system (matches TagsPage/ConfigPage) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--p-text-color);
+}
+
+.modal p {
+  margin: 0 0 1.25rem;
+  color: var(--p-text-muted-color, #888);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 </style>
