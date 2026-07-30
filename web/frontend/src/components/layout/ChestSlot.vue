@@ -4,7 +4,6 @@
     :class="{
       'slot-occupied': !!skill,
       'slot-drag-over': dragOver,
-      'slot-empty': !skill && !dragOver,
     }"
     :data-slot-index="slotIndex"
     :draggable="!!skill"
@@ -20,7 +19,6 @@
   >
     <div class="slot-background">
       <MinecraftIcon v-if="skill" :material="skill.icon || 'minecraft:barrier'" :color="skill.color" :size="36" />
-      <span v-else class="slot-placeholder"></span>
     </div>
   </div>
 </template>
@@ -128,8 +126,8 @@ function hideTooltip() {
 .chest-slot {
   width: 100%;
   aspect-ratio: 1;
-  background: #1a1a2e;
-  border: 2px solid #2a2a3e;
+  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 4%, var(--p-content-background, #1a1a2e));
+  border: 2px solid var(--p-content-border-color, #2a2a3e);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -137,25 +135,27 @@ function hideTooltip() {
   justify-content: center;
   transition: border-color 0.15s, background 0.15s;
   position: relative;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.06),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.25);
 }
 
 .chest-slot:hover {
-  border-color: #555;
+  border-color: var(--p-text-muted-color, #555);
 }
 
-.slot-empty {
-  border-style: dashed;
-  border-color: #333;
+.chest-slot.slot-occupied {
+  border-color: color-mix(in srgb, var(--p-primary-color, #3b82f6) 30%, var(--p-content-border-color, #3a3a5e));
+  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 6%, var(--p-content-background, #16162a));
 }
 
-.slot-occupied {
-  border-color: #3a3a5e;
-  background: #16162a;
-}
-
-.slot-drag-over {
+.chest-slot.slot-drag-over {
   border-color: #55ff55;
   background: rgba(85, 255, 85, 0.08);
+}
+
+.app-dark .chest-slot.slot-drag-over {
+  background: rgba(85, 255, 85, 0.12);
 }
 
 .slot-background {
@@ -164,13 +164,6 @@ function hideTooltip() {
   justify-content: center;
   width: 100%;
   height: 100%;
-}
-
-.slot-placeholder {
-  width: 16px;
-  height: 16px;
-  border: 1px dashed #333;
-  border-radius: 2px;
-  opacity: 0.4;
+  position: relative;
 }
 </style>

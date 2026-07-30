@@ -100,7 +100,6 @@ function onRemove(pageIndex: number, slot: number) {
   emit('remove', pageIndex, slot)
 }
 
-// Tooltip state
 const tooltipVisible = ref(false)
 const tooltipSkill = ref<SlotSkill | null>(null)
 const tooltipX = ref(0)
@@ -125,8 +124,8 @@ function onTooltipHide() {
   flex-direction: column;
   align-items: center;
   gap: 0;
-  background: #0d0d1a;
-  border: 2px solid #1a1a2e;
+  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 6%, var(--p-content-background, #0d0d1a));
+  border: 2px solid var(--p-content-border-color, #1a1a2e);
   border-radius: 8px;
   padding: 8px;
   width: 100%;
@@ -160,9 +159,9 @@ function onTooltipHide() {
 }
 
 .nav-btn {
-  background: #1a1a2e;
-  border: 1px solid #333;
-  color: #ccc;
+  background: var(--p-content-background, #1a1a2e);
+  border: 1px solid var(--p-content-border-color, #333);
+  color: var(--p-text-color, #ccc);
   padding: 4px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -171,7 +170,7 @@ function onTooltipHide() {
 }
 
 .nav-btn:hover:not(:disabled) {
-  background: #2a2a4e;
+  background: var(--p-content-hover-background, #2a2a4e);
 }
 
 .nav-btn:disabled {
@@ -184,6 +183,6 @@ function onTooltipHide() {
   text-align: center;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #ccc;
+  color: var(--p-text-color, #ccc);
 }
 </style>

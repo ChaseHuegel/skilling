@@ -232,7 +232,7 @@ function onRemovePage(index: number) {
 .skeleton-grid {
   width: 480px;
   height: 360px;
-  background: var(--p-content-background, #1a1a2e);
+  background: var(--p-skeleton-background, var(--p-content-background, #1a1a2e));
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 8px;
   animation: shimmer 1.5s infinite;
@@ -241,7 +241,7 @@ function onRemovePage(index: number) {
 .skeleton-palette {
   width: 280px;
   height: 360px;
-  background: var(--p-content-background, #1a1a2e);
+  background: var(--p-skeleton-background, var(--p-content-background, #1a1a2e));
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 8px;
   animation: shimmer 1.5s infinite;

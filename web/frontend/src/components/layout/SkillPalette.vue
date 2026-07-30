@@ -176,6 +176,11 @@ function hideTooltip() {
   opacity: 0.5;
 }
 
+.palette-item.palette-item-selected {
+  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 25%, transparent);
+  border: 1px solid var(--p-primary-color, #3b82f6);
+}
+
 .palette-item-name {
   font-size: 0.8rem;
   color: var(--p-text-color, #ccc);
