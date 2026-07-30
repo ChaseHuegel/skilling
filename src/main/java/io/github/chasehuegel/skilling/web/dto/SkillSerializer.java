@@ -189,12 +189,14 @@ public final class SkillSerializer {
         // Parse feedback
         Map<String, Object> fbMap = map(raw, "feedback");
         Map<String, Object> notify = map(fbMap, "notify");
+        List<Map<String, Object>> particles = listMap(fbMap, "particles");
+        List<Map<String, Object>> sounds = listMap(fbMap, "sounds");
         var feedback = new SkillDetailDTO.FeedbackDTO(
             boolVal(notify, "action_bar", false),
             boolVal(notify, "chat", false),
             str(notify, "message", ""),
-            listMap(fbMap, "particles"),
-            listMap(fbMap, "sounds")
+            particles != null ? particles : List.of(),
+            sounds != null ? sounds : List.of()
         );
 
         // Parse on_failure

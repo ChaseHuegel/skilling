@@ -9,7 +9,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 
 # Bugs
 - [x] (Plugin) Players should be getting XP chat messages sent to them when their `/skills log xp true` is enabled
-- [ ] (Plugin) Opening the foldouts for any of the archery abilities, except `percing_shot`, breaks the ability editor display in the skill editor. Not certain if there is an issue with the skill ymls or the web GUI.
+- [x] (Plugin) Opening the foldouts for any of the archery abilities, except `percing_shot`, breaks the ability editor display in the skill editor. Not certain if there is an issue with the skill ymls or the web GUI.
   - After checking other skills, wide_sweep from excavation is the only one that works there, timber_feller for woodcutting works, and harvest_wave for farming works. One similarity I can see from the GUI is all of them are the 3rd ability in their lists.
 - [ ] (Web) Some config options are missing from the config editor page. Come up with a development plan then ensure all config options are supported.
 

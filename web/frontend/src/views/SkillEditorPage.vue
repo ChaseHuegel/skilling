@@ -247,6 +247,7 @@ function apiAbilityToForm(ab: any): any {
         feedback: ab.feedback ? {
             ...ab.feedback,
             particles: convertParticleOffsets(ab.feedback.particles),
+            sounds: ab.feedback.sounds || [],
         } : ab.feedback,
         requirements: {
             ...ab.requirements,
