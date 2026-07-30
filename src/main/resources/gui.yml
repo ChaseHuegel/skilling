@@ -5,19 +5,26 @@
 # If this file is missing or empty, the plugin falls back to the default
 # flat sequential layout (current behavior).
 #
-# Each page renders as a full 54-slot chest inventory (6 rows x 9 columns).
-# - Slots 0-44 and 46-48, 50-52 are valid for skill placement.
-# - Slot 45 is reserved for the previous-page arrow (auto-rendered).
-# - Slot 49 is reserved for the page indicator icon.
-# - Slot 53 is reserved for the next-page arrow (auto-rendered).
-# - All unassigned slots show filler glass (BLACK_STAINED_GLASS_PANE by default).
+# Each page renders as a chest inventory. Navigation arrows and the page
+# indicator icon are automatically placed on the last row.
+#   - First column of last row: Previous-page arrow (auto-rendered)
+#   - Center column of last row: Page indicator icon
+#   - Last column of last row: Next-page arrow (auto-rendered)
+# - All unassigned slots show filler (configurable below).
 # ============================================================================
+
+# Global filler item for unassigned slots.
+# filler:
+#   material: "minecraft:black_stained_glass_pane"
+#   custom_model_data: 0
 
 # pages:
 #   gathering:
 #     title: "Gathering"
 #     icon: "minecraft:iron_pickaxe"
 #     custom_model_data: 1001
+#     # Number of inventory rows (0 = full 6-row chest, 1-6 = custom height)
+#     rows: 0
 #     skills:
 #       mining: 0
 #       woodcutting: 1
@@ -30,6 +37,7 @@
 #     title: "Combat"
 #     icon: "minecraft:iron_sword"
 #     custom_model_data: 1002
+#     rows: 0
 #     skills:
 #       heavy_weapons: 0
 #       light_weapons: 1
@@ -43,6 +51,7 @@
 #     title: "Artisan"
 #     icon: "minecraft:crafting_table"
 #     custom_model_data: 1003
+#     rows: 0
 #     skills:
 #       smithing: 22
 #       carpentry: 23
@@ -55,6 +64,7 @@
 #     title: "Arcane"
 #     icon: "minecraft:ender_pearl"
 #     custom_model_data: 1004
+#     rows: 0
 #     skills:
 #       alchemy: 0
 #       enchanting: 1
@@ -66,6 +76,7 @@
 #     title: "Defense"
 #     icon: "minecraft:shield"
 #     custom_model_data: 1005
+#     rows: 0
 #     skills:
 #       shields: 0
 #       heavy_armor: 1
@@ -77,6 +88,7 @@
 #     title: "Mobility"
 #     icon: "minecraft:elytra"
 #     custom_model_data: 1006
+#     rows: 0
 #     skills:
 #       riding: 0
 #       acrobatics: 1

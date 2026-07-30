@@ -4,6 +4,7 @@ import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
+import io.github.chasehuegel.skilling.engine.ui.GuiLayoutConfig.FillerConfig;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -37,9 +38,6 @@ import java.util.Map;
 public final class SkillMenuBuilder {
 
     private static final int MENU_SIZE = 54;
-    private static final int SLOT_PREV = 45;
-    private static final int SLOT_INDICATOR = 49;
-    private static final int SLOT_NEXT = 53;
 
     private final SkillManager skillManager;
     private volatile GuiLayoutConfig guiLayoutConfig;
@@ -92,27 +90,28 @@ public final class SkillMenuBuilder {
             GuiPage page = guiLayoutConfig.getPage(pageOrder.get(pageIndex));
             if (page == null) continue;
 
+            int size = page.inventorySize();
             Inventory inventory = Bukkit.createInventory(
                     new SkillInventoryHolder(player, pageIndex, pageOrder, pageCount),
-                    MENU_SIZE,
+                    size,
                     Component.text(page.title(), NamedTextColor.GOLD));
 
-            // Fill all slots with filler glass
+            // Fill all slots with filler
             ItemStack filler = createFillerPane();
-            for (int slot = 0; slot < MENU_SIZE; slot++) {
+            for (int slot = 0; slot < size; slot++) {
                 inventory.setItem(slot, filler);
             }
 
-            // Place navigation arrows
+            // Place navigation arrows on the last row
             if (pageIndex > 0) {
-                inventory.setItem(SLOT_PREV, createNavItem("◀ Prev Page", false));
+                inventory.setItem(page.prevSlot(), createNavItem("◀ Prev Page"));
             }
             if (pageIndex < pageCount - 1) {
-                inventory.setItem(SLOT_NEXT, createNavItem("Next Page ▶", true));
+                inventory.setItem(page.nextSlot(), createNavItem("Next Page ▶"));
             }
 
-            // Place page indicator at slot 49
-            inventory.setItem(SLOT_INDICATOR, buildPageIcon(page));
+            // Place page indicator at center of last row
+            inventory.setItem(page.indicatorSlot(), buildPageIcon(page));
 
             // Place skill icons
             for (var entry : page.skillSlots().entrySet()) {
@@ -146,15 +145,23 @@ public final class SkillMenuBuilder {
     }
 
     private ItemStack createFillerPane() {
-        ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        FillerConfig filler = guiLayoutConfig.getFillerConfig();
+        Material material = Material.matchMaterial(filler.material());
+        if (material == null) {
+            material = Material.BLACK_STAINED_GLASS_PANE;
+        }
+        ItemStack pane = new ItemStack(material);
         pane.editMeta(meta -> {
             meta.displayName(Component.empty());
+            if (filler.customModelData() > 0) {
+                meta.setCustomModelData(filler.customModelData());
+            }
             PoisonPillTag.apply(meta);
         });
         return pane;
     }
 
-    private ItemStack createNavItem(String name, boolean next) {
+    private ItemStack createNavItem(String name) {
         ItemStack arrow = new ItemStack(Material.ARROW);
         arrow.editMeta(meta -> {
             meta.displayName(Component.text(name, NamedTextColor.GOLD));

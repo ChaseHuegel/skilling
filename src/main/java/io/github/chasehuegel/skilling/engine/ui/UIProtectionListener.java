@@ -28,14 +28,11 @@ import java.util.Map;
  * </ol>
  *
  * <p><b>Navigation:</b> In paginated mode ({@link SkillInventoryHolder#getPageOrder()}
- * is non-null), clicks on slot 45 open the previous page and clicks on slot
- * 53 open the next page. The inventory is swapped entirely; arrow items are
- * not consumed.
+ * is non-null), clicks on the first slot of the last row open the previous page
+ * and clicks on the last slot of the last row open the next page. The inventory
+ * size determines the row count dynamically.
  */
 public final class UIProtectionListener implements Listener {
-
-    private static final int SLOT_PREV = 45;
-    private static final int SLOT_NEXT = 53;
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryClick(InventoryClickEvent event) {
@@ -58,21 +55,30 @@ public final class UIProtectionListener implements Listener {
         }
 
         // Handle pagination navigation
-        handleNavigation(event, player, holder);
+        handleNavigation(event, player, holder, top);
     }
 
-    private void handleNavigation(InventoryClickEvent event, Player player, SkillInventoryHolder holder) {
+    private void handleNavigation(InventoryClickEvent event, Player player, SkillInventoryHolder holder, Inventory top) {
         List<String> pageOrder = holder.getPageOrder();
         if (pageOrder == null) return;
+
+        int rows = top.getSize() / 9;
+        int lastRowStart = (rows - 1) * 9;
+        int prevSlot = lastRowStart;
+        int indicatorSlot = lastRowStart + 4;
+        int nextSlot = lastRowStart + 8;
 
         int slot = event.getSlot();
         int pageIndex = holder.getPageIndex();
         int pageCount = holder.getPageCount();
 
+        // Ignore clicks on the indicator slot
+        if (slot == indicatorSlot) return;
+
         int targetPage = -1;
-        if (slot == SLOT_PREV && pageIndex > 0) {
+        if (slot == prevSlot && pageIndex > 0) {
             targetPage = pageIndex - 1;
-        } else if (slot == SLOT_NEXT && pageIndex < pageCount - 1) {
+        } else if (slot == nextSlot && pageIndex < pageCount - 1) {
             targetPage = pageIndex + 1;
         }
 
