@@ -231,6 +231,23 @@ public final class SkillMenuBuilder {
             lore.add(Component.text("XP: " + xpInto + " / " + xpNeeded, NamedTextColor.AQUA));
         }
 
+        // Skill-level lore lines
+        var skillLore = skill.display().lore();
+        if (skillLore != null && !skillLore.isEmpty()) {
+            lore.add(Component.empty());
+            Map<String, ParameterEvaluator> skillParams = Map.of(
+                "level", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(level),
+                "max_level", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(skill.maxLevel()),
+                "skill_name", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0),
+                "xp", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(currentXp)
+            );
+            List<String> resolved = LoreResolver.resolveAll(
+                skillLore, skillParams, level, 0);
+            for (String line : resolved) {
+                lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(line));
+            }
+        }
+
         for (SkillDefinition.Ability ability : skill.abilities()) {
             lore.add(Component.empty());
             lore.add(formatAbilityLine(ability, level));

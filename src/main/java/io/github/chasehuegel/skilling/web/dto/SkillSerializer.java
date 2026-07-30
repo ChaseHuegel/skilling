@@ -49,6 +49,8 @@ public final class SkillSerializer {
         int cmd = intVal(display, "custom_model_data", 0);
         String color = str(display, "color", "WHITE");
         String style = str(display, "style", "SOLID");
+        @SuppressWarnings("unchecked")
+        List<String> lore = (List<String>) display.getOrDefault("lore", List.of());
 
         Map<String, Object> prog = map(raw, "progression");
         var progression = new SkillDetailDTO.ProgressionDTO(
@@ -82,8 +84,16 @@ public final class SkillSerializer {
             }
         }
 
-        return new SkillDetailDTO(id, displayName, maxLevel, icon, cmd, color, style,
-            progression, xpSources, abilities);
+        List<SkillDetailDTO.LevelUpCommandDTO> levelUpCommands = new ArrayList<>();
+        List<String> cmdRaw = listStr(raw, "level_up_commands");
+        if (cmdRaw != null) {
+            for (String c : cmdRaw) {
+                levelUpCommands.add(new SkillDetailDTO.LevelUpCommandDTO(c));
+            }
+        }
+
+        return new SkillDetailDTO(id, displayName, maxLevel, icon, cmd, color, style, lore,
+            progression, xpSources, abilities, levelUpCommands);
     }
 
     public static Map<String, Object> toMap(SkillDetailDTO dto) {
@@ -98,6 +108,9 @@ public final class SkillSerializer {
         if (dto.customModelData() > 0) display.put("custom_model_data", dto.customModelData());
         display.put("color", dto.color());
         display.put("style", dto.style());
+        if (dto.lore() != null && !dto.lore().isEmpty()) {
+            display.put("lore", dto.lore());
+        }
         root.put("display", display);
 
         Map<String, Object> prog = new LinkedHashMap<>();
@@ -137,6 +150,11 @@ public final class SkillSerializer {
             abilities.add(abilityToMap(a));
         }
         root.put("abilities", abilities);
+
+        if (dto.levelUpCommands() != null && !dto.levelUpCommands().isEmpty()) {
+            root.put("level_up_commands",
+                    dto.levelUpCommands().stream().map(SkillDetailDTO.LevelUpCommandDTO::command).toList());
+        }
 
         return root;
     }
@@ -464,6 +482,21 @@ public final class SkillSerializer {
                     Map<String, Object> converted = new LinkedHashMap<>();
                     m.forEach((k, val) -> converted.put(k.toString(), val));
                     result.add(converted);
+                }
+            }
+            return result;
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    static List<String> listStr(Map<String, Object> parent, String key) {
+        Object v = parent.get(key);
+        if (v instanceof List<?> list) {
+            List<String> result = new ArrayList<>();
+            for (Object item : list) {
+                if (item instanceof String s) {
+                    result.add(s);
                 }
             }
             return result;

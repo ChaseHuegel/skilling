@@ -13,6 +13,9 @@ display:
   custom_model_data: 1001       # Maps to the server's custom resource pack
   color: "GREEN"                # Spigot BossBar Color (GREEN, RED, BLUE, etc.)
   style: "SEGMENTED_10"         # Spigot BossBar Style
+  # lore:                       # Optional descriptive lines for skill tooltip
+  #   - "&7Master the art of mining."
+  #   - "&7Current level: &a{level}&7/&a{max_level}"
 
 # ----------------------------------------
 # MATH & PROGRESSION
@@ -39,6 +42,15 @@ xp_sources:
       - state: "player_placed:false"
     reward:
       constant: 2.0
+
+# ----------------------------------------
+# LEVEL-UP COMMANDS (Optional)
+# Commands executed via console sender on every level-up.
+# Supports placeholders: {player}, {level}, {skill_id}, {skill_name}
+# ----------------------------------------
+# level_up_commands:
+#   - "give {player} minecraft:diamond 1"
+#   - "eco give {player} 10"
 
 # ----------------------------------------
 # ABILITIES & MECHANICS

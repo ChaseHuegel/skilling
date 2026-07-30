@@ -11,6 +11,13 @@
                     <div class="banner-info">
                         <div class="banner-name">{{ form.displayName || form.id || 'New Skill' }}</div>
                         <div class="banner-meta">Level 1 – {{ form.maxLevel }}</div>
+                        <div v-if="form.lore && form.lore.length > 0" class="banner-lore">
+                            <div
+                                v-for="(line, i) in form.lore"
+                                :key="i"
+                                class="banner-lore-line"
+                            >{{ line }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="banner-actions">
@@ -48,6 +55,11 @@
                 <fieldset class="section">
                     <legend>Abilities</legend>
                     <AbilitiesSection v-model="form.abilities" :tagSuggestions="tagSuggestions" />
+                </fieldset>
+
+                <fieldset class="section">
+                    <legend>Level-Up Commands</legend>
+                    <LevelUpCommandsSection v-model="form.levelUpCommands" />
                 </fieldset>
             </div>
         </div>
@@ -92,6 +104,7 @@ import DisplaySection from '../components/skills/DisplaySection.vue';
 import ProgressionSection from '../components/skills/ProgressionSection.vue';
 import XpSourcesSection from '../components/skills/XpSourcesSection.vue';
 import AbilitiesSection from '../components/skills/AbilitiesSection.vue';
+import LevelUpCommandsSection from '../components/skills/LevelUpCommandsSection.vue';
 import StickyActionBanner from '../components/common/StickyActionBanner.vue';
 
 const route = useRoute();
@@ -203,9 +216,11 @@ const form = reactive<Record<string, any>>({
     customModelData: 0,
     color: 'GREEN',
     style: 'SOLID',
+    lore: [] as string[],
     progression: { curve: 'polynomial', baseXp: 50, exponent: 2.5 },
     xpSources: [] as any[],
     abilities: [] as any[],
+    levelUpCommands: [] as string[],
 });
 
 const identityForm = computed({
@@ -213,8 +228,8 @@ const identityForm = computed({
     set: (val: any) => { form.id = val.id; form.displayName = val.displayName; form.maxLevel = val.maxLevel; },
 });
 const displayForm = computed({
-    get: () => ({ icon: form.icon, customModelData: form.customModelData, color: form.color, style: form.style }),
-    set: (val: any) => { form.icon = val.icon; form.customModelData = val.customModelData; form.color = val.color; form.style = val.style; },
+    get: () => ({ icon: form.icon, customModelData: form.customModelData, color: form.color, style: form.style, lore: form.lore || [] }),
+    set: (val: any) => { form.icon = val.icon; form.customModelData = val.customModelData; form.color = val.color; form.style = val.style; form.lore = val.lore || []; },
 });
 const progressionForm = computed({
     get: () => form.progression,
@@ -334,6 +349,7 @@ async function save() {
             progression: form.progression,
             xpSources: form.xpSources,
             abilities: (form.abilities || []).map(formAbilityToApi),
+            levelUpCommands: form.levelUpCommands || [],
         };
         if (isNew) {
             await api.skills.create(payload);
@@ -377,6 +393,7 @@ async function leaveSave() {
             progression: form.progression,
             xpSources: form.xpSources,
             abilities: (form.abilities || []).map(formAbilityToApi),
+            levelUpCommands: form.levelUpCommands || [],
         };
         if (isNew) {
             await api.skills.create(payload);
@@ -431,6 +448,16 @@ function leaveDiscard() {
     font-size: 1.1rem;
 }
 .banner-meta {
+    font-size: 0.8rem;
+    color: var(--p-text-muted-color, #888);
+}
+.banner-lore {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    margin-top: 0.25rem;
+}
+.banner-lore-line {
     font-size: 0.8rem;
     color: var(--p-text-muted-color, #888);
 }

@@ -182,6 +182,9 @@ public final class LevelUpDispatcher {
                     org.bukkit.FireworkEffect.Type.BURST, 1);
         }
 
+        // Execute level-up commands
+        io.github.chasehuegel.skilling.engine.command.LevelUpCommandExecutor.execute(skill, player, newLevel);
+
         StringBuilder logMsg = new StringBuilder("Level up! " + player.getName() + "'s " + skill.id() + " increased to " + newLevel);
         for (SkillDefinition.Ability a : unlockedAbilities) {
             logMsg.append("\n  ").append(

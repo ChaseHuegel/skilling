@@ -112,7 +112,10 @@ public final class SkillManager {
         // Abilities
         List<SkillDefinition.Ability> abilities = parseAbilities(config.getList("abilities"));
 
-        return new SkillDefinition(id, maxLevel, display, progression, xpSources, abilities);
+        // Level-up commands
+        List<SkillDefinition.LevelUpCommand> levelUpCommands = parseLevelUpCommands(config.getList("level_up_commands"));
+
+        return new SkillDefinition(id, maxLevel, display, progression, xpSources, abilities, levelUpCommands);
     }
 
     private SkillDefinition.Display parseDisplay(ConfigurationSection section) {
@@ -124,7 +127,9 @@ public final class SkillManager {
         int customModelData = section.getInt("custom_model_data", 0);
         String color = section.getString("color", "WHITE");
         String style = section.getString("style", "SOLID");
-        return new SkillDefinition.Display(name, icon, customModelData, color, style);
+        @SuppressWarnings("unchecked")
+        List<String> lore = (List<String>) section.getList("lore", List.of());
+        return new SkillDefinition.Display(name, icon, customModelData, color, style, lore);
     }
 
     private SkillDefinition.Progression parseProgression(ConfigurationSection section) {
@@ -408,6 +413,17 @@ public final class SkillManager {
      */
     public SkillDefinition getSkill(String id) {
         return skills.get(id);
+    }
+
+    private List<SkillDefinition.LevelUpCommand> parseLevelUpCommands(List<?> list) {
+        if (list == null) return List.of();
+        List<SkillDefinition.LevelUpCommand> cmds = new ArrayList<>();
+        for (Object raw : list) {
+            if (raw instanceof String s && !s.isBlank()) {
+                cmds.add(new SkillDefinition.LevelUpCommand(s));
+            }
+        }
+        return cmds;
     }
 
     /**

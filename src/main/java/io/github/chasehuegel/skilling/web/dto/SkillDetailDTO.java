@@ -11,10 +11,23 @@ public record SkillDetailDTO(
     int customModelData,
     String color,
     String style,
+    List<String> lore,
     ProgressionDTO progression,
     List<XpSourceDTO> xpSources,
-    List<AbilityDTO> abilities
+    List<AbilityDTO> abilities,
+    List<LevelUpCommandDTO> levelUpCommands
 ) {
+    public SkillDetailDTO(String id, String displayName, int maxLevel, String icon, int customModelData,
+                          String color, String style, ProgressionDTO progression,
+                          List<XpSourceDTO> xpSources, List<AbilityDTO> abilities) {
+        this(id, displayName, maxLevel, icon, customModelData, color, style, List.of(),
+             progression, xpSources, abilities, List.of());
+    }
+
+    public record LevelUpCommandDTO(
+        String command
+    ) {}
+
     public record ProgressionDTO(
         String curve,
         double baseXp,

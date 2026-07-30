@@ -15,8 +15,9 @@ import java.util.Map;
  * @param maxLevel    maximum achievable level
  * @param display     UI display configuration
  * @param progression XP curve configuration
- * @param xpSources   list of XP-granting trigger definitions
- * @param abilities   list of ability definitions
+ * @param xpSources        list of XP-granting trigger definitions
+ * @param abilities        list of ability definitions
+ * @param levelUpCommands  commands executed on level-up (console dispatch)
  */
 public record SkillDefinition(
         String id,
@@ -24,8 +25,14 @@ public record SkillDefinition(
         Display display,
         Progression progression,
         List<XpSource> xpSources,
-        List<Ability> abilities
+        List<Ability> abilities,
+        List<LevelUpCommand> levelUpCommands
 ) {
+    public SkillDefinition(String id, int maxLevel, Display display, Progression progression,
+                           List<XpSource> xpSources, List<Ability> abilities) {
+        this(id, maxLevel, display, progression, xpSources, abilities, List.of());
+    }
+
 
     /**
      * UI display configuration for a skill.
@@ -35,14 +42,20 @@ public record SkillDefinition(
      * @param customModelData custom model data for resource packs
      * @param color           BossBar color
      * @param style           BossBar style
+     * @param lore            descriptive lore lines for the skill tooltip
      */
     public record Display(
             String name,
             String icon,
             int customModelData,
             String color,
-            String style
-    ) {}
+            String style,
+            List<String> lore
+    ) {
+        public Display(String name, String icon, int customModelData, String color, String style) {
+            this(name, icon, customModelData, color, style, List.of());
+        }
+    }
 
     /**
      * XP progression curve configuration.
@@ -212,6 +225,21 @@ public record SkillDefinition(
             String message,
             List<Map<String, Object>> particles,
             List<Map<String, Object>> sounds
+    ) {}
+
+    /**
+     * Computes the level corresponding to the given raw XP for this skill's progression curve.
+     *
+     * @param xp the total raw XP
+     * @return the computed level (0 to maxLevel)
+     */
+    /**
+     * A command to execute on level-up with placeholder support.
+     *
+     * @param command raw command string with {placeholders}
+     */
+    public record LevelUpCommand(
+            String command
     ) {}
 
     /**
