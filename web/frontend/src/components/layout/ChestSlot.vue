@@ -4,9 +4,13 @@
     :class="{
       'slot-occupied': !!skill,
       'slot-drag-over': dragOver,
+      'slot-assign-target': !skill && !!selectedSkillId,
     }"
     :data-slot-index="slotIndex"
     :draggable="!!skill"
+    :tabindex="!skill ? 0 : -1"
+    :role="!skill ? 'button' : undefined"
+    :aria-label="slotAriaLabel"
     @dragstart="onDragStart"
     @dragenter.prevent="onDragEnter"
     @dragover.prevent="onDragOver"
@@ -16,6 +20,9 @@
     @mouseenter="showTooltip"
     @mouseleave="hideTooltip"
     @contextmenu.prevent="onRightClick"
+    @click="onClick"
+    @keydown.enter="onClick"
+    @keydown.space.prevent="onClick"
   >
     <div class="slot-background">
       <MinecraftIcon v-if="skill" :material="skill.icon || 'minecraft:barrier'" :color="skill.color" :size="36" />
@@ -24,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject } from 'vue'
+import { ref, inject, computed } from 'vue'
 import MinecraftIcon from '../common/MinecraftIcon.vue'
 
 export interface SlotSkill {
@@ -55,7 +62,13 @@ const emit = defineEmits<{
 }>()
 
 const dragState = inject('dragState') as DragState
+const selectedSkillId = inject('selectedSkillId') as ReturnType<typeof ref<string | null>>
 const dragOver = ref(false)
+
+const slotAriaLabel = computed(() => {
+  if (props.skill) return `Slot ${props.slotIndex}: ${props.skill.displayName || props.skill.id}`
+  return `Slot ${props.slotIndex}: empty`
+})
 
 function onDragStart(e: DragEvent) {
   if (!props.skill) return
@@ -120,6 +133,15 @@ function showTooltip(e: MouseEvent) {
 function hideTooltip() {
   emit('tooltipHide')
 }
+
+function onClick() {
+  if (props.skill) return
+  const sid = selectedSkillId?.value
+  if (sid) {
+    emit('assign', props.pageIndex, props.slotIndex, sid)
+    selectedSkillId.value = null
+  }
+}
 </script>
 
 <style scoped>
@@ -144,6 +166,11 @@ function hideTooltip() {
   border-color: var(--p-text-muted-color, #555);
 }
 
+.chest-slot:focus {
+  outline: 2px solid var(--p-primary-color, #3b82f6);
+  outline-offset: 2px;
+}
+
 .chest-slot.slot-occupied {
   border-color: color-mix(in srgb, var(--p-primary-color, #3b82f6) 30%, var(--p-content-border-color, #3a3a5e));
   background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 6%, var(--p-content-background, #16162a));
@@ -156,6 +183,11 @@ function hideTooltip() {
 
 .app-dark .chest-slot.slot-drag-over {
   background: rgba(85, 255, 85, 0.12);
+}
+
+.chest-slot.slot-assign-target {
+  border-color: var(--p-primary-color, #3b82f6);
+  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 12%, var(--p-content-background, #1a1a2e));
 }
 
 .slot-background {

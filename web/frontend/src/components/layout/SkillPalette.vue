@@ -12,17 +12,25 @@
         v-model="query"
       />
     </div>
+    <div class="palette-hint" v-if="selectedSkillId">
+      Click an empty slot to place <strong>{{ selectedSkillName }}</strong>
+      <button class="hint-cancel" @click="clearSelection">&times;</button>
+    </div>
     <div class="palette-list" ref="listRef">
       <div
         v-for="skill in filteredSkills"
         :key="skill.id"
         class="palette-item"
-        :class="{ 'palette-item-dragging': draggingId === skill.id }"
+        :class="{
+          'palette-item-dragging': draggingId === skill.id,
+          'palette-item-selected': selectedSkillId === skill.id,
+        }"
         draggable="true"
         @dragstart="onDragStart(skill, $event)"
         @dragend="onDragEnd"
         @mouseenter="showTooltip(skill, $event)"
         @mouseleave="hideTooltip"
+        @click="toggleSelect(skill)"
       >
         <MinecraftIcon :material="skill.icon || 'minecraft:barrier'" :color="skill.color" :size="28" />
         <span class="palette-item-name">{{ skill.displayName || skill.id }}</span>
@@ -41,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import MinecraftIcon from '../common/MinecraftIcon.vue'
 import SkillTooltip from './SkillTooltip.vue'
 
@@ -60,6 +68,7 @@ const props = defineProps<{
 const query = ref('')
 const draggingId = ref<string | null>(null)
 const listRef = ref<HTMLElement | null>(null)
+const selectedSkillId = inject('selectedSkillId') as ReturnType<typeof ref<string | null>>
 
 const filteredSkills = computed(() => {
   const q = query.value.toLowerCase().trim()
@@ -70,6 +79,24 @@ const filteredSkills = computed(() => {
     (s.abilities || []).some(a => a.name.toLowerCase().includes(q))
   )
 })
+
+const selectedSkillName = computed(() => {
+  if (!selectedSkillId?.value) return ''
+  const skill = props.skills.find(s => s.id === selectedSkillId.value)
+  return skill?.displayName || skill?.id || ''
+})
+
+function toggleSelect(skill: PaletteSkill) {
+  if (selectedSkillId?.value === skill.id) {
+    selectedSkillId.value = null
+  } else {
+    selectedSkillId.value = skill.id
+  }
+}
+
+function clearSelection() {
+  if (selectedSkillId) selectedSkillId.value = null
+}
 
 function onDragStart(skill: PaletteSkill, e: DragEvent) {
   draggingId.value = skill.id
@@ -87,7 +114,6 @@ function onDragEnd(e: DragEvent) {
   }
 }
 
-// Tooltip
 const tooltipVisible = ref(false)
 const tooltipSkill = ref<PaletteSkill | null>(null)
 const tooltipX = ref(0)
@@ -149,6 +175,37 @@ function hideTooltip() {
   color: var(--p-form-field-placeholder-color, #666);
 }
 
+.palette-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--p-primary-color, #3b82f6) 30%, transparent);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--p-text-color, #ccc);
+}
+
+.palette-hint strong {
+  color: var(--p-primary-color, #3b82f6);
+}
+
+.hint-cancel {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--p-text-muted-color, #888);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.hint-cancel:hover {
+  color: var(--p-text-color, #fff);
+}
+
 .palette-list {
   display: flex;
   flex-direction: column;
@@ -166,6 +223,7 @@ function hideTooltip() {
   cursor: grab;
   transition: background 0.1s;
   user-select: none;
+  border: 1px solid transparent;
 }
 
 .palette-item:hover {
@@ -176,9 +234,9 @@ function hideTooltip() {
   opacity: 0.5;
 }
 
-.palette-item.palette-item-selected {
+.palette-item-selected {
   background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 25%, transparent);
-  border: 1px solid var(--p-primary-color, #3b82f6);
+  border-color: var(--p-primary-color, #3b82f6);
 }
 
 .palette-item-name {
