@@ -343,7 +343,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-054.md` for full development plan
 - [x] Test coverage gaps: all 25 mechanics untested, all 19 triggers untested, requirement engine lifecycle (Check/Execute/Consume) uncovered, no serialization tests, no `BossBarPool`/`FanfareDispatcher`/`LevelUpDispatcher` tests
     - See `ISSUE-055.md` for full development plan
-- [ ] CI/CD Pipeline: GitHub Actions workflows for build, test, frontend type-check/lint, Playwright E2E, and automated releases
+- [x] CI/CD Pipeline: GitHub Actions workflows for build, test, frontend type-check/lint, Playwright E2E, and automated releases
     - See `ISSUE-056.md` for full development plan
 - [ ] Gradle maven-publish configuration: publish API artifact to JitPack for addon developer consumption
     - See `ISSUE-057.md` for full development plan
