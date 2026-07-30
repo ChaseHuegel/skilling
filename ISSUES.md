@@ -377,3 +377,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - See `ISSUE-065.md` for full design plan
 - [x] (Plugin & Web - Design) Draft a design and development plan in a new issue markdown document for incorporating a new addition to the skill schema in the form skill lore lines. Similar to the ability lore, this should support any number of lines and allow editing from the web GUI. The plugin will display this before abilities in the chest GUI tooltips; the web GUI will display the formatted lore lines in the skill cards and the skill editor's header card; the web GUI will use the exact same visuals for editing and previewing these as the ability lore editor. This will provide a mechanism for designers to provide a description of skills.
   - See `ISSUE-066.md` for full design plan
+- [ ] (Plugin) Add tab autocomplete support to `/skills log`
+- [ ] (Plugin) Players should be getting XP chat messages sent to them when their `/skills log xp true` is enabled
+- [ ] (Plugin) Players logging profile preferences should all be true by default except for XP gains
+- [ ] (Plugin) The skill guide recipe should be `book` + `coal` and shapeless
