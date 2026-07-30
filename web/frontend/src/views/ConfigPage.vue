@@ -37,6 +37,16 @@
                 <AppInput v-model.number="config.globalXpModifier" type="number" label="Global XP Modifier" :min="0.1" :max="100" :step="0.1" />
             </ConfigSection>
 
+            <ConfigSection title="Crop Grow" description="Natural crop growth event search radius">
+                <AppInput v-model.number="config.cropGrow.searchRadius" type="number" label="Search Radius" :min="1" :max="50" />
+                <span class="field-note">Radius in blocks to search for nearby players when a crop grows</span>
+            </ConfigSection>
+
+            <ConfigSection title="Skills Guide Book" description="Craftable skills reference book">
+                <AppInput v-model="config.skillsGuideBook.enabled" type="checkbox" label="Enabled" />
+                <span class="field-note">When disabled, the recipe and listener are not registered</span>
+            </ConfigSection>
+
             <ConfigSection title="Web Server" description="Built-in administration interface">
                 <AppInput v-model="config.web.enabled" type="checkbox" label="Enabled" />
                 <span class="field-note">Requires server restart to take effect</span>
@@ -114,6 +124,8 @@ const config = reactive({
     debugLogging: false,
     titles: { stayDuration: 5000 },
     globalXpModifier: 1.0,
+    cropGrow: { searchRadius: 10 },
+    skillsGuideBook: { enabled: true },
     web: { enabled: false, port: 8082, username: 'admin', password: 'skilling' },
 });
 

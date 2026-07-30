@@ -45,6 +45,14 @@ public final class ConfigHandler {
 
             result.put("globalXpModifier", config.getDouble("global_xp_modifier", 1.0));
 
+            Map<String, Object> cropGrow = new LinkedHashMap<>();
+            cropGrow.put("searchRadius", config.getInt("crop_grow.search_radius", 10));
+            result.put("cropGrow", cropGrow);
+
+            Map<String, Object> skillsGuideBook = new LinkedHashMap<>();
+            skillsGuideBook.put("enabled", config.getBoolean("skills_guide_book.enabled", true));
+            result.put("skillsGuideBook", skillsGuideBook);
+
             Map<String, Object> web = new LinkedHashMap<>();
             web.put("enabled", config.getBoolean("web.enabled", false));
             web.put("port", config.getInt("web.port", 8082));
@@ -82,6 +90,12 @@ public final class ConfigHandler {
             yamlConfig.set("titles.stay_duration", titles.getOrDefault("stayDuration", 5000));
 
             yamlConfig.set("global_xp_modifier", body.getOrDefault("globalXpModifier", 1.0));
+
+            Map<String, Object> cropGrow = (Map<String, Object>) body.getOrDefault("cropGrow", Map.of());
+            yamlConfig.set("crop_grow.search_radius", cropGrow.getOrDefault("searchRadius", 10));
+
+            Map<String, Object> skillsGuideBook = (Map<String, Object>) body.getOrDefault("skillsGuideBook", Map.of());
+            yamlConfig.set("skills_guide_book.enabled", skillsGuideBook.getOrDefault("enabled", true));
 
             Map<String, Object> web = (Map<String, Object>) body.getOrDefault("web", Map.of());
             yamlConfig.set("web.enabled", web.getOrDefault("enabled", false));
