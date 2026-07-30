@@ -3,6 +3,7 @@
     v-if="navRole"
     class="chest-slot slot-nav"
     :class="{ 'slot-nav-clickable': navRole !== 'indicator' }"
+    :title="navTooltip"
     @click="onNavClick"
   >
     <div class="slot-background">
@@ -84,6 +85,12 @@ const dragState = inject('dragState') as DragState
 const selectedSkillId = inject('selectedSkillId') as ReturnType<typeof ref<string | null>>
 const dragOver = ref(false)
 const dragEnterCounter = ref(0)
+
+const navTooltip = computed(() => {
+  if (props.navRole === 'prev') return 'Previous page'
+  if (props.navRole === 'next') return 'Next page'
+  return '' // indicator shows inline
+})
 
 const slotAriaLabel = computed(() => {
   if (props.skill) return `Slot ${props.slotIndex}: ${props.skill.displayName || props.skill.id}`

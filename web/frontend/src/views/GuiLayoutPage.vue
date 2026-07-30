@@ -50,7 +50,7 @@
       </div>
     </template>
 
-    <StickyActionBanner :visible="isDirty" :saving="store.saving" @save="applyAndReload" @cancel="confirmCancel" />
+    <StickyActionBanner :visible="isDirty" :saving="store.saving" @save="saveToStaging" @cancel="confirmCancel" />
 
     <div v-if="showCancelDialog" class="modal-overlay" @click.self="showCancelDialog = false">
       <div class="modal">
@@ -157,14 +157,10 @@ onMounted(async () => {
   await stagingStore.fetchStatus()
 })
 
-async function applyAndReload() {
+async function saveToStaging() {
   try {
     await store.save()
     await stagingStore.fetchStatus()
-    if (stagingStore.hasPending) {
-      await stagingStore.applyAndReload()
-      await store.fetch()
-    }
     takeSnapshot()
   } catch {
     // error is set in store
@@ -177,7 +173,7 @@ function confirmCancel() {
 
 function discardChanges() {
   showCancelDialog.value = false
-  store.fetch()
+  store.fetch().then(takeSnapshot)
 }
 
 function onAddPage(label: string, icon = 'minecraft:book', customModelData = 0) {
@@ -197,6 +193,7 @@ async function leaveSave() {
   showLeaveDialog.value = false
   try {
     await store.save()
+    await stagingStore.fetchStatus()
   } catch { /* navigate anyway */ }
   pendingNavigation?.()
   pendingNavigation = null

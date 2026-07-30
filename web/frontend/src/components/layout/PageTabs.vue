@@ -247,17 +247,16 @@ const vFocus = {
   flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
-  padding: 6px 0;
+  padding: 8px 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
 }
 
 .page-tab {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 6px;
   background: var(--p-content-background, #1a1a2e);
@@ -279,9 +278,9 @@ const vFocus = {
 }
 
 .page-tab-active {
-  background: var(--p-primary-color, #3b82f6);
+  background: transparent;
   border-color: var(--p-primary-color, #3b82f6);
-  color: #fff;
+  color: var(--p-primary-color, #3b82f6);
 }
 
 .page-tab-drag-over {
