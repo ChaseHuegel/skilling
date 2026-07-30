@@ -3,7 +3,7 @@
         <div class="banner-inner">
             <span class="banner-label">Unsaved changes</span>
             <div class="banner-actions">
-                <button class="btn btn-secondary" :disabled="saving" @click="$emit('cancel')">Cancel</button>
+                <button class="btn btn-danger" :disabled="saving" @click="$emit('cancel')">Cancel</button>
                 <button class="btn btn-primary" :disabled="saving" @click="$emit('save')">
                     {{ saving ? 'Saving...' : 'Save Changes' }}
                 </button>

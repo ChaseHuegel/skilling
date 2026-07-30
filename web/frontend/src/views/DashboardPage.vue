@@ -6,7 +6,6 @@
                 <span v-if="!loading && skills.length > 0" class="skill-count-badge">{{ skills.length }} skill{{ skills.length !== 1 ? 's' : '' }}</span>
             </div>
             <div class="header-actions">
-                <button v-if="staging.hasPending" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
                 <button class="btn btn-primary" @click="createSkill">
                     <svg class="plus-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
                         <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
@@ -90,17 +89,6 @@
             </div>
         </div>
 
-        <!-- Reset confirm dialog -->
-        <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
-            <div class="modal">
-                <h3>Discard all pending changes?</h3>
-                <p>This will remove all staged edits to skills, tags, and configuration. The pending changes banner will disappear.</p>
-                <div class="modal-actions">
-                    <button class="btn btn-secondary" @click="showResetDialog = false">Keep Editing</button>
-                    <button class="btn btn-danger" @click="confirmReset">Discard</button>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -117,7 +105,6 @@ const skills = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const searchQuery = ref('');
-const showResetDialog = ref(false);
 const showDeleteDialog = ref(false);
 const deleteTarget = ref<string | null>(null);
 const deleteTargetName = ref('');
@@ -198,11 +185,7 @@ async function executeDeleteSkill() {
     } catch { /* ignore */ }
 }
 
-async function confirmReset() {
-    showResetDialog.value = false;
-    await staging.discard();
-    await staging.fetchStatus();
-}
+
 </script>
 
 <style scoped>

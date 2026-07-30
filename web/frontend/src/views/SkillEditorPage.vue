@@ -352,6 +352,8 @@ function confirmCancel() {
 }
 
 function discard() {
+    showCancelDialog.value = false;
+    cleanForm.value = JSON.stringify(form);
     router.push('/');
 }
 
@@ -388,6 +390,7 @@ async function leaveSave() {
 
 function leaveDiscard() {
     showLeaveDialog.value = false;
+    showCancelDialog.value = false;
     pendingNavigation?.();
     pendingNavigation = null;
 }

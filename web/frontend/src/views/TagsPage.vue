@@ -5,10 +5,7 @@
                 <h1>Tags</h1>
                 <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
             </div>
-            <div class="header-actions">
-                <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-secondary" @click="cancelTags">Cancel</button>
-                <button v-if="staging.hasFileChanges('tags.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
-            </div>
+
         </div>
 
         <div class="search-bar">
@@ -35,7 +32,19 @@
             <TagListEditor v-model="filteredTags" :suggestions="suggestions" />
         </div>
 
-        <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveTags" @cancel="fetchTags" />
+        <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveTags" @cancel="confirmCancel" />
+
+        <!-- Cancel confirm dialog -->
+        <div v-if="showCancelDialog" class="modal-overlay" @click.self="showCancelDialog = false">
+            <div class="modal">
+                <h3>Discard changes?</h3>
+                <p>Any unsaved changes to your custom tags will be lost.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showCancelDialog = false">Keep Editing</button>
+                    <button class="btn btn-danger" @click="discardTags">Discard</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Leave confirm dialog -->
         <div v-if="showLeaveDialog" class="modal-overlay" @click.self="showLeaveDialog = false">
@@ -50,17 +59,6 @@
             </div>
         </div>
 
-        <!-- Reset confirm dialog -->
-        <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
-            <div class="modal">
-                <h3>Discard tag changes?</h3>
-                <p>Any unsaved changes to your custom tags will be lost.</p>
-                <div class="modal-actions">
-                    <button class="btn btn-secondary" @click="showResetDialog = false">Keep Editing</button>
-                    <button class="btn btn-danger" @click="resetTags">Discard</button>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -79,7 +77,7 @@ const error = ref<string | null>(null);
 const tags = reactive<Record<string, string[]>>({});
 const cleanTags = ref('');
 const searchQuery = ref('');
-const showResetDialog = ref(false);
+const showCancelDialog = ref(false);
 const showLeaveDialog = ref(false);
 let pendingNavigation: (() => void) | null = null;
 
@@ -123,15 +121,17 @@ const suggestions = [
 
 onMounted(fetchTags);
 
-async function cancelTags() {
-    await staging.discard();
-    window.location.reload();
+function confirmCancel() {
+    showCancelDialog.value = true;
 }
 
-function resetTags() {
-    showResetDialog.value = false;
+function discardTags() {
+    showCancelDialog.value = false;
+    cleanTags.value = JSON.stringify(tags);
     fetchTags();
 }
+
+
 
 async function leaveSave() {
     showLeaveDialog.value = false;

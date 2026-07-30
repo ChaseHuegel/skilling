@@ -159,12 +159,12 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Plugin) Bundled skills are re-generating after the first run if they are deleted (use a config flag to determine if this is the first run or not)
 - [x] (Plugin) Review the bundled skill ymls, they appear to have some schema issues that prevents editing them in the web GUI
 - [x] (Plugin) The crossed-out mark for unlocked skills in the lore snippets is grey; it should be red.
-- [ ] (Plugin) If possible, lets hide the default attributes from the lore of items in the skill chest GUI (ex: "When in Main Hand", damage, attack speed, etc.)
+- [x] (Plugin) If possible, lets hide the default attributes from the lore of items in the skill chest GUI (ex: "When in Main Hand", damage, attack speed, etc.)
 - [x] (Plugin) The auto-complete for online player names in commands is no longer functioning
-- [ ] (Web) There is an issue with stacking notifications that comes close to a soft-lock: make a change to some content -> click "cancel" at the bottom banner -> click "discard" -> the unsaved changes popup opens behind the previous prompt, the previous prompt stays open. You have to click "keep editing" then you can respond to the unsaved changes prompt. This appears to be related to the cancel attempting a navigation. Cancel shouldn't perform any navigation.
-- [ ] (Web) Clicking cancel on the save changes bottom banner at the Tags or Config page does not prompt the confirmation dialog like the skills editor does
-- [ ] (Web) Now-obsolete buttons can sometimes appear at the headers of the pages (ex: reset button); these were obsoleted by the banner added to the bottom of the pages
-- [ ] (Web) The cancel button on the bottom banner should be themed appropriately as `danger`; ensure that all cancel/reset buttons are themed appropriately and consistently with the danger theme
+- [x] (Web) There is an issue with stacking notifications that comes close to a soft-lock: make a change to some content -> click "cancel" at the bottom banner -> click "discard" -> the unsaved changes popup opens behind the previous prompt, the previous prompt stays open. You have to click "keep editing" then you can respond to the unsaved changes prompt. This appears to be related to the cancel attempting a navigation. Cancel shouldn't perform any navigation.
+- [x] (Web) Clicking cancel on the save changes bottom banner at the Tags or Config page does not prompt the confirmation dialog like the skills editor does
+- [x] (Web) Now-obsolete buttons can sometimes appear at the headers of the pages (ex: reset button); these were obsoleted by the banner added to the bottom of the pages
+- [x] (Web) The cancel button on the bottom banner should be themed appropriately as `danger`; ensure that all cancel/reset buttons are themed appropriately and consistently with the danger theme
 - [x] (Plugin) The `/skills log` command does not show up in `/skills help`
 - [x] (Plugin) The `/skills log` command does not provide useful usage feedback or failure information if arguments aren't supplied, or aren't supplied correctly
 - [x] (Plugin) Both skill names and IDs are showing up in tab autocomplete, creating lots of visual noise. The autocomplete for skill parameters should just show IDs.

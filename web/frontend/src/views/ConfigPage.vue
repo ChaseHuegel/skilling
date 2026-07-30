@@ -2,10 +2,7 @@
     <div class="config-page">
         <div class="page-header">
             <h1>Config</h1>
-            <div class="header-actions">
-                <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-secondary" @click="cancelConfig">Cancel</button>
-                <button v-if="staging.hasFileChanges('config.yml')" class="btn btn-danger" @click="showResetDialog = true">Reset</button>
-            </div>
+
         </div>
 
         <div v-if="error" class="error-banner">{{ error }}</div>
@@ -49,7 +46,19 @@
             </ConfigSection>
         </div>
 
-        <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveConfig" @cancel="fetchConfig" />
+        <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveConfig" @cancel="confirmCancel" />
+
+        <!-- Cancel confirm dialog -->
+        <div v-if="showCancelDialog" class="modal-overlay" @click.self="showCancelDialog = false">
+            <div class="modal">
+                <h3>Discard changes?</h3>
+                <p>Any unsaved changes to your configuration will be lost.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showCancelDialog = false">Keep Editing</button>
+                    <button class="btn btn-danger" @click="discardConfig">Discard</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Leave confirm dialog -->
         <div v-if="showLeaveDialog" class="modal-overlay" @click.self="showLeaveDialog = false">
@@ -76,17 +85,6 @@
             </div>
         </div>
 
-        <!-- Reset confirm dialog -->
-        <div v-if="showResetDialog" class="modal-overlay" @click.self="showResetDialog = false">
-            <div class="modal">
-                <h3>Discard config changes?</h3>
-                <p>Any unsaved changes to your configuration will be lost.</p>
-                <div class="modal-actions">
-                    <button class="btn btn-secondary" @click="showResetDialog = false">Keep Editing</button>
-                    <button class="btn btn-danger" @click="confirmReset">Discard</button>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -103,7 +101,7 @@ const staging = useStagingStore();
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
-const showResetDialog = ref(false);
+const showCancelDialog = ref(false);
 const showWebDisableDialog = ref(false);
 const showLeaveDialog = ref(false);
 let pendingNavigation: (() => void) | null = null;
@@ -132,9 +130,14 @@ onBeforeRouteLeave((to, from, next) => {
 
 onMounted(fetchConfig);
 
-async function cancelConfig() {
-    await staging.discard();
-    window.location.reload();
+function confirmCancel() {
+    showCancelDialog.value = true;
+}
+
+function discardConfig() {
+    showCancelDialog.value = false;
+    cleanConfig.value = JSON.stringify(config);
+    fetchConfig();
 }
 
 async function leaveSave() {
@@ -152,11 +155,6 @@ function leaveDiscard() {
     showLeaveDialog.value = false;
     pendingNavigation?.();
     pendingNavigation = null;
-}
-
-function confirmReset() {
-    showResetDialog.value = false;
-    fetchConfig();
 }
 
 async function fetchConfig() {
