@@ -40,7 +40,6 @@ const dragState = reactive({ sourceSlot: null as number | null, dropReceived: fa
 provide('dragState', dragState)
 
 const props = defineProps<{
-  title: string
   rows: number
   page: ChestGridPage | null
   pageIndex: number
@@ -52,8 +51,6 @@ const emit = defineEmits<{
   assign: [pageIndex: number, slot: number, skillId: string]
   swap: [pageIndex: number, fromSlot: number, toSlot: number]
   remove: [pageIndex: number, slot: number]
-  prevPage: []
-  nextPage: []
 }>()
 
 const totalSlots = computed(() => props.rows * 9)
@@ -69,6 +66,9 @@ const indicatorSlot = computed(() => (props.rows - 1) * 9 + 4)
 const nextSlot = computed(() => (props.rows - 1) * 9 + 8)
 
 const navIcon = computed(() => props.page?.icon || 'minecraft:book')
+
+// Navigation slot indices match GuiPage.java: last row, specific columns
+// prev = first column, indicator = center, next = last column
 
 function getNavRole(slotIndex: number): 'prev' | 'next' | 'indicator' | null {
   if (slotIndex === prevSlot.value) return 'prev'

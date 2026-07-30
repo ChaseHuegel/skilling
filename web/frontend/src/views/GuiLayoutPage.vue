@@ -27,20 +27,17 @@
       />
 
       <div class="layout-main">
-        <ChestGrid
-          v-if="currentPage !== null"
-          :title="store.layout.title"
-          :rows="store.layout.rows"
-          :page="currentPage"
-          :page-index="activePage"
-          :total-pages="store.layout.pages.length"
-          :skill-map="skillMap"
-          @assign="(pageIndex: number, slot: number, skillId: string) => store.setSlot(pageIndex, slot, skillId)"
-          @swap="(pageIndex: number, fromSlot: number, toSlot: number) => store.swapSlots(pageIndex, fromSlot, toSlot)"
-          @remove="(pageIndex: number, slot: number) => store.clearSlot(pageIndex, slot)"
-          @prev-page="activePage = Math.max(0, activePage - 1)"
-          @next-page="activePage = Math.min(store.layout.pages.length - 1, activePage + 1)"
-        />
+          <ChestGrid
+            v-if="currentPage !== null"
+            :rows="store.layout.rows"
+            :page="currentPage"
+            :page-index="activePage"
+            :total-pages="store.layout.pages.length"
+            :skill-map="skillMap"
+            @assign="(pageIndex: number, slot: number, skillId: string) => store.setSlot(pageIndex, slot, skillId)"
+            @swap="(pageIndex: number, fromSlot: number, toSlot: number) => store.swapSlots(pageIndex, fromSlot, toSlot)"
+            @remove="(pageIndex: number, slot: number) => store.clearSlot(pageIndex, slot)"
+          />
 
         <SkillPalette
           :skills="paletteSkills"
