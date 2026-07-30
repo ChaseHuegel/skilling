@@ -1,15 +1,13 @@
 <template>
-  <div class="skill-tooltip" :style="positionStyle" v-if="visible && skill">
+  <div
+    ref="tooltipEl"
+    class="skill-tooltip"
+    :class="{ 'tooltip-flip': flipped }"
+    :style="positionStyle"
+    v-if="visible && skill"
+  >
     <div class="tooltip-title" v-html="renderedName"></div>
     <div class="tooltip-separator">&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</div>
-    <div class="tooltip-lore" v-if="descriptionLines.length > 0">
-      <div
-        v-for="(line, i) in descriptionLines"
-        :key="i"
-        class="tooltip-lore-line"
-        v-html="line"
-      ></div>
-    </div>
     <div class="tooltip-abilities" v-if="abilityLines.length > 0">
       <div
         v-for="(line, i) in abilityLines"
@@ -23,14 +21,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { parseAmpersandCodes, renderFormattedText } from '../../utils/minecraftColors'
 
 interface SkillTooltipData {
   displayName: string
   id: string
-  description?: string[]
-  abilities?: { name: string; unlockLevel: number }[]
+  abilities?: { name: string }[]
 }
 
 const props = defineProps<{
@@ -40,11 +37,31 @@ const props = defineProps<{
   y?: number
 }>()
 
+const tooltipEl = ref<HTMLElement | null>(null)
+const flipped = ref(false)
+
+const TOOLTIP_MARGIN = 8
+const FLIP_THRESHOLD = 260
+
 const positionStyle = computed(() => {
   if (props.x === undefined || props.y === undefined) return {}
   return {
     left: `${props.x}px`,
     top: `${props.y}px`,
+  }
+})
+
+watch(() => props.visible, async (visible) => {
+  if (visible && tooltipEl.value) {
+    await nextTick()
+    const rect = tooltipEl.value.getBoundingClientRect()
+    if (rect.top < TOOLTIP_MARGIN) {
+      flipped.value = true
+    } else {
+      flipped.value = false
+    }
+  } else {
+    flipped.value = false
   }
 })
 
@@ -55,13 +72,6 @@ const renderedName = computed(() =>
 const renderedId = computed(() =>
   renderFormattedText(parseAmpersandCodes(`&8${props.skill?.id || ''}`))
 )
-
-const descriptionLines = computed(() => {
-  if (!props.skill?.description) return []
-  return props.skill.description.map(line =>
-    renderFormattedText(parseAmpersandCodes(line))
-  )
-})
 
 const abilityLines = computed(() => {
   if (!props.skill?.abilities) return []
@@ -86,6 +96,11 @@ const abilityLines = computed(() => {
   margin-top: -8px;
 }
 
+.skill-tooltip.tooltip-flip {
+  transform: translate(-50%, 0);
+  margin-top: 8px;
+}
+
 .tooltip-title {
   font-size: 0.9rem;
   font-weight: 700;
@@ -99,7 +114,6 @@ const abilityLines = computed(() => {
   letter-spacing: -1px;
 }
 
-.tooltip-lore-line,
 .tooltip-ability-line {
   font-size: 0.8rem;
   line-height: 1.3;
