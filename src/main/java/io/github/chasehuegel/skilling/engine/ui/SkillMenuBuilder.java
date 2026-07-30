@@ -12,6 +12,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -147,6 +148,7 @@ public final class SkillMenuBuilder {
                 meta.setCustomModelData(skill.display().customModelData());
             }
 
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             PoisonPillTag.apply(meta);
         });
 
