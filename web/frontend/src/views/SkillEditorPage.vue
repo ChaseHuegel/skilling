@@ -48,13 +48,13 @@
                 </fieldset>
 
                 <fieldset class="section">
-                    <legend>XP Sources</legend>
-                    <XpSourcesSection v-model="form.xpSources" :tagSuggestions="tagSuggestions" />
+                  <legend>Level-up Commands</legend>
+                  <LevelUpCommandsSection v-model="form.levelUpCommands" />
                 </fieldset>
 
                 <fieldset class="section">
-                    <legend>Level-up Commands</legend>
-                    <LevelUpCommandsSection v-model="form.levelUpCommands" />
+                    <legend>XP Sources</legend>
+                    <XpSourcesSection v-model="form.xpSources" :tagSuggestions="tagSuggestions" />
                 </fieldset>
 
                 <fieldset class="section">
