@@ -37,6 +37,10 @@
         @add="onAddPage"
         @remove="onRemovePage"
         @rename="(idx: number, label: string) => { store.renamePage(idx, label); markDirty() }"
+        @duplicate="(idx: number) => { store.duplicatePage(idx); markDirty() }"
+        @clear-slots="(idx: number) => { store.clearPageSlots(idx); markDirty() }"
+        @move-left="(idx: number) => { store.movePage(idx, -1); activePage = Math.max(0, activePage - 1); markDirty() }"
+        @move-right="(idx: number) => { store.movePage(idx, 1); activePage = Math.min(store.layout!.pages.length - 1, activePage + 1); markDirty() }"
       />
 
       <div class="layout-main">

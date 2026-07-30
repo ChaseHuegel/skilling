@@ -119,9 +119,39 @@ export const useGuiLayoutStore = defineStore('guiLayout', () => {
     setSlot(pageIndex, slot, null)
   }
 
+  function duplicatePage(index: number) {
+    if (!layout.value) return
+    const source = layout.value.pages[index]
+    const copy = [...layout.value.pages]
+    copy.splice(index + 1, 0, {
+      label: source.label + ' (copy)',
+      slots: { ...source.slots },
+    })
+    layout.value = { ...layout.value, pages: copy }
+  }
+
+  function clearPageSlots(index: number) {
+    if (!layout.value) return
+    const copy = [...layout.value.pages]
+    copy[index] = { ...copy[index], slots: {} }
+    layout.value = { ...layout.value, pages: copy }
+  }
+
+  function movePage(index: number, direction: -1 | 1) {
+    if (!layout.value) return
+    const target = index + direction
+    if (target < 0 || target >= layout.value.pages.length) return
+    const copy = [...layout.value.pages]
+    const temp = copy[index]
+    copy[index] = copy[target]
+    copy[target] = temp
+    layout.value = { ...layout.value, pages: copy }
+  }
+
   return {
     layout, allSkills, loading, saving, error,
     fetch, save, addPage, removePage, renamePage,
     setSlot, swapSlots, clearSlot,
+    duplicatePage, clearPageSlots, movePage,
   }
 })
