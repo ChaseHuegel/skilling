@@ -100,25 +100,33 @@ public final class Skilling extends JavaPlugin {
         saveDefaultConfig();
         reloadConfig();
 
-        if (!new File(getDataFolder(), "tags.yml").exists()) {
-            getLogger().info("Generating default tags.yml...");
-            saveResource("tags.yml", false);
-        }
-        if (!new File(getDataFolder(), "template-skill.yml").exists()) {
-            getLogger().info("Generating default template-skill.yml...");
-            saveResource("template-skill.yml", false);
-        }
-
-        String[] bundledSkills = {"mining.yml", "woodcutting.yml", "excavation.yml",
-                                  "farming.yml", "fishing.yml", "archery.yml"};
-        for (String skill : bundledSkills) {
-            if (!new File(getDataFolder(), "skills/" + skill).exists()) {
-                getLogger().info("Generating default " + skill + "...");
-                saveResource("skills/" + skill, false);
-            }
-        }
-
         var config = (YamlConfiguration) getConfig();
+        boolean firstRun = config.getBoolean("setup.first_run", true);
+
+        if (firstRun) {
+            if (!new File(getDataFolder(), "tags.yml").exists()) {
+                getLogger().info("Generating default tags.yml...");
+                saveResource("tags.yml", false);
+            }
+            if (!new File(getDataFolder(), "template-skill.yml").exists()) {
+                getLogger().info("Generating default template-skill.yml...");
+                saveResource("template-skill.yml", false);
+            }
+
+            String[] bundledSkills = {"mining.yml", "woodcutting.yml", "excavation.yml",
+                                      "farming.yml", "fishing.yml", "archery.yml"};
+            for (String skill : bundledSkills) {
+                if (!new File(getDataFolder(), "skills/" + skill).exists()) {
+                    getLogger().info("Generating default " + skill + "...");
+                    saveResource("skills/" + skill, false);
+                }
+            }
+
+            // Mark setup as complete so bundled files are not regenerated on subsequent starts
+            config.set("setup.first_run", false);
+            saveConfig();
+        }
+
         this.debugLogging = config.getBoolean(CONFIG_DEBUG_LOGGING, false);
         if (debugLogging) {
             getLogger().info("Debug logging enabled.");

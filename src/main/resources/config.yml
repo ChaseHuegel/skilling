@@ -29,6 +29,12 @@ titles:
 # Global XP multiplier applied to all XP gains. Default: 1.0
 global_xp_modifier: 1.0
 
+# Internal flag tracking whether bundled resources (skills, tags, templates)
+# have been written to disk. Set to false by the plugin after first-run setup.
+# Do not modify manually unless you want bundled files regenerated.
+setup:
+  first_run: true
+
 # Crop grow trigger configuration
 crop_grow:
   # Radius (in blocks) to search for nearby players when a crop grows naturally

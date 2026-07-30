@@ -42,12 +42,7 @@ public final class SkillParser<C> implements ArgumentParser<C, String>, Blocking
     public Iterable<Suggestion> suggestions(CommandContext<C> ctx, CommandInput input) {
         String prefix = input.peekString().toLowerCase();
         var stream = skillManager.getSkills().values().stream()
-                .flatMap(def -> {
-                    if (def.display() != null && def.display().name() != null) {
-                        return java.util.stream.Stream.of(def.display().name(), def.id());
-                    }
-                    return java.util.stream.Stream.of(def.id());
-                });
+                .map(SkillDefinition::id);
         if (acceptAll) {
             stream = java.util.stream.Stream.concat(stream, java.util.stream.Stream.of("all"));
         }

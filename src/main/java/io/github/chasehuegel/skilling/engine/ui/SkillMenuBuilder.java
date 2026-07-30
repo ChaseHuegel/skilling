@@ -169,7 +169,7 @@ public final class SkillMenuBuilder {
                 || !ability.requirements().items().isEmpty();
         Component abilityPart = Component.text(
                 (unlocked ? "✔ " : "✗ ") + ability.displayName(),
-                unlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY);
+                unlocked ? NamedTextColor.GREEN : NamedTextColor.RED);
         Component typePart = Component.text(
                 isActive ? " · Active" : " · Passive",
                 NamedTextColor.DARK_GRAY);

@@ -24,6 +24,7 @@ import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
 import org.incendo.cloud.paper.util.sender.Source;
 import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.parser.standard.StringParser;
+import org.incendo.cloud.parser.standard.BooleanParser;
 import java.util.HashSet;
 
 public final class SkillsCommand {
@@ -100,6 +101,8 @@ public final class SkillsCommand {
                             .append(Component.text(" - Open the skill overview menu, or show skill progress with a skill name", NamedTextColor.WHITE)));
                     sender.sendMessage(Component.text("/skills help", NamedTextColor.YELLOW)
                             .append(Component.text(" - Show this help", NamedTextColor.WHITE)));
+                    sender.sendMessage(Component.text("/skills log <type> <true/false>", NamedTextColor.YELLOW)
+                            .append(Component.text(" - Set logging preferences (xp, levels, unlocks, abilities)", NamedTextColor.WHITE)));
                     if (sender.hasPermission("skilling.admin")) {
                         sender.sendMessage(Component.text("/skills set <key> <value>", NamedTextColor.YELLOW)
                                 .append(Component.text(" - Modify a config value at runtime", NamedTextColor.WHITE)));
@@ -117,8 +120,18 @@ public final class SkillsCommand {
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("log")
                 .permission("skilling.use")
+                .handler(ctx -> {
+                    ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize(
+                            "<yellow>Usage: /skills log <type> <true/false></yellow>"));
+                    ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize(
+                            "<gray>Types: xp, levels, unlocks, abilities</gray>"));
+                }));
+
+        commandManager.command(commandManager.commandBuilder("skills")
+                .literal("log")
+                .permission("skilling.use")
                 .required("type", org.incendo.cloud.parser.standard.StringParser.stringParser())
-                .required("value", org.incendo.cloud.parser.standard.BooleanParser.booleanParser())
+                .required("value", BooleanParser.booleanParser())
                 .handler(ctx -> {
                     Source sender = ctx.sender();
                     CommandSender commandSender = sender.source();
@@ -159,7 +172,7 @@ public final class SkillsCommand {
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("setlevel")
                 .permission("skilling.admin")
-                .required("player", org.incendo.cloud.parser.standard.StringParser.stringParser())
+                .required("player", PlayerNameParser.playerNameParser())
                 .required("skill", SkillParser.skillParser(skillManager))
                 .required("level", IntegerParser.integerParser())
                 .handler(ctx -> {
@@ -172,7 +185,7 @@ public final class SkillsCommand {
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("addxp")
                 .permission("skilling.admin")
-                .required("player", org.incendo.cloud.parser.standard.StringParser.stringParser())
+                .required("player", PlayerNameParser.playerNameParser())
                 .required("skill", SkillParser.skillParser(skillManager))
                 .required("amount", IntegerParser.integerParser())
                 .handler(ctx -> {
@@ -201,7 +214,7 @@ public final class SkillsCommand {
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("reset")
                 .permission("skilling.admin")
-                .required("player", org.incendo.cloud.parser.standard.StringParser.stringParser())
+                .required("player", PlayerNameParser.playerNameParser())
                 .optional("skill", SkillParser.skillParserAllowingAll(skillManager))
                 .handler(ctx -> {
                     String playerName = ctx.get("player");
