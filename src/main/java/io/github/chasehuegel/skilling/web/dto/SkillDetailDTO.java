@@ -60,7 +60,17 @@ public record SkillDetailDTO(
     public record RequirementsDTO(
         double cooldown,
         List<String> state,
-        List<ItemRequirementDTO> items
+        List<ItemRequirementDTO> items,
+        ExhaustionDTO exhaustion
+    ) {
+        public RequirementsDTO(double cooldown, List<String> state, List<ItemRequirementDTO> items) {
+            this(cooldown, state, items, null);
+        }
+    }
+
+    public record ExhaustionDTO(
+        double amount,
+        double minimum
     ) {}
 
     public record ItemRequirementDTO(

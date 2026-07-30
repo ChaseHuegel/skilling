@@ -14,7 +14,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Web) Some config options are missing from the config editor page. Come up with a development plan then ensure all config options are supported.
 
 # Improvements
-- [ ] handle `ISSUE-064.md`
+- [x] handle `ISSUE-064.md`
 - [ ] handle `ISSUE-065.md`
 - [ ] handle `ISSUE-066.md`
 - [ ] handle `ISSUE-067.md`

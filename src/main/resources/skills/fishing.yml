@@ -23,9 +23,9 @@ abilities:
     unlock_level: 1
     display:
       lore:
-        - "&7Increases treasure catch rate by &a{multiplier}x&7."
+        - "&7Increases treasure catch rate by &a{yield_chance}%&7."
     mechanics:
-      - type: "core:yield_multiplier"
+      - type: "core:fishing_yield"
         parameters:
           yield_chance:
             linear:
@@ -42,19 +42,15 @@ abilities:
     unlock_level: 15
     display:
       lore:
-        - "&7Fishing rod durability loss reduced by &a{durability}%&7."
+        - "&7Fishing rod durability loss reduced by &a{chance}%&7."
     mechanics:
-      - type: "core:modify_attribute"
+      - type: "core:durability_save"
         parameters:
-          attribute:
-            constant: 1.0
-          amount:
+          chance:
             linear:
-              base: 0.5
-              step: 0.005
-              max: 1.0
-          duration:
-            constant: 0.0
+              base: 20.0
+              step: 0.5
+              max: 75.0
     feedback:
       notify:
         action_bar: false
@@ -67,7 +63,7 @@ abilities:
       lore:
         - "&7Better enchantments and loot from fishing treasure."
     mechanics:
-      - type: "core:yield_multiplier"
+      - type: "core:fishing_yield"
         parameters:
           yield_chance:
             linear:
@@ -92,13 +88,13 @@ abilities:
       lore:
         - "&7Doubles fish catches."
     mechanics:
-      - type: "core:yield_multiplier"
+      - type: "core:fishing_loot"
         parameters:
-          yield_chance:
+          multiplier:
             linear:
-              base: 1.0
+              base: 1.5
               step: 0.01
-              max: 2.0
+              max: 2.5
     feedback:
       notify:
         action_bar: false
@@ -130,10 +126,10 @@ abilities:
       lore:
         - "&7Guaranteed max-size catches and rare treasure."
     mechanics:
-      - type: "core:yield_multiplier"
+      - type: "core:fishing_loot"
         parameters:
-          yield_chance:
-            constant: 100.0
+          multiplier:
+            constant: 3.0
     feedback:
       notify:
         action_bar: false

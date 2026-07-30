@@ -270,6 +270,12 @@ public final class SkillSerializer {
             }
             reqMap.put("items", items);
         }
+        if (a.requirements().exhaustion() != null) {
+            Map<String, Object> exMap = new LinkedHashMap<>();
+            exMap.put("amount", a.requirements().exhaustion().amount());
+            exMap.put("minimum", a.requirements().exhaustion().minimum());
+            reqMap.put("exhaustion", exMap);
+        }
         m.put("requirements", reqMap);
 
         List<Map<String, Object>> mechanics = new ArrayList<>();
@@ -322,7 +328,15 @@ public final class SkillSerializer {
                 ));
             }
         }
-        return new SkillDetailDTO.RequirementsDTO(cooldown, state, items);
+        SkillDetailDTO.ExhaustionDTO exhaustion = null;
+        if (raw.containsKey("exhaustion")) {
+            Map<String, Object> exMap = castMap(raw.get("exhaustion"));
+            exhaustion = new SkillDetailDTO.ExhaustionDTO(
+                doubleVal(exMap, "amount", 1.0),
+                doubleVal(exMap, "minimum", 0.0)
+            );
+        }
+        return new SkillDetailDTO.RequirementsDTO(cooldown, state, items, exhaustion);
     }
 
     static List<SkillDetailDTO.FilterDTO> parseFilters(List<Map<String, Object>> raw) {

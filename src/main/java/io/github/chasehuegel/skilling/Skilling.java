@@ -246,7 +246,7 @@ public final class Skilling extends JavaPlugin {
 
         var mechReg = registries.getMechanicRegistry();
         mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class, List.of("yield_chance"));
-        mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit", "exhaustion"));
+        mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit"));
         mechReg.register("core:modify_damage", ModifyDamageMechanic.class, List.of("multiplier"));
         mechReg.register("core:apply_status", ApplyStatusMechanic.class, List.of("effect", "duration", "amplifier"));
         mechReg.register("core:cancel_damage", CancelDamageMechanic.class, List.of("chance"));
@@ -270,6 +270,12 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:auto_smelt", AutoSmeltMechanic.class, List.of("chance"));
         mechReg.register("core:speed_bonus", SpeedBonusMechanic.class, List.of("multiplier"));
         mechReg.register("core:xp_bonus", XpBonusMechanic.class, List.of("multiplier"));
+        mechReg.register("core:fishing_yield", FishingYieldMechanic.class, List.of("yield_chance"));
+        mechReg.register("core:fishing_loot", FishingLootMechanic.class, List.of("multiplier"));
+        mechReg.register("core:area_harvest", AreaHarvestMechanic.class, List.of("radius", "max_blocks"));
+        mechReg.register("core:auto_replant", AutoReplantMechanic.class, List.of());
+        mechReg.register("core:durability_save", DurabilitySaveMechanic.class, List.of("chance"));
+        mechReg.register("core:haste_effect", HasteMechanic.class, List.of("amplifier", "duration"));
 
         var trigReg = registries.getTriggerRegistry();
         trigReg.register("block_break", BlockBreakTrigger.class);
@@ -291,6 +297,8 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("collect_xp", CollectXpTrigger.class);
         trigReg.register("level_up", LevelUpTrigger.class);
         trigReg.register("enchant_item", EnchantItemTrigger.class);
+        trigReg.register("shoot_bow", ShootBowTrigger.class);
+        trigReg.register("item_damage", ItemDamageTrigger.class);
     }
 
     private void loadSkills() {

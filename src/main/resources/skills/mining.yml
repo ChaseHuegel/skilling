@@ -75,7 +75,7 @@ abilities:
     display:
       lore:
         - "&7Sneak-mine to break up to &a{chain_limit} &7connected blocks."
-        - "&7Exhaustion cost: &c{exhaustion}&7."
+        - "&7Exhaustion cost: 2 hunger."
     requirements:
       cooldown: 5.0
       state:
@@ -87,6 +87,9 @@ abilities:
         - action: "cost"
           tag: "minecraft:coal"
           amount: 1
+      exhaustion:
+        amount: 2.0
+        minimum: 3.0
     on_failure:
       cooldown:
         action_bar: "&cVein Miner cooling down: {time}s"
@@ -96,6 +99,8 @@ abilities:
             pitch: 0.5
       missing_item:
         action_bar: "&cRequires {amount}x {item} to power Vein Miner!"
+      exhaustion:
+        action_bar: "&cToo exhausted to mine!"
     mechanics:
       - type: "core:chain_break"
         filters:
@@ -107,11 +112,6 @@ abilities:
               50: 8
               75: 16
               100: 32
-          exhaustion:
-            linear:
-              base: 2.0
-              step: -0.05
-              min: 0.5
     feedback:
       notify:
         action_bar: true

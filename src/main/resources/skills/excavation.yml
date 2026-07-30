@@ -48,17 +48,19 @@ abilities:
     unlock_level: 15
     display:
       lore:
-        - "&7Increases digging speed by &a{multiplier}x&7."
+        - "&7Increases digging speed by &a{amplifier}x&7."
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:haste_effect"
         filters:
           - tool: "#minecraft:shovels"
         parameters:
-          multiplier:
+          amplifier:
             linear:
-              base: 1.2
-              step: 0.003
-              max: 1.5
+              base: 1
+              step: 0.01
+              max: 3
+          duration:
+            constant: 300.0
     feedback:
       notify:
         action_bar: false
@@ -69,7 +71,7 @@ abilities:
     unlock_level: 25
     display:
       lore:
-        - "&7Sneak-mine to break a 3x3 area of soft blocks."
+        - "&7Sneak-mine to break a &a{radius}&7-block radius of soft blocks."
     requirements:
       cooldown: 10.0
       state:
@@ -78,6 +80,9 @@ abilities:
         - action: "possession"
           tag: "#minecraft:shovels"
           slot: "MAIN_HAND"
+      exhaustion:
+        amount: 1.0
+        minimum: 3.0
     on_failure:
       cooldown:
         action_bar: "&cWide Sweep cooling down: {time}s"
@@ -85,11 +90,17 @@ abilities:
           - type: "BLOCK_NOTE_BLOCK_BASS"
             volume: 1.0
             pitch: 0.5
+      exhaustion:
+        action_bar: "&cToo exhausted for Wide Sweep! Need {required} hunger."
     mechanics:
-      - type: "core:block_damage"
+      - type: "core:area_harvest"
         parameters:
-          chance:
-            constant: 100.0
+          radius:
+            milestones:
+              25: 1
+              50: 1
+              75: 2
+              100: 2
     feedback:
       notify:
         action_bar: true
@@ -132,17 +143,19 @@ abilities:
     unlock_level: 75
     display:
       lore:
-        - "&7Move &a{multiplier}x &7faster while wielding a shovel."
+        - "&7Dig &a{amplifier}x &7faster while wielding a shovel."
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:haste_effect"
         filters:
           - tool: "#minecraft:shovels"
         parameters:
-          multiplier:
+          amplifier:
             linear:
-              base: 1.05
-              step: 0.003
-              max: 1.35
+              base: 2
+              step: 0.02
+              max: 5
+          duration:
+            constant: 300.0
     feedback:
       notify:
         action_bar: false
@@ -154,10 +167,14 @@ abilities:
       lore:
         - "&7Wide Sweep cooldown removed, 5x5 area."
     mechanics:
-      - type: "core:block_damage"
+      - type: "core:area_harvest"
+        filters:
+          - target: "#c:excavatable"
         parameters:
-          chance:
-            constant: 100.0
+          radius:
+            constant: 2.0
+          max_blocks:
+            constant: 25.0
     feedback:
       notify:
         action_bar: false

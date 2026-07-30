@@ -286,6 +286,18 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onShootBow(EntityShootBowEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            dispatch(player, event, "shoot_bow");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onItemDamage(org.bukkit.event.player.PlayerItemDamageEvent event) {
+        dispatch(event.getPlayer(), event, "item_damage");
+    }
+
     private void dispatch(Player player, Event event, String triggerKey) {
         if (plugin.isReloading()) return;
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());

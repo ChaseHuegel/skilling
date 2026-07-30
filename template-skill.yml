@@ -35,7 +35,7 @@ xp_sources:
 
   - trigger: "block_break"
     filters:
-      - target: "#minecraft:stone_crafting_materials"
+      - target: "minecraft:stone"
       - state: "player_placed:false"
     reward:
       constant: 2.0
@@ -54,8 +54,6 @@ abilities:
       # {yield_chance} is injected dynamically by the ParameterEvaluator during UI generation
       lore:
         - "&7Increases raw ore yield by &a{yield_chance}%&7."
-        - ""
-        - "&8(Passive Ability)"
 
     mechanics:
       - type: "core:yield_multiplier"
@@ -83,7 +81,7 @@ abilities:
     display:
       lore:
         - "&7Sneak-mine to break up to &a{chain_limit} &7connected ores."
-        - "&7Exhaustion cost: &c{exhaustion} &7hunger."
+        - "&7Costs: 2 hunger + 1 Coal"
         - ""
         - "&8Requires: Sneaking"
 
@@ -99,7 +97,12 @@ abilities:
         - action: "cost"
           tag: "minecraft:coal"
           amount: 1                             # Example of consuming an item fuel source
-          item_cooldown: 0.0                    # Optional visual vanilla sweep cooldown
+      # Exhaustion (hunger) requirement — deducted on ability use
+      # amount: hunger points to consume (0-20)
+      # minimum: minimum hunger level required to activate
+      exhaustion:
+        amount: 2.0
+        minimum: 3.0
 
     # Result Object Pattern feedback overrides
     on_failure:
@@ -111,6 +114,13 @@ abilities:
             pitch: 0.5
       missing_item:
         action_bar: "&cRequires {amount}x {item} to power Vein Miner!"
+      exhaustion:
+        action_bar: "&cToo exhausted to mine!"
+        sounds:
+          - type: "ENTITY_PLAYER_BURP"
+            volume: 0.5
+            pitch: 0.5
+            target: "self"
 
     mechanics:
       - type: "core:chain_break"
@@ -120,11 +130,6 @@ abilities:
               15: 3
               40: 8
               80: 16
-          exhaustion:
-            linear:                            # Scaling cost reduction
-              base: 2.0
-              step: -0.05
-              min: 0.5
 
     # Executed strictly after successful requirements consumption
     feedback:

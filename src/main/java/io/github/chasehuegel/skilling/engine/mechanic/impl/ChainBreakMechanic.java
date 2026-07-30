@@ -30,12 +30,6 @@ public final class ChainBreakMechanic implements SkillMechanic {
             return false;
         }
 
-        double exhaustion = ((Number) params.getOrDefault("exhaustion", 0.0)).doubleValue();
-        if (exhaustion > 0 && player.getFoodLevel() < exhaustion) {
-            CHAINING_PLAYERS.remove(player.getUniqueId());
-            return false;
-        }
-
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();
         Set<Location> visited = new HashSet<>();
@@ -77,11 +71,6 @@ public final class ChainBreakMechanic implements SkillMechanic {
             if (processing.isEmpty()) {
                 PROCESSING.remove();
             }
-        }
-
-        if (exhaustion > 0) {
-            int newFood = Math.max(0, player.getFoodLevel() - (int) Math.ceil(exhaustion));
-            player.setFoodLevel(newFood);
         }
 
         return true;

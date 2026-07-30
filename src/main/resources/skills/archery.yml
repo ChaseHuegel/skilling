@@ -54,15 +54,17 @@ abilities:
       lore:
         - "&7Reduces bow draw time."
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:haste_effect"
         filters:
           - tool: "#minecraft:bows"
         parameters:
-          multiplier:
+          amplifier:
             linear:
-              base: 1.1
-              step: 0.003
-              max: 1.4
+              base: 1
+              step: 0.002
+              max: 2
+          duration:
+            constant: 300.0
     feedback:
       notify:
         action_bar: false

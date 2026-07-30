@@ -120,14 +120,31 @@ public record SkillDefinition(
     /**
      * Pre-execution requirements that gate ability activation.
      *
-     * @param cooldown cooldown in seconds between uses
-     * @param state    list of required player states
-     * @param items    list of item requirements
+     * @param cooldown   cooldown in seconds between uses
+     * @param state      list of required player states
+     * @param items      list of item requirements
+     * @param exhaustion exhaustion (hunger) requirement, null if not used
      */
     public record Requirements(
             double cooldown,
             List<String> state,
-            List<ItemRequirement> items
+            List<ItemRequirement> items,
+            Exhaustion exhaustion
+    ) {
+        public Requirements(double cooldown, List<String> state, List<ItemRequirement> items) {
+            this(cooldown, state, items, null);
+        }
+    }
+
+    /**
+     * Exhaustion (hunger) cost requirement for ability activation.
+     *
+     * @param amount  hunger points to consume (0-20)
+     * @param minimum minimum food level required to activate (0-20)
+     */
+    public record Exhaustion(
+            double amount,
+            double minimum
     ) {}
 
     /**

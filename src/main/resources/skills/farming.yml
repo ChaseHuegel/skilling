@@ -80,6 +80,9 @@ abilities:
         - action: "possession"
           tag: "#minecraft:hoes"
           slot: "MAIN_HAND"
+      exhaustion:
+        amount: 0.5
+        minimum: 3.0
     on_failure:
       cooldown:
         action_bar: "&cHarvest Wave cooling down: {time}s"
@@ -87,6 +90,8 @@ abilities:
           - type: "BLOCK_NOTE_BLOCK_BASS"
             volume: 1.0
             pitch: 0.5
+      exhaustion:
+        action_bar: "&cToo exhausted for Harvest Wave!"
     mechanics:
       - type: "core:chain_break"
         filters:
@@ -160,12 +165,7 @@ abilities:
       lore:
         - "&7Harvested crops auto-replant."
     mechanics:
-      - type: "core:yield_multiplier"
-        filters:
-          - target: "#minecraft:crops"
-        parameters:
-          yield_chance:
-            constant: 100.0
+      - type: "core:auto_replant"
     feedback:
       notify:
         action_bar: false

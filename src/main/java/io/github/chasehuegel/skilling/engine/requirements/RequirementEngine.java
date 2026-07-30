@@ -88,6 +88,17 @@ public final class RequirementEngine {
             }
         }
 
+        // Check exhaustion (hunger) requirement
+        var exhaustion = requirements.exhaustion();
+        if (exhaustion != null) {
+            if (player.getFoodLevel() <= exhaustion.minimum()) {
+                return RequirementResult.failed(FailureReason.EXHAUSTION, Map.of(
+                        "hunger", String.valueOf(player.getFoodLevel()),
+                        "required", String.valueOf((int) Math.ceil(exhaustion.minimum()))
+                ));
+            }
+        }
+
         return RequirementResult.PASSED;
     }
 
@@ -110,6 +121,13 @@ public final class RequirementEngine {
             if ("cost".equals(itemReq.action())) {
                 removeItems(player, itemReq.tag(), itemReq.amount());
             }
+        }
+
+        // Consume exhaustion (hunger)
+        var exhaustion = requirements.exhaustion();
+        if (exhaustion != null && exhaustion.amount() > 0) {
+            int newFood = Math.max(0, player.getFoodLevel() - (int) Math.ceil(exhaustion.amount()));
+            player.setFoodLevel(newFood);
         }
     }
 

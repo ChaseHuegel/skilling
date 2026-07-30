@@ -227,7 +227,17 @@ public final class SkillManager {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> itemsRaw = (List<Map<String, Object>>) map.getOrDefault("items", List.of());
         List<SkillDefinition.ItemRequirement> items = itemsRaw.stream().map(this::parseItemRequirement).toList();
-        return new SkillDefinition.Requirements(cooldown, state, items);
+
+        SkillDefinition.Exhaustion exhaustion = null;
+        if (map.containsKey("exhaustion")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> exMap = (Map<String, Object>) map.get("exhaustion");
+            double amount = ((Number) exMap.getOrDefault("amount", 1.0)).doubleValue();
+            double minimum = ((Number) exMap.getOrDefault("minimum", 0.0)).doubleValue();
+            exhaustion = new SkillDefinition.Exhaustion(amount, minimum);
+        }
+
+        return new SkillDefinition.Requirements(cooldown, state, items, exhaustion);
     }
 
     private SkillDefinition.ItemRequirement parseItemRequirement(Map<String, Object> map) {
