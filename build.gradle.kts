@@ -2,6 +2,7 @@ plugins {
     id("java-library")
     id("xyz.jpenilla.run-paper") version "3.0.2"
     id("com.gradleup.shadow") version "9.0.0-beta10"
+    id("maven-publish")
 }
 
 repositories {
@@ -98,5 +99,46 @@ tasks {
 
     assemble {
         dependsOn(shadowJar)
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("skilling") {
+            from(components["java"])
+            artifactId = "skilling"
+            version = project.version as String
+
+            pom {
+                name = "Skilling"
+                description = "A flexible, data-driven RPG skills engine for PaperMC"
+                url = "https://github.com/chasehuegel/skilling"
+                licenses {
+                    license {
+                        name = "Apache-2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "chasehuegel"
+                        name = "ChaseHuegel"
+                        email = "chase@bitfish.dev"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/chasehuegel/skilling.git"
+                    developerConnection = "scm:git:ssh://github.com/chasehuegel/skilling.git"
+                    url = "https://github.com/chasehuegel/skilling"
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "Local"
+            url = uri(layout.buildDirectory.dir("repo"))
+        }
     }
 }

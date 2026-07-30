@@ -8,14 +8,14 @@ Skilling exposes a Bukkit `ServicesManager` API for addon plugins to register cu
 
 ```xml
 <repository>
-    <id>papermc</id>
-    <url>https://repo.papermc.io/repository/maven-public/</url>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
 </repository>
 
 <dependency>
-    <groupId>io.github.chasehuegel</groupId>
+    <groupId>com.github.chasehuegel</groupId>
     <artifactId>skilling</artifactId>
-    <version>1.0.0</version>
+    <version>main-SNAPSHOT</version>
     <scope>provided</scope>
 </dependency>
 ```
@@ -24,11 +24,11 @@ Skilling exposes a Bukkit `ServicesManager` API for addon plugins to register cu
 
 ```kotlin
 repositories {
-    maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://jitpack.io")
 }
 
 dependencies {
-    compileOnly("io.github.chasehuegel:skilling:1.0.0")
+    compileOnly("com.github.chasehuegel:skilling:main-SNAPSHOT")
 }
 ```
 

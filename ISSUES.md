@@ -345,7 +345,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - See `ISSUE-055.md` for full development plan
 - [x] CI/CD Pipeline: GitHub Actions workflows for build, test, frontend type-check/lint, Playwright E2E, and automated releases
     - See `ISSUE-056.md` for full development plan
-- [ ] Gradle maven-publish configuration: publish API artifact to JitPack for addon developer consumption
+- [x] Gradle maven-publish configuration: publish API artifact to JitPack for addon developer consumption
     - See `ISSUE-057.md` for full development plan
 - [ ] Pre-built skill configurations: ship 6 production-ready skills (Mining, Woodcutting, Excavation, Farming, Fishing, Archery) following the SKILL-DESIGN-FRAMEWORK.md 6-tier milestone progression
     - See `ISSUE-058.md` for full development plan
