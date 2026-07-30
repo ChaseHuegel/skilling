@@ -16,7 +16,7 @@
       Click an empty slot to place <strong>{{ selectedSkillName }}</strong>
       <button class="hint-cancel" @click="clearSelection">&times;</button>
     </div>
-    <div class="palette-list" ref="listRef">
+    <div class="palette-grid" ref="listRef">
       <div
         v-for="skill in filteredSkills"
         :key="skill.id"
@@ -32,14 +32,6 @@
         @mouseleave="hideTooltip"
         @click="toggleSelect(skill)"
       >
-        <svg class="drag-handle" viewBox="0 0 8 12" width="8" height="12" fill="none" stroke="currentColor" stroke-width="1.2">
-          <circle cx="2" cy="2" r="1" />
-          <circle cx="6" cy="2" r="1" />
-          <circle cx="2" cy="6" r="1" />
-          <circle cx="6" cy="6" r="1" />
-          <circle cx="2" cy="10" r="1" />
-          <circle cx="6" cy="10" r="1" />
-        </svg>
         <MinecraftIcon :material="skill.icon || 'minecraft:barrier'" :color="skill.color" :size="28" />
         <span class="palette-item-name">{{ skill.displayName || skill.id }}</span>
       </div>
@@ -151,7 +143,7 @@ function hideTooltip() {
   border-radius: 8px;
   padding: 12px;
   width: 100%;
-  max-width: 280px;
+  max-width: 700px;
   box-sizing: border-box;
 }
 
@@ -214,18 +206,18 @@ function hideTooltip() {
   color: var(--p-text-color, #fff);
 }
 
-.palette-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 400px;
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 4px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
 .palette-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 6px 8px;
   border-radius: 6px;
   cursor: grab;
@@ -247,16 +239,6 @@ function hideTooltip() {
   border-color: var(--p-primary-color, #3b82f6);
 }
 
-.drag-handle {
-  flex-shrink: 0;
-  opacity: 0.3;
-  transition: opacity 0.15s;
-}
-
-.palette-item:hover .drag-handle {
-  opacity: 0.7;
-}
-
 .palette-item-name {
   font-size: 0.8rem;
   color: var(--p-text-color, #ccc);
@@ -266,6 +248,7 @@ function hideTooltip() {
 }
 
 .palette-empty {
+  grid-column: 1 / -1;
   padding: 16px 8px;
   text-align: center;
   font-size: 0.8rem;

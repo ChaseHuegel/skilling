@@ -10,7 +10,6 @@
 
     <div v-if="!store.layout" class="loading-skeleton">
       <div class="skeleton-grid"></div>
-      <div class="skeleton-palette"></div>
     </div>
 
     <template v-else>
@@ -28,22 +27,20 @@
       />
 
       <div class="layout-main">
-        <div class="grid-area">
-          <ChestGrid
-            v-if="currentPage !== null"
-            :title="store.layout.title"
-            :rows="store.layout.rows"
-            :page="currentPage"
-            :page-index="activePage"
-            :total-pages="store.layout.pages.length"
-            :skill-map="skillMap"
-            @assign="(pageIndex: number, slot: number, skillId: string) => store.setSlot(pageIndex, slot, skillId)"
-            @swap="(pageIndex: number, fromSlot: number, toSlot: number) => store.swapSlots(pageIndex, fromSlot, toSlot)"
-            @remove="(pageIndex: number, slot: number) => store.clearSlot(pageIndex, slot)"
-            @prev-page="activePage = Math.max(0, activePage - 1)"
-            @next-page="activePage = Math.min(store.layout.pages.length - 1, activePage + 1)"
-          />
-        </div>
+        <ChestGrid
+          v-if="currentPage !== null"
+          :title="store.layout.title"
+          :rows="store.layout.rows"
+          :page="currentPage"
+          :page-index="activePage"
+          :total-pages="store.layout.pages.length"
+          :skill-map="skillMap"
+          @assign="(pageIndex: number, slot: number, skillId: string) => store.setSlot(pageIndex, slot, skillId)"
+          @swap="(pageIndex: number, fromSlot: number, toSlot: number) => store.swapSlots(pageIndex, fromSlot, toSlot)"
+          @remove="(pageIndex: number, slot: number) => store.clearSlot(pageIndex, slot)"
+          @prev-page="activePage = Math.max(0, activePage - 1)"
+          @next-page="activePage = Math.min(store.layout.pages.length - 1, activePage + 1)"
+        />
 
         <SkillPalette
           :skills="paletteSkills"
@@ -213,7 +210,7 @@ function leaveDiscard() {
 <style scoped>
 .gui-layout-page {
   padding: 1.5rem;
-  max-width: 900px;
+  max-width: 740px;
   margin: 0 auto;
   padding-bottom: 4rem;
 }
@@ -244,36 +241,23 @@ function leaveDiscard() {
 
 .layout-main {
   display: flex;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  align-items: flex-start;
-}
-
-.grid-area {
-  display: flex;
   flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
   align-items: center;
-  gap: 8px;
 }
 
 .loading-skeleton {
   display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
 }
 
 .skeleton-grid {
-  width: 520px;
-  height: 346px;
-  background: var(--p-skeleton-background, var(--p-content-background, #1a1a2e));
-  border: 1px solid var(--p-content-border-color, #333);
-  border-radius: 8px;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-palette {
-  width: 280px;
-  height: 346px;
+  width: 100%;
+  max-width: 700px;
+  height: 466px;
   background: var(--p-skeleton-background, var(--p-content-background, #1a1a2e));
   border: 1px solid var(--p-content-border-color, #333);
   border-radius: 8px;
@@ -284,13 +268,6 @@ function leaveDiscard() {
   0% { opacity: 1; }
   50% { opacity: 0.4; }
   100% { opacity: 1; }
-}
-
-@media (max-width: 900px) {
-  .layout-main {
-    flex-direction: column;
-    align-items: center;
-  }
 }
 
 /* Modal system (matches TagsPage/ConfigPage) */

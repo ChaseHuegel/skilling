@@ -119,12 +119,12 @@ function onTooltipHide() {
   flex-direction: column;
   align-items: center;
   gap: 0;
-  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 6%, var(--p-content-background, #0d0d1a));
-  border: 2px solid var(--p-content-border-color, #1a1a2e);
+  background: var(--p-content-background, #0d0d1a);
+  border: 1px solid var(--p-content-border-color, #1a1a2e);
   border-radius: 8px;
   padding: 8px;
   width: 100%;
-  max-width: 520px;
+  max-width: 700px;
   box-sizing: border-box;
 }
 

@@ -192,7 +192,7 @@ function onClick() {
 
 .chest-slot.slot-assign-target {
   border-color: var(--p-primary-color, #3b82f6);
-  background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 12%, var(--p-content-background, #1a1a2e));
+  background: var(--p-content-background, #1a1a2e);
 }
 
 .slot-background {
