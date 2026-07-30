@@ -21,3 +21,4 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (Plugin) Ensure all documentation in `docs/` is accurate and up to date with the plugin's actual src
 - [x] (Plugin - Design) The default bundled skills are missing level 75 abilities - follow the framework in SKILL-DESIGN-FRAMEWORK.md to craft well-fitting abilities and update the bundled skill ymls in the plugin appropriately.
 - [x] (Plugin - Design) Draft a plan and development proposal in a new issue markdown document to introduce additional filter states that may be useful for designing abilities. These must be possible to implement utilizing Paper APIs. → See `ISSUE-067.md`
+- [x] (Web) Add Web GUI editor for gui.yml layout — see `ISSUE-063.md`

@@ -23,12 +23,14 @@ public final class StagingManager {
     private final File skillsDir;
     private final File configFile;
     private final File tagsFile;
+    private final File guiFile;
 
     public StagingManager(File dataFolder) {
         this.stagingDir = new File(dataFolder, ".web_staging");
         this.skillsDir = new File(dataFolder, "skills");
         this.configFile = new File(dataFolder, "config.yml");
         this.tagsFile = new File(dataFolder, "tags.yml");
+        this.guiFile = new File(dataFolder, "gui.yml");
     }
 
     public File getStagingDir() {
@@ -125,6 +127,7 @@ public final class StagingManager {
     private File resolveLiveFile(String stagedPath) {
         if (stagedPath.equals("tags.yml")) return tagsFile;
         if (stagedPath.equals("config.yml")) return configFile;
+        if (stagedPath.equals("gui.yml")) return guiFile;
         if (stagedPath.startsWith("skills/")) {
             return new File(skillsDir, stagedPath.substring(7));
         }
@@ -210,6 +213,14 @@ public final class StagingManager {
                 Files.copy(stagedConfig.toPath(), configFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 applied.add("config.yml");
             }
+
+            // Apply staged gui.yml
+            File stagedGui = new File(stagingDir, "gui.yml");
+            if (stagedGui.exists()) {
+                backupFile(guiFile, backupDir);
+                Files.copy(stagedGui.toPath(), guiFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                applied.add("gui.yml");
+            }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to apply staged changes", e);
         }
@@ -257,6 +268,17 @@ public final class StagingManager {
             updateStatusAdd("config.yml");
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage config.yml", e);
+        }
+    }
+
+    public void stageGuiFile(String yamlContent) {
+        try {
+            File f = new File(stagingDir, "gui.yml");
+            f.getParentFile().mkdirs();
+            Files.writeString(f.toPath(), yamlContent, StandardCharsets.UTF_8);
+            updateStatusAdd("gui.yml");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to stage gui.yml", e);
         }
     }
 

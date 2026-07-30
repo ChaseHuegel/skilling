@@ -25,6 +25,7 @@
                     </div>
                 </div>
                 <router-link to="/abilities" class="nav-link" active-class="router-link-active">Abilities</router-link>
+                <router-link to="/layout" class="nav-link" active-class="router-link-active">Layout</router-link>
                 <router-link to="/tags" class="nav-link" active-class="router-link-active">Tags</router-link>
                 <router-link to="/config" class="nav-link" active-class="router-link-active">Config</router-link>
             </nav>

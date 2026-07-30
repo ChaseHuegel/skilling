@@ -40,6 +40,12 @@ const router = createRouter({
             meta: { requiresAuth: true },
         },
         {
+            path: '/layout',
+            name: 'GuiLayout',
+            component: () => import('./views/GuiLayoutPage.vue'),
+            meta: { requiresAuth: true },
+        },
+        {
             path: '/config',
             name: 'Config',
             component: () => import('./views/ConfigPage.vue'),

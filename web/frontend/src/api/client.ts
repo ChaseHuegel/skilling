@@ -63,6 +63,10 @@ export const api = {
         clear: () => apiFetch<any>('/api/staging', { method: 'DELETE' }),
     },
     reload: () => apiFetch<{ success: boolean; message: string; errors: string[] }>('/api/reload', { method: 'POST', body: JSON.stringify({ confirm: true }) }),
+    guiLayout: {
+        get: () => apiFetch<any>('/api/gui-layout'),
+        update: (data: any) => apiFetch<any>('/api/gui-layout', { method: 'PUT', body: JSON.stringify(data) }),
+    },
     mechanics: {
         list: () => apiFetch<{ mechanics: Record<string, string[]> }>('/api/mechanics'),
     },

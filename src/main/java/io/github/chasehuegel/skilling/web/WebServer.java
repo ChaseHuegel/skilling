@@ -6,6 +6,7 @@ import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
 import io.github.chasehuegel.skilling.web.auth.BasicAuthenticator;
 import io.github.chasehuegel.skilling.web.config.WebConfig;
 import io.github.chasehuegel.skilling.web.handler.ConfigHandler;
+import io.github.chasehuegel.skilling.web.handler.GuiLayoutHandler;
 import io.github.chasehuegel.skilling.web.handler.ReloadHandler;
 import io.github.chasehuegel.skilling.web.handler.SkillHandler;
 import io.github.chasehuegel.skilling.web.handler.TagHandler;
@@ -113,6 +114,11 @@ public final class WebServer {
             routes.get("/api/config", configHandler::get);
             routes.put("/api/config", configHandler::update);
             routes.post("/api/reload", reloadHandler::reload);
+
+            // Phase 4: GUI Layout
+            var guiLayoutHandler = new GuiLayoutHandler(stagingManager, plugin.getDataFolder());
+            routes.get("/api/gui-layout", guiLayoutHandler::get);
+            routes.put("/api/gui-layout", guiLayoutHandler::update);
 
             // Staging endpoints
             routes.get("/api/staging/status", ctx -> {
