@@ -66,7 +66,7 @@ const descriptionLines = computed(() => {
 const abilityLines = computed(() => {
   if (!props.skill?.abilities) return []
   return props.skill.abilities.map(ab =>
-    renderFormattedText(parseAmpersandCodes(`&a${ab.name} &7(Lvl ${ab.unlockLevel})`))
+    renderFormattedText(parseAmpersandCodes(`&a${ab.name}`))
   )
 })
 </script>

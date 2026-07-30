@@ -69,7 +69,7 @@ const cols = 9
 
 const gridStyle = computed(() => ({
   gridTemplateColumns: `repeat(${cols}, 1fr)`,
-  gridTemplateRows: `repeat(${props.rows}, 1fr)`,
+  gridTemplateRows: `repeat(${props.rows}, auto)`,
 }))
 
 const renderedTitle = computed(() =>
@@ -147,7 +147,7 @@ function onTooltipHide() {
   display: grid;
   gap: 2px;
   width: 100%;
-  aspect-ratio: 9 / 6;
+  min-height: 0;
 }
 
 .chest-navbar {
