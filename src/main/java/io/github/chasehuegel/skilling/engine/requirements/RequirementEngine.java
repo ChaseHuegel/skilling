@@ -137,11 +137,17 @@ public final class RequirementEngine {
             case "is_sprinting" -> player.isSprinting();
             case "is_in_water" -> player.isInWater();
             case "is_on_ground" -> player.isOnGround();
-            default -> {
-                io.github.chasehuegel.skilling.Skilling.getInstance().getLogger().warning(
-                        "Unknown state check: '" + state + "' — failing requirement");
-                yield false;
-            }
+            case "is_on_fire" -> player.getFireTicks() > 0;
+            case "is_riding" -> player.isInsideVehicle();
+            case "dimension:overworld" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.NORMAL;
+            case "dimension:nether" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER;
+            case "dimension:end" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END;
+            case "weather:clear" -> player.getWorld().isClearWeather();
+            case "weather:rain" -> player.getWorld().hasStorm();
+            case "weather:thunder" -> player.getWorld().isThundering();
+            case "time:day" -> player.getWorld().getTime() < 12300 || player.getWorld().getTime() > 23900;
+            case "time:night" -> player.getWorld().getTime() >= 13000 && player.getWorld().getTime() <= 23900;
+            default -> true; // unknown states pass through gracefully
         };
     }
 

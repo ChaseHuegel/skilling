@@ -17,6 +17,7 @@ import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -477,13 +478,23 @@ public final class SkillEventListener implements Listener {
                 case "is_sprinting" -> player.isSprinting();
                 case "is_in_water" -> player.isInWater();
                 case "is_on_ground" -> player.isOnGround();
+                case "is_on_fire" -> player.getFireTicks() > 0;
+                case "is_riding" -> player.isInsideVehicle();
                 case "player_placed:false" -> {
                     if (event instanceof BlockBreakEvent be) {
                         yield !be.getBlock().hasMetadata("player_placed");
                     }
                     yield true;
                 }
-                default -> true;
+                case "dimension:overworld" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.NORMAL;
+                case "dimension:nether" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER;
+                case "dimension:end" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END;
+                case "weather:clear" -> player.getWorld().isClearWeather();
+                case "weather:rain" -> player.getWorld().hasStorm();
+                case "weather:thunder" -> player.getWorld().isThundering();
+                case "time:day" -> player.getWorld().getTime() < 12300 || player.getWorld().getTime() > 23900;
+                case "time:night" -> player.getWorld().getTime() >= 13000 && player.getWorld().getTime() <= 23900;
+                default -> matchParameterizedState(player, event, filter.state());
             };
             if (!passed) return false;
         }
@@ -565,6 +576,71 @@ public final class SkillEventListener implements Listener {
             result.put(paramEntry.getKey(), paramEntry.getValue().evaluate(level, unlockLevel));
         }
         return result;
+    }
+
+    private boolean matchParameterizedState(Player player, Event event, String state) {
+        String[] parts = state.split(":", 3);
+        if (parts.length < 2) return true;
+
+        return switch (parts[0]) {
+            case "light_level" -> {
+                if (parts.length < 3) yield true;
+                int threshold;
+                try { threshold = Integer.parseInt(parts[2]); } catch (NumberFormatException e) { yield true; }
+                int light = player.getLocation().getBlock().getLightLevel();
+                yield switch (parts[1]) {
+                    case "below" -> light < threshold;
+                    case "above" -> light > threshold;
+                    case "exactly" -> light == threshold;
+                    default -> true;
+                };
+            }
+            case "health" -> {
+                if (parts.length < 3) yield true;
+                double healthPct = player.getHealth() / player.getMaxHealth() * 100;
+                String val = parts[2].endsWith("%") ? parts[2].substring(0, parts[2].length() - 1) : parts[2];
+                double threshold;
+                try { threshold = Double.parseDouble(val); } catch (NumberFormatException e) { yield true; }
+                yield switch (parts[1]) {
+                    case "below" -> healthPct < threshold;
+                    case "above" -> healthPct > threshold;
+                    default -> true;
+                };
+            }
+            case "hunger" -> {
+                if (parts.length < 3) yield true;
+                int threshold;
+                try { threshold = Integer.parseInt(parts[2]); } catch (NumberFormatException e) { yield true; }
+                int food = player.getFoodLevel();
+                yield switch (parts[1]) {
+                    case "below" -> food < threshold;
+                    case "above" -> food > threshold;
+                    default -> true;
+                };
+            }
+            case "biome" -> {
+                String biomeKey = parts[1];
+                var biome = player.getLocation().getBlock().getBiome();
+                if (biomeKey.startsWith("#")) {
+                    yield true; // biome tag match not supported in this API version
+                }
+                var targetBiome = org.bukkit.Registry.BIOME.get(NamespacedKey.fromString(biomeKey));
+                yield targetBiome != null && biome == targetBiome;
+            }
+            case "target_type" -> {
+                String targetKey = parts[1];
+                if (!(event instanceof org.bukkit.event.entity.EntityDamageByEntityEvent de)) yield true;
+                var entityType = de.getEntity().getType();
+                if (targetKey.startsWith("#")) {
+                    yield true; // entity type tag match not supported in this API version
+                }
+                var key = NamespacedKey.fromString(targetKey);
+                if (key == null) yield true;
+                var targetEntity = org.bukkit.Registry.ENTITY_TYPE.get(key);
+                yield targetEntity != null && entityType == targetEntity;
+            }
+            default -> true;
+        };
     }
 
     private void debug(String msg) {

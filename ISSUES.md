@@ -17,4 +17,4 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] handle `ISSUE-064.md`
 - [x] handle `ISSUE-065.md`
 - [x] handle `ISSUE-066.md`
-- [ ] handle `ISSUE-067.md`
+- [x] handle `ISSUE-067.md`

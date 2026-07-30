@@ -175,7 +175,14 @@ const abilities = computed({
 })
 const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abilities)
 
-const STATE_OPTIONS = ['is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground'] as const
+const STATE_OPTIONS = [
+  'is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground',
+  'is_on_fire', 'is_riding',
+  'player_placed:false',
+  'dimension:overworld', 'dimension:nether', 'dimension:end',
+  'weather:clear', 'weather:rain', 'weather:thunder',
+  'time:day', 'time:night',
+] as const
 
 const expanded = ref<Record<number, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)
