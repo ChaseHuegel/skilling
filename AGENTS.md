@@ -2,7 +2,7 @@
 
 Welcome to the Skilling repository. This file provides architectural context, coding constraints, and design philosophies. **Read these instructions carefully before writing or modifying any code.**
 
-Companion files with deeper specifications: `README.md`, `REQUIREMENTS.md`, `DESIGN.md`, `template-skill.yml`, and `web/AGENTS.md` for Web GUI configuration (including Minecraft asset texture version).
+Companion files with deeper specifications: `README.md`, `REQUIREMENTS.md`, `DESIGN.md`, `template-skill.yml`, `CONVENTIONS-COMMITS.md` (commit message format), and `web/AGENTS.md` for Web GUI configuration (including Minecraft asset texture version).
 
 ## Project Context
 Skilling is a high-performance, data-driven RPG skills engine for PaperMC (Minecraft). It acts as a rules engine, not a traditional plugin.
@@ -75,7 +75,7 @@ When resolving items from `ISSUES.md`, follow this strict sequence:
 4. **Test** — Run `./gradlew test`. Fix any test failures introduced by the changes.
 5. **Self-review** — Read the diff (`git diff`) to verify correctness, style, and adherence to conventions.
 6. **Mark complete** — Check off the resolved bullet(s) in `ISSUES.md`.
-7. **Commit** — `git add -A && git commit -m "..."` with a descriptive message.
+7. **Commit** — `git add -A && git commit -m "..."` with a message following `CONVENTIONS-COMMITS.md`. **All commits MUST adhere to this convention.**
 8. **Next issue** — Repeat from step 1 for the next unchecked item.
 
 ## Testing & Validation
