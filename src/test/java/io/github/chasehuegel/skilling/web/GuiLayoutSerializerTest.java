@@ -27,7 +27,7 @@ class GuiLayoutSerializerTest {
     }
 
     @Test
-    void parseFullLayout() {
+    void parseNewFormat() {
         String yaml = """
             title: "&8⚒ &6Skills &8⚒"
             rows: 6
@@ -65,6 +65,66 @@ class GuiLayoutSerializerTest {
     }
 
     @Test
+    void parseLegacyFormat() {
+        String yaml = """
+            filler:
+              material: "minecraft:black_stained_glass_pane"
+            pages:
+              gathering:
+                title: "&6Gathering"
+                icon: "minecraft:iron_pickaxe"
+                rows: 0
+                skills:
+                  mining: 0
+                  woodcutting: 1
+                  excavation: 2
+              combat:
+                title: "&cCombat"
+                icon: "minecraft:iron_sword"
+                rows: 0
+                skills:
+                  heavy_weapons: 0
+                  light_weapons: 1
+            """;
+
+        GuiLayoutDTO dto = GuiLayoutSerializer.parse(yaml);
+        assertEquals(2, dto.pages().size());
+
+        GuiLayoutDTO.GuiPageDTO gathering = dto.pages().get(0);
+        assertEquals("&6Gathering", gathering.label());
+        assertEquals(3, gathering.slots().size());
+        assertEquals("mining", gathering.slots().get(0));
+        assertEquals("woodcutting", gathering.slots().get(1));
+        assertEquals("excavation", gathering.slots().get(2));
+
+        GuiLayoutDTO.GuiPageDTO combat = dto.pages().get(1);
+        assertEquals("&cCombat", combat.label());
+        assertEquals(2, combat.slots().size());
+        assertEquals("heavy_weapons", combat.slots().get(0));
+        assertEquals("light_weapons", combat.slots().get(1));
+    }
+
+    @Test
+    void parseLegacyFormatPreservesPageOrder() {
+        String yaml = """
+            pages:
+              z_last:
+                title: "&cZ"
+                skills:
+                  skill_z: 0
+              a_first:
+                title: "&aA"
+                skills:
+                  skill_a: 0
+            """;
+
+        GuiLayoutDTO dto = GuiLayoutSerializer.parse(yaml);
+        assertEquals(2, dto.pages().size());
+        assertEquals("&cZ", dto.pages().get(0).label());
+        assertEquals("&aA", dto.pages().get(1).label());
+    }
+
+    @Test
     void roundTripPreservesData() {
         GuiLayoutDTO original = new GuiLayoutDTO(
             "&6Skills",
@@ -77,11 +137,15 @@ class GuiLayoutSerializerTest {
         );
 
         String yaml = GuiLayoutSerializer.serialize(original);
-        GuiLayoutDTO parsed = GuiLayoutSerializer.parse(yaml);
 
-        assertEquals(original.title(), parsed.title());
-        assertEquals(original.rows(), parsed.rows());
-        assertEquals(original.version(), parsed.version());
+        // Serialized output is in legacy format — verify it contains expected structure
+        assertTrue(yaml.contains("filler:"), "Should contain filler section");
+        assertTrue(yaml.contains("pages:"), "Should contain pages section");
+        assertTrue(yaml.contains("skills:"), "Should contain skills section");
+        assertTrue(yaml.contains("swords"), "Should contain skill id 'swords'");
+
+        // Parse back and verify data round-trips
+        GuiLayoutDTO parsed = GuiLayoutSerializer.parse(yaml);
         assertEquals(original.pages().size(), parsed.pages().size());
         assertEquals(original.pages().get(0).label(), parsed.pages().get(0).label());
         assertEquals(original.pages().get(0).slots(), parsed.pages().get(0).slots());
@@ -90,13 +154,34 @@ class GuiLayoutSerializerTest {
     }
 
     @Test
+    void roundTripLegacyThroughSerialize() {
+        String legacyYaml = """
+            pages:
+              gathering:
+                title: "&6Gathering"
+                skills:
+                  mining: 0
+                  woodcutting: 1
+            """;
+
+        // Parse legacy to DTO
+        GuiLayoutDTO dto = GuiLayoutSerializer.parse(legacyYaml);
+        // Serialize (produces legacy format)
+        String serialized = GuiLayoutSerializer.serialize(dto);
+        // Re-parse
+        GuiLayoutDTO reparsed = GuiLayoutSerializer.parse(serialized);
+
+        assertEquals(dto.pages().size(), reparsed.pages().size());
+        assertEquals(dto.pages().get(0).label(), reparsed.pages().get(0).label());
+        assertEquals(dto.pages().get(0).slots(), reparsed.pages().get(0).slots());
+    }
+
+    @Test
     void emptyLayoutRoundTrip() {
         GuiLayoutDTO empty = GuiLayoutDTO.empty();
         String yaml = GuiLayoutSerializer.serialize(empty);
         GuiLayoutDTO parsed = GuiLayoutSerializer.parse(yaml);
 
-        assertEquals(empty.title(), parsed.title());
-        assertEquals(empty.rows(), parsed.rows());
         assertEquals(1, parsed.pages().size());
         assertTrue(parsed.pages().getFirst().slots().isEmpty());
     }
@@ -108,12 +193,12 @@ class GuiLayoutSerializerTest {
         ), 1);
 
         String yaml = GuiLayoutSerializer.serialize(dto);
-        assertTrue(yaml.contains("title:"));
-        assertTrue(yaml.contains("rows:"));
-        assertTrue(yaml.contains("version:"));
-        assertTrue(yaml.contains("pages:"));
-        assertTrue(yaml.contains("label:"));
-        assertTrue(yaml.contains("slots:"));
+        assertTrue(yaml.contains("filler:"), "Missing filler:");
+        assertTrue(yaml.contains("pages:"), "Missing pages:");
+        assertTrue(yaml.contains("title:"), "Missing title:");
+        assertTrue(yaml.contains("skills:"), "Missing skills:");
+        // Should contain the inverted skill mapping: skill_a: 0 (skill_id → slot_index)
+        assertTrue(yaml.contains("skill_a: 0"), "Missing inverted skill mapping");
     }
 
     @Test
@@ -124,9 +209,31 @@ class GuiLayoutSerializerTest {
             """;
 
         GuiLayoutDTO dto = GuiLayoutSerializer.parse(yaml);
-        assertEquals("", dto.title());
+        // Falls back to sensible defaults
+        assertNotNull(dto.title());
         assertEquals(6, dto.rows());
         assertEquals(1, dto.version());
         assertEquals(1, dto.pages().size());
+        assertEquals("Test", dto.pages().get(0).label());
+    }
+
+    @Test
+    void serializeInvertsSlotMapping() {
+        // DTO stores slot_index → skill_id
+        GuiLayoutDTO dto = new GuiLayoutDTO("Test", 6, java.util.List.of(
+            new GuiLayoutDTO.GuiPageDTO("Page1", Map.of(
+                0, "mining",
+                5, "woodcutting",
+                22, "farming"
+            ))
+        ), 1);
+
+        String yaml = GuiLayoutSerializer.serialize(dto);
+
+        // The legacy format should map skill_id → slot_index
+        // So we should see "mining: 0", "woodcutting: 5", "farming: 22"
+        assertTrue(yaml.contains("mining: 0"));
+        assertTrue(yaml.contains("woodcutting: 5"));
+        assertTrue(yaml.contains("farming: 22"));
     }
 }
