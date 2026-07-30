@@ -10,7 +10,7 @@ import io.github.chasehuegel.skilling.engine.trigger.SkillTrigger;
 /**
  * Container holding all three engine registries.
  *
- * <p>Addon developers obtain this via {@link SkillingAPI#getRegistries()}
+ * <p>Addon developers obtain this via SkillingAPI#getRegistries()
  * to register custom mechanics, triggers, or evaluators.
  */
 public final class Registries {

@@ -20,11 +20,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * to call from any thread. The {@link #getXpMap()} raw map should only
  * be used for read-only access or bulk loading during profile hydration.
  */
-public final class PlayerProfile {
+public final class PlayerProfile implements PlayerProfileView {
 
     private static final Gson GSON = new Gson();
 
     private final UUID playerId;
+    private volatile boolean initialized;
     private final ConcurrentHashMap<String, Long> xpMap;
     private final AtomicLong modCount;
     private volatile long savedModCount;
@@ -160,6 +161,18 @@ public final class PlayerProfile {
      *
      * @return true if dirty
      */
+    @Override
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    /**
+     * Marks this profile as fully initialized after loading from the database.
+     */
+    public void markInitialized() {
+        this.initialized = true;
+    }
+
     public boolean isDirty() {
         return modCount.get() != savedModCount;
     }

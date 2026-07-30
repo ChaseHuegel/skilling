@@ -351,7 +351,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
     - See `ISSUE-058.md` for full development plan
 - [x] External plugin integration: soft-dependency hooks for PlaceholderAPI, Vault economy, and bStats metrics
     - See `ISSUE-059.md` for full development plan
-- [ ] Separate `skilling-api` Gradle module: publish a slim zero-dependency API JAR for addon developers
+- [x] Separate `skilling-api` Gradle module: publish a slim zero-dependency API JAR for addon developers
     - See `ISSUE-060.md` for full development plan
 - [ ] Minor polish: verify and implement `crop_grow` trigger handler; add evaluator output placeholders to PlaceholderAPI expansion
     - See `ISSUE-061.md` for full development plan

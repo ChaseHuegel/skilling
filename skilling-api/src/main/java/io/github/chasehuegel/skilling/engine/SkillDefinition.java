@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * An immutable record representing a fully parsed skill definition.
  *
- * <p>Constructed by {@link SkillManager} from YAML and contains all
+ * <p>Constructed by SkillManager from YAML and contains all
  * resolved evaluators, mechanics, triggers, and configuration data
  * needed to execute the skill at runtime.
  *

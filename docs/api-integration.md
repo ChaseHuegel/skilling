@@ -4,6 +4,8 @@ Skilling exposes a Bukkit `ServicesManager` API for addon plugins to register cu
 
 ## Adding Skilling as a Dependency
 
+Addon developers should depend on the slim `skilling-api` module, which contains only the public API interfaces and records with zero runtime dependencies.
+
 ### Maven
 
 ```xml
@@ -14,7 +16,7 @@ Skilling exposes a Bukkit `ServicesManager` API for addon plugins to register cu
 
 <dependency>
     <groupId>com.github.chasehuegel</groupId>
-    <artifactId>skilling</artifactId>
+    <artifactId>skilling-api</artifactId>
     <version>main-SNAPSHOT</version>
     <scope>provided</scope>
 </dependency>
@@ -27,6 +29,16 @@ repositories {
     maven("https://jitpack.io")
 }
 
+dependencies {
+    compileOnly("com.github.chasehuegel:skilling-api:main-SNAPSHOT")
+}
+```
+
+### Full Plugin Dependency (if you need internals)
+
+If you need access to internal classes (e.g., for integration testing), depend on the full plugin JAR:
+
+```kotlin
 dependencies {
     compileOnly("com.github.chasehuegel:skilling:main-SNAPSHOT")
 }
