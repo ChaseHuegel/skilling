@@ -97,6 +97,7 @@ Applies a temporary armor bonus attribute modifier.
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `amount` | double | `0` | Additional armor points |
+| `duration` | double | `300` | Duration in seconds |
 
 ### core:knockback_resist
 
@@ -116,7 +117,8 @@ Applies a temporary movement speed attribute modifier.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `multiplier` | double | `1.0` | Speed multiplier |
+| `multiplier` | double | `1.0` | Multiplicative speed multiplier (1.5 = 50% faster, not a percentage) |
+| `duration` | double | `300` | Duration in seconds |
 
 **Event:** `PlayerToggleSprintEvent`
 
@@ -291,14 +293,13 @@ Automatically smelts mined blocks.
 
 ### core:xp_bonus
 
-Applies a multiplicative XP bonus to all XP gains for a duration.
+Applies a multiplicative XP bonus to all XP gains for the player's session.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `multiplier` | double | `1.0` | XP multiplier applied to all gains |
-| `duration` | double | `60` | Duration in seconds |
+| `multiplier` | double | `1.0` | Multiplicative XP multiplier applied to all gains (1.5 = +50%, 2.0 = double; not a percentage increase) |
 
 **Event:** Varies (triggered by ability activation)
 

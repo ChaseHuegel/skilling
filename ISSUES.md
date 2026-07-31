@@ -11,7 +11,7 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] The archery skill is not granting XP for damaging or killing entities with a bow
 - [x] (plugin) The skill guide item is opening GUI on left click; it should only open on right click
 - [x] (web) Parameters fields can only be input as int values but should be floating point values
-- [ ] (plugin) SkillBonusMechanic says it is a % increase 
+- [x] (plugin) SkillBonusMechanic says it is a % increase 
 
 # Improvements
 - [ ] (web) Sort skills on the skills dashboard page by color -> name

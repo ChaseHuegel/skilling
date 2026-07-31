@@ -8,11 +8,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
 /**
- * Applies an XP multiplier for the player's session when activated.
+ * Applies a multiplicative XP bonus for the player's session when activated.
  * The multiplier is stored in a static map and consumed by the XP grant pipeline.
  *
  * <p>YAML key: {@code core:xp_bonus}
- * <br>Params: {@code multiplier}
+ * <br>Params: {@code multiplier} (multiplicative factor, not a percentage increase;
+ * 1.0 = no bonus, 1.5 = +50%, 2.0 = double)
  */
 public record XpBonusMechanic() implements SkillMechanic {
 
