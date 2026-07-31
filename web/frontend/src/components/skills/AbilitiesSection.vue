@@ -6,6 +6,7 @@ import EvaluatorParameter from '../common/EvaluatorParameter.vue'
 import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 import { useRegistriesStore } from '../../stores/registries'
+import { STATE_SUGGESTIONS } from '../common/stateFilters'
 import { parseAmpersandCodes, renderFormattedText } from '../../utils/minecraftColors'
 
 const registriesStore = useRegistriesStore()
@@ -188,14 +189,7 @@ const abilities = computed({
 })
 const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abilities)
 
-const STATE_OPTIONS = [
-  'is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground',
-  'is_on_fire', 'is_riding',
-  'player_placed:false',
-  'dimension:overworld', 'dimension:nether', 'dimension:end',
-  'weather:clear', 'weather:rain', 'weather:thunder',
-  'time:day', 'time:night',
-] as const
+const STATE_OPTIONS = STATE_SUGGESTIONS
 
 const expanded = ref<Record<number, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)

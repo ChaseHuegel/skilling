@@ -1,23 +1,12 @@
 <script setup lang="ts">
 import AppCombobox from './AppCombobox.vue'
+import { STATE_SUGGESTIONS } from './stateFilters'
 
 interface FilterEntry {
   target?: string
   state?: string
   tool?: string
 }
-
-const STATE_SUGGESTIONS = [
-  'is_sneaking', 'is_sprinting', 'is_in_water', 'is_on_ground',
-  'is_on_fire', 'is_riding',
-  'player_placed:false', 'player_placed:true',
-  'dimension:overworld', 'dimension:nether', 'dimension:end',
-  'weather:clear', 'weather:rain', 'weather:thunder',
-  'time:day', 'time:night',
-  'light_level:below:7', 'light_level:above:7', 'light_level:exactly:0',
-  'health:below:50%', 'health:above:75%',
-  'hunger:below:6', 'hunger:above:15',
-]
 
 const props = defineProps<{
   modelValue: FilterEntry[]
