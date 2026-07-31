@@ -394,6 +394,11 @@ public final class SkillEventListener implements Listener {
                     continue;
                 }
 
+                if (!ability.trigger().equals(triggerKey)) {
+                    debug("    -> trigger '" + ability.trigger() + "' != '" + triggerKey + "', skipping");
+                    continue;
+                }
+
                 for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
                     debug("    mechanic=" + entry.type() + " skill=" + skill.id());
                     Object raw = mechanicRegistry.create(entry.type());
