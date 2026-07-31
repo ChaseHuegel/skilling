@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import DecimalInput from '../common/DecimalInput.vue'
+
 interface ProgressionConfig {
   curve: string
   baseXp?: number
@@ -51,22 +53,16 @@ function setParam(key: string, val: number) {
     <template v-if="modelValue.curve === 'polynomial'">
       <div class="field-row">
         <label class="field-label">Base XP</label>
-        <input
-          class="field-input"
-          type="number"
-          step="any"
-          :value="modelValue.baseXp ?? ''"
-          @input="setParam('baseXp', Number(($event.target as HTMLInputElement).value))"
+        <DecimalInput
+          :model-value="modelValue.baseXp"
+          @update:model-value="setParam('baseXp', $event)"
         />
       </div>
       <div class="field-row">
         <label class="field-label">Exponent</label>
-        <input
-          class="field-input"
-          type="number"
-          step="any"
-          :value="modelValue.exponent ?? ''"
-          @input="setParam('exponent', Number(($event.target as HTMLInputElement).value))"
+        <DecimalInput
+          :model-value="modelValue.exponent"
+          @update:model-value="setParam('exponent', $event)"
         />
       </div>
     </template>
@@ -74,42 +70,30 @@ function setParam(key: string, val: number) {
     <template v-else-if="modelValue.curve === 'linear'">
       <div class="field-row">
         <label class="field-label">Base</label>
-        <input
-          class="field-input"
-          type="number"
-          step="any"
-          :value="modelValue.base ?? ''"
-          @input="setParam('base', Number(($event.target as HTMLInputElement).value))"
+        <DecimalInput
+          :model-value="modelValue.base"
+          @update:model-value="setParam('base', $event)"
         />
       </div>
       <div class="field-row">
         <label class="field-label">Step</label>
-        <input
-          class="field-input"
-          type="number"
-          step="any"
-          :value="modelValue.step ?? ''"
-          @input="setParam('step', Number(($event.target as HTMLInputElement).value))"
+        <DecimalInput
+          :model-value="modelValue.step"
+          @update:model-value="setParam('step', $event)"
         />
       </div>
       <div class="field-row">
         <label class="field-label">Min</label>
-        <input
-          class="field-input"
-          type="number"
-          step="any"
-          :value="modelValue.min ?? ''"
-          @input="setParam('min', Number(($event.target as HTMLInputElement).value))"
+        <DecimalInput
+          :model-value="modelValue.min"
+          @update:model-value="setParam('min', $event)"
         />
       </div>
       <div class="field-row">
         <label class="field-label">Max</label>
-        <input
-          class="field-input"
-          type="number"
-          step="any"
-          :value="modelValue.max ?? ''"
-          @input="setParam('max', Number(($event.target as HTMLInputElement).value))"
+        <DecimalInput
+          :model-value="modelValue.max"
+          @update:model-value="setParam('max', $event)"
         />
       </div>
     </template>
@@ -117,12 +101,9 @@ function setParam(key: string, val: number) {
     <template v-else-if="modelValue.curve === 'constant'">
       <div class="field-row">
         <label class="field-label">Value</label>
-        <input
-          class="field-input"
-          type="number"
-          step="any"
-          :value="modelValue.value ?? ''"
-          @input="setParam('value', Number(($event.target as HTMLInputElement).value))"
+        <DecimalInput
+          :model-value="modelValue.value"
+          @update:model-value="setParam('value', $event)"
         />
       </div>
     </template>
@@ -148,16 +129,6 @@ function setParam(key: string, val: number) {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--p-text-color);
-}
-
-.field-input {
-  flex: 1;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 4px;
-  background: var(--p-content-background);
-  color: var(--p-text-color);
-  font-size: 0.875rem;
 }
 
 .field-select {

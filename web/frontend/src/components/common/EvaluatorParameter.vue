@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import DecimalInput from './DecimalInput.vue'
 
 interface EvaluatorValue {
   type: string
@@ -62,9 +63,9 @@ function removeMilestone(index: number) {
   milestones.value = copy
 }
 
-function updateMilestone(index: number, key: 'level' | 'value', val: string) {
+function updateMilestone(index: number, key: 'level' | 'value', val: number) {
   const copy = [...milestones.value]
-  copy[index] = { ...copy[index], [key]: Number(val) }
+  copy[index] = { ...copy[index], [key]: val }
   milestones.value = copy
 }
 </script>
@@ -91,12 +92,9 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
       <template v-if="modelValue.type === 'constant'">
         <div class="field-row">
           <label class="field-label">Value</label>
-          <input
-            class="field-input"
-            type="number"
-            step="any"
-            :value="modelValue.params?.value ?? ''"
-            @input="setParam('value', Number(($event.target as HTMLInputElement).value))"
+          <DecimalInput
+            :model-value="modelValue.params?.value"
+            @update:model-value="setParam('value', $event)"
           />
         </div>
       </template>
@@ -104,42 +102,30 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
       <template v-else-if="modelValue.type === 'linear'">
         <div class="field-row">
           <label class="field-label">Base</label>
-          <input
-            class="field-input"
-            type="number"
-            step="any"
-            :value="modelValue.params?.base ?? ''"
-            @input="setParam('base', Number(($event.target as HTMLInputElement).value))"
+          <DecimalInput
+            :model-value="modelValue.params?.base"
+            @update:model-value="setParam('base', $event)"
           />
         </div>
         <div class="field-row">
           <label class="field-label">Step</label>
-          <input
-            class="field-input"
-            type="number"
-            step="any"
-            :value="modelValue.params?.step ?? ''"
-            @input="setParam('step', Number(($event.target as HTMLInputElement).value))"
+          <DecimalInput
+            :model-value="modelValue.params?.step"
+            @update:model-value="setParam('step', $event)"
           />
         </div>
         <div class="field-row">
           <label class="field-label">Min</label>
-          <input
-            class="field-input"
-            type="number"
-            step="any"
-            :value="modelValue.params?.min ?? ''"
-            @input="setParam('min', Number(($event.target as HTMLInputElement).value))"
+          <DecimalInput
+            :model-value="modelValue.params?.min"
+            @update:model-value="setParam('min', $event)"
           />
         </div>
         <div class="field-row">
           <label class="field-label">Max</label>
-          <input
-            class="field-input"
-            type="number"
-            step="any"
-            :value="modelValue.params?.max ?? ''"
-            @input="setParam('max', Number(($event.target as HTMLInputElement).value))"
+          <DecimalInput
+            :model-value="modelValue.params?.max"
+            @update:model-value="setParam('max', $event)"
           />
         </div>
       </template>
@@ -151,21 +137,15 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
             :key="idx"
             class="milestone-row"
           >
-            <input
-              class="field-input milestone-input"
-              type="number"
-              step="any"
+            <DecimalInput
+              :model-value="entry.level"
               placeholder="Level"
-              :value="entry.level"
-              @input="updateMilestone(idx, 'level', ($event.target as HTMLInputElement).value)"
+              @update:model-value="updateMilestone(idx, 'level', $event)"
             />
-            <input
-              class="field-input milestone-input"
-              type="number"
-              step="any"
+            <DecimalInput
+              :model-value="entry.value"
               placeholder="Value"
-              :value="entry.value"
-              @input="updateMilestone(idx, 'value', ($event.target as HTMLInputElement).value)"
+              @update:model-value="updateMilestone(idx, 'value', $event)"
             />
             <button
               class="btn btn-ghost btn-sm"
@@ -187,22 +167,16 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
       <template v-else-if="modelValue.type === 'polynomial'">
         <div class="field-row">
           <label class="field-label">Base XP</label>
-          <input
-            class="field-input"
-            type="number"
-            step="any"
-            :value="modelValue.params?.base_xp ?? ''"
-            @input="setParam('base_xp', Number(($event.target as HTMLInputElement).value))"
+          <DecimalInput
+            :model-value="modelValue.params?.base_xp"
+            @update:model-value="setParam('base_xp', $event)"
           />
         </div>
         <div class="field-row">
           <label class="field-label">Exponent</label>
-          <input
-            class="field-input"
-            type="number"
-            step="any"
-            :value="modelValue.params?.exponent ?? ''"
-            @input="setParam('exponent', Number(($event.target as HTMLInputElement).value))"
+          <DecimalInput
+            :model-value="modelValue.params?.exponent"
+            @update:model-value="setParam('exponent', $event)"
           />
         </div>
       </template>
@@ -251,16 +225,6 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
   color: var(--p-form-field-placeholder-color);
 }
 
-.field-input {
-  flex: 1;
-  padding: 0.35rem 0.5rem;
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 4px;
-  background: var(--p-form-field-background);
-  color: var(--p-text-color);
-  font-size: 0.85rem;
-}
-
 .milestones-list {
   margin-bottom: 0.5rem;
 }
@@ -271,10 +235,4 @@ function updateMilestone(index: number, key: 'level' | 'value', val: string) {
   gap: 0.4rem;
   margin-bottom: 0.3rem;
 }
-
-.milestone-input {
-  flex: 1;
-}
-
-
 </style>

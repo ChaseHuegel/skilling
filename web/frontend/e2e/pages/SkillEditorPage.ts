@@ -41,8 +41,8 @@ export class SkillEditorPage {
 
     // Progression
     this.curveSelect = page.locator('select').nth(2);
-    this.baseXpInput = page.locator('input[type="number"]').nth(1);
-    this.exponentInput = page.locator('input[type="number"]').nth(2);
+    this.baseXpInput = page.locator('.progression-section .decimal-input').nth(0);
+    this.exponentInput = page.locator('.progression-section .decimal-input').nth(1);
   }
 
   async isNewSkill(): Promise<boolean> {
