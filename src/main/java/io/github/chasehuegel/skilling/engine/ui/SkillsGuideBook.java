@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -72,6 +73,8 @@ public final class SkillsGuideBook implements Listener {
     @EventHandler
     public void onGuideBookInteract(PlayerInteractEvent event) {
         if (!enabled) return;
+        Action action = event.getAction();
+        if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
         ItemStack item = event.getItem();
         if (item == null || item.getType() != Material.ENCHANTED_BOOK) return;
         if (!PoisonPillTag.isTagged(item.getItemMeta())) return;
