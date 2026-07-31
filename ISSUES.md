@@ -14,4 +14,4 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (plugin) SkillBonusMechanic says it is a % increase 
 
 # Improvements
-- [ ] (web) Sort skills on the skills dashboard page by color -> name
+- [x] (web) Sort skills on the skills dashboard page by color -> name

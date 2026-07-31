@@ -120,16 +120,22 @@ const deletedSkillIds = computed(() => {
 
 const filteredSkills = computed(() => {
     const q = searchQuery.value.trim().toLowerCase();
-    return skills.value.filter((s) => {
-        if (deletedSkillIds.value.includes(s.id)) return false;
-        if (!q) return true;
-        const id = (s.id || '').toLowerCase();
-        const display = (s.displayName || '').toLowerCase();
-        const triggers = (s.xpSourceTriggers || []).join(' ').toLowerCase();
-        const abilityIds = (s.abilityIds || []).join(' ').toLowerCase();
-        const abilityNames = (s.abilityNames || []).join(' ').toLowerCase();
-        return [id, display, triggers, abilityIds, abilityNames].some(f => f.includes(q));
-    });
+    return skills.value
+        .filter((s) => {
+            if (deletedSkillIds.value.includes(s.id)) return false;
+            if (!q) return true;
+            const id = (s.id || '').toLowerCase();
+            const display = (s.displayName || '').toLowerCase();
+            const triggers = (s.xpSourceTriggers || []).join(' ').toLowerCase();
+            const abilityIds = (s.abilityIds || []).join(' ').toLowerCase();
+            const abilityNames = (s.abilityNames || []).join(' ').toLowerCase();
+            return [id, display, triggers, abilityIds, abilityNames].some(f => f.includes(q));
+        })
+        .sort((a, b) => {
+            const colorCmp = (a.color || '').localeCompare(b.color || '');
+            if (colorCmp !== 0) return colorCmp;
+            return (a.displayName || a.id || '').localeCompare(b.displayName || b.id || '');
+        });
 });
 
 async function fetchSkills() {
