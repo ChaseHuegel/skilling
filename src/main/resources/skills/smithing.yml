@@ -33,6 +33,7 @@ abilities:
   - id: "efficient_smith"
     display_name: "Efficient Smith"
     unlock_level: 1
+    trigger: "craft_item"
     display:
       lore:
         - "&7Increases output when crafting tools and armor."
@@ -52,6 +53,7 @@ abilities:
   - id: "tempered_metal"
     display_name: "Tempered Metal"
     unlock_level: 15
+    trigger: "item_damage"
     display:
       lore:
         - "&7Tools and armor last &a{chance}% &7longer."
@@ -71,6 +73,7 @@ abilities:
   - id: "weighted_strike"
     display_name: "Weighted Strike"
     unlock_level: 25
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increases melee damage by &a{multiplier}x&7."
@@ -92,6 +95,7 @@ abilities:
   - id: "reforging"
     display_name: "Reforging"
     unlock_level: 50
+    trigger: "furnace_extract"
     display:
       lore:
         - "&7Doubles ingot output when smelting ore."
@@ -110,6 +114,7 @@ abilities:
   - id: "master_smith"
     display_name: "Master Smith"
     unlock_level: 75
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Gain &a{amount} &7armor while wielding a smithed weapon."
@@ -130,6 +135,7 @@ abilities:
   - id: "legendary_artisan"
     display_name: "Legendary Artisan"
     unlock_level: 100
+    trigger: "craft_item"
     display:
       lore:
         - "&7Guaranteed double output on all smithed items."

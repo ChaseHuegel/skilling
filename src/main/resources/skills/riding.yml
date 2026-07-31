@@ -27,6 +27,7 @@ abilities:
   - id: "mounted_combat_training"
     display_name: "Mounted Combat Training"
     unlock_level: 1
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increases damage by &a{multiplier}x &7while mounted."
@@ -48,6 +49,7 @@ abilities:
   - id: "swift_mount"
     display_name: "Swift Mount"
     unlock_level: 15
+    trigger: "ride_horse"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster while riding."
@@ -69,6 +71,7 @@ abilities:
   - id: "mounted_defense"
     display_name: "Mounted Defense"
     unlock_level: 25
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to dodge attacks while riding."
@@ -90,6 +93,7 @@ abilities:
   - id: "calvary_charge"
     display_name: "Calvary Charge"
     unlock_level: 50
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Attacks slow targets while mounted."
@@ -114,6 +118,7 @@ abilities:
   - id: "horse_mastery"
     display_name: "Horse Mastery"
     unlock_level: 75
+    trigger: "ride_horse"
     display:
       lore:
         - "&7Gain &a{amount} &7armor while riding."
@@ -134,6 +139,7 @@ abilities:
   - id: "legendary_rider"
     display_name: "Legendary Rider"
     unlock_level: 100
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Massive mounted damage and speed boost."

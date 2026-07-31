@@ -29,6 +29,7 @@ abilities:
   - id: "heavy_strikes"
     display_name: "Heavy Strikes"
     unlock_level: 1
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increases melee damage by &a{multiplier}x&7."
@@ -50,6 +51,7 @@ abilities:
   - id: "stun_impact"
     display_name: "Stun Impact"
     unlock_level: 15
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Heavy hits slow targets for &a{duration}s&7."
@@ -75,6 +77,7 @@ abilities:
   - id: "cleave"
     display_name: "Cleave"
     unlock_level: 25
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Attacks apply weakness to nearby enemies."
@@ -105,6 +108,7 @@ abilities:
   - id: "berserker"
     display_name: "Berserker"
     unlock_level: 50
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Heal &a{percentage}% &7of damage dealt to enemies."
@@ -125,6 +129,7 @@ abilities:
   - id: "execute"
     display_name: "Execute"
     unlock_level: 75
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Enemies below &a{threshold}% &7health are instantly killed."
@@ -152,6 +157,7 @@ abilities:
   - id: "master_at_arms"
     display_name: "Master at Arms"
     unlock_level: 100
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Massive damage boost with heavy weapons."

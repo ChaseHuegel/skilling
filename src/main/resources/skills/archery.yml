@@ -29,6 +29,7 @@ abilities:
   - id: "steady_hand"
     display_name: "Steady Hand"
     unlock_level: 1
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increases bow damage by &a{multiplier}x&7."
@@ -50,6 +51,7 @@ abilities:
   - id: "quick_reload"
     display_name: "Quick Reload"
     unlock_level: 15
+    trigger: "shoot_bow"
     display:
       lore:
         - "&7Reduces bow draw time."
@@ -73,6 +75,7 @@ abilities:
   - id: "piercing_shot"
     display_name: "Piercing Shot"
     unlock_level: 25
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Arrows pierce through targets."
@@ -101,6 +104,7 @@ abilities:
   - id: "mark_target"
     display_name: "Mark Target"
     unlock_level: 50
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Arrow hits apply slowness to targets."
@@ -125,6 +129,7 @@ abilities:
   - id: "fleet_footed"
     display_name: "Fleet-Footed"
     unlock_level: 75
+    trigger: "shoot_bow"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster while wielding a bow."
@@ -145,6 +150,7 @@ abilities:
   - id: "eagle_eye"
     display_name: "Eagle Eye"
     unlock_level: 100
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Critical hits on distant targets for massive damage."

@@ -21,6 +21,7 @@ abilities:
   - id: "tempered_guard"
     display_name: "Tempered Guard"
     unlock_level: 1
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Gain &a{amount} &7bonus armor."
@@ -40,6 +41,7 @@ abilities:
   - id: "deflect"
     display_name: "Deflect"
     unlock_level: 15
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to deflect damage."
@@ -59,6 +61,7 @@ abilities:
   - id: "counter"
     display_name: "Counter"
     unlock_level: 25
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Attackers take &a{damage} &7damage."
@@ -78,6 +81,7 @@ abilities:
   - id: "swift_recovery"
     display_name: "Swift Recovery"
     unlock_level: 50
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster when hit."
@@ -96,6 +100,7 @@ abilities:
   - id: "endurance"
     display_name: "Endurance"
     unlock_level: 75
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Reduced damage taken from all sources."
@@ -121,6 +126,7 @@ abilities:
   - id: "iron_will"
     display_name: "Iron Will"
     unlock_level: 100
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Gain significant armor and damage reduction."

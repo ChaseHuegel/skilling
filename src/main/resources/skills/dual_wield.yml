@@ -29,6 +29,7 @@ abilities:
   - id: "dual_strike"
     display_name: "Dual Strike"
     unlock_level: 1
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increases dual-wield damage by &a{multiplier}x&7."
@@ -50,6 +51,7 @@ abilities:
   - id: "whirlwind"
     display_name: "Whirlwind"
     unlock_level: 15
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Dual attacks weaken nearby enemies."
@@ -80,6 +82,7 @@ abilities:
   - id: "cross_cut"
     display_name: "Cross Cut"
     unlock_level: 25
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Dual strikes poison targets for &a{duration}s&7."
@@ -105,6 +108,7 @@ abilities:
   - id: "rapid_assault"
     display_name: "Rapid Assault"
     unlock_level: 50
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster with two weapons."
@@ -125,6 +129,7 @@ abilities:
   - id: "dual_parry"
     display_name: "Dual Parry"
     unlock_level: 75
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to block attacks with two weapons."
@@ -145,6 +150,7 @@ abilities:
   - id: "storm_blade"
     display_name: "Storm Blade"
     unlock_level: 100
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Massive dual-wield damage boost."

@@ -24,6 +24,7 @@ abilities:
   - id: "dig_double"
     display_name: "Dig Double"
     unlock_level: 1
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases dirt/gravel/sand yield by &a{yield_chance}%&7."
@@ -46,6 +47,7 @@ abilities:
   - id: "quick_dig"
     display_name: "Quick Dig"
     unlock_level: 15
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases digging speed by &a{amplifier}x&7."
@@ -69,6 +71,7 @@ abilities:
   - id: "wide_sweep"
     display_name: "Wide Sweep"
     unlock_level: 25
+    trigger: "block_break"
     display:
       lore:
         - "&7Sneak-mine to break a &a{radius}&7-block radius of soft blocks."
@@ -121,6 +124,7 @@ abilities:
   - id: "fossil_hunter"
     display_name: "Fossil Hunter"
     unlock_level: 50
+    trigger: "block_break"
     display:
       lore:
         - "&7Bonus flint and bone drops from gravel and sand."
@@ -141,6 +145,7 @@ abilities:
   - id: "swift_digger"
     display_name: "Swift Digger"
     unlock_level: 75
+    trigger: "block_break"
     display:
       lore:
         - "&7Dig &a{amplifier}x &7faster while wielding a shovel."
@@ -163,6 +168,7 @@ abilities:
   - id: "excavator"
     display_name: "Excavator"
     unlock_level: 100
+    trigger: "block_break"
     display:
       lore:
         - "&7Wide Sweep cooldown removed, 5x5 area."

@@ -21,6 +21,7 @@ abilities:
   - id: "angler"
     display_name: "Angler"
     unlock_level: 1
+    trigger: "fishing"
     display:
       lore:
         - "&7Increases treasure catch rate by &a{yield_chance}%&7."
@@ -40,6 +41,7 @@ abilities:
   - id: "light_line"
     display_name: "Light Line"
     unlock_level: 15
+    trigger: "fishing"
     display:
       lore:
         - "&7Fishing rod durability loss reduced by &a{chance}%&7."
@@ -59,6 +61,7 @@ abilities:
   - id: "lucky_catch"
     display_name: "Lucky Catch"
     unlock_level: 25
+    trigger: "fishing"
     display:
       lore:
         - "&7Better enchantments and loot from fishing treasure."
@@ -84,6 +87,7 @@ abilities:
   - id: "sea_bounty"
     display_name: "Sea Bounty"
     unlock_level: 50
+    trigger: "fishing"
     display:
       lore:
         - "&7Doubles fish catches."
@@ -102,6 +106,7 @@ abilities:
   - id: "tidal_resilience"
     display_name: "Tidal Resilience"
     unlock_level: 75
+    trigger: "fishing"
     display:
       lore:
         - "&7Gain knockback resistance while fishing."
@@ -122,6 +127,7 @@ abilities:
   - id: "leviathan"
     display_name: "Leviathan"
     unlock_level: 100
+    trigger: "fishing"
     display:
       lore:
         - "&7Guaranteed max-size catches and rare treasure."

@@ -31,6 +31,7 @@ abilities:
   - id: "geologist"
     display_name: "Geologist"
     unlock_level: 1
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases ore yield by &a{yield_chance}%&7."
@@ -53,6 +54,7 @@ abilities:
   - id: "prospector"
     display_name: "Prospector"
     unlock_level: 15
+    trigger: "block_break"
     display:
       lore:
         - "&7Gain bonus XP from mining ores."
@@ -72,6 +74,7 @@ abilities:
   - id: "vein_miner"
     display_name: "Vein Miner"
     unlock_level: 25
+    trigger: "block_break"
     display:
       lore:
         - "&7Sneak-mine to break up to &a{chain_limit} &7connected blocks."
@@ -132,6 +135,7 @@ abilities:
   - id: "magma_forge"
     display_name: "Magma Forge"
     unlock_level: 50
+    trigger: "block_break"
     display:
       lore:
         - "&7Ores have a &a{chance}% &7chance to auto-smelt."
@@ -150,6 +154,7 @@ abilities:
   - id: "sturdy_miner"
     display_name: "Sturdy Miner"
     unlock_level: 75
+    trigger: "block_break"
     display:
       lore:
         - "&7Gain &a{amount} &7armor while mining."
@@ -170,6 +175,7 @@ abilities:
   - id: "perfect_yield"
     display_name: "Perfect Yield"
     unlock_level: 100
+    trigger: "block_break"
     display:
       lore:
         - "&7Guaranteed double ore drops with a chance for triple."

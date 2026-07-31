@@ -101,9 +101,14 @@ public record SkillDefinition(
     /**
      * A player ability with requirements, mechanics, and feedback.
      *
+     * <p>The {@code trigger} key binds the ability to a single event dispatch so that
+     * {@code fireAbilities()} only evaluates it on the matching event, preventing
+     * guardless mechanics from firing on every event and stacking transient state.
+     *
      * @param id           unique ability identifier
      * @param displayName  human-readable name
      * @param unlockLevel  level at which this ability is unlocked
+     * @param trigger      trigger key this ability binds to (e.g. {@code block_break})
      * @param display      UI lore configuration
      * @param requirements pre-execution requirements
      * @param onFailure    failure feedback overrides
@@ -114,6 +119,7 @@ public record SkillDefinition(
             String id,
             String displayName,
             int unlockLevel,
+            String trigger,
             AbilityDisplay display,
             Requirements requirements,
             OnFailure onFailure,

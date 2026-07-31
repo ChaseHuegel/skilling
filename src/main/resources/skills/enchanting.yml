@@ -25,6 +25,7 @@ abilities:
   - id: "arcane_knowledge"
     display_name: "Arcane Knowledge"
     unlock_level: 1
+    trigger: "enchant_item"
     display:
       lore:
         - "&7Gain bonus XP from enchanting."
@@ -44,6 +45,7 @@ abilities:
   - id: "durable_enchantments"
     display_name: "Durable Enchantments"
     unlock_level: 15
+    trigger: "item_damage"
     display:
       lore:
         - "&7Enchanted items last &a{chance}% &7longer."
@@ -63,6 +65,7 @@ abilities:
   - id: "experience_attraction"
     display_name: "Experience Attraction"
     unlock_level: 25
+    trigger: "collect_xp"
     display:
       lore:
         - "&7XP orbs travel &a{multiplier}x &7faster toward you."
@@ -82,6 +85,7 @@ abilities:
   - id: "ancient_secrets"
     display_name: "Ancient Secrets"
     unlock_level: 50
+    trigger: "craft_item"
     display:
       lore:
         - "&7Doubles enchanted book output from crafting."
@@ -100,6 +104,7 @@ abilities:
   - id: "soulbound_armor"
     display_name: "Soulbound Armor"
     unlock_level: 75
+    trigger: "enchant_item"
     display:
       lore:
         - "&7Gain &a{amount} &7armor while holding enchanted gear."
@@ -118,6 +123,7 @@ abilities:
   - id: "master_enchanter"
     display_name: "Master Enchanter"
     unlock_level: 100
+    trigger: "craft_item"
     display:
       lore:
         - "&7Triples enchanted book output from crafting."

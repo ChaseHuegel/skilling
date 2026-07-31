@@ -25,6 +25,7 @@ abilities:
   - id: "melody_of_haste"
     display_name: "Melody of Haste"
     unlock_level: 1
+    trigger: "player_interact"
     display:
       lore:
         - "&7Music grants haste to nearby allies."
@@ -50,6 +51,7 @@ abilities:
   - id: "rhythm_of_strength"
     display_name: "Rhythm of Strength"
     unlock_level: 15
+    trigger: "player_interact"
     display:
       lore:
         - "&7Music grants strength to nearby allies."
@@ -75,6 +77,7 @@ abilities:
   - id: "ballad_of_endurance"
     display_name: "Ballad of Endurance"
     unlock_level: 25
+    trigger: "player_interact"
     display:
       lore:
         - "&7Music grants armor to the performer."
@@ -94,6 +97,7 @@ abilities:
   - id: "song_of_protection"
     display_name: "Song of Protection"
     unlock_level: 50
+    trigger: "player_interact"
     display:
       lore:
         - "&7Music grants resistance to nearby allies."
@@ -118,6 +122,7 @@ abilities:
   - id: "war_march"
     display_name: "War March"
     unlock_level: 75
+    trigger: "player_interact"
     display:
       lore:
         - "&7Music grants speed to the performer."
@@ -136,6 +141,7 @@ abilities:
   - id: "symphony"
     display_name: "Symphony"
     unlock_level: 100
+    trigger: "player_interact"
     display:
       lore:
         - "&7Powerful song of haste and strength."

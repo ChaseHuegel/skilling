@@ -27,6 +27,7 @@ abilities:
   - id: "stone_folding"
     display_name: "Stone Folding"
     unlock_level: 1
+    trigger: "furnace_extract"
     display:
       lore:
         - "&7Increases smelting output for stone and clay."
@@ -46,6 +47,7 @@ abilities:
   - id: "kiln_master"
     display_name: "Kiln Master"
     unlock_level: 15
+    trigger: "furnace_extract"
     display:
       lore:
         - "&7Gain bonus XP from smelting stone and ores."
@@ -65,6 +67,7 @@ abilities:
   - id: "reinforced_walls"
     display_name: "Reinforced Walls"
     unlock_level: 25
+    trigger: "craft_item"
     display:
       lore:
         - "&7Bonus stone brick output when crafting."
@@ -84,6 +87,7 @@ abilities:
   - id: "geometric_eye"
     display_name: "Geometric Eye"
     unlock_level: 50
+    trigger: "block_place"
     display:
       lore:
         - "&7Place stone blocks &a{amplifier}x &7faster."
@@ -106,6 +110,7 @@ abilities:
   - id: "glaze_artisan"
     display_name: "Glaze Artisan"
     unlock_level: 75
+    trigger: "furnace_extract"
     display:
       lore:
         - "&7Doubles terracotta and glass output from smelting."
@@ -124,6 +129,7 @@ abilities:
   - id: "master_mason"
     display_name: "Master Mason"
     unlock_level: 100
+    trigger: "craft_item"
     display:
       lore:
         - "&7Triples stone brick output when crafting."

@@ -29,6 +29,7 @@ abilities:
   - id: "precise_strikes"
     display_name: "Precise Strikes"
     unlock_level: 1
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increases damage by &a{multiplier}x &7with a free offhand."
@@ -50,6 +51,7 @@ abilities:
   - id: "quick_hands"
     display_name: "Quick Hands"
     unlock_level: 15
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster with one hand free."
@@ -71,6 +73,7 @@ abilities:
   - id: "parry"
     display_name: "Parry"
     unlock_level: 25
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to dodge attacks with one hand free."
@@ -92,6 +95,7 @@ abilities:
   - id: "fencing"
     display_name: "Fencing"
     unlock_level: 50
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Attacks slow targets for &a{duration}s&7."
@@ -116,6 +120,7 @@ abilities:
   - id: "duelist"
     display_name: "Duelist"
     unlock_level: 75
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increased attack speed with one hand free."
@@ -136,6 +141,7 @@ abilities:
   - id: "blade_master"
     display_name: "Blade Master"
     unlock_level: 100
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Massive damage with a free offhand."

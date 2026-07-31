@@ -21,6 +21,7 @@ abilities:
   - id: "featherweight"
     display_name: "Featherweight"
     unlock_level: 1
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster."
@@ -40,6 +41,7 @@ abilities:
   - id: "dodge_roll"
     display_name: "Dodge Roll"
     unlock_level: 15
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to completely dodge attacks."
@@ -59,6 +61,7 @@ abilities:
   - id: "nimble_feet"
     display_name: "Nimble Feet"
     unlock_level: 25
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to negate fall damage."
@@ -78,6 +81,7 @@ abilities:
   - id: "sprint"
     display_name: "Sprint"
     unlock_level: 50
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster with light armor."
@@ -96,6 +100,7 @@ abilities:
   - id: "evasion_mastery"
     display_name: "Evasion Mastery"
     unlock_level: 75
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Dodge chance increased significantly."
@@ -114,6 +119,7 @@ abilities:
   - id: "phantom"
     display_name: "Phantom"
     unlock_level: 100
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Near-permanent dodge and speed boost."

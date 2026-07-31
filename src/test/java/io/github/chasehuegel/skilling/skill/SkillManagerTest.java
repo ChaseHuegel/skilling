@@ -101,6 +101,7 @@ class SkillManagerTest {
                   - id: "geologist"
                     display_name: "Geologist"
                     unlock_level: 1
+                    trigger: "block_break"
                     display:
                       lore:
                         - "Increases yield by {yield_chance}%."

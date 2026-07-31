@@ -29,6 +29,7 @@ abilities:
   - id: "quick_strike"
     display_name: "Quick Strike"
     unlock_level: 1
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increases attack damage by &a{multiplier}x&7 with light weapons."
@@ -50,6 +51,7 @@ abilities:
   - id: "nimble"
     display_name: "Nimble"
     unlock_level: 15
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster while wielding light weapons."
@@ -71,6 +73,7 @@ abilities:
   - id: "bleed"
     display_name: "Bleed"
     unlock_level: 25
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Light attacks poison targets for &a{duration}s&7."
@@ -96,6 +99,7 @@ abilities:
   - id: "vampiric_strike"
     display_name: "Vampiric Strike"
     unlock_level: 50
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Heal &a{percentage}% &7of damage dealt to enemies."
@@ -116,6 +120,7 @@ abilities:
   - id: "evasive"
     display_name: "Evasive"
     unlock_level: 75
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Chance &a{chance}% &7to dodge attacks while wielding light weapons."
@@ -136,6 +141,7 @@ abilities:
   - id: "blade_dancer"
     display_name: "Blade Dancer"
     unlock_level: 100
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Massive damage boost with light weapons."

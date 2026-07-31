@@ -28,6 +28,7 @@ abilities:
   - id: "green_thumb"
     display_name: "Green Thumb"
     unlock_level: 1
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases herb and flower yield by &a{yield_chance}%&7."
@@ -49,6 +50,7 @@ abilities:
   - id: "rapid_growth"
     display_name: "Rapid Growth"
     unlock_level: 15
+    trigger: "block_break"
     display:
       lore:
         - "&7Harvest herbs &a{amplifier}x &7faster."
@@ -72,6 +74,7 @@ abilities:
   - id: "herbalist_knowledge"
     display_name: "Herbalist Knowledge"
     unlock_level: 25
+    trigger: "block_break"
     display:
       lore:
         - "&7Gain bonus XP from harvesting herbs."
@@ -91,6 +94,7 @@ abilities:
   - id: "natural_remedy"
     display_name: "Natural Remedy"
     unlock_level: 50
+    trigger: "consume_item"
     display:
       lore:
         - "&7Consuming herbs and flowers gives &a{saturation} extra saturation."
@@ -109,6 +113,7 @@ abilities:
   - id: "overgrowth"
     display_name: "Overgrowth"
     unlock_level: 75
+    trigger: "block_break"
     display:
       lore:
         - "&7Sneak to harvest all nearby herbs at once."
@@ -160,6 +165,7 @@ abilities:
   - id: "master_herbalist"
     display_name: "Master Herbalist"
     unlock_level: 100
+    trigger: "block_break"
     display:
       lore:
         - "&7Guaranteed double herb and flower drops."

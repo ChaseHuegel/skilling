@@ -24,6 +24,7 @@ abilities:
   - id: "lumberjack"
     display_name: "Lumberjack"
     unlock_level: 1
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases log yield by &a{yield_chance}%&7."
@@ -46,6 +47,7 @@ abilities:
   - id: "efficient_swing"
     display_name: "Efficient Swing"
     unlock_level: 15
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases axe swing speed by &a{amplifier}x&7."
@@ -69,6 +71,7 @@ abilities:
   - id: "timber_feller"
     display_name: "Timber Feller"
     unlock_level: 25
+    trigger: "block_break"
     display:
       lore:
         - "&7Sneak-mine to fell entire trees &a{chain_limit} &7blocks at once."
@@ -124,6 +127,7 @@ abilities:
   - id: "forest_bounty"
     display_name: "Forest Bounty"
     unlock_level: 50
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases sapling drops from leaves."
@@ -144,6 +148,7 @@ abilities:
   - id: "iron_bark"
     display_name: "Iron Bark"
     unlock_level: 75
+    trigger: "block_break"
     display:
       lore:
         - "&7Gain &a{amount} &7armor while wielding an axe."
@@ -164,6 +169,7 @@ abilities:
   - id: "ancient_timber"
     display_name: "Ancient Timber"
     unlock_level: 100
+    trigger: "craft_item"
     display:
       lore:
         - "&7Doubles plank output from crafting."

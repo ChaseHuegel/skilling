@@ -23,6 +23,7 @@ abilities:
   - id: "sturdy_guard"
     display_name: "Sturdy Guard"
     unlock_level: 1
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to block damage while guarding."
@@ -44,6 +45,7 @@ abilities:
   - id: "shield_bash"
     display_name: "Shield Bash"
     unlock_level: 15
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Attackers take &a{damage} &7damage."
@@ -65,6 +67,7 @@ abilities:
   - id: "wall_of_steel"
     display_name: "Wall of Steel"
     unlock_level: 25
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Gain &a{amount} &7knockback resistance while blocking."
@@ -86,6 +89,7 @@ abilities:
   - id: "shield_slam"
     display_name: "Shield Slam"
     unlock_level: 50
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to negate damage entirely."
@@ -106,6 +110,7 @@ abilities:
   - id: "protective_aura"
     display_name: "Protective Aura"
     unlock_level: 75
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Gain &a{amount} &7armor while blocking."
@@ -126,6 +131,7 @@ abilities:
   - id: "indomitable"
     display_name: "Indomitable"
     unlock_level: 100
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Near-perfect block chance and thorns."

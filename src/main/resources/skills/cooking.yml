@@ -25,6 +25,7 @@ abilities:
   - id: "seasoning"
     display_name: "Seasoning"
     unlock_level: 1
+    trigger: "consume_item"
     display:
       lore:
         - "&7Cooked food gives &a{saturation} &7extra saturation."
@@ -44,6 +45,7 @@ abilities:
   - id: "heat_control"
     display_name: "Heat Control"
     unlock_level: 15
+    trigger: "furnace_extract"
     display:
       lore:
         - "&7Increases food output from smelting by &a{multiplier}x&7."
@@ -63,6 +65,7 @@ abilities:
   - id: "nutritionist"
     display_name: "Nutritionist"
     unlock_level: 25
+    trigger: "consume_item"
     display:
       lore:
         - "&7All food gives &a{saturation} &7extra saturation."
@@ -82,6 +85,7 @@ abilities:
   - id: "hearty_stew"
     display_name: "Hearty Stew"
     unlock_level: 50
+    trigger: "consume_item"
     display:
       lore:
         - "&7Eating cooked food gives &a{saturation} &7extra saturation."
@@ -102,6 +106,7 @@ abilities:
   - id: "gourmand"
     display_name: "Gourmand"
     unlock_level: 75
+    trigger: "consume_item"
     display:
       lore:
         - "&7After eating, move &a{multiplier}x &7faster for 10 seconds."
@@ -120,6 +125,7 @@ abilities:
   - id: "master_chef"
     display_name: "Master Chef"
     unlock_level: 100
+    trigger: "consume_item"
     display:
       lore:
         - "&7All food gives &a{saturation} &7extra saturation."

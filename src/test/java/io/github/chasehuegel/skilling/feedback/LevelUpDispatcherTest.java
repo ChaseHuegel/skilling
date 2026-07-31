@@ -53,14 +53,14 @@ class LevelUpDispatcherTest {
 
     @Test
     void isMajorLevelUpReturnsTrueWhenAbilityUnlocksAtLevel() {
-        var abilities = List.of(new SkillDefinition.Ability("test", "Test", 5, null, null, null, null, null));
+        var abilities = List.of(new SkillDefinition.Ability("test", "Test", 5, "level_up", null, null, null, null, null));
         var skill = new SkillDefinition("test", 100, null, null, null, abilities);
         assertTrue(LevelUpDispatcher.isMajorLevelUp(skill, 5));
     }
 
     @Test
     void isMajorLevelUpReturnsFalseWhenNoAbilityUnlocksAtLevel() {
-        var abilities = List.of(new SkillDefinition.Ability("test", "Test", 5, null, null, null, null, null));
+        var abilities = List.of(new SkillDefinition.Ability("test", "Test", 5, "level_up", null, null, null, null, null));
         var skill = new SkillDefinition("test", 100, null, null, null, abilities);
         assertFalse(LevelUpDispatcher.isMajorLevelUp(skill, 10));
     }

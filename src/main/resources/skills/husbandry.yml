@@ -29,6 +29,7 @@ abilities:
   - id: "animal_bond"
     display_name: "Animal Bond"
     unlock_level: 1
+    trigger: "breed_animals"
     display:
       lore:
         - "&7Gain bonus XP from breeding and shearing."
@@ -48,6 +49,7 @@ abilities:
   - id: "shearing_mastery"
     display_name: "Shearing Mastery"
     unlock_level: 15
+    trigger: "player_shear"
     display:
       lore:
         - "&7Gain &a{amount} &7bonus armor while near animals."
@@ -67,6 +69,7 @@ abilities:
   - id: "gentle_hands"
     display_name: "Gentle Hands"
     unlock_level: 25
+    trigger: "player_tame"
     display:
       lore:
         - "&7Easier to tame wild animals."
@@ -86,6 +89,7 @@ abilities:
   - id: "herd_growth"
     display_name: "Herd Growth"
     unlock_level: 50
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&7Gain &a{amount} &7knockback resistance from your herd."
@@ -104,6 +108,7 @@ abilities:
   - id: "animal_whisperer"
     display_name: "Animal Whisperer"
     unlock_level: 75
+    trigger: "breed_animals"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster with animals nearby."
@@ -122,6 +127,7 @@ abilities:
   - id: "master_husbander"
     display_name: "Master Husbander"
     unlock_level: 100
+    trigger: "player_tame"
     display:
       lore:
         - "&7Tame any animal instantly."

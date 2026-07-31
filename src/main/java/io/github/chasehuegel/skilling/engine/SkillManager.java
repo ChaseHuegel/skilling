@@ -198,6 +198,11 @@ public final class SkillManager {
             String displayName = (String) abilityMap.getOrDefault("display_name", id);
             int unlockLevel = ((Number) abilityMap.getOrDefault("unlock_level", 1)).intValue();
 
+            String trigger = (String) abilityMap.get("trigger");
+            if (trigger == null || trigger.isBlank()) {
+                throw new IllegalArgumentException("Ability '" + id + "' missing required 'trigger' field");
+            }
+
             // Display lore
             SkillDefinition.AbilityDisplay abilityDisplay = parseAbilityDisplay(castMap(abilityMap.get("display")));
 
@@ -211,7 +216,7 @@ public final class SkillManager {
             // Feedback
             SkillDefinition.Feedback feedback = parseFeedback(castMap(abilityMap.get("feedback")));
 
-            abilities.add(new SkillDefinition.Ability(id, displayName, unlockLevel, abilityDisplay,
+            abilities.add(new SkillDefinition.Ability(id, displayName, unlockLevel, trigger, abilityDisplay,
                     requirements, onFailure, mechanics, feedback));
         }
         return abilities;

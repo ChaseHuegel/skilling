@@ -28,6 +28,7 @@ abilities:
   - id: "green_thumb"
     display_name: "Green Thumb"
     unlock_level: 1
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases crop yield by &a{yield_chance}%&7."
@@ -50,6 +51,7 @@ abilities:
   - id: "seasoned_hand"
     display_name: "Seasoned Hand"
     unlock_level: 15
+    trigger: "consume_item"
     display:
       lore:
         - "&7Harvested food gives extra saturation."
@@ -69,6 +71,7 @@ abilities:
   - id: "harvest_wave"
     display_name: "Harvest Wave"
     unlock_level: 25
+    trigger: "block_break"
     display:
       lore:
         - "&7Harvest up to &a{chain_limit} &7connected crops at once."
@@ -123,6 +126,7 @@ abilities:
   - id: "nutrient_rich"
     display_name: "Nutrient Rich"
     unlock_level: 50
+    trigger: "block_break"
     display:
       lore:
         - "&7Chance for bonus crops from harvesting."
@@ -143,6 +147,7 @@ abilities:
   - id: "hearty_meal"
     display_name: "Hearty Meal"
     unlock_level: 75
+    trigger: "consume_item"
     display:
       lore:
         - "&7All food gives &a{saturation} &7extra saturation."
@@ -161,6 +166,7 @@ abilities:
   - id: "living_earth"
     display_name: "Living Earth"
     unlock_level: 100
+    trigger: "block_break"
     display:
       lore:
         - "&7Harvested crops auto-replant."

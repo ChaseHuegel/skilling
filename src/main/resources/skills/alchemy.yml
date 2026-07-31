@@ -21,6 +21,7 @@ abilities:
   - id: "rapid_brewing"
     display_name: "Rapid Brewing"
     unlock_level: 1
+    trigger: "brew_potion"
     display:
       lore:
         - "&7Brews potions &a{multiplier}x &7faster."
@@ -40,6 +41,7 @@ abilities:
   - id: "extended_effects"
     display_name: "Extended Effects"
     unlock_level: 15
+    trigger: "brew_potion"
     display:
       lore:
         - "&7Brewed potions last &a{multiplier}x &7longer."
@@ -59,6 +61,7 @@ abilities:
   - id: "efficient_alchemy"
     display_name: "Efficient Alchemy"
     unlock_level: 25
+    trigger: "brew_potion"
     display:
       lore:
         - "&7Gain bonus XP from brewing."
@@ -78,6 +81,7 @@ abilities:
   - id: "concentrated_essence"
     display_name: "Concentrated Essence"
     unlock_level: 50
+    trigger: "brew_potion"
     display:
       lore:
         - "&7Potions last &a{multiplier}x &7longer."
@@ -96,6 +100,7 @@ abilities:
   - id: "alchemical_haste"
     display_name: "Alchemical Haste"
     unlock_level: 75
+    trigger: "brew_potion"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster while brewing."
@@ -114,6 +119,7 @@ abilities:
   - id: "master_alchemist"
     display_name: "Master Alchemist"
     unlock_level: 100
+    trigger: "brew_potion"
     display:
       lore:
         - "&7Potions brew instantly and last forever."

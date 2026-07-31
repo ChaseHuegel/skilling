@@ -29,6 +29,7 @@ abilities:
   - id: "iron_fist"
     display_name: "Iron Fist"
     unlock_level: 1
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Increases unarmed damage by &a{multiplier}x&7."
@@ -50,6 +51,7 @@ abilities:
   - id: "lightning_reflexes"
     display_name: "Lightning Reflexes"
     unlock_level: 15
+    trigger: "entity_damage_taken"
     display:
       lore:
         - "&a{chance}% &7chance to dodge attacks."
@@ -69,6 +71,7 @@ abilities:
   - id: "pressure_points"
     display_name: "Pressure Points"
     unlock_level: 25
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Unarmed strikes weaken targets for &a{duration}s&7."
@@ -94,6 +97,7 @@ abilities:
   - id: "chi_flow"
     display_name: "Chi Flow"
     unlock_level: 50
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster in combat."
@@ -112,6 +116,7 @@ abilities:
   - id: "counter_strike"
     display_name: "Counter Strike"
     unlock_level: 75
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Heal &a{percentage}% &7of unarmed damage dealt."
@@ -132,6 +137,7 @@ abilities:
   - id: "master_martial_artist"
     display_name: "Master Martial Artist"
     unlock_level: 100
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Massive unarmed damage boost."

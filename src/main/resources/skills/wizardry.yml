@@ -25,6 +25,7 @@ abilities:
   - id: "arcane_missile"
     display_name: "Arcane Missile"
     unlock_level: 1
+    trigger: "player_interact"
     display:
       lore:
         - "&7Launches arcane projectiles dealing &a{damage} &7damage."
@@ -46,6 +47,7 @@ abilities:
   - id: "blink"
     display_name: "Blink"
     unlock_level: 15
+    trigger: "player_interact"
     display:
       lore:
         - "&7Short-range teleport of &a{range} &7blocks."
@@ -77,6 +79,7 @@ abilities:
   - id: "mana_shield"
     display_name: "Mana Shield"
     unlock_level: 25
+    trigger: "player_interact"
     display:
       lore:
         - "&7Gain &a{amount} &7armor from arcane energy."
@@ -96,6 +99,7 @@ abilities:
   - id: "arcane_expertise"
     display_name: "Arcane Expertise"
     unlock_level: 50
+    trigger: "collect_xp"
     display:
       lore:
         - "&7Gain bonus XP from arcane activities."
@@ -114,6 +118,7 @@ abilities:
   - id: "frost_nova"
     display_name: "Frost Nova"
     unlock_level: 75
+    trigger: "entity_damage"
     display:
       lore:
         - "&7Damaging enemies slows nearby foes."
@@ -151,6 +156,7 @@ abilities:
   - id: "archmage"
     display_name: "Archmage"
     unlock_level: 100
+    trigger: "player_interact"
     display:
       lore:
         - "&7Powerful arcane projectiles and shield."

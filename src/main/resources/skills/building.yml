@@ -25,6 +25,7 @@ abilities:
   - id: "scaffolding"
     display_name: "Scaffolding"
     unlock_level: 1
+    trigger: "block_place"
     display:
       lore:
         - "&7Place blocks &a{amplifier}x &7faster."
@@ -48,6 +49,7 @@ abilities:
   - id: "structural_knowledge"
     display_name: "Structural Knowledge"
     unlock_level: 15
+    trigger: "block_place"
     display:
       lore:
         - "&7Gain bonus XP from placing blocks."
@@ -67,6 +69,7 @@ abilities:
   - id: "swift_build"
     display_name: "Swift Build"
     unlock_level: 25
+    trigger: "block_place"
     display:
       lore:
         - "&7Move &a{multiplier}x &7faster while carrying building materials."
@@ -86,6 +89,7 @@ abilities:
   - id: "reinforced_structure"
     display_name: "Reinforced Structure"
     unlock_level: 50
+    trigger: "block_place"
     display:
       lore:
         - "&7Gain knockback resistance while building."
@@ -108,6 +112,7 @@ abilities:
   - id: "architects_vision"
     display_name: "Architect's Vision"
     unlock_level: 75
+    trigger: "block_break"
     display:
       lore:
         - "&7Sneak-paste to place a &a{radius}&7-block radius of blocks."
@@ -163,6 +168,7 @@ abilities:
   - id: "master_builder"
     display_name: "Master Builder"
     unlock_level: 100
+    trigger: "craft_item"
     display:
       lore:
         - "&7Multiplies output for decorative blocks."

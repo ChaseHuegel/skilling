@@ -28,6 +28,7 @@ abilities:
   - id: "efficient_crafting"
     display_name: "Efficient Crafting"
     unlock_level: 1
+    trigger: "craft_item"
     display:
       lore:
         - "&7Increases output when crafting wooden items."
@@ -47,6 +48,7 @@ abilities:
   - id: "precise_cut"
     display_name: "Precise Cut"
     unlock_level: 15
+    trigger: "item_damage"
     display:
       lore:
         - "&7Tools last &a{chance}% &7longer."
@@ -66,6 +68,7 @@ abilities:
   - id: "timber_reclaim"
     display_name: "Timber Reclaim"
     unlock_level: 25
+    trigger: "block_break"
     display:
       lore:
         - "&7Chance to double logs when breaking trees."
@@ -88,6 +91,7 @@ abilities:
   - id: "wood_weave"
     display_name: "Wood Weave"
     unlock_level: 50
+    trigger: "craft_item"
     display:
       lore:
         - "&7Bonus output when crafting fences, gates, and trapdoors."
@@ -106,6 +110,7 @@ abilities:
   - id: "iron_bark_touch"
     display_name: "Iron Bark Touch"
     unlock_level: 75
+    trigger: "block_break"
     display:
       lore:
         - "&7Gain &a{amount} &7armor while holding an axe."
@@ -126,6 +131,7 @@ abilities:
   - id: "master_joiner"
     display_name: "Master Joiner"
     unlock_level: 100
+    trigger: "craft_item"
     display:
       lore:
         - "&7Doubles output when crafting any wooden item."
