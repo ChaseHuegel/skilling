@@ -27,6 +27,7 @@ abilities:
   - id: "geologist"
     display_name: "Geologist"
     unlock_level: 1
+    trigger: "block_break"
     display:
       lore:
         - "&7Increases raw ore yield by &a{yield_chance}%&7."
@@ -54,6 +55,7 @@ abilities:
   - id: "vein_miner"
     display_name: "Vein Miner"
     unlock_level: 15
+    trigger: "block_break"
     display:
       lore:
         - "&7Mines up to &a{chain_limit} &7connected ores at once."

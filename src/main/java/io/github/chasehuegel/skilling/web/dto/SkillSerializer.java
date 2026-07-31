@@ -173,6 +173,10 @@ public final class SkillSerializer {
         String id = str(raw, "id");
         String displayName = str(raw, "display_name", id);
         int unlockLevel = intVal(raw, "unlock_level", 1);
+        String trigger = str(raw, "trigger");
+        if (trigger == null || trigger.isBlank()) {
+            throw new IllegalArgumentException("Ability '" + id + "' missing required 'trigger' field");
+        }
 
         Map<String, Object> displayMap = map(raw, "display");
         List<String> lore = new ArrayList<>();
@@ -220,7 +224,7 @@ public final class SkillSerializer {
         // Parse on_failure
         SkillDetailDTO.OnFailureDTO onFailure = parseOnFailureDTO(map(raw, "on_failure"));
 
-        return new SkillDetailDTO.AbilityDTO(id, displayName, unlockLevel,
+        return new SkillDetailDTO.AbilityDTO(id, displayName, unlockLevel, trigger,
             new SkillDetailDTO.AbilityDisplayDTO(lore),
             requirements, mechanics, onFailure, feedback);
     }
@@ -263,6 +267,7 @@ public final class SkillSerializer {
         m.put("id", a.id());
         m.put("display_name", a.displayName());
         m.put("unlock_level", a.unlockLevel());
+        m.put("trigger", a.trigger());
 
         Map<String, Object> displayMap = new LinkedHashMap<>();
         if (a.display() != null && a.display().lore() != null && !a.display().lore().isEmpty()) {

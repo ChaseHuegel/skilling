@@ -157,6 +157,9 @@ function validate(): boolean {
             } else if (seen.has(ab.id)) {
                 errors[`ability-${i}-id`] = 'Duplicate ability ID';
             }
+            if (!ab.trigger || !ab.trigger.trim()) {
+                errors[`ability-${i}-trigger`] = 'Ability trigger is required';
+            }
             seen.add(ab.id);
         }
     }

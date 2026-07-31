@@ -59,6 +59,7 @@ public record SkillDetailDTO(
         String id,
         String displayName,
         int unlockLevel,
+        String trigger,
         AbilityDisplayDTO display,
         RequirementsDTO requirements,
         List<MechanicEntryDTO> mechanics,

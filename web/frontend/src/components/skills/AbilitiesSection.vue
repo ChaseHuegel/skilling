@@ -64,6 +64,18 @@ const MECHANIC_SUGGESTIONS = computed(() =>
   registriesStore.mechanicKeys.length > 0 ? registriesStore.mechanicKeys : FALLBACK_MECHANICS
 )
 
+const FALLBACK_TRIGGERS = [
+  'block_break', 'block_place', 'entity_damage', 'entity_damage_taken', 'entity_kill',
+  'craft_item', 'furnace_extract', 'brew_potion', 'player_interact', 'consume_item',
+  'fishing', 'crop_grow', 'breed_animals', 'sprint', 'sneak', 'ride_horse',
+  'collect_xp', 'level_up', 'enchant_item', 'shoot_bow', 'item_damage',
+  'player_shear', 'player_tame', 'launch_projectile',
+]
+
+const TRIGGER_SUGGESTIONS = computed(() =>
+  registriesStore.triggers.length > 0 ? registriesStore.triggers : FALLBACK_TRIGGERS
+)
+
 const FALLBACK_MECHANICS = [
   'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
   'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
@@ -143,6 +155,7 @@ interface Ability {
   id: string
   displayName: string
   unlockLevel: number
+  trigger: string
   lore: string[]
   requirements: {
     cooldown: number
@@ -231,6 +244,7 @@ function emptyAbility(): Ability {
     id: '',
     displayName: '',
     unlockLevel: 0,
+    trigger: '',
     lore: [],
     requirements: {
       cooldown: 0,
@@ -679,6 +693,17 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
             min="0"
             :value="ability.unlockLevel"
             @input="updateAbility(idx, { unlockLevel: Number(($event.target as HTMLInputElement).value) })"
+          />
+        </div>
+
+        <div class="field-row">
+          <label class="field-label">Trigger</label>
+          <AppCombobox
+            :model-value="ability.trigger || ''"
+            :suggestions="TRIGGER_SUGGESTIONS"
+            placeholder="e.g. block_break"
+            :name="'trigger-' + idx"
+            @update:model-value="updateAbility(idx, { trigger: $event })"
           />
         </div>
 
