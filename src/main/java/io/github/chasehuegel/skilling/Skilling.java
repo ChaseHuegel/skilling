@@ -122,7 +122,16 @@ public final class Skilling extends JavaPlugin {
             }
 
             String[] bundledSkills = {"mining.yml", "woodcutting.yml", "excavation.yml",
-                                      "farming.yml", "fishing.yml", "archery.yml"};
+                                      "farming.yml", "fishing.yml", "archery.yml",
+                                      "carpentry.yml", "masonry.yml", "tailoring.yml",
+                                      "building.yml", "cooking.yml", "smithing.yml",
+                                      "herbalism.yml", "heavy_weapons.yml", "light_weapons.yml",
+                                      "heavy_armor.yml", "medium_armor.yml", "light_armor.yml",
+                                      "alchemy.yml", "enchanting.yml", "riding.yml",
+                                      "unarmed.yml", "one_handed.yml", "dual_wield.yml",
+                                      "shields.yml", "unarmored.yml", "husbandry.yml",
+                                      "throwing.yml", "acrobatics.yml", "piety.yml",
+                                      "bard.yml", "wizardry.yml"};
             for (String skill : bundledSkills) {
                 if (!new File(getDataFolder(), "skills/" + skill).exists()) {
                     getLogger().info("Generating default " + skill + "...");
