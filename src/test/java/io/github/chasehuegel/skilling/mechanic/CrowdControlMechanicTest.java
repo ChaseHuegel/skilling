@@ -25,16 +25,18 @@ class CrowdControlMechanicTest {
     }
 
     @Test
-    void returnsFalseWithNullEffect() {
+    void throwsOnNullEffect() {
         var mechanic = new CrowdControlMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockDamageEvent(player, 10.0)));
+        assertThrows(IllegalArgumentException.class,
+                () -> mechanic.execute(player, Map.of(), BukkitMock.mockDamageEvent(player, 10.0)));
     }
 
     @Test
-    void returnsFalseWithBlankEffect() {
+    void throwsOnBlankEffect() {
         var mechanic = new CrowdControlMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("effect", ""), BukkitMock.mockDamageEvent(player, 10.0)));
+        assertThrows(IllegalArgumentException.class,
+                () -> mechanic.execute(player, Map.of("effect", ""), BukkitMock.mockDamageEvent(player, 10.0)));
     }
 }

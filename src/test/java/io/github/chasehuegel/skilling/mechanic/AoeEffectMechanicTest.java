@@ -10,10 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class AoeEffectMechanicTest {
 
     @Test
-    void returnsFalseWithBlankEffect() {
+    void throwsOnBlankEffect() {
         var mechanic = new AoeEffectMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("effect", ""), BukkitMock.mockBlockBreakEvent(player)));
+        assertThrows(IllegalArgumentException.class,
+                () -> mechanic.execute(player, Map.of("effect", ""), BukkitMock.mockBlockBreakEvent(player)));
     }
 
 }

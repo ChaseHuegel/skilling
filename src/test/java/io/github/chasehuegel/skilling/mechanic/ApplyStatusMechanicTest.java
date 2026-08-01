@@ -30,10 +30,11 @@ class ApplyStatusMechanicTest {
     }
 
     @Test
-    void returnsFalseWithBlankEffectParam() {
+    void throwsOnMissingEffectParam() {
         var mechanic = new ApplyStatusMechanic();
         var player = BukkitMock.mockPlayer();
         var event = BukkitMock.mockDamageEvent(player, 10.0);
-        assertFalse(mechanic.execute(player, Map.of(), event));
+        assertThrows(IllegalArgumentException.class,
+                () -> mechanic.execute(player, Map.of(), event));
     }
 }
