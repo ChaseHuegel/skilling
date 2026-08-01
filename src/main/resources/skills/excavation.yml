@@ -1,186 +1,93 @@
 id: "excavation"
 max_level: 100
-
-display:
-  name: "Excavation"
-  icon: "minecraft:iron_shovel"
-  color: "GREEN"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Excavation", icon: "minecraft:iron_shovel", color: "GREEN", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "block_break"
-    filters:
-      - target: "#c:excavatable"
-      - state: "player_placed:false"
-    reward:
-      constant: 3.0
-
+    filters: [ { target: "#c:excavatable" }, { state: "player_placed:false" } ]
+    reward: { constant: 3.0 }
 abilities:
   - id: "dig_double"
     display_name: "Dig Double"
     unlock_level: 1
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Increases dirt/gravel/sand yield by &a{yield_chance}%&7."
+    display: { lore: [ "&7Dirt/gravel/sand yield +&a{yield_chance}%&7." ] }
     mechanics:
       - type: "core:yield_multiplier"
-        filters:
-          - target: "#c:excavatable"
-          - tool: "#minecraft:shovels"
+        filters: [ { target: "#c:excavatable" }, { tool: "#minecraft:shovels" } ]
         parameters:
-          yield_chance:
-            linear:
-              base: 0.5
-              step: 0.5
-              max: 50.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "quick_dig"
     display_name: "Quick Dig"
     unlock_level: 15
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Increases digging speed by &a{amplifier}x&7."
+    display: { lore: [ "&7Soft-block breaks grant &a{amplifier}&7 Haste for {duration}s." ] }
     mechanics:
       - type: "core:haste_effect"
-        filters:
-          - tool: "#minecraft:shovels"
+        filters: [ { tool: "#minecraft:shovels" }, { target: "#c:excavatable" } ]
         parameters:
-          amplifier:
-            linear:
-              base: 1
-              step: 0.01
-              max: 3
-          duration:
-            constant: 300.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
+          duration: { constant: 20.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "wide_sweep"
     display_name: "Wide Sweep"
     unlock_level: 25
     trigger: "block_break"
     display:
       lore:
-        - "&7Sneak-mine to break a &a{radius}&7-block radius of soft blocks."
+        - "&7Sneak-mine to break a &a{radius}&7-block radius of soft blocks (max {max_blocks})."
+        - "&8Requires: Sneaking, shovel."
     requirements:
       cooldown: 10.0
-      state:
-        - "is_sneaking"
-      items:
-        - action: "possession"
-          tag: "#minecraft:shovels"
-          slot: "MAIN_HAND"
-      exhaustion:
-        amount: 1.0
-        minimum: 3.0
-    on_failure:
-      cooldown:
-        action_bar: "&cWide Sweep cooling down: {time}s"
-        sounds:
-          - type: "BLOCK_NOTE_BLOCK_BASS"
-            volume: 1.0
-            pitch: 0.5
-      exhaustion:
-        action_bar: "&cToo exhausted for Wide Sweep! Need {required} hunger."
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "#minecraft:shovels", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&cWide Sweep cooling down: {time}s" } }
     mechanics:
       - type: "core:area_harvest"
+        filters: [ { target: "#c:excavatable" } ]
         parameters:
-          radius:
-            milestones:
-              25: 1
-              50: 1
-              75: 2
-              100: 2
+          radius: { linear: { base: 1.0, step: 0.02, max: 3.0 } }   # continuous growth 25→100
+          max_blocks: { linear: { base: 9.0, step: 0.5, max: 49.0 } }
     feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&e✦ Wide Sweep! ✦"
-      particles:
-        - type: "BLOCK_CRACK"
-          count: 20
-          offset: [1.0, 0.5, 1.0]
-          speed: 0.2
-          target: "target"
-      sounds:
-        - type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR"
-          volume: 0.5
-          pitch: 1.5
-          target: "self"
-
+      notify: { action_bar: true, chat: false, message: "&e✦ Wide Sweep! ✦" }
+      sounds: [ { type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR", volume: 0.5, pitch: 1.5, target: "self" } ]
   - id: "fossil_hunter"
     display_name: "Fossil Hunter"
     unlock_level: 50
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Bonus flint and bone drops from gravel and sand."
+    display: { lore: [ "&7Sand & gravel breaks yield +&a{yield_chance}%&7 flint/bone." ] }
     mechanics:
       - type: "core:yield_multiplier"
         filters:
-          - target: "#minecraft:sand"
+          - target: "#minecraft:sand"            # tag covers sand + red sand
+      - type: "core:yield_multiplier"
+        filters: [ { target: "minecraft:gravel" } ]
         parameters:
-          yield_chance:
-            linear:
-              base: 1.0
-              step: 0.03
-              max: 4.0
-    feedback:
-      notify:
-        action_bar: false
-
+          yield_chance: { linear: { base: 2.0, step: 0.05, max: 8.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "swift_digger"
     display_name: "Swift Digger"
     unlock_level: 75
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Dig &a{amplifier}x &7faster while wielding a shovel."
+    display: { lore: [ "&7Haste amplifier &a{amplifier}&7 for {duration}s on soft breaks." ] }
     mechanics:
       - type: "core:haste_effect"
-        filters:
-          - tool: "#minecraft:shovels"
+        filters: [ { tool: "#minecraft:shovels" }, { target: "#c:excavatable" } ]
         parameters:
-          amplifier:
-            linear:
-              base: 2
-              step: 0.02
-              max: 5
-          duration:
-            constant: 300.0
-    feedback:
-      notify:
-        action_bar: false
-
+          amplifier: { linear: { base: 2, step: 0.02, max: 4 } }
+          duration: { constant: 30.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "excavator"
     display_name: "Excavator"
     unlock_level: 100
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Wide Sweep cooldown removed, 5x5 area."
+    display: { lore: [ "&7Wide Sweep radius grows to &a{radius}&7 (max {max_blocks} blocks) passively." ] }
     mechanics:
       - type: "core:area_harvest"
-        filters:
-          - target: "#c:excavatable"
+        filters: [ { target: "#c:excavatable" } ]
         parameters:
-          radius:
-            constant: 2.0
-          max_blocks:
-            constant: 25.0
-    feedback:
-      notify:
-        action_bar: false
+          radius: { linear: { base: 2.0, step: 0.02, max: 3.0 } }
+          max_blocks: { linear: { base: 25.0, step: 0.5, max: 49.0 } }
+    feedback: { notify: { action_bar: false } }

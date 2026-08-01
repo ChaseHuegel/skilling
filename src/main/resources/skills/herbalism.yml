@@ -1,181 +1,100 @@
 id: "herbalism"
 max_level: 100
-
-display:
-  name: "Herbalism"
-  icon: "minecraft:sugar_cane"
-  color: "GREEN"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Herbalism", icon: "minecraft:sugar_cane", color: "GREEN", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "block_break"
-    filters:
-      - target: "#c:herbs"
-      - state: "player_placed:false"
-    reward:
-      constant: 4.0
-
-  - trigger: "crop_grow"
-    reward:
-      constant: 2.0
-
+    filters: [ { target: "#c:herbs" }, { state: "player_placed:false" } ]
+    reward: { constant: 4.0 }
+  # crop_grow XP removed (unbounded)
 abilities:
   - id: "green_thumb"
     display_name: "Green Thumb"
     unlock_level: 1
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Increases herb and flower yield by &a{yield_chance}%&7."
+    display: { lore: [ "&7Herb/flower yield +&a{yield_chance}%&7." ] }
     mechanics:
       - type: "core:yield_multiplier"
-        filters:
-          - target: "#c:herbs"
+        filters: [ { target: "#c:herbs" } ]
         parameters:
-          yield_chance:
-            linear:
-              base: 0.5
-              step: 0.5
-              max: 50.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "rapid_growth"
     display_name: "Rapid Growth"
     unlock_level: 15
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Harvest herbs &a{amplifier}x &7faster."
+    display: { lore: [ "&7Breaking herbs grants &a{amplifier}&7 Haste for {duration}s." ] }
     mechanics:
       - type: "core:haste_effect"
-        filters:
-          - target: "#c:herbs"
+        filters: [ { target: "#c:herbs" } ]
         parameters:
-          amplifier:
-            linear:
-              base: 1
-              step: 0.005
-              max: 2
-          duration:
-            constant: 300.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "herbalist_knowledge"
-    display_name: "Herbalist Knowledge"
+          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
+          duration: { constant: 20.0 }
+    feedback: { notify: { action_bar: false } }
+  - id: "wild_harvest"
+    display_name: "Wild Harvest"
     unlock_level: 25
     trigger: "block_break"
     display:
       lore:
-        - "&7Gain bonus XP from harvesting herbs."
+        - "&7Sneak-break to harvest up to &a{chain_limit}&7 connected herbs."
+        - "&8Requires: Sneaking."
+    requirements:
+      cooldown: 6.0
+      state: [ "is_sneaking" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&cWild Harvest cooling down: {time}s" } }
     mechanics:
-      - type: "core:xp_bonus"
+      - type: "core:chain_break"
+        filters: [ { target: "#c:herbs" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.5
-              step: 0.015
-              max: 3.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          chain_limit: { milestones: { 25: 4, 50: 8, 75: 14, 100: 24 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&2✦ Wild Harvest! ✦" } }
   - id: "natural_remedy"
     display_name: "Natural Remedy"
     unlock_level: 50
     trigger: "consume_item"
-    display:
-      lore:
-        - "&7Consuming herbs and flowers gives &a{saturation} extra saturation."
+    display: { lore: [ "&7Eating herbs grants +&a{saturation}&7 saturation." ] }
     mechanics:
       - type: "core:saturation_inject"
+        filters: [ { target: "#c:herbs" } ]
         parameters:
-          saturation:
-            linear:
-              base: 1.0
-              step: 0.02
-              max: 3.0
-    feedback:
-      notify:
-        action_bar: false
-
+          saturation: { linear: { base: 1.0, step: 0.03, max: 4.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "overgrowth"
     display_name: "Overgrowth"
     unlock_level: 75
     trigger: "block_break"
     display:
       lore:
-        - "&7Sneak to harvest all nearby herbs at once."
+        - "&7Sneak to harvest all herbs in a &a{radius}&7 radius (max {max_blocks})."
+        - "&8Requires: Sneaking."
     requirements:
       cooldown: 20.0
-      state:
-        - "is_sneaking"
-      exhaustion:
-        amount: 2.0
-        minimum: 4.0
-    on_failure:
-      cooldown:
-        action_bar: "&2Overgrowth cooling down: {time}s"
-        sounds:
-          - type: "BLOCK_NOTE_BLOCK_BASS"
-            volume: 1.0
-            pitch: 0.5
-      exhaustion:
-        action_bar: "&cToo exhausted for Overgrowth!"
+      state: [ "is_sneaking" ]
+      exhaustion: { amount: 2.0, minimum: 4.0 }
+    on_failure: { cooldown: { action_bar: "&2Overgrowth cooling down: {time}s" } }
     mechanics:
       - type: "core:area_harvest"
-        filters:
-          - target: "#c:herbs"
+        filters: [ { target: "#c:herbs" } ]
         parameters:
-          radius:
-            linear:
-              base: 3.0
-              step: 0.05
-              max: 6.0
-          max_blocks:
-            constant: 16.0
+          radius: { linear: { base: 2.0, step: 0.06, max: 5.0 } }
+          max_blocks: { linear: { base: 16.0, step: 1.0, max: 48.0 } }
     feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&2✦ Overgrowth! ✦"
-      particles:
-        - type: "BLOCK_CRACK"
-          count: 20
-          offset: [1.0, 0.5, 1.0]
-          speed: 0.1
-          target: "target"
-      sounds:
-        - type: "BLOCK_GRASS_BREAK"
-          volume: 0.5
-          pitch: 1.2
-          target: "self"
-
+      notify: { action_bar: true, chat: false, message: "&2✦ Overgrowth! ✦" }
+      sounds: [ { type: "BLOCK_GRASS_BREAK", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "master_herbalist"
     display_name: "Master Herbalist"
     unlock_level: 100
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Guaranteed double herb and flower drops."
+    display: { lore: [ "&7Herb yield always doubles; +&a{yield_chance}%&7 chance to triple." ] }
     mechanics:
       - type: "core:yield_multiplier"
-        filters:
-          - target: "#c:herbs"
+        filters: [ { target: "#c:herbs" } ]
         parameters:
-          yield_chance:
-            constant: 100.0
-    feedback:
-      notify:
-        action_bar: false
+          yield_chance: { constant: 100.0 }
+      - type: "core:yield_multiplier"
+        filters: [ { target: "#c:herbs" } ]
+        parameters:
+          yield_chance: { linear: { base: 10.0, step: 0.9, max: 80.0 } }
+    feedback: { notify: { action_bar: false } }

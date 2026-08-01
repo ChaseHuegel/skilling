@@ -1,185 +1,91 @@
 id: "woodcutting"
 max_level: 100
-
-display:
-  name: "Woodcutting"
-  icon: "minecraft:iron_axe"
-  color: "GREEN"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Woodcutting", icon: "minecraft:iron_axe", color: "GREEN", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "block_break"
-    filters:
-      - target: "#minecraft:logs"
-      - state: "player_placed:false"
-    reward:
-      constant: 7.0
-
+    filters: [ { target: "#minecraft:logs" }, { state: "player_placed:false" } ]
+    reward: { constant: 7.0 }
 abilities:
   - id: "lumberjack"
     display_name: "Lumberjack"
     unlock_level: 1
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Increases log yield by &a{yield_chance}%&7."
+    display: { lore: [ "&7Log yield +&a{yield_chance}%&7." ] }
     mechanics:
       - type: "core:yield_multiplier"
-        filters:
-          - target: "#minecraft:logs"
-          - tool: "#minecraft:axes"
+        filters: [ { target: "#minecraft:logs" }, { tool: "#minecraft:axes" } ]
         parameters:
-          yield_chance:
-            linear:
-              base: 0.5
-              step: 0.5
-              max: 50.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "efficient_swing"
     display_name: "Efficient Swing"
     unlock_level: 15
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Increases axe swing speed by &a{amplifier}x&7."
+    display: { lore: [ "&7Breaking logs grants &a{amplifier}&7 Haste for {duration}s." ] }
     mechanics:
       - type: "core:haste_effect"
-        filters:
-          - tool: "#minecraft:axes"
+        filters: [ { target: "#minecraft:logs" }, { tool: "#minecraft:axes" } ]
         parameters:
-          amplifier:
-            linear:
-              base: 1
-              step: 0.005
-              max: 3
-          duration:
-            constant: 300.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
+          duration: { constant: 20.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "timber_feller"
     display_name: "Timber Feller"
     unlock_level: 25
     trigger: "block_break"
     display:
       lore:
-        - "&7Sneak-mine to fell entire trees &a{chain_limit} &7blocks at once."
-        - "&7Exhaustion cost: 2 hunger."
+        - "&7Shift+mine to fell up to &a{chain_limit}&7 connected logs."
+        - "&7Costs 2 hunger."
+        - "&8Requires: Sneaking, axe."
     requirements:
       cooldown: 10.0
-      state:
-        - "is_sneaking"
-      items:
-        - action: "possession"
-          tag: "#minecraft:axes"
-          slot: "MAIN_HAND"
-      exhaustion:
-        amount: 2.0
-        minimum: 3.0
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "#minecraft:axes", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 2.0, minimum: 3.0 }
     on_failure:
-      cooldown:
-        action_bar: "&cTimber Feller cooling down: {time}s"
-        sounds:
-          - type: "BLOCK_NOTE_BLOCK_BASS"
-            volume: 1.0
-            pitch: 0.5
-      exhaustion:
-        action_bar: "&cToo exhausted to fell trees!"
+      cooldown: { action_bar: "&cTimber Feller cooling down: {time}s" }
+      exhaustion: { action_bar: "&cToo exhausted!" }
     mechanics:
       - type: "core:chain_break"
-        filters:
-          - target: "#minecraft:logs"
+        filters: [ { target: "#minecraft:logs" } ]
         parameters:
-          chain_limit:
-            milestones:
-              25: 3
-              50: 8
-              75: 16
-              100: 32
+          chain_limit: { milestones: { 25: 3, 50: 8, 75: 16, 100: 32 } }
     feedback:
-      notify:
-        action_bar: true
-        chat: true
-        message: "&2✦ Timber Feller Activated! ✦"
-      particles:
-        - type: "BLOCK_CRACK"
-          count: 15
-          offset: [0.5, 0.5, 0.5]
-          speed: 0.1
-          target: "target"
-      sounds:
-        - type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR"
-          volume: 0.5
-          pitch: 1.2
-          target: "self"
-
+      notify: { action_bar: true, chat: false, message: "&2✦ Timber Feller! ✦" }
+      sounds: [ { type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "forest_bounty"
     display_name: "Forest Bounty"
     unlock_level: 50
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Increases sapling drops from leaves."
+    display: { lore: [ "&7Leaf breaks yield +&a{yield_chance}%&7 sapling drops." ] }
     mechanics:
       - type: "core:yield_multiplier"
-        filters:
-          - target: "#minecraft:leaves"
+        filters: [ { target: "#minecraft:leaves" }, { state: "player_placed:false" } ]
         parameters:
-          yield_chance:
-            linear:
-              base: 1.0
-              step: 0.02
-              max: 3.0
-    feedback:
-      notify:
-        action_bar: false
-
+          yield_chance: { linear: { base: 2.0, step: 0.05, max: 8.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "iron_bark"
     display_name: "Iron Bark"
     unlock_level: 75
-    trigger: "block_break"
-    display:
-      lore:
-        - "&7Gain &a{amount} &7armor while wielding an axe."
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7While wielding an axe, gain &a{amount}&7 armor on hit." ] }
     mechanics:
       - type: "core:armor_bonus"
-        filters:
-          - tool: "#minecraft:axes"
+        filters: [ { tool: "#minecraft:axes" } ]
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.01
-              max: 1.0
-    feedback:
-      notify:
-        action_bar: false
-
+          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "ancient_timber"
     display_name: "Ancient Timber"
     unlock_level: 100
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Doubles plank output from crafting."
+    display: { lore: [ "&7Plank crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
-        filters:
-          - target: "#minecraft:planks"
+        filters: [ { target: "#minecraft:planks" } ]
         parameters:
-          multiplier:
-            constant: 2.0
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 1.8, step: 0.01, max: 2.5 } }
+    feedback: { notify: { action_bar: false } }
