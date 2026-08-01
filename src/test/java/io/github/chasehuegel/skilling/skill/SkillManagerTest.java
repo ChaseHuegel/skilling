@@ -4,6 +4,7 @@ import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.LinearEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.MilestoneEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.PolynomialEvaluator;
@@ -139,6 +140,13 @@ class SkillManagerTest {
         ParameterEvaluator eval = skillManager.parseInlineEvaluator(Map.of("constant", 15.0));
         assertInstanceOf(ConstantEvaluator.class, eval);
         assertEquals(15.0, eval.evaluate(1, 0));
+    }
+
+    @Test
+    void parseInlineEvaluatorStringConstant() {
+        ParameterEvaluator eval = skillManager.parseInlineEvaluator(Map.of("constant", "minecraft:poison"));
+        assertInstanceOf(ConstantValueEvaluator.class, eval);
+        assertEquals("minecraft:poison", ((ConstantValueEvaluator) eval).value());
     }
 
     @Test

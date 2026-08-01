@@ -3,6 +3,8 @@ package io.github.chasehuegel.skilling.engine.listener;
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
+import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator;
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
@@ -657,10 +659,15 @@ public final class SkillEventListener implements Listener {
         return null;
     }
 
-    private Map<String, Object> evaluateParams(SkillDefinition.MechanicEntry entry, int level, int unlockLevel) {
+    static Map<String, Object> evaluateParams(SkillDefinition.MechanicEntry entry, int level, int unlockLevel) {
         Map<String, Object> result = new HashMap<>();
         for (var paramEntry : entry.parameters().entrySet()) {
-            result.put(paramEntry.getKey(), paramEntry.getValue().evaluate(level, unlockLevel));
+            ParameterEvaluator evaluator = paramEntry.getValue();
+            if (evaluator instanceof ConstantValueEvaluator raw) {
+                result.put(paramEntry.getKey(), raw.value());
+            } else {
+                result.put(paramEntry.getKey(), evaluator.evaluate(level, unlockLevel));
+            }
         }
         return result;
     }

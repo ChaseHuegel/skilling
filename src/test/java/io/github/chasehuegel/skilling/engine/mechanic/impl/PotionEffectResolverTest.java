@@ -63,4 +63,16 @@ class PotionEffectResolverTest {
     void legacyNumericIdMapsToNamespacedKey() {
         assertEquals(NamespacedKey.fromString("minecraft:poison"), keyLookedUp(19));
     }
+
+    @Test
+    void stringConstantFromEvaluatorPassesKeyThroughRegistryLookup() {
+        var evaluator = new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator("minecraft:slowness");
+        List<NamespacedKey> seen = new ArrayList<>();
+        assertThrows(IllegalArgumentException.class,
+                () -> PotionEffectResolver.resolve(evaluator.value(), key -> {
+                    seen.add(key);
+                    return null;
+                }));
+        assertEquals(NamespacedKey.fromString("minecraft:slowness"), seen.get(0));
+    }
 }

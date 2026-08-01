@@ -147,6 +147,14 @@ abilities:
       # Note: exhaustion param is no longer in chain_break.
       # Use the requirements.exhaustion block instead.
 
+    # Some mechanics take namespaced string constants (effect, attribute, material).
+    # Use a quoted constant value; the raw string is passed through verbatim:
+    #   - type: "core:apply_status"
+    #     parameters:
+    #       effect: { constant: "minecraft:poison" }
+    #       duration: { constant: 3.0 }
+    #       amplifier: { constant: 0.0 }
+
     # Executed strictly after successful requirements consumption
     feedback:
       notify:

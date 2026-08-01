@@ -2,6 +2,7 @@ package io.github.chasehuegel.skilling.engine;
 
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.LinearEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.MilestoneEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.PolynomialEvaluator;
@@ -356,7 +357,11 @@ public final class SkillManager {
 
         // Check for direct constant value
         if (map.containsKey("value") && map.size() == 1) {
-            return new ConstantEvaluator(((Number) map.get("value")).doubleValue());
+            Object val = map.get("value");
+            if (val instanceof Number n) {
+                return new ConstantEvaluator(n.doubleValue());
+            }
+            return new ConstantValueEvaluator(String.valueOf(val));
         }
 
         // Check for known evaluator type keys
@@ -365,8 +370,15 @@ public final class SkillManager {
             if (val instanceof Number n) {
                 return new ConstantEvaluator(n.doubleValue());
             }
+            if (val instanceof String s) {
+                return new ConstantValueEvaluator(s);
+            }
             Map<String, Object> nested = castMap(val);
-            return new ConstantEvaluator(((Number) nested.getOrDefault("value", 0.0)).doubleValue());
+            Object nestedValue = nested.getOrDefault("value", 0.0);
+            if (nestedValue instanceof Number n) {
+                return new ConstantEvaluator(n.doubleValue());
+            }
+            return new ConstantValueEvaluator(String.valueOf(nestedValue));
         }
 
         if (map.containsKey("linear")) {

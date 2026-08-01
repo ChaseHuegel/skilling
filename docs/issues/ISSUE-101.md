@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Add a string-capable evaluator (or raw-parameter passthrough) so string constants survive YAML parsing and reach `PotionEffectResolver` / `ModifyAttributeMechanic` / `SetCooldownMechanic` at runtime
-- [ ] Wire `SkillManager.parseInlineEvaluator` to return the new evaluator for non-numeric `constant` values instead of coercing them to `ConstantEvaluator(0.0)`
-- [ ] Update `SkillEventListener.evaluateParams` so string-valued evaluators emit the raw string (not a `double`) into the params map handed to `mechanic.execute(...)`
-- [ ] Ensure numeric parameters remain `double` values (no behavior change for existing numeric params)
-- [ ] Add unit tests covering parse → evaluate for string constants (`effect`, `attribute`, `material`)
+- [x] Add a string-capable evaluator (or raw-parameter passthrough) so string constants survive YAML parsing and reach `PotionEffectResolver` / `ModifyAttributeMechanic` / `SetCooldownMechanic` at runtime
+- [x] Wire `SkillManager.parseInlineEvaluator` to return the new evaluator for non-numeric `constant` values instead of coercing them to `ConstantEvaluator(0.0)`
+- [x] Update `SkillEventListener.evaluateParams` so string-valued evaluators emit the raw string (not a `double`) into the params map handed to `mechanic.execute(...)`
+- [x] Ensure numeric parameters remain `double` values (no behavior change for existing numeric params)
+- [x] Add unit tests covering parse → evaluate for string constants (`effect`, `attribute`, `material`)
 
 ## Technical Specifications & Context
 
@@ -94,9 +94,9 @@ Every bundled skill ability that uses a namespaced effect throws at runtime when
 
 ## Verification & Definition of Done
 
-- [ ] A unit test proves `parseInlineEvaluator` preserves a string constant (e.g. `{ constant: "minecraft:poison" }`)
-- [ ] A unit test drives `SkillEventListener.evaluateParams` (or the equivalent wiring) and asserts the params map contains the string, not `0.0`
-- [ ] `ApplyStatusMechanic`-style execution with a namespaced `effect` resolves via `PotionEffectResolver` without throwing
-- [ ] All `./gradlew build && ./gradlew test` pass, including the `SkillYamlValidationTest` sweep
-- [ ] Runtime smoke check: each affected ability applies its effect without an `IllegalArgumentException` in the server log
-- [ ] Edge case handled: numeric constants (e.g. `{ constant: 3 }`) still parse to `ConstantEvaluator(3.0)` — no numeric regressions
+- [x] A unit test proves `parseInlineEvaluator` preserves a string constant (e.g. `{ constant: "minecraft:poison" }`)
+- [x] A unit test drives `SkillEventListener.evaluateParams` (or the equivalent wiring) and asserts the params map contains the string, not `0.0`
+- [x] `ApplyStatusMechanic`-style execution with a namespaced `effect` resolves via `PotionEffectResolver` without throwing
+- [x] All `./gradlew build && ./gradlew test` pass, including the `SkillYamlValidationTest` sweep
+- [x] Runtime smoke check: each affected ability applies its effect without an `IllegalArgumentException` in the server log
+- [x] Edge case handled: numeric constants (e.g. `{ constant: 3 }`) still parse to `ConstantEvaluator(3.0)` — no numeric regressions

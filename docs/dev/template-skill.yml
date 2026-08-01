@@ -148,6 +148,16 @@ abilities:
               40: 8
               80: 16
 
+    # -- STRING PARAMETERS --
+    # Some mechanics take namespaced string constants (effect, attribute, material).
+    # Use a quoted constant value; the raw string is passed through verbatim:
+    # mechanics:
+    #   - type: "core:apply_status"
+    #     parameters:
+    #       effect: { constant: "minecraft:poison" }
+    #       duration: { constant: 3.0 }
+    #       amplifier: { constant: 0.0 }
+
     # Executed strictly after successful requirements consumption
     feedback:
       notify:
