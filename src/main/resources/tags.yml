@@ -145,3 +145,6 @@ custom_tags:
   bows:
     - "minecraft:bow"
     - "minecraft:crossbow"
+
+  instruments:
+    - "minecraft:goat_horn"

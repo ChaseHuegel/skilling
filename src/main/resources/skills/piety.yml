@@ -1,169 +1,102 @@
 id: "piety"
 max_level: 100
-
-display:
-  name: "Piety"
-  icon: "minecraft:golden_apple"
-  color: "PURPLE"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Piety", icon: "minecraft:golden_apple", color: "PURPLE", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  - trigger: "entity_damage_taken"
-    reward:
-      constant: 3.0
-
   - trigger: "breed_animals"
-    reward:
-      constant: 8.0
-
+    reward: { constant: 8.0 }
+  - trigger: "resurrect"            # P2-7 totem activation
+    reward: { constant: 30.0 }
+  # entity_damage_taken XP removed — too broad; replaced by totem synergy
 abilities:
   - id: "holy_light"
     display_name: "Holy Light"
     unlock_level: 1
-    trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Radiates regeneration to nearby allies."
+    trigger: "resurrect"
+    display: { lore: [ "&7Totem activation grants allies nearby Regeneration for {duration}s." ] }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:ally_aura"          # P2-5 (players only — was field_aura buffing mobs)
         parameters:
-          effect:
-            constant: 10.0
-          radius:
-            linear:
-              base: 4.0
-              step: 0.05
-              max: 8.0
-          duration:
-            constant: 5.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          effect: { constant: "minecraft:regeneration" }   # P2-11
+          radius: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
+          duration: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "bless"
     display_name: "Bless"
     unlock_level: 15
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Attacks weaken targets for &a{duration}s&7."
+    display: { lore: [ "&7Melee hits weaken targets &a{duration}s&7." ] }
     mechanics:
       - type: "core:apply_status"
         parameters:
-          effect:
-            constant: 18.0
-          duration:
-            linear:
-              base: 2.0
-              step: 0.02
-              max: 4.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "sanctuary"
-    display_name: "Sanctuary"
+          effect: { constant: "minecraft:weakness" }     # P2-11
+          duration: { linear: { base: 2.0, step: 0.02, max: 4.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+  - id: "prayer"
+    display_name: "Prayer"
     unlock_level: 25
-    trigger: "entity_damage_taken"
+    trigger: "player_interact"
     display:
       lore:
-        - "&7Gain &a{amount} &7armor from faith."
+        - "&7Sneak+Right-Click (with a Totem in inventory) to gain &a{amount}&7 armor &a{duration}s&7."
+        - "&8Requires: Sneaking, totem of undying in inventory."
+    requirements:
+      cooldown: 20.0
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "minecraft:totem_of_undying", slot: "OFF_HAND" } ]
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&ePrayer cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires a Totem of Undying!" }
     mechanics:
       - type: "core:armor_bonus"
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.005
-              max: 0.5
+          amount: { linear: { base: 2.0, step: 0.03, max: 4.0 } }
+          duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
     feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+      notify: { action_bar: true, chat: false, message: "&6✦ Prayer! ✦" }
+      sounds: [ { type: "BLOCK_BEACON_ACTIVATE", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "consecrate"
     display_name: "Consecrate"
     unlock_level: 50
-    trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Radiates strength to nearby allies."
+    trigger: "resurrect"
+    display: { lore: [ "&7Totem activation grants allies Strength &a{duration}s&7." ] }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:ally_aura"
         parameters:
-          effect:
-            constant: 5.0
-          radius:
-            linear:
-              base: 4.0
-              step: 0.05
-              max: 8.0
-          duration:
-            constant: 5.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
-
+          effect: { constant: "minecraft:strength" }     # P2-11
+          radius: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
+          duration: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "holy_protection"
     display_name: "Holy Protection"
     unlock_level: 75
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&a{chance}% &7chance to negate damage."
+    display: { lore: [ "&a{chance}%&7 chance to negate incoming damage." ] }
     mechanics:
       - type: "core:cancel_damage"
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.2
-              max: 25.0
-    feedback:
-      notify:
-        action_bar: false
-
+          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "divine_intervention"
     display_name: "Divine Intervention"
     unlock_level: 100
-    trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Powerful aura of regeneration and resistance."
+    trigger: "resurrect"
+    display: { lore: [ "&7Totem activation: allies gain Regeneration II & Resistance for &a{duration}s&7 in &a{radius}&7." ] }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:ally_aura"
         parameters:
-          effect:
-            constant: 10.0
-          radius:
-            constant: 10.0
-          duration:
-            constant: 10.0
-          amplifier:
-            constant: 1.0
-      - type: "core:field_aura"
+          effect: { constant: "minecraft:regeneration" }  # P2-11
+          radius: { linear: { base: 10.0, step: 0.1, max: 14.0 } }
+          duration: { linear: { base: 10.0, step: 0.1, max: 15.0 } }
+          amplifier: { constant: 1.0 }
+      - type: "core:ally_aura"
         parameters:
-          effect:
-            constant: 11.0
-          radius:
-            constant: 10.0
-          duration:
-            constant: 10.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
+          effect: { constant: "minecraft:resistance" }   # P2-11
+          radius: { linear: { base: 10.0, step: 0.1, max: 14.0 } }
+          duration: { linear: { base: 10.0, step: 0.1, max: 15.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }

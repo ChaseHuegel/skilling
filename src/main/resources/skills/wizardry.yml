@@ -1,202 +1,151 @@
 id: "wizardry"
 max_level: 100
-
-display:
-  name: "Wizardry"
-  icon: "minecraft:ender_pearl"
-  color: "PURPLE"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Wizardry", icon: "minecraft:ender_pearl", color: "PURPLE", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "collect_xp"
-    reward:
-      constant: 2.0
-
+    reward: { constant: 2.0 }
+  - trigger: "launch_projectile"
+    filters: [ { target: "minecraft:ender_pearl" } ]
+    reward: { constant: 3.0 }
+  # player_interact XP removed — was XP for existing
 abilities:
   - id: "arcane_missile"
     display_name: "Arcane Missile"
     unlock_level: 1
     trigger: "player_interact"
+    display:
+      lore:
+        - "&7Sneak+Right-Click to launch an arcane missile dealing &a{damage}&7."
+        - "&7Costs 1 Redstone."
+        - "&8Requires: Sneaking, redstone in inventory."
     requirements:
       cooldown: 4.0
       state: [ "is_sneaking" ]
-      items:
-        - action: "cost"
-          tag: "minecraft:redstone"
-          amount: 1
-      exhaustion:
-        amount: 1.0
-        minimum: 3.0
+      items: [ { action: "cost", tag: "minecraft:redstone", amount: 1 } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
     on_failure:
-      cooldown:
-        action_bar: "&eArcane Missile cooling down: {time}s"
-      missing_item:
-        action_bar: "&cRequires 1x Redstone!"
-    display:
-      lore:
-        - "&7Launches arcane projectiles dealing &a{damage} &7damage."
+      cooldown: { action_bar: "&eArcane Missile cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires 1x Redstone!" }
     mechanics:
       - type: "core:projectile"
         parameters:
-          speed:
-            constant: 2.0
-          damage:
-            linear:
-              base: 2.0
-              step: 0.02
-              max: 5.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          speed: { constant: 2.0 }
+          damage: { linear: { base: 2.0, step: 0.02, max: 5.0 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&d✦ Arcane Missile! ✦" } }
   - id: "blink"
     display_name: "Blink"
     unlock_level: 15
     trigger: "player_interact"
+    display:
+      lore:
+        - "&7Sneak+Right-Click to blink &a{range}&7 blocks (no ender-pearl damage)."
+        - "&7Costs 1 Ender Pearl."
+        - "&8Requires: Sneaking, ender pearl in inventory."
     requirements:
       cooldown: 10.0
       state: [ "is_sneaking" ]
-      items:
-        - action: "cost"
-          tag: "minecraft:ender_pearl"
-          amount: 1
-      exhaustion:
-        amount: 1.0
-        minimum: 3.0
+      items: [ { action: "cost", tag: "minecraft:ender_pearl", amount: 1 } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
     on_failure:
-      cooldown:
-        action_bar: "&eBlink cooling down: {time}s"
-      missing_item:
-        action_bar: "&cRequires 1x Ender Pearl!"
-    display:
-      lore:
-        - "&7Short-range teleport of &a{range} &7blocks."
+      cooldown: { action_bar: "&eBlink cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires 1x Ender Pearl!" }
     mechanics:
       - type: "core:teleport"
         parameters:
-          range:
-            linear:
-              base: 5.0
-              step: 0.05
-              max: 10.0
+          range: { linear: { base: 5.0, step: 0.05, max: 12.0 } }
     feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&d✦ Blink! ✦"
-      particles:
-        - type: "PORTAL"
-          count: 15
-          offset: [0.5, 0.5, 0.5]
-          speed: 0.5
-          target: "self"
-      sounds:
-        - type: "ENTITY_ENDERMAN_TELEPORT"
-          volume: 0.5
-          pitch: 1.5
-          target: "self"
-
-  - id: "mana_shield"
-    display_name: "Mana Shield"
+      notify: { action_bar: true, chat: false, message: "&d✦ Blink! ✦" }
+      particles: [ { type: "PORTAL", count: 15, offset: [0.5,0.5,0.5], speed: 0.5, target: "self" } ]
+      sounds: [ { type: "ENTITY_ENDERMAN_TELEPORT", volume: 0.5, pitch: 1.5, target: "self" } ]
+  - id: "arcane_ward"
+    display_name: "Arcane Ward"
     unlock_level: 25
     trigger: "player_interact"
     display:
       lore:
-        - "&7Gain &a{amount} &7armor from arcane energy."
+        - "&7Sneak+Right-Click with a (consumed) Amethyst Shard for &a{amount}&7 armor &a{duration}s&7."
+        - "&8Requires: Sneaking, amethyst shard."
+    requirements:
+      cooldown: 15.0
+      state: [ "is_sneaking" ]
+      items: [ { action: "cost", tag: "minecraft:amethyst_shard", amount: 1 } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eArcane Ward cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires 1x Amethyst Shard!" }
     mechanics:
       - type: "core:armor_bonus"
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.005
-              max: 0.5
+          amount: { linear: { base: 2.0, step: 0.04, max: 5.0 } }
+          duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
     feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+      notify: { action_bar: true, chat: false, message: "&d✦ Arcane Ward! ✦" }
+      sounds: [ { type: "BLOCK_AMETHYST_BLOCK_CHIME", volume: 0.6, pitch: 1.2, target: "self" } ]
   - id: "arcane_expertise"
     display_name: "Arcane Expertise"
     unlock_level: 50
     trigger: "collect_xp"
-    display:
-      lore:
-        - "&7Gain bonus XP from arcane activities."
+    display: { lore: [ "&7XP gains &a{multiplier}x&7 (arcane attunement)." ] }
     mechanics:
       - type: "core:xp_bonus"
         parameters:
-          multiplier:
-            linear:
-              base: 1.5
-              step: 0.015
-              max: 3.0
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
+    feedback: { notify: { action_bar: false } }
   - id: "frost_nova"
     display_name: "Frost Nova"
     unlock_level: 75
     trigger: "entity_damage"
     display:
       lore:
-        - "&7Damaging enemies slows nearby foes."
+        - "&7Sneak-hit to freeze nearby foes &a{radius}&7 for &a{duration}s&7."
+        - "&7Costs 1 Blue Ice (or packed ice)."
+        - "&8Requires: Sneaking, ice in inventory."
+    requirements:
+      cooldown: 12.0
+      state: [ "is_sneaking" ]
+      items: [ { action: "cost", tag: "minecraft:blue_ice", amount: 1 } ]
+      exhaustion: { amount: 1.5, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eFrost Nova cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires 1x Blue Ice!" }
     mechanics:
       - type: "core:crowd_control"
         parameters:
-          effect:
-            constant: 2.0
-          radius:
-            linear:
-              base: 3.0
-              step: 0.04
-              max: 6.0
-          duration:
-            constant: 4.0
-          amplifier:
-            constant: 1.0
+          effect: { constant: "minecraft:slowness" }      # P2-11
+          radius: { linear: { base: 3.0, step: 0.04, max: 6.0 } }
+          duration: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
+          amplifier: { constant: 1.0 }
     feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&b✦ Frost Nova! ✦"
-      particles:
-        - type: "SNOWBALL"
-          count: 20
-          offset: [1.0, 0.5, 1.0]
-          speed: 0.5
-          target: "target"
-      sounds:
-        - type: "ENTITY_SNOW_GOLEM_SHOOT"
-          volume: 0.5
-          pitch: 0.8
-          target: "self"
-
+      notify: { action_bar: true, chat: false, message: "&b✦ Frost Nova! ✦" }
+      particles: [ { type: "SNOWBALL", count: 20, offset: [1.0,0.5,1.0], speed: 0.5, target: "target" } ]
+      sounds: [ { type: "ENTITY_SNOW_GOLEM_SHOOT", volume: 0.5, pitch: 0.8, target: "self" } ]
   - id: "archmage"
     display_name: "Archmage"
     unlock_level: 100
     trigger: "player_interact"
     display:
       lore:
-        - "&7Powerful arcane projectiles and shield."
+        - "&7Sneak+Right-Click for an enhanced missile (&a{damage}&7) + arcane armor (&a{amount}&7)."
+        - "&7Costs 1 Amethyst Shard."
+        - "&8Requires: Sneaking."
+    requirements:
+      cooldown: 8.0
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "cost", tag: "minecraft:redstone", amount: 1 }
+        - { action: "cost", tag: "minecraft:amethyst_shard", amount: 1 }
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eArchmage cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires Redstone + Amethyst!" }
     mechanics:
       - type: "core:projectile"
         parameters:
-          speed:
-            constant: 3.0
-          damage:
-            constant: 10.0
+          speed: { constant: 3.0 }
+          damage: { linear: { base: 8.0, step: 0.05, max: 12.0 } }
       - type: "core:armor_bonus"
         parameters:
-          amount:
-            constant: 0.5
-    feedback:
-      notify:
-        action_bar: false
+          amount: { linear: { base: 3.0, step: 0.1, max: 6.0 } }
+          duration: { constant: 10.0 }
+    feedback: { notify: { action_bar: false } }

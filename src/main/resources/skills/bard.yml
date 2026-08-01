@@ -1,173 +1,116 @@
 id: "bard"
 max_level: 100
-
-display:
-  name: "Bard"
-  icon: "minecraft:jukebox"
-  color: "PURPLE"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Bard", icon: "minecraft:jukebox", color: "PURPLE", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  - trigger: "craft_item"
-    reward:
-      constant: 10.0
-
   - trigger: "player_interact"
-    filters:
-      - tool: "minecraft:goat_horn"
-    reward:
-      constant: 2.0
-
+    filters: [ { tool: "#c:instruments" } ]      # goat horn / instrument items only
+    reward: { constant: 2.0 }
+  - trigger: "craft_item"
+    filters: [ { target: "minecraft:jukebox" } ]
+    reward: { constant: 10.0 }
 abilities:
   - id: "melody_of_haste"
     display_name: "Melody of Haste"
     unlock_level: 1
     trigger: "player_interact"
-    display:
-      lore:
-        - "&7Music grants haste to nearby allies."
+    display: { lore: [ "&7Play an instrument to grant allies nearby Speed for {duration}s." ] }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:ally_aura"            # P2-5 (players only)
         parameters:
-          effect:
-            constant: 3.0
-          radius:
-            linear:
-              base: 5.0
-              step: 0.05
-              max: 10.0
-          duration:
-            constant: 5.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          effect: { constant: "minecraft:speed" }       # P2-11 (was haste=id3, wrong)
+          radius: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
+          duration: { constant: 5.0 }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "rhythm_of_strength"
     display_name: "Rhythm of Strength"
     unlock_level: 15
     trigger: "player_interact"
-    display:
-      lore:
-        - "&7Music grants strength to nearby allies."
+    display: { lore: [ "&7Play an instrument to grant allies nearby Strength for {duration}s." ] }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:ally_aura"
         parameters:
-          effect:
-            constant: 5.0
-          radius:
-            linear:
-              base: 5.0
-              step: 0.05
-              max: 10.0
-          duration:
-            constant: 5.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "ballad_of_endurance"
-    display_name: "Ballad of Endurance"
+          effect: { constant: "minecraft:strength" }    # P2-11
+          radius: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
+          duration: { constant: 5.0 }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+  - id: "perform"
+    display_name: "Perform"
     unlock_level: 25
     trigger: "player_interact"
     display:
       lore:
-        - "&7Music grants armor to the performer."
+        - "&7Sneak-play an instrument to grant allies Regeneration & armor."
+        - "&7Consumes 1 goat horn durability-cooldown."
+        - "&8Requires: Sneaking, instrument in hand."
+    requirements:
+      cooldown: 15.0
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "#c:instruments", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&ePerform cooling down: {time}s" } }
     mechanics:
-      - type: "core:armor_bonus"
+      - type: "core:ally_aura"
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.005
-              max: 0.5
+          effect: { constant: "minecraft:regeneration" }   # P2-11
+          radius: { linear: { base: 6.0, step: 0.06, max: 12.0 } }
+          duration: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:set_cooldown"            # P2-9 instrument reuse lockout
+        parameters:
+          material: { constant: "minecraft:goat_horn" }
+          ticks: { linear: { base: 40.0, step: -0.2, max: 20.0 } }
     feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+      notify: { action_bar: true, chat: false, message: "&d✦ Perform! ✦" }
+      sounds: [ { type: "ITEM_GOAT_HORN_PLAY", volume: 1.0, pitch: 1.0, target: "self" } ]
   - id: "song_of_protection"
     display_name: "Song of Protection"
     unlock_level: 50
     trigger: "player_interact"
-    display:
-      lore:
-        - "&7Music grants resistance to nearby allies."
+    display: { lore: [ "&7Play an instrument to grant allies nearby Resistance for {duration}s." ] }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:ally_aura"
         parameters:
-          effect:
-            constant: 11.0
-          radius:
-            linear:
-              base: 5.0
-              step: 0.05
-              max: 10.0
-          duration:
-            constant: 5.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
-
+          effect: { constant: "minecraft:resistance" }    # P2-11
+          radius: { linear: { base: 6.0, step: 0.06, max: 12.0 } }
+          duration: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "war_march"
     display_name: "War March"
     unlock_level: 75
     trigger: "player_interact"
-    display:
-      lore:
-        - "&7Music grants speed to the performer."
+    display: { lore: [ "&7Play an instrument: allies gain Speed & the bard gains armor for {duration}s." ] }
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:ally_aura"
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.25
-    feedback:
-      notify:
-        action_bar: false
-
+          effect: { constant: "minecraft:speed" }         # P2-11
+          radius: { linear: { base: 8.0, step: 0.05, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.05, max: 12.0 } }
+          amplifier: { linear: { base: 0.0, step: 0.005, max: 1.0 } }
+      - type: "core:armor_bonus"
+        parameters:
+          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          duration: { linear: { base: 6.0, step: 0.1, max: 12.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "symphony"
     display_name: "Symphony"
     unlock_level: 100
     trigger: "player_interact"
-    display:
-      lore:
-        - "&7Powerful song of haste and strength."
+    display: { lore: [ "&7Play an instrument: allies gain Haste & Strength II for {duration}s in &a{radius}&7." ] }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:ally_aura"
         parameters:
-          effect:
-            constant: 3.0
-          radius:
-            constant: 12.0
-          duration:
-            constant: 10.0
-          amplifier:
-            constant: 1.0
-      - type: "core:field_aura"
+          effect: { constant: "minecraft:haste" }         # P2-11 (here haste IS intended: mining aid)
+          radius: { linear: { base: 12.0, step: 0.1, max: 16.0 } }
+          duration: { linear: { base: 8.0, step: 0.1, max: 14.0 } }
+          amplifier: { constant: 1.0 }
+      - type: "core:ally_aura"
         parameters:
-          effect:
-            constant: 5.0
-          radius:
-            constant: 12.0
-          duration:
-            constant: 10.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
+          effect: { constant: "minecraft:strength" }       # P2-11
+          radius: { linear: { base: 12.0, step: 0.1, max: 16.0 } }
+          duration: { linear: { base: 8.0, step: 0.1, max: 14.0 } }
+          amplifier: { constant: 1.0 }
+    feedback: { notify: { action_bar: false } }

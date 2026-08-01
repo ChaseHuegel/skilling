@@ -1,137 +1,81 @@
 id: "enchanting"
 max_level: 100
-
-display:
-  name: "Enchanting"
-  icon: "minecraft:enchanting_table"
-  color: "PURPLE"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Enchanting", icon: "minecraft:enchanting_table", color: "PURPLE", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "enchant_item"
-    reward:
-      constant: 15.0
-
+    reward: { constant: 15.0 }
   - trigger: "collect_xp"
-    reward:
-      constant: 1.0
-
+    reward: { constant: 1.0 }
 abilities:
   - id: "arcane_knowledge"
     display_name: "Arcane Knowledge"
     unlock_level: 1
     trigger: "enchant_item"
-    display:
-      lore:
-        - "&7Gain bonus XP from enchanting."
+    display: { lore: [ "&7Enchanting XP &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:xp_bonus"
         parameters:
-          multiplier:
-            linear:
-              base: 1.5
-              step: 0.015
-              max: 3.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
+    feedback: { notify: { action_bar: false } }
   - id: "durable_enchantments"
     display_name: "Durable Enchantments"
     unlock_level: 15
     trigger: "item_damage"
-    display:
-      lore:
-        - "&7Enchanted items last &a{chance}% &7longer."
+    display: { lore: [ "&7Enchanted gear has &a{chance}%&7 chance to lose no durability." ] }
     mechanics:
       - type: "core:durability_save"
         parameters:
-          chance:
-            linear:
-              base: 10.0
-              step: 0.3
-              max: 40.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "experience_attraction"
-    display_name: "Experience Attraction"
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "soul_binding"
+    display_name: "Soul Binding"
     unlock_level: 25
-    trigger: "collect_xp"
+    trigger: "enchant_item"
     display:
       lore:
-        - "&7XP orbs travel &a{multiplier}x &7faster toward you."
+        - "&7Shift-enchant to reduce enchant cost by &a{discount}%&7."
+        - "&8Requires: Sneaking."
+    requirements:
+      cooldown: 30.0
+      state: [ "is_sneaking" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&eSoul Binding cooling down: {time}s" } }
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:modify_enchant_cost"
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.25
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          discount: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&d✦ Soul Binding! ✦" } }
   - id: "ancient_secrets"
     display_name: "Ancient Secrets"
     unlock_level: 50
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Doubles enchanted book output from crafting."
+    display: { lore: [ "&7Enchanted-book crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
+        filters: [ { target: "minecraft:enchanted_book" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.0
-              step: 0.01
-              max: 2.0
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "soulbound_armor"
     display_name: "Soulbound Armor"
     unlock_level: 75
     trigger: "enchant_item"
-    display:
-      lore:
-        - "&7Gain &a{amount} &7armor while holding enchanted gear."
+    display: { lore: [ "&7Enchanting grants &a{amount}&7 armor for {duration}s." ] }
     mechanics:
       - type: "core:armor_bonus"
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.01
-              max: 1.0
-    feedback:
-      notify:
-        action_bar: false
-
+          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          duration: { constant: 60.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "master_enchanter"
     display_name: "Master Enchanter"
     unlock_level: 100
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Triples enchanted book output from crafting."
+    display: { lore: [ "&7Enchanted-book crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
+        filters: [ { target: "minecraft:enchanted_book" } ]
         parameters:
-          multiplier:
-            constant: 3.0
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 2.0, step: 0.02, max: 3.0 } }
+    feedback: { notify: { action_bar: false } }
