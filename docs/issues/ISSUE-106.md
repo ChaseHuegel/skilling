@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Attach a `HoverEvent.showText(...)` to the ability-name component in the unlock chat message, showing the ability's resolved lore lines
-- [ ] Resolve the ability's lore `{placeholder}` parameters using the same `ParameterEvaluator` map construction used by `SkillMenuBuilder.buildSkillLore`
-- [ ] Decide and document scope: hover on the ability name in `formatAbilityLine` (shared, also appears in the GUI menu) vs. wrapping the line only in `LevelUpDispatcher.broadcastLevelUp` (chat-only); pick one and keep it consistent
-- [ ] Keep the existing GUI skill-menu lore rendering unchanged
-- [ ] Add a unit test asserting the unlock message component carries a hover event with the expected lore text
+- [x] Attach a `HoverEvent.showText(...)` to the ability-name component in the unlock chat message, showing the ability's resolved lore lines
+- [x] Resolve the ability's lore `{placeholder}` parameters using the same `ParameterEvaluator` map construction used by `SkillMenuBuilder.buildSkillLore`
+- [x] Decide and document scope: hover on the ability name in `formatAbilityLine` (shared, also appears in the GUI menu) vs. wrapping the line only in `LevelUpDispatcher.broadcastLevelUp` (chat-only); pick one and keep it consistent
+- [x] Keep the existing GUI skill-menu lore rendering unchanged
+- [x] Add a unit test asserting the unlock message component carries a hover event with the expected lore text
 
 ## Technical Specifications & Context
 
@@ -30,7 +30,12 @@
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new hover-event unit test
-- [ ] Unit test: the ability-name component in the unlock message has a hover event whose text equals the resolved lore
-- [ ] Edge case handled: abilities with empty or absent lore still render a plain name (no crash, no empty hover tooltip)
-- [ ] Runtime check: hovering an ability name in an unlock chat message shows the configured lore; the GUI skill menu is unaffected
+- [x] `./gradlew build && ./gradlew test` pass, including the new hover-event unit test
+- [x] Unit test: the ability-name component in the unlock message has a hover event whose text equals the resolved lore
+- [x] Edge case handled: abilities with empty or absent lore still render a plain name (no crash, no empty hover tooltip)
+- [x] Runtime check: hovering an ability name in an unlock chat message shows the configured lore; the GUI skill menu is unaffected
+
+**Scope decision:** the hover is attached chat-only in `LevelUpDispatcher.broadcastLevelUp`
+via the new `withAbilityLoreHover` helper; `SkillMenuBuilder.formatAbilityLine` is left
+untouched so the GUI skill menu rendering is unchanged. `SkillMenuBuilder.resolveAbilityLore`
+is the shared resolver used by both the GUI lore and the chat tooltip.

@@ -253,12 +253,7 @@ public final class SkillMenuBuilder {
             lore.add(Component.empty());
             lore.add(formatAbilityLine(ability, level));
 
-            Map<String, ParameterEvaluator> allParams = new HashMap<>();
-            for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
-                allParams.putAll(me.parameters());
-            }
-            List<String> resolved = LoreResolver.resolveAll(
-                    ability.display().lore(), allParams, level, ability.unlockLevel());
+            List<String> resolved = resolveAbilityLore(ability, level);
             for (String line : resolved) {
                 Component deserialized = LegacyComponentSerializer.legacyAmpersand().deserialize(line);
                 lore.add(level >= ability.unlockLevel() ? deserialized : deserialized.colorIfAbsent(NamedTextColor.DARK_GRAY));
@@ -336,5 +331,24 @@ public final class SkillMenuBuilder {
                 isActive ? " · Active" : " · Passive",
                 NamedTextColor.DARK_GRAY);
         return lockPart.append(namePart).append(typePart);
+    }
+
+    /**
+     * Resolves an ability's lore lines, injecting live evaluator outputs for
+     * {@code {placeholder}} tokens sourced from the ability's mechanic parameters.
+     *
+     * @param ability     the ability whose lore to resolve
+     * @param playerLevel the player's current skill level
+     * @return the resolved lore lines, or an empty list if the ability has no lore
+     */
+    public static List<String> resolveAbilityLore(SkillDefinition.Ability ability, int playerLevel) {
+        if (ability.display() == null || ability.display().lore() == null || ability.display().lore().isEmpty()) {
+            return List.of();
+        }
+        Map<String, ParameterEvaluator> allParams = new HashMap<>();
+        for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
+            allParams.putAll(me.parameters());
+        }
+        return LoreResolver.resolveAll(ability.display().lore(), allParams, playerLevel, ability.unlockLevel());
     }
 }

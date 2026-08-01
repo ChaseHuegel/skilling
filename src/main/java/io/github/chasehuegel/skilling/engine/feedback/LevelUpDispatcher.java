@@ -6,6 +6,7 @@ import io.github.chasehuegel.skilling.engine.profile.PlayerPreferences;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -19,6 +20,7 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import java.time.Duration;
+import java.util.List;
 
 public final class LevelUpDispatcher {
 
@@ -115,7 +117,8 @@ public final class LevelUpDispatcher {
                 Component line = SkillMenuBuilder.formatAbilityLine(unlockedAbilities.get(idx), newLevel);
                     String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
                 if (prefs.logUnlocks()) {
-                    player.sendMessage(MINI_MESSAGE.deserialize(unlockMsg).append(line));
+                    player.sendMessage(MINI_MESSAGE.deserialize(unlockMsg)
+                            .append(withAbilityLoreHover(line, unlockedAbilities.get(idx), newLevel)));
                 }
                 player.showTitle(Title.title(
                         MINI_MESSAGE.deserialize("<gold><bold>New unlock!</bold></gold>"),
@@ -192,6 +195,27 @@ public final class LevelUpDispatcher {
                             SkillMenuBuilder.formatAbilityLine(a, newLevel)));
         }
         plugin.getLogger().info(logMsg.toString());
+    }
+
+    /**
+     * Attaches a lore hover tooltip to an ability line for the unlock chat
+     * message, so hovering the ability name shows what it does. Abilities with
+     * no lore render as a plain name without a hover.
+     *
+     * @param line        the formatted ability line component
+     * @param ability     the ability whose lore to show
+     * @param playerLevel the player's current skill level
+     * @return the line with a {@code show_text} hover event, or the line unchanged
+     */
+    public static Component withAbilityLoreHover(Component line, SkillDefinition.Ability ability, int playerLevel) {
+        List<String> lore = SkillMenuBuilder.resolveAbilityLore(ability, playerLevel);
+        if (lore.isEmpty()) return line;
+        Component tooltip = Component.empty();
+        for (int i = 0; i < lore.size(); i++) {
+            if (i > 0) tooltip = tooltip.append(Component.newline());
+            tooltip = tooltip.append(LegacyComponentSerializer.legacyAmpersand().deserialize(lore.get(i)));
+        }
+        return line.hoverEvent(HoverEvent.showText(tooltip));
     }
 
     private static PlayerPreferences getPreferences(Player player, Skilling plugin) {
