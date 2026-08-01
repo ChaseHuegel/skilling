@@ -1,144 +1,92 @@
 id: "heavy_armor"
 max_level: 100
-
-display:
-  name: "Heavy Armor"
-  icon: "minecraft:diamond_chestplate"
-  color: "BLUE"
-  style: "SOLID"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Heavy Armor", icon: "minecraft:diamond_chestplate", color: "BLUE", style: "SOLID" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
-    reward:
-      constant: 3.0
-
+    filters: [ { state: "equipped:heavy" } ]
+    reward: { constant: 3.0 }
 abilities:
   - id: "steel_plating"
     display_name: "Steel Plating"
     unlock_level: 1
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Gain &a{amount} &7bonus armor."
+    display: { lore: [ "&7In heavy armor, gain &a{amount}&7 armor on hit for {duration}s." ] }
     mechanics:
       - type: "core:armor_bonus"
+        filters: [ { state: "equipped:heavy" } ]
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.005
-              max: 0.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          amount: { linear: { base: 1.0, step: 0.02, max: 4.0 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "fortified"
     display_name: "Fortified"
     unlock_level: 15
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Gain &a{amount} &7knockback resistance."
+    display: { lore: [ "&7In heavy armor, gain &a{amount}&7 knockback resistance on hit." ] }
     mechanics:
       - type: "core:knockback_resist"
+        filters: [ { state: "equipped:heavy" } ]
         parameters:
-          amount:
-            linear:
-              base: 0.1
-              step: 0.003
-              max: 0.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "thorns"
-    display_name: "Thorns"
+          amount: { linear: { base: 0.1, step: 0.005, max: 0.6 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }
+  - id: "bulwark"
+    display_name: "Bulwark"
     unlock_level: 25
     trigger: "entity_damage_taken"
     display:
       lore:
-        - "&7Attackers take &a{damage} &7damage."
+        - "&7Sneak while hit to reflect &a{damage}&7 to the attacker."
+        - "&8Requires: Sneaking, heavy armor."
+    requirements:
+      cooldown: 6.0
+      state: [ "is_sneaking", "equipped:heavy" ]
+    on_failure: { cooldown: { action_bar: "&eBulwark cooling down: {time}s" } }
     mechanics:
       - type: "core:thorns_damage"
         parameters:
-          damage:
-            linear:
-              base: 1.0
-              step: 0.015
-              max: 3.0
+          damage: { linear: { base: 2.0, step: 0.04, max: 6.0 } }
     feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+      notify: { action_bar: true, chat: false, message: "&b✦ Bulwark! ✦" }
+      sounds: [ { type: "ITEM_SHIELD_BLOCK", volume: 0.5, pitch: 1.0, target: "self" } ]
   - id: "shield_wall"
     display_name: "Shield Wall"
     unlock_level: 50
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&a{chance}% &7chance to block incoming damage."
+    display: { lore: [ "&a{chance}%&7 chance to block damage in heavy armor." ] }
     mechanics:
       - type: "core:block_damage"
+        filters: [ { state: "equipped:heavy" } ]
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.2
-              max: 25.0
-    feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&b✦ Blocked! ✦"
-      sounds:
-        - type: "ITEM_SHIELD_BLOCK"
-          volume: 0.5
-          pitch: 1.0
-          target: "self"
-
+          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "immovable"
     display_name: "Immovable"
     unlock_level: 75
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Holds position, reducing knockback further."
+    display: { lore: [ "&7In heavy armor, knockback resist +&a{amount}&7 on hit." ] }
     mechanics:
       - type: "core:knockback_resist"
+        filters: [ { state: "equipped:heavy" } ]
         parameters:
-          amount:
-            linear:
-              base: 0.2
-              step: 0.005
-              max: 0.7
-    feedback:
-      notify:
-        action_bar: false
-
+          amount: { linear: { base: 0.3, step: 0.005, max: 0.8 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "juggernaut"
     display_name: "Juggernaut"
     unlock_level: 100
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Massive armor and knockback resistance."
+    display: { lore: [ "&7In heavy armor: +&a{amount}&7 armor & +&a{kb}&7 KB resist on hit." ] }
     mechanics:
       - type: "core:armor_bonus"
+        filters: [ { state: "equipped:heavy" } ]
         parameters:
-          amount:
-            constant: 0.5
+          amount: { linear: { base: 3.0, step: 0.05, max: 6.0 } }
+          duration: { constant: 10.0 }
       - type: "core:knockback_resist"
+        filters: [ { state: "equipped:heavy" } ]
         parameters:
-          amount:
-            constant: 0.5
-    feedback:
-      notify:
-        action_bar: false
+          amount: { linear: { base: 0.5, step: 0.005, max: 0.9 } }
+          duration: { constant: 10.0 }
+    feedback: { notify: { action_bar: false } }

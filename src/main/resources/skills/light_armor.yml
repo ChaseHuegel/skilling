@@ -1,137 +1,90 @@
 id: "light_armor"
 max_level: 100
-
-display:
-  name: "Light Armor"
-  icon: "minecraft:leather_chestplate"
-  color: "BLUE"
-  style: "SOLID"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Light Armor", icon: "minecraft:leather_chestplate", color: "BLUE", style: "SOLID" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
-    reward:
-      constant: 3.0
-
+    filters: [ { state: "equipped:light" } ]      # P2-6: light armor only
+    reward: { constant: 3.0 }
 abilities:
   - id: "featherweight"
     display_name: "Featherweight"
     unlock_level: 1
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Move &a{multiplier}x &7faster."
+    display: { lore: [ "&7While in light armor, gain &a{multiplier}x&7 speed for {duration}s on hit." ] }
     mechanics:
       - type: "core:speed_bonus"
+        filters: [ { state: "equipped:light" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.25
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "dodge_roll"
     display_name: "Dodge Roll"
     unlock_level: 15
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&a{chance}% &7chance to completely dodge attacks."
+    display: { lore: [ "&a{chance}%&7 chance to fully dodge attacks in light armor." ] }
     mechanics:
       - type: "core:dodge"
+        filters: [ { state: "equipped:light" } ]
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.2
-              max: 25.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "nimble_feet"
-    display_name: "Nimble Feet"
+          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "evasive_roll"
+    display_name: "Evasive Roll"
     unlock_level: 25
     trigger: "entity_damage_taken"
     display:
       lore:
-        - "&a{chance}% &7chance to negate fall damage."
+        - "&7Sneak+Jump to negate the next hit &a{chance}%&7."
+        - "&8Requires: Sneaking, on ground, light armor."
+    requirements:
+      cooldown: 6.0
+      state: [ "is_sneaking", "is_on_ground", "equipped:light" ]
+    on_failure: { cooldown: { action_bar: "&eEvasive Roll cooling down: {time}s" } }
     mechanics:
       - type: "core:cancel_damage"
         parameters:
-          chance:
-            linear:
-              base: 10.0
-              step: 0.3
-              max: 40.0
+          chance: { linear: { base: 50.0, step: 0.5, max: 90.0 } }
     feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "sprint"
-    display_name: "Sprint"
+      notify: { action_bar: true, chat: false, message: "&b✦ Evasive Roll! ✦" }
+      sounds: [ { type: "ITEM_SHIELD_BLOCK", volume: 0.4, pitch: 1.5, target: "self" } ]
+  - id: "spryness"
+    display_name: "Spryness"
     unlock_level: 50
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Move &a{multiplier}x &7faster with light armor."
+    display: { lore: [ "&7Hit in light armor grants &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
+        filters: [ { state: "equipped:light" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.1
-              step: 0.002
-              max: 1.3
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.1, step: 0.002, max: 1.3 } }
+          duration: { linear: { base: 6.0, step: 0.1, max: 12.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "evasion_mastery"
     display_name: "Evasion Mastery"
     unlock_level: 75
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Dodge chance increased significantly."
+    display: { lore: [ "&a{chance}%&7 dodge chance in light armor." ] }
     mechanics:
       - type: "core:dodge"
+        filters: [ { state: "equipped:light" } ]
         parameters:
-          chance:
-            linear:
-              base: 10.0
-              step: 0.3
-              max: 40.0
-    feedback:
-      notify:
-        action_bar: false
-
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "phantom"
     display_name: "Phantom"
     unlock_level: 100
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Near-permanent dodge and speed boost."
+    display: { lore: [ "&a{chance}%&7 dodge & &a{multiplier}x&7 speed in light armor." ] }
     mechanics:
       - type: "core:dodge"
+        filters: [ { state: "equipped:light" } ]
         parameters:
-          chance:
-            constant: 50.0
+          chance: { linear: { base: 50.0, step: 0.5, max: 70.0 } }
       - type: "core:speed_bonus"
+        filters: [ { state: "equipped:light" } ]
         parameters:
-          multiplier:
-            constant: 1.3
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 1.3, step: 0.002, max: 1.4 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }

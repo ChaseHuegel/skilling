@@ -1,144 +1,90 @@
 id: "medium_armor"
 max_level: 100
-
-display:
-  name: "Medium Armor"
-  icon: "minecraft:iron_chestplate"
-  color: "BLUE"
-  style: "SOLID"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Medium Armor", icon: "minecraft:iron_chestplate", color: "BLUE", style: "SOLID" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
-    reward:
-      constant: 3.0
-
+    filters: [ { state: "equipped:medium" } ]
+    reward: { constant: 3.0 }
 abilities:
   - id: "tempered_guard"
     display_name: "Tempered Guard"
     unlock_level: 1
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Gain &a{amount} &7bonus armor."
+    display: { lore: [ "&7In medium armor, gain &a{amount}&7 armor on hit for {duration}s." ] }
     mechanics:
       - type: "core:armor_bonus"
+        filters: [ { state: "equipped:medium" } ]
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.005
-              max: 0.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          amount: { linear: { base: 1.0, step: 0.02, max: 4.0 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "deflect"
     display_name: "Deflect"
     unlock_level: 15
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&a{chance}% &7chance to deflect damage."
+    display: { lore: [ "&a{chance}%&7 chance to block damage in medium armor." ] }
     mechanics:
       - type: "core:block_damage"
+        filters: [ { state: "equipped:medium" } ]
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.2
-              max: 25.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "counter"
-    display_name: "Counter"
+          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "riposte"
+    display_name: "Riposte"
     unlock_level: 25
     trigger: "entity_damage_taken"
     display:
       lore:
-        - "&7Attackers take &a{damage} &7damage."
+        - "&7Sneak while hit to reflect &a{damage}&7 to the attacker."
+        - "&8Requires: Sneaking, medium armor."
+    requirements:
+      cooldown: 5.0
+      state: [ "is_sneaking", "equipped:medium" ]
+    on_failure: { cooldown: { action_bar: "&eRiposte cooling down: {time}s" } }
     mechanics:
       - type: "core:thorns_damage"
         parameters:
-          damage:
-            linear:
-              base: 1.0
-              step: 0.02
-              max: 4.0
+          damage: { linear: { base: 2.0, step: 0.05, max: 6.0 } }
     feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+      notify: { action_bar: true, chat: false, message: "&b✦ Riposte! ✦" }
+      sounds: [ { type: "ITEM_SHIELD_BLOCK", volume: 0.4, pitch: 1.2, target: "self" } ]
   - id: "swift_recovery"
     display_name: "Swift Recovery"
     unlock_level: 50
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Move &a{multiplier}x &7faster when hit."
+    display: { lore: [ "&7Hit in medium armor grants &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
+        filters: [ { state: "equipped:medium" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.2
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.2 } }
+          duration: { constant: 6.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "endurance"
     display_name: "Endurance"
     unlock_level: 75
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Reduced damage taken from all sources."
+    display: { lore: [ "&a{chance}%&7 chance to fully negate damage in medium armor." ] }
     mechanics:
       - type: "core:cancel_damage"
+        filters: [ { state: "equipped:medium" } ]
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.2
-              max: 30.0
-    feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&b✦ Endured! ✦"
-      sounds:
-        - type: "ITEM_SHIELD_BLOCK"
-          volume: 0.4
-          pitch: 1.2
-          target: "self"
-
+          chance: { linear: { base: 5.0, step: 0.2, max: 30.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "iron_will"
     display_name: "Iron Will"
     unlock_level: 100
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Gain significant armor and damage reduction."
+    display: { lore: [ "&7In medium armor: +&a{amount}&7 armor & &a{chance}%&7 damage negate." ] }
     mechanics:
       - type: "core:armor_bonus"
+        filters: [ { state: "equipped:medium" } ]
         parameters:
-          amount:
-            constant: 0.4
+          amount: { linear: { base: 2.0, step: 0.05, max: 5.0 } }
+          duration: { constant: 10.0 }
       - type: "core:cancel_damage"
+        filters: [ { state: "equipped:medium" } ]
         parameters:
-          chance:
-            constant: 10.0
-    feedback:
-      notify:
-        action_bar: false
+          chance: { linear: { base: 10.0, step: 0.3, max: 35.0 } }
+    feedback: { notify: { action_bar: false } }
