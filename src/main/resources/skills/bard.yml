@@ -18,6 +18,8 @@ xp_sources:
       constant: 10.0
 
   - trigger: "player_interact"
+    filters:
+      - tool: "minecraft:goat_horn"
     reward:
       constant: 2.0
 

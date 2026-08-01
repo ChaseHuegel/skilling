@@ -17,15 +17,26 @@ xp_sources:
     reward:
       constant: 2.0
 
-  - trigger: "player_interact"
-    reward:
-      constant: 1.0
-
 abilities:
   - id: "arcane_missile"
     display_name: "Arcane Missile"
     unlock_level: 1
     trigger: "player_interact"
+    requirements:
+      cooldown: 4.0
+      state: [ "is_sneaking" ]
+      items:
+        - action: "cost"
+          tag: "minecraft:redstone"
+          amount: 1
+      exhaustion:
+        amount: 1.0
+        minimum: 3.0
+    on_failure:
+      cooldown:
+        action_bar: "&eArcane Missile cooling down: {time}s"
+      missing_item:
+        action_bar: "&cRequires 1x Redstone!"
     display:
       lore:
         - "&7Launches arcane projectiles dealing &a{damage} &7damage."
@@ -48,6 +59,21 @@ abilities:
     display_name: "Blink"
     unlock_level: 15
     trigger: "player_interact"
+    requirements:
+      cooldown: 10.0
+      state: [ "is_sneaking" ]
+      items:
+        - action: "cost"
+          tag: "minecraft:ender_pearl"
+          amount: 1
+      exhaustion:
+        amount: 1.0
+        minimum: 3.0
+    on_failure:
+      cooldown:
+        action_bar: "&eBlink cooling down: {time}s"
+      missing_item:
+        action_bar: "&cRequires 1x Ender Pearl!"
     display:
       lore:
         - "&7Short-range teleport of &a{range} &7blocks."
