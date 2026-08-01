@@ -327,6 +327,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("player_shear", ShearEntityTrigger.class);
         trigReg.register("player_tame", TameEntityTrigger.class);
         trigReg.register("launch_projectile", LaunchProjectileTrigger.class);
+        trigReg.register("resurrect", ResurrectTrigger.class);
 
         registerBuiltinStateFilters();
     }

@@ -328,6 +328,19 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link EntityResurrectEvent} and routes it as a {@code resurrect} trigger
+     * when the resurrected entity is a player.
+     *
+     * @param event the entity resurrect event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onResurrect(org.bukkit.event.entity.EntityResurrectEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            dispatch(player, event, "resurrect");
+        }
+    }
+
     private void dispatch(Player player, Event event, String triggerKey) {
         if (plugin.isReloading()) return;
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
