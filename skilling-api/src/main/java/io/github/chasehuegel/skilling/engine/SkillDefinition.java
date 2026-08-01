@@ -1,6 +1,7 @@
 package io.github.chasehuegel.skilling.engine;
 
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
 import java.util.List;
 import java.util.Map;
 
@@ -139,19 +140,20 @@ public record SkillDefinition(
     /**
      * Pre-execution requirements that gate ability activation.
      *
-     * @param cooldown   cooldown in seconds between uses
+     * @param cooldown   cooldown evaluator in seconds between uses, evaluated against
+     *                   the player's skill level and the ability's unlock level
      * @param state      list of required player states
      * @param items      list of item requirements
      * @param exhaustion exhaustion (hunger) requirement, null if not used
      */
     public record Requirements(
-            double cooldown,
+            ParameterEvaluator cooldown,
             List<String> state,
             List<ItemRequirement> items,
             Exhaustion exhaustion
     ) {
         public Requirements(double cooldown, List<String> state, List<ItemRequirement> items) {
-            this(cooldown, state, items, null);
+            this(new ConstantEvaluator(cooldown), state, items, null);
         }
     }
 

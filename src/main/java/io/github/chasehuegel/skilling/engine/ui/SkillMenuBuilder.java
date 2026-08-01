@@ -318,7 +318,7 @@ public final class SkillMenuBuilder {
 
     public static Component formatAbilityLine(SkillDefinition.Ability ability, int playerLevel) {
         boolean unlocked = playerLevel >= ability.unlockLevel();
-        boolean isActive = ability.requirements().cooldown() > 0
+        boolean isActive = ability.requirements().cooldown().evaluate(playerLevel, ability.unlockLevel()) > 0
                 || !ability.requirements().state().isEmpty()
                 || !ability.requirements().items().isEmpty();
 

@@ -276,7 +276,15 @@ public final class SkillSerializer {
         if (!displayMap.isEmpty()) m.put("display", displayMap);
 
         Map<String, Object> reqMap = new LinkedHashMap<>();
-        if (a.requirements().cooldown() > 0) reqMap.put("cooldown", a.requirements().cooldown());
+        var cooldown = a.requirements().cooldown();
+        if (cooldown != null) {
+            if ("constant".equals(cooldown.type())) {
+                double cd = doubleVal(cooldown.params(), "value", 0);
+                if (cd > 0) reqMap.put("cooldown", cd);
+            } else {
+                reqMap.put("cooldown", evaluatorToMap(cooldown));
+            }
+        }
         if (a.requirements().state() != null && !a.requirements().state().isEmpty()) {
             reqMap.put("state", a.requirements().state());
         }
@@ -336,7 +344,7 @@ public final class SkillSerializer {
     }
 
     private static SkillDetailDTO.RequirementsDTO parseRequirements(Map<String, Object> raw) {
-        double cooldown = doubleVal(raw, "cooldown", 0);
+        SkillDetailDTO.EvaluatorDTO cooldown = parseCooldown(raw.get("cooldown"));
         List<String> state = raw.containsKey("state") ? (List<String>) raw.get("state") : List.of();
         List<Map<String, Object>> itemsRaw = listMap(raw, "items");
         List<SkillDetailDTO.ItemRequirementDTO> items = new ArrayList<>();
@@ -360,6 +368,23 @@ public final class SkillSerializer {
             );
         }
         return new SkillDetailDTO.RequirementsDTO(cooldown, state, items, exhaustion);
+    }
+
+    /**
+     * Parses a cooldown requirement value: a plain number becomes a constant evaluator,
+     * an object is resolved as an evaluator block.
+     *
+     * @param raw the raw cooldown value
+     * @return the parsed evaluator DTO
+     */
+    private static SkillDetailDTO.EvaluatorDTO parseCooldown(Object raw) {
+        if (raw instanceof Number n) {
+            return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", n.doubleValue()));
+        }
+        if (raw instanceof Map<?, ?> m) {
+            return parseEvaluator(castMap(m));
+        }
+        return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", 0.0));
     }
 
     static List<SkillDetailDTO.FilterDTO> parseFilters(List<Map<String, Object>> raw) {

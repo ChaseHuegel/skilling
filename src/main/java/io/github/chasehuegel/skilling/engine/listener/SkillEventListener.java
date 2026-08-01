@@ -438,7 +438,8 @@ public final class SkillEventListener implements Listener {
                         continue;
                     }
 
-                    RequirementResult check = requirementEngine.check(player, ability.id(), ability.requirements());
+                    RequirementResult check = requirementEngine.check(player, ability.id(), ability.requirements(),
+                            skillLevel, ability.unlockLevel());
                     debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
                     if (!check.success()) {
                         if (feedbackDebouncer.tryDebounce(player, ability.id())) {
@@ -461,7 +462,8 @@ public final class SkillEventListener implements Listener {
                         debug("    -> mechanic returned false (no-op), skipping consume and feedback");
                         continue;
                     }
-                    requirementEngine.consume(player, ability.id(), ability.requirements());
+                    requirementEngine.consume(player, ability.id(), ability.requirements(),
+                            skillLevel, ability.unlockLevel());
 
                     String abilityMsg = ability.feedback().message();
                     boolean hasMsg = !abilityMsg.isBlank();
@@ -479,8 +481,9 @@ public final class SkillEventListener implements Listener {
                         }
                     }
 
-                    if (ability.requirements().cooldown() > 0) {
-                        long delayTicks = (long) (ability.requirements().cooldown() * 20);
+                    double cdSec = ability.requirements().cooldown().evaluate(skillLevel, ability.unlockLevel());
+                    if (cdSec > 0) {
+                        long delayTicks = (long) (cdSec * 20);
                         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                             if (player.isOnline()) {
                                 String readyMsg = "<green>✦ " + ability.displayName() + " is ready!</green>";

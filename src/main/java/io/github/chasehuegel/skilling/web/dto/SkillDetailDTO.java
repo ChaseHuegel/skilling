@@ -72,13 +72,13 @@ public record SkillDetailDTO(
     ) {}
 
     public record RequirementsDTO(
-        double cooldown,
+        EvaluatorDTO cooldown,
         List<String> state,
         List<ItemRequirementDTO> items,
         ExhaustionDTO exhaustion
     ) {
         public RequirementsDTO(double cooldown, List<String> state, List<ItemRequirementDTO> items) {
-            this(cooldown, state, items, null);
+            this(new EvaluatorDTO("constant", Map.of("value", cooldown)), state, items, null);
         }
     }
 

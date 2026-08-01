@@ -68,7 +68,7 @@ class RequirementEngineTest {
                 List.of("is_sneaking"),
                 List.of(new SkillDefinition.ItemRequirement("possession", "#minecraft:pickaxes", "MAIN_HAND", 1, 0.0))
         );
-        assertEquals(5.0, req.cooldown(), 1e-9);
+        assertEquals(5.0, req.cooldown().evaluate(10, 5), 1e-9);
         assertTrue(req.state().contains("is_sneaking"));
         assertEquals(1, req.items().size());
     }
@@ -79,7 +79,7 @@ class RequirementEngineTest {
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        var result = engine.check(player, "test_ability", requirements);
+        var result = engine.check(player, "test_ability", requirements, 10, 5);
         assertTrue(result.success());
     }
 
@@ -90,7 +90,7 @@ class RequirementEngineTest {
         when(player.isSneaking()).thenReturn(true);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        var result = engine.check(player, "test_ability", requirements);
+        var result = engine.check(player, "test_ability", requirements, 10, 5);
         assertTrue(result.success());
     }
 
@@ -101,7 +101,7 @@ class RequirementEngineTest {
         when(player.isSneaking()).thenReturn(false);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        var result = engine.check(player, "test_ability", requirements);
+        var result = engine.check(player, "test_ability", requirements, 10, 5);
         assertEquals(FailureReason.MISSING_STATE, result.failureReason());
     }
 
@@ -123,7 +123,7 @@ class RequirementEngineTest {
         contents[0] = coal;
         when(inventory.getContents()).thenReturn(contents);
 
-        engine.consume(player, "test_ability", requirements);
+        engine.consume(player, "test_ability", requirements, 10, 5);
         verify(coal).setAmount(4);
     }
 
@@ -133,9 +133,9 @@ class RequirementEngineTest {
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        engine.consume(player, "test_ability", requirements);
+        engine.consume(player, "test_ability", requirements, 10, 5);
 
-        var result = engine.check(player, "test_ability", requirements);
+        var result = engine.check(player, "test_ability", requirements, 10, 5);
         assertEquals(FailureReason.COOLDOWN, result.failureReason());
     }
 
@@ -145,10 +145,10 @@ class RequirementEngineTest {
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        engine.consume(player, "test_ability", requirements);
+        engine.consume(player, "test_ability", requirements, 10, 5);
         engine.clearCooldowns(player);
 
-        var result = engine.check(player, "test_ability", requirements);
+        var result = engine.check(player, "test_ability", requirements, 10, 5);
         assertTrue(result.success());
     }
 }

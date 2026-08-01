@@ -40,12 +40,17 @@ public final class RequirementEngine {
      * Returns a {@link RequirementResult} — never throws.
      *
      * @param player       the player attempting the ability
+     * @param abilityId    the ability identifier used for cooldown tracking
      * @param requirements the ability's requirements definition
+     * @param skillLevel   the player's current level in the relevant skill
+     * @param unlockLevel  the level at which the ability is unlocked
      * @return the result of the check
      */
-    public RequirementResult check(Player player, String abilityId, SkillDefinition.Requirements requirements) {
+    public RequirementResult check(Player player, String abilityId, SkillDefinition.Requirements requirements,
+                                   int skillLevel, int unlockLevel) {
         // Check cooldown
-        if (requirements.cooldown() > 0) {
+        double cdSec = requirements.cooldown().evaluate(skillLevel, unlockLevel);
+        if (cdSec > 0) {
             var abilityCooldowns = cooldowns.get(player.getUniqueId().toString());
             if (abilityCooldowns != null) {
                 long remaining = getRemainingCooldown(player, abilityId);
@@ -108,12 +113,17 @@ public final class RequirementEngine {
      * <p>Should only be called if {@link #check} returned a passing result.
      *
      * @param player       the player who activated the ability
+     * @param abilityId    the ability identifier used for cooldown tracking
      * @param requirements the ability's requirements definition
+     * @param skillLevel   the player's current level in the relevant skill
+     * @param unlockLevel  the level at which the ability is unlocked
      */
-    public void consume(Player player, String abilityId, SkillDefinition.Requirements requirements) {
+    public void consume(Player player, String abilityId, SkillDefinition.Requirements requirements,
+                        int skillLevel, int unlockLevel) {
         // Apply cooldown
-        if (requirements.cooldown() > 0) {
-            applyCooldown(player, abilityId, (long) (requirements.cooldown() * 1000));
+        double cdSec = requirements.cooldown().evaluate(skillLevel, unlockLevel);
+        if (cdSec > 0) {
+            applyCooldown(player, abilityId, (long) (cdSec * 1000));
         }
 
         // Consume items

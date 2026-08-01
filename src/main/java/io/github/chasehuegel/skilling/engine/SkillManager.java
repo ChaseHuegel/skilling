@@ -231,7 +231,7 @@ public final class SkillManager {
 
     private SkillDefinition.Requirements parseRequirements(Map<String, Object> map) {
         if (map == null) return new SkillDefinition.Requirements(0, List.of(), List.of());
-        double cooldown = ((Number) map.getOrDefault("cooldown", 0.0)).doubleValue();
+        ParameterEvaluator cooldown = parseCooldown(map.get("cooldown"));
         @SuppressWarnings("unchecked")
         List<String> state = (List<String>) map.getOrDefault("state", List.of());
         @SuppressWarnings("unchecked")
@@ -248,6 +248,21 @@ public final class SkillManager {
         }
 
         return new SkillDefinition.Requirements(cooldown, state, items, exhaustion);
+    }
+
+    /**
+     * Parses a cooldown requirement as either a scalar seconds value or an inline
+     * evaluator block (e.g. {@code { linear: { base, step } }}). Scalars are wrapped
+     * in a {@link ConstantEvaluator}.
+     *
+     * @param raw the raw YAML value for the cooldown key
+     * @return the resolved cooldown evaluator
+     */
+    private ParameterEvaluator parseCooldown(Object raw) {
+        if (raw instanceof Number n) {
+            return new ConstantEvaluator(n.doubleValue());
+        }
+        return parseInlineEvaluator(castMap(raw));
     }
 
     private SkillDefinition.ItemRequirement parseItemRequirement(Map<String, Object> map) {
