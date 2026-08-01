@@ -414,7 +414,14 @@ public final class SkillSerializer {
             if (val instanceof Number n) {
                 return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", n.doubleValue()));
             }
+            if (val instanceof String s) {
+                return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", s));
+            }
             Map<String, Object> nested = (Map<String, Object>) val;
+            Object nestedValue = nested.getOrDefault("value", 0.0);
+            if (nestedValue instanceof String s) {
+                return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", s));
+            }
             return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", doubleVal(nested, "value", 0)));
         }
         if (raw.containsKey("linear")) {
@@ -445,7 +452,12 @@ public final class SkillSerializer {
 
     static Map<String, Object> evaluatorToMap(SkillDetailDTO.EvaluatorDTO ev) {
         return switch (ev.type()) {
-            case "constant" -> Map.of("constant", Map.of("value", ev.params().getOrDefault("value", 0)));
+            case "constant" -> {
+                Object value = ev.params().getOrDefault("value", 0);
+                yield value instanceof String s
+                        ? Map.of("constant", s)
+                        : Map.of("constant", Map.of("value", value));
+            }
             case "linear" -> Map.of("linear", ev.params());
             case "milestones" -> Map.of("milestones", ev.params().getOrDefault("milestones", Map.of()));
             case "polynomial" -> Map.of("polynomial", ev.params());

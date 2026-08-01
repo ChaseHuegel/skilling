@@ -12,8 +12,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class SkillHandler {
+
+    private static final Logger LOGGER = Logger.getLogger(SkillHandler.class.getName());
 
     private final SkillManager skillManager;
     private final StagingManager stagingManager;
@@ -66,6 +70,7 @@ public final class SkillHandler {
             SkillDetailDTO dto = SkillSerializer.parseSkillFile(sourceFile);
             ctx.json(dto);
         } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to parse skill file: " + id, e);
             ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
         }
     }

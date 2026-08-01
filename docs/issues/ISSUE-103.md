@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Add a string-`constant` branch to `SkillSerializer.parseEvaluator` so a `constant` value that is a `String` (e.g. `"minecraft:slowness"`) is preserved as `EvaluatorDTO("constant", { value: "<string>" })` instead of throwing
-- [ ] Update `SkillSerializer.evaluatorToMap` to serialize a string-valued constant back to YAML as a quoted string (round-trip parity)
-- [ ] Add an error log in `SkillHandler.get` so parsing failures are visible server-side instead of a silent 500
-- [ ] Add unit tests for `parseEvaluator` / `evaluatorToMap` round-trip with string constants (`effect`, `attribute`, `material`)
-- [ ] Confirm the riding skill (and the other affected skills) open correctly in the skill editor and abilities page
+- [x] Add a string-`constant` branch to `SkillSerializer.parseEvaluator` so a `constant` value that is a `String` (e.g. `"minecraft:slowness"`) is preserved as `EvaluatorDTO("constant", { value: "<string>" })` instead of throwing
+- [x] Update `SkillSerializer.evaluatorToMap` to serialize a string-valued constant back to YAML as a quoted string (round-trip parity)
+- [x] Add an error log in `SkillHandler.get` so parsing failures are visible server-side instead of a silent 500
+- [x] Add unit tests for `parseEvaluator` / `evaluatorToMap` round-trip with string constants (`effect`, `attribute`, `material`)
+- [x] Confirm the riding skill (and the other affected skills) open correctly in the skill editor and abilities page
 
 ## Technical Specifications & Context
 
@@ -52,9 +52,9 @@ Any skill YAML using a string constant parameter fails to parse. Because `Abilit
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new serializer round-trip tests
-- [ ] Unit test: `parseEvaluator({ constant: "minecraft:slowness" })` yields `EvaluatorDTO("constant", { value: "minecraft:slowness" })`
-- [ ] Unit test: `evaluatorToMap` round-trips a string constant back to `{ constant: "minecraft:slowness" }`
-- [ ] `cd web/frontend && npm run build` passes (type-check)
-- [ ] Edge case handled: numeric constants (e.g. `{ constant: 3 }`) still parse to a numeric `value` — no numeric regressions
-- [ ] Runtime check: the riding skill opens in the skill editor and the abilities page renders all skills
+- [x] `./gradlew build && ./gradlew test` pass, including new serializer round-trip tests
+- [x] Unit test: `parseEvaluator({ constant: "minecraft:slowness" })` yields `EvaluatorDTO("constant", { value: "minecraft:slowness" })`
+- [x] Unit test: `evaluatorToMap` round-trips a string constant back to `{ constant: "minecraft:slowness" }`
+- [x] `cd web/frontend && npm run build` passes (type-check)
+- [x] Edge case handled: numeric constants (e.g. `{ constant: 3 }`) still parse to a numeric `value` — no numeric regressions
+- [x] Runtime check: the riding skill opens in the skill editor and the abilities page renders all skills
