@@ -37,7 +37,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-harvest up to &a{chain_limit}&7 connected crops."
-        - "&8Requires: Sneaking, hoe."
+        - "&7Costs 0.5 hunger."
+        - "&8Requires: Sneaking, hoe, 8s cooldown, 3+ hunger."
     requirements:
       cooldown: 8.0
       state: [ "is_sneaking" ]

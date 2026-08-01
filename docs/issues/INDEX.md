@@ -12,7 +12,7 @@
 - [x] [ISSUE-105](ISSUE-105.md) - Multiply XP source rewards by bulk-operation scalars (collect_xp, consume_item, furnace_extract)
 - [x] [ISSUE-106](ISSUE-106.md) - Add lore tooltips to ability names in unlock chat messages
 - [x] [ISSUE-108](ISSUE-108.md) - Ensure thorough, useful event logging when debug_logging is enabled
-- [ ] [ISSUE-109](ISSUE-109.md) - Add `Cost:` and `Requirements:` lines to all ability lore
+- [x] [ISSUE-109](ISSUE-109.md) - Add `Cost:` and `Requirements:` lines to all ability lore
 - [ ] [ISSUE-110](ISSUE-110.md) - Sort skill items in the skills navigation flyout by color then name
 
 ### Research

@@ -38,7 +38,7 @@ abilities:
     display:
       lore:
         - "&7Sneak+Jump to leap &a{multiplier}x&7 higher for {duration}s."
-        - "&8Requires: Sneaking, on ground."
+        - "&8Requires: Sneaking, on ground, 8s cooldown."
     requirements:
       cooldown: 8.0
       state: [ "is_sneaking", "is_on_ground" ]

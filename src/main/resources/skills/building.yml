@@ -50,7 +50,8 @@ abilities:
     display:
       lore:
         - "&7Shift+Place to gain &a{multiplier}x&7 move speed for {duration}s."
-        - "&8Requires: Sneaking, holding a decorative block."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, holding a decorative block, 12s cooldown, 3+ hunger."
     requirements:
       cooldown: 12.0
       state: [ "is_sneaking" ]
@@ -89,6 +90,8 @@ abilities:
         - "&7Shift+Place a decorative block to instantly"
         - "&7break &a{max_blocks}&7 adjacent decorative blocks for re-use."
         - "&7Restores block to inventory for rapid re-placement."
+        - "&7Costs 4 hunger."
+        - "&8Requires: Sneaking, holding a decorative block, 15s cooldown, 6+ hunger."
     requirements:
       cooldown: 15.0
       state: [ "is_sneaking" ]

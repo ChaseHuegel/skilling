@@ -38,7 +38,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-break to harvest up to &a{chain_limit}&7 connected herbs."
-        - "&8Requires: Sneaking."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, 6s cooldown, 3+ hunger."
     requirements:
       cooldown: 6.0
       state: [ "is_sneaking" ]
@@ -68,7 +69,8 @@ abilities:
     display:
       lore:
         - "&7Sneak to harvest all herbs in a &a{radius}&7 radius (max {max_blocks})."
-        - "&8Requires: Sneaking."
+        - "&7Costs 2 hunger."
+        - "&8Requires: Sneaking, 20s cooldown, 4+ hunger."
     requirements:
       cooldown: 20.0
       state: [ "is_sneaking" ]

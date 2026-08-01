@@ -43,7 +43,8 @@ abilities:
       lore:
         - "&7Left-Click with a weapon in offhand to strike for &a{multiplier}x&7 offhand damage."
         - "&7Applies poison &a{duration}s&7."
-        - "&8Requires: Sneaking, weapon in offhand."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, weapon in offhand, 3s cooldown, 3+ hunger."
     requirements:
       cooldown: 3.0
       state: [ "is_sneaking", "offhand:weapon" ]

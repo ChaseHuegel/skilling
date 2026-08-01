@@ -316,7 +316,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-mine to break up to &a{chain_limit} &7connected ores."
-        - "&8Requires: Sneaking, pickaxe in hand."
+        - "&7Costs 2 hunger."
+        - "&8Requires: Sneaking, pickaxe, 5s cooldown, 3+ hunger."
     requirements:
       # Requirements.cooldown accepts evaluator syntax for inverse sub-scaling:
       #   cooldown: { linear: { base: 5.0, step: -0.02, max: 1.0 } }
@@ -339,6 +340,12 @@ abilities:
 
 Note that every `abilities[]` entry declares a `trigger` key, and any mechanic
 parameters that take a potion effect use namespaced keys.
+
+**Ability lore convention:** any ability with a `requirements:` block must surface
+its costs and conditions in its lore so players see them before using the ability.
+A `&7Costs` line lists what the ability consumes (exhaustion hunger, `cost` items)
+and an `&8Requires` line lists the activation conditions (states, held items,
+cooldown, minimum hunger) — keep both in sync with the YAML.
 
 ## Built-In Mechanics
 

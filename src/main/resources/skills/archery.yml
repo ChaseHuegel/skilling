@@ -38,7 +38,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-fire a bow for &a{multiplier}x&7 arrow damage on next shot."
-        - "&8Requires: Sneaking, bow."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, bow, 5s cooldown, 3+ hunger."
     requirements:
       cooldown: 5.0
       state: [ "is_sneaking" ]

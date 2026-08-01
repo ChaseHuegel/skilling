@@ -41,7 +41,8 @@ abilities:
     display:
       lore:
         - "&7Shift-attack with a light weapon for &a{multiplier}x&7 damage + poison."
-        - "&8Requires: Sneaking, light weapon."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, light weapon, 5s cooldown, 3+ hunger."
     requirements:
       cooldown: 5.0
       state: [ "is_sneaking" ]

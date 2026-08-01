@@ -39,7 +39,8 @@ abilities:
     display:
       lore:
         - "&7Shift-craft leather armor to embed &a{amount}&7 armor for {duration}s on wear."
-        - "&8Requires: Sneaking."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, 15s cooldown, 3+ hunger."
     requirements:
       cooldown: 15.0
       state: [ "is_sneaking" ]

@@ -41,7 +41,8 @@ abilities:
     display:
       lore:
         - "&7Shift-attack with a sword for &a{multiplier}x&7 damage on next hit."
-        - "&8Requires: Sneaking, sword."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, sword, 8s cooldown, 3+ hunger."
     requirements:
       cooldown: 8.0
       state: [ "is_sneaking" ]

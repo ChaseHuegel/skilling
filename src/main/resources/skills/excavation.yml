@@ -37,7 +37,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-mine to break a &a{radius}&7-block radius of soft blocks (max {max_blocks})."
-        - "&8Requires: Sneaking, shovel."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, shovel, 10s cooldown, 3+ hunger."
     requirements:
       cooldown: 10.0
       state: [ "is_sneaking" ]

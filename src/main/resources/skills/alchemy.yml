@@ -33,7 +33,8 @@ abilities:
     display:
       lore:
         - "&7Shift-brew to gain &a{multiplier}x&7 brewing XP for {duration}s."
-        - "&8Requires: Sneaking, blaze powder in inventory."
+        - "&7Costs 1 hunger + 1 blaze powder."
+        - "&8Requires: Sneaking, 30s cooldown, 3+ hunger."
     requirements:
       cooldown: 30.0
       state: [ "is_sneaking" ]

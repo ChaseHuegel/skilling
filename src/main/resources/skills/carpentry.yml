@@ -39,7 +39,8 @@ abilities:
     display:
       lore:
         - "&7Shift+fell a tree to double drops &a{yield_chance}%&7."
-        - "&8Requires: Sneaking, axe in hand."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, axe in hand, 6s cooldown, 3+ hunger."
     requirements:
       cooldown: 6.0
       state: [ "is_sneaking" ]

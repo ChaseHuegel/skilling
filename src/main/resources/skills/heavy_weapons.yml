@@ -41,7 +41,8 @@ abilities:
     display:
       lore:
         - "&7Shift-attack to cleave: &a{multiplier}x&7 damage + weakness in &a{radius}&7 radius."
-        - "&8Requires: Sneaking, heavy weapon."
+        - "&7Costs 1.5 hunger."
+        - "&8Requires: Sneaking, heavy weapon, 6s cooldown, 3+ hunger."
     requirements:
       cooldown: 6.0
       state: [ "is_sneaking" ]

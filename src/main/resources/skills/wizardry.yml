@@ -17,8 +17,8 @@ abilities:
     display:
       lore:
         - "&7Sneak+Right-Click to launch an arcane missile dealing &a{damage}&7."
-        - "&7Costs 1 Redstone."
-        - "&8Requires: Sneaking, redstone in inventory."
+        - "&7Costs 1 hunger + 1 redstone."
+        - "&8Requires: Sneaking, 4s cooldown, 3+ hunger."
     requirements:
       cooldown: 4.0
       state: [ "is_sneaking" ]
@@ -40,8 +40,8 @@ abilities:
     display:
       lore:
         - "&7Sneak+Right-Click to blink &a{range}&7 blocks (no ender-pearl damage)."
-        - "&7Costs 1 Ender Pearl."
-        - "&8Requires: Sneaking, ender pearl in inventory."
+        - "&7Costs 1 hunger + 1 ender pearl."
+        - "&8Requires: Sneaking, 10s cooldown, 3+ hunger."
     requirements:
       cooldown: 10.0
       state: [ "is_sneaking" ]
@@ -65,7 +65,8 @@ abilities:
     display:
       lore:
         - "&7Sneak+Right-Click with a (consumed) Amethyst Shard for &a{amount}&7 armor &a{duration}s&7."
-        - "&8Requires: Sneaking, amethyst shard."
+        - "&7Costs 1 hunger + 1 amethyst shard."
+        - "&8Requires: Sneaking, 15s cooldown, 3+ hunger."
     requirements:
       cooldown: 15.0
       state: [ "is_sneaking" ]
@@ -100,8 +101,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-hit to freeze nearby foes &a{radius}&7 for &a{duration}s&7."
-        - "&7Costs 1 Blue Ice (or packed ice)."
-        - "&8Requires: Sneaking, ice in inventory."
+        - "&7Costs 1.5 hunger + 1 blue ice."
+        - "&8Requires: Sneaking, 12s cooldown, 3+ hunger."
     requirements:
       cooldown: 12.0
       state: [ "is_sneaking" ]
@@ -128,8 +129,8 @@ abilities:
     display:
       lore:
         - "&7Sneak+Right-Click for an enhanced missile (&a{damage}&7) + arcane armor (&a{amount}&7)."
-        - "&7Costs 1 Amethyst Shard."
-        - "&8Requires: Sneaking."
+        - "&7Costs 2 hunger + 1 redstone + 1 amethyst shard."
+        - "&8Requires: Sneaking, 8s cooldown, 3+ hunger."
     requirements:
       cooldown: 8.0
       state: [ "is_sneaking" ]

@@ -39,7 +39,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-attack while mounted for &a{multiplier}x&7 damage + slow target."
-        - "&8Requires: Sneaking, riding."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, riding, 6s cooldown, 3+ hunger."
     requirements:
       cooldown: 6.0
       state: [ "is_sneaking", "is_riding" ]

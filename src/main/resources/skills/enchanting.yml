@@ -35,7 +35,8 @@ abilities:
     display:
       lore:
         - "&7Shift-enchant to reduce enchant cost by &a{discount}%&7."
-        - "&8Requires: Sneaking."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, 30s cooldown, 3+ hunger."
     requirements:
       cooldown: 30.0
       state: [ "is_sneaking" ]

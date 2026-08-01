@@ -38,7 +38,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-throw a trident for &a{multiplier}x&7 damage on next throw."
-        - "&8Requires: Sneaking, trident in hand."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, trident in hand, 5s cooldown, 3+ hunger."
     requirements:
       cooldown: 5.0
       state: [ "is_sneaking" ]

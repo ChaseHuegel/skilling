@@ -100,3 +100,4 @@ Before any ability is added or coded into a YAML skill profile, it must pass all
 4. **PvE Test:** Does this ability solve a genuine survival problem without relying on player-versus-player combat to be useful? **[YES]**
 5. **API Feasibility Test:** Can this ability be implemented using standard Paper API event listeners without per-tick runnables, NMS hacks, or packet spam? **[YES]**
 6. **Sub-Scaling Test:** Does this milestone expose at least one dynamic parameter that grows in potency between its unlock level and Level 100? **[YES]**
+7. **Lore Clarity Test:** Does every ability with a `requirements:` block surface its costs and conditions as `&7Costs ...` and `&8Requires ...` lore lines, kept in sync with the YAML? **[YES]**

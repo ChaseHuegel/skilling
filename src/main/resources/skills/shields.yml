@@ -37,7 +37,8 @@ abilities:
       lore:
         - "&7Sneak+Right-Click shield to knock back nearby foes &a{force}&7"
         - "&7and disable their shields for {ticks} ticks."
-        - "&8Requires: Sneaking, shield in hand."
+        - "&7Costs 2 hunger."
+        - "&8Requires: Sneaking, shield in hand, 8s cooldown, 3+ hunger."
     requirements:
       cooldown: 8.0
       state: [ "is_sneaking" ]

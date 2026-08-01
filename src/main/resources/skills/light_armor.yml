@@ -38,7 +38,7 @@ abilities:
     display:
       lore:
         - "&7Sneak+Jump to negate the next hit &a{chance}%&7."
-        - "&8Requires: Sneaking, on ground, light armor."
+        - "&8Requires: Sneaking, on ground, light armor, 6s cooldown."
     requirements:
       cooldown: 6.0
       state: [ "is_sneaking", "is_on_ground", "equipped:light" ]

@@ -38,7 +38,7 @@ abilities:
     display:
       lore:
         - "&7Sneak while hit to reflect &a{damage}&7 to the attacker."
-        - "&8Requires: Sneaking, medium armor."
+        - "&8Requires: Sneaking, medium armor, 5s cooldown."
     requirements:
       cooldown: 5.0
       state: [ "is_sneaking", "equipped:medium" ]

@@ -39,7 +39,8 @@ abilities:
     display:
       lore:
         - "&7Shift+eat to gain &a{multiplier}x&7 XP from food for {duration}s."
-        - "&8Requires: Sneaking."
+        - "&7Costs 0.5 hunger."
+        - "&8Requires: Sneaking, 15s cooldown, 3+ hunger."
     requirements:
       cooldown: 15.0
       state: [ "is_sneaking" ]

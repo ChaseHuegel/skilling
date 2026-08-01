@@ -93,11 +93,14 @@ abilities:
     trigger: "block_break"              # Required: the event that activates this ability (see docs for valid keys)
 
     display:
+      # Lore convention for abilities with a requirements block: a "&7Costs" line
+      # lists what the ability consumes (exhaustion hunger, "cost" items) and an
+      # "&8Requires" line lists the activation conditions (states, held items,
+      # cooldown, minimum hunger). Keep these lines in sync with requirements:.
       lore:
         - "&7Sneak-mine to break up to &a{chain_limit} &7connected ores."
-        - "&7Costs: 2 hunger + 1 Coal"
-        - ""
-        - "&8Requires: Sneaking"
+        - "&7Costs 2 hunger + 1 coal."
+        - "&8Requires: Sneaking, pickaxe, 5s cooldown, 3+ hunger."
 
     # Requirements must all return TRUE before mechanics execute
     requirements:

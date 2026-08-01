@@ -39,8 +39,8 @@ abilities:
     display:
       lore:
         - "&7Sneak-mine to break up to &a{chain_limit}&7 connected ore/stone."
-        - "&7Costs 2 hunger + 1 Coal."
-        - "&8Requires: Sneaking, pickaxe."
+        - "&7Costs 2 hunger + 1 coal."
+        - "&8Requires: Sneaking, pickaxe, 5s cooldown, 3+ hunger."
     requirements:
       cooldown: 5.0
       state: [ "is_sneaking" ]

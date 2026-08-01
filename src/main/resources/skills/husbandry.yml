@@ -40,6 +40,7 @@ abilities:
       lore:
         - "&7Taming succeeds &a{multiplier}x&7 more often."
         - "&7Lasts one tame attempt — shift-right-click a hungry animal."
+        - "&8Requires: Sneaking, 30s cooldown."
     requirements:
       cooldown: 30.0
       state: [ "is_sneaking" ]

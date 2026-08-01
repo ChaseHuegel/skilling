@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] For every bundled ability with requirements (cooldown, states, items, exhaustion), add a `Requirements:` lore line listing them in a consistent format
-- [ ] For every bundled ability with a cost (e.g. `exhaustion.amount`, item consumption), add a `Cost:` lore line
-- [ ] Use a consistent wording and color scheme across all skills (match the existing `&8Requires: ...` style where present)
-- [ ] Keep the `template-skill.yml` example updated to document the convention
+- [x] For every bundled ability with requirements (cooldown, states, items, exhaustion), add a `Requirements:` lore line listing them in a consistent format
+- [x] For every bundled ability with a cost (e.g. `exhaustion.amount`, item consumption), add a `Cost:` lore line
+- [x] Use a consistent wording and color scheme across all skills (match the existing `&8Requires: ...` style where present)
+- [x] Keep the `template-skill.yml` example updated to document the convention
 
 ## Technical Specifications & Context
 
@@ -29,7 +29,7 @@
 
 ## Verification & Definition of Done
 
-- [ ] Every bundled ability that has a `requirements:` block also has a `Requirements:` lore line matching its YAML
-- [ ] Every bundled ability with an exhaustion or item cost has a `Cost:` lore line
-- [ ] `./gradlew build && ./gradlew test` pass (content is validated by `SkillYamlValidationTest`)
-- [ ] Runtime check: opening the skills menu shows `Cost:` and `Requirements:` lines on affected abilities
+- [x] Every bundled ability that has a `requirements:` block also has a `Requirements:` lore line matching its YAML
+- [x] Every bundled ability with an exhaustion or item cost has a `Cost:` lore line
+- [x] `./gradlew build && ./gradlew test` pass (content is validated by `SkillYamlValidationTest`)
+- [x] Runtime check: opening the skills menu shows `Cost:` and `Requirements:` lines on affected abilities

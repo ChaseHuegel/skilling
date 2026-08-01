@@ -38,7 +38,7 @@ abilities:
       lore:
         - "&7Shift+mine to fell up to &a{chain_limit}&7 connected logs."
         - "&7Costs 2 hunger."
-        - "&8Requires: Sneaking, axe."
+        - "&8Requires: Sneaking, axe, 10s cooldown, 3+ hunger."
     requirements:
       cooldown: 10.0
       state: [ "is_sneaking" ]

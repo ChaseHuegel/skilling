@@ -41,7 +41,8 @@ abilities:
     display:
       lore:
         - "&7Sneak+Right-Click (with a Totem in inventory) to gain &a{amount}&7 armor &a{duration}s&7."
-        - "&8Requires: Sneaking, totem of undying in inventory."
+        - "&7Costs 2 hunger."
+        - "&8Requires: Sneaking, totem of undying in inventory, 20s cooldown, 3+ hunger."
     requirements:
       cooldown: 20.0
       state: [ "is_sneaking" ]

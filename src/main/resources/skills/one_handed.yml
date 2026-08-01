@@ -41,7 +41,7 @@ abilities:
     display:
       lore:
         - "&7Sneak+Left-Click with a sword & free offhand to negate next hit &a{chance}%&7."
-        - "&8Requires: Sneaking, sword, offhand empty."
+        - "&8Requires: Sneaking, sword, offhand empty, 5s cooldown."
     requirements:
       cooldown: 5.0
       state: [ "is_sneaking", "offhand:empty" ]

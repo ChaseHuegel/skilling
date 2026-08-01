@@ -44,7 +44,8 @@ abilities:
       lore:
         - "&7Sneak-play an instrument to grant allies Regeneration & armor."
         - "&7Consumes 1 goat horn durability-cooldown."
-        - "&8Requires: Sneaking, instrument in hand."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, instrument in hand, 15s cooldown, 3+ hunger."
     requirements:
       cooldown: 15.0
       state: [ "is_sneaking" ]
