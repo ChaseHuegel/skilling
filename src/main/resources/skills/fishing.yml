@@ -113,7 +113,7 @@ abilities:
     mechanics:
       - type: "core:knockback_resist"
         filters:
-          - tool: "#minecraft:fishing_rods"
+          - tool: "#c:fishing_rods"
         parameters:
           amount:
             linear:

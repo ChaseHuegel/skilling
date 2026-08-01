@@ -148,3 +148,6 @@ custom_tags:
 
   instruments:
     - "minecraft:goat_horn"
+
+  fishing_rods:
+    - "minecraft:fishing_rod"
