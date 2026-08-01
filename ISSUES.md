@@ -27,3 +27,6 @@ See AGENTS.md §Issue Resolution Workflow for details.
   - [ ] (plugin) collect_xp triggered rewards should be multiplied by the amount of XP collected (ex: a reward of 2 skill XP for 3 minecraft XP = 6 skill XP)
   - [ ] (plugin) consume_item triggered rewards should be multiplied by the crafted item stack size (ex: a reward of 2 skill XP for 3 doors = 6 skill XP)
   - [ ] (plugin) furnace_extract triggered rewards should be multiplied by the amount of XP collected (ex: a reward of 2 skill XP for 3 minecraft XP = 6 skill XP)
+
+# Research
+- [ ] (plugin) Evaluate the XP curves and XP rewards of the bundled skills; identify estimated time to reach level 100 with explanations. Evaluate whether there is a consistent, fair and consistent time investment across all skills. Perform research on other similar RPG skill plugins (Ex: AuraSkills, MCMMO) and skilling games (ex: RuneScape, Valheim) for an informed base to compare to. Using your findings, provide suggested adjustments and build a consistent framework for designing XP source rewards. Produce the full report in a new markdown document named `REPORT_XP-CURVE.md` .
