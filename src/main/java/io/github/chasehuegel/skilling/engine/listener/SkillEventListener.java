@@ -341,6 +341,19 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link EntityToggleGlideEvent} and routes it as an {@code elytra_glide} trigger
+     * when a player starts gliding.
+     *
+     * @param event the entity toggle glide event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onElytraGlide(org.bukkit.event.entity.EntityToggleGlideEvent event) {
+        if (event.getEntity() instanceof Player player && event.isGliding()) {
+            dispatch(player, event, "elytra_glide");
+        }
+    }
+
     private void dispatch(Player player, Event event, String triggerKey) {
         if (plugin.isReloading()) return;
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
