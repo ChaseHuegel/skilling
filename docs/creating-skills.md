@@ -67,6 +67,11 @@ Each entry defines an action that grants XP.
 | `tool` | string | Material or tag filter for the item in the player's hand |
 | `state` | string | Player state condition (see available states below) |
 
+> **Note:** The `target:` filter on `entity_damage` matches the **damager projectile
+> material** only (e.g., arrows, tridents, fireballs). It does **not** match the
+> player's held weapon. For held-weapon detection on melee `entity_damage`, use the
+> `tool:` filter, which reads the main-hand item.
+
 Available states:
 
 | State | Description |
@@ -96,6 +101,10 @@ Available states:
 | `hunger:above:\<value\>` | Player food level is above threshold (0-20) |
 | `biome:\<key\>` | Player is in a specific biome (e.g., `minecraft:plains`) |
 | `target_type:\<key\>` | Damaged entity type matches (e.g., `minecraft:zombie`, `#minecraft:skeletons`) |
+| `equipped:light` | All four armor slots are leather |
+| `equipped:medium` | All four armor slots are chainmail/iron/golden/turtle |
+| `equipped:heavy` | All four armor slots are diamond/netherite |
+| `equipped:none` | All four armor slots are empty |
 
 #### reward
 
@@ -110,6 +119,7 @@ Each entry defines an unlockable ability with mechanics.
 | `id` | Yes | string | Unique ability identifier |
 | `display_name` | No | string | Human-readable name (default: same as `id`) |
 | `unlock_level` | No | int | Level required to unlock (default: 1) |
+| `trigger` | Yes | string | The event that activates this ability. Each ability must declare exactly one trigger key that determines which event dispatch activates it. See the Triggers table in [capabilities.md](capabilities.md) for valid keys. This field is required and fail-fast validated — omitting it throws `IllegalArgumentException` during skill loading. The trigger must match the mechanic's expected event (see [capabilities.md](capabilities.md) for each mechanic's event) |
 | `display` | No | section | UI lore configuration |
 | `requirements` | No | section | Pre-execution requirements |
 | `on_failure` | No | section | Failure feedback overrides |
@@ -130,11 +140,24 @@ Each key supports the same sub-keys as `feedback` (`action_bar`, `sounds`).
 #### requirements
 
 | Key | Type | Default | Description |
-|---|---|---|---|---|
-| `cooldown` | double | `0` | Cooldown in seconds between uses |
+|---|---|---|---|
+| `cooldown` | double *or* evaluator | `0` | Cooldown in seconds between uses. Accepts a plain number or evaluator syntax (see below) |
 | `state` | list | `[]` | Required player states |
 | `items` | list | `[]` | Item requirements |
 | `exhaustion` | section | — | Hunger/food cost for ability activation |
+
+The `cooldown` field accepts full evaluator syntax in addition to a plain double,
+enabling inverse-cooldown sub-scaling as the player levels up:
+
+```yaml
+requirements:
+  cooldown:
+    linear: { base: 5.0, step: -0.02, max: 1.0 }
+```
+
+A scalar (e.g., `5.0`) is equivalent to `constant: 5.0`. Use `linear` with a
+negative `step` for inverse-cooldown sub-scaling — the cooldown shrinks as the
+player levels up.
 
 ##### exhaustion
 
@@ -224,6 +247,98 @@ progression:
   base_xp: 50
   exponent: 2.5
 ```
+
+## Effect & Attribute Parameter Keys
+
+When a mechanic accepts an `effect` parameter (e.g., `core:apply_status`), use a
+**namespaced key** like `minecraft:poison` rather than a legacy numeric ID (e.g., `19`).
+The same applies to the `attribute` parameter on `core:modify_attribute`
+(e.g., `minecraft:movement_speed` instead of `4`). Numeric IDs are deprecated and log
+a warning on use; unknown keys fail fast at load time. See [capabilities.md](capabilities.md)
+for the full list of mechanics and their parameters.
+
+## Full Annotated Example
+
+The following skill definition exercises every section of the schema, including the
+required `trigger` field on abilities and namespaced effect keys.
+
+```yaml
+id: "mining"
+max_level: 100
+display:
+  name: "Mining"
+  icon: "minecraft:iron_pickaxe"
+  color: "GREEN"
+  style: "SEGMENTED_10"
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+
+xp_sources:
+  - trigger: "block_break"
+    filters:
+      - target: "#c:ores"
+      - state: "player_placed:false"
+    reward: { constant: 15.0 }
+
+abilities:
+  - id: "geologist"
+    display_name: "Geologist"
+    unlock_level: 1
+    trigger: "block_break"              # Required: the event that activates this ability
+    display:
+      lore: [ "&7Increases raw ore yield by &a{yield_chance}%&7." ]
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters:
+          - target: "#c:ores"
+          - tool: "#minecraft:pickaxes"
+        parameters:
+          yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
+
+  - id: "ore_crush"
+    display_name: "Ore Crush"
+    unlock_level: 30
+    trigger: "entity_damage"            # Required: the event that activates this ability
+    display:
+      lore: [ "&7Your swings apply Slowness to the target." ]
+    mechanics:
+      - type: "core:apply_status"
+        parameters:
+          effect: { constant: "minecraft:slowness" }    # Namespaced key (legacy numeric 2 is deprecated)
+          duration: { constant: 3.0 }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+
+  - id: "vein_miner"
+    display_name: "Vein Miner"
+    unlock_level: 15
+    trigger: "block_break"              # Required: the event that activates this ability
+    display:
+      lore:
+        - "&7Sneak-mine to break up to &a{chain_limit} &7connected ores."
+        - "&8Requires: Sneaking, pickaxe in hand."
+    requirements:
+      # Requirements.cooldown accepts evaluator syntax for inverse sub-scaling:
+      #   cooldown: { linear: { base: 5.0, step: -0.02, max: 1.0 } }
+      cooldown: 5.0
+      state:
+        - "is_sneaking"
+        # - "equipped:heavy"            # Must be wearing full diamond/netherite armor
+      items:
+        - { action: "possession", tag: "#minecraft:pickaxes", slot: "MAIN_HAND" }
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eVein Miner cooling down: {time}s" }
+    mechanics:
+      - type: "core:chain_break"
+        parameters:
+          chain_limit: { milestones: { 15: 3, 40: 8, 80: 16 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Vein Miner Activated! ✦" }
+```
+
+Note that every `abilities[]` entry declares a `trigger` key, and any mechanic
+parameters that take a potion effect use namespaced keys.
 
 ## Built-In Mechanics
 
