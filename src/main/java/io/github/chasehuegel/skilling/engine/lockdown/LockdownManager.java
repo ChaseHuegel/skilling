@@ -45,12 +45,11 @@ public final class LockdownManager {
      * Performs the full reload lockdown sequence. Must be called from the main thread.
      */
     public void reload() {
-        boolean debug = plugin.isDebugLogging();
         plugin.getLogger().info("Reloading...");
 
         // Phase 1: Freeze
         plugin.setReloading(true);
-        if (debug) plugin.getLogger().info("Phase 1/6: Freeze — interactions locked.");
+        plugin.debug("Phase 1/6: Freeze — interactions locked.");
 
         // Phase 2: Close GUIs
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -59,11 +58,11 @@ public final class LockdownManager {
                 player.closeInventory();
             }
         }
-        if (debug) plugin.getLogger().info("Phase 2/6: GUIs closed.");
+        plugin.debug("Phase 2/6: GUIs closed.");
 
         // Phase 3: Flush DB
         asyncBatchWorker.flushDirtyProfiles();
-        if (debug) plugin.getLogger().info("Phase 3/6: Database flushed.");
+        plugin.debug("Phase 3/6: Database flushed.");
 
         // Phase 4: Rebuild
         try {
@@ -81,7 +80,7 @@ public final class LockdownManager {
             plugin.setCustomTagLoader(customTagLoader);
             skillManager.clear();
             skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
-            if (debug) plugin.getLogger().info("Phase 4/6: Registries rebuilt.");
+            plugin.debug("Phase 4/6: Registries rebuilt.");
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to rebuild registries during reload", e);
         }
@@ -92,11 +91,11 @@ public final class LockdownManager {
             profile.markSaved();
             profile.invalidatePageCache();
         }
-        if (debug) plugin.getLogger().info("Phase 5/6: UI caches invalidated.");
+        plugin.debug("Phase 5/6: UI caches invalidated.");
 
         // Phase 6: Unlock
         plugin.setReloading(false);
-        if (debug) plugin.getLogger().info("Phase 6/6: Unlocked.");
+        plugin.debug("Phase 6/6: Unlocked.");
         plugin.getLogger().info("Reload complete.");
     }
 }

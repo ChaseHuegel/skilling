@@ -87,6 +87,7 @@ public final class LevelUpDispatcher {
     }
 
     public static void broadcastLevelUp(Player player, SkillDefinition skill, int newLevel, Skilling plugin, BossBarPool bossBarPool) {
+        plugin.debug("Level-up for " + player.getName() + " in " + skill.id() + " -> level " + newLevel);
         String displayName = skill.display() != null && skill.display().name() != null
                 ? skill.display().name() : skill.id();
         boolean major = isMajorLevelUp(skill, newLevel);

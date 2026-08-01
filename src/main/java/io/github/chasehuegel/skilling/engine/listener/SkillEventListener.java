@@ -358,8 +358,12 @@ public final class SkillEventListener implements Listener {
 
     private void dispatch(Player player, Event event, String triggerKey) {
         if (plugin.isReloading()) return;
+        debug("trigger fired: " + triggerKey + " for " + player.getName());
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
-        if (profile == null) return;
+        if (profile == null) {
+            debug("  -> no profile for " + player.getName() + ", skipping");
+            return;
+        }
 
         grantXp(player, profile, event, triggerKey);
         fireAbilities(player, profile, event, triggerKey);
@@ -378,8 +382,12 @@ public final class SkillEventListener implements Listener {
                     continue;
                 }
                 int oldLevel = skill.getLevelForXp(profile.getXp(skill.id()));
-                long rounded = computeXpGain(source.reward().evaluate(oldLevel, 1),
-                        resolveEventBulkScalar(event), plugin.getGlobalXpModifier(), player.getUniqueId());
+                double reward = source.reward().evaluate(oldLevel, 1);
+                double scalar = resolveEventBulkScalar(event);
+                double global = plugin.getGlobalXpModifier();
+                double xpBonus = io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic
+                        .getMultiplier(player.getUniqueId());
+                long rounded = computeXpGain(reward, scalar, global, player.getUniqueId());
                 if (rounded > 0) {
                     profile.addXp(skill.id(), rounded);
                     int newLevel = skill.getLevelForXp(profile.getXp(skill.id()));
@@ -397,7 +405,9 @@ public final class SkillEventListener implements Listener {
                                         player, skill.id(), newLevel));
                         broadcastLevelUp(player, skill, newLevel);
                     }
-                    debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey + ")");
+                    debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey
+                            + ") base=" + reward + " scalar=" + scalar + " global=" + global
+                            + " xpBonus=" + xpBonus);
                     plugin.getLogger().info(player.getName() + " earned " + rounded
                             + " XP in " + skill.id() + " (" + triggerKey + ")");
                 }
@@ -719,9 +729,7 @@ public final class SkillEventListener implements Listener {
 
 
     private void debug(String msg) {
-        if (plugin.isDebugLogging()) {
-            plugin.getLogger().info("[DEBUG] " + msg);
-        }
+        plugin.debug(msg);
     }
 
 }

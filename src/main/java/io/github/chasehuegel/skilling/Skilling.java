@@ -573,6 +573,19 @@ public final class Skilling extends JavaPlugin {
         this.debugLogging = debugLogging;
     }
 
+    /**
+     * Logs a {@code [DEBUG]} line when {@code debug_logging} is enabled. The
+     * guard runs before any string building, so this is a no-op off the hot
+     * path when debugging is disabled.
+     *
+     * @param message the debug message
+     */
+    public void debug(String message) {
+        if (debugLogging) {
+            getLogger().info("[DEBUG] " + message);
+        }
+    }
+
     public int getTitleStayDuration() {
         return titleStayDuration;
     }
