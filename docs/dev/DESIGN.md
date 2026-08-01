@@ -196,15 +196,15 @@ Tests run via `./gradlew test` and must pass before each phase is considered com
 
 ## 8. Documentation Structure
 
-The project ships with user-facing markdown documentation in `docs/`. These files are written for server owners and addon developers, not the plugin's implementors.
+The project ships with user-facing markdown documentation in `..`. These files are written for server owners and addon developers, not the plugin's implementors.
 
 | Document | Audience | Content |
 |---|---|---|
-| `docs/getting-started.md` | Server owners | Installation, first run, basic `/skills` usage |
-| `docs/configuration.md` | Server owners | Reference for `config.yml` and `tags.yml` with all supported keys |
-| `docs/creating-skills.md` | Server owners / designers | Full YAML schema for skill definitions, abilities, XP sources, requirements, with annotated examples |
-| `docs/api-integration.md` | Addon developers | How to register custom mechanics, triggers, evaluators via `SkillingAPI`. Maven/Gradle coordinates, code samples |
-| `docs/capabilities.md` | Addon developers | Catalog of every built-in mechanic, trigger, and evaluator with their parameters and YAML usage |
+| `../users/getting-started.md` | Server owners | Installation, first run, basic `/skills` usage |
+| `../users/configuration.md` | Server owners | Reference for `config.yml` and `tags.yml` with all supported keys |
+| `../users/creating-skills.md` | Server owners / designers | Full YAML schema for skill definitions, abilities, XP sources, requirements, with annotated examples |
+| `../users/api-integration.md` | Addon developers | How to register custom mechanics, triggers, evaluators via `SkillingAPI`. Maven/Gradle coordinates, code samples |
+| `../users/capabilities.md` | Addon developers | Catalog of every built-in mechanic, trigger, and evaluator with their parameters and YAML usage |
 
 All YAML config templates (`config.yml`, `tags.yml`, `template-skill.yml`) must contain inline commented documentation for each supported key, including valid values, defaults, and short descriptions.
 

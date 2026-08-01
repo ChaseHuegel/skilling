@@ -6,7 +6,7 @@ package (`io.github.chasehuegel.skilling.web`) communicates exclusively
 through the public `SkillingAPI` service and direct filesystem reads/writes.
 
 **Commit conventions:** All commits in this repository MUST follow
-`CONVENTIONS-COMMITS.md`. Refer to it before writing any commit message.
+`../docs/dev/CONVENTIONS-COMMITS.md`. Refer to it before writing any commit message.
 
 ## Tech Stack
 

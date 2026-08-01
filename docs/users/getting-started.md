@@ -34,7 +34,7 @@ plugins/Skilling/
 
 ## Creating Your First Skill
 
-1. Copy `template-skill.yml` to `plugins/Skilling/skills/my_skill.yml`.
+1. Copy `../dev/template-skill.yml` to `plugins/Skilling/skills/my_skill.yml`.
 2. Edit the file to define your skill's ID, progression curve, XP sources, and abilities.
 3. Run `/skills reload` (requires `skilling.admin`) or restart the server.
 4. Open the skill overview with `/skills` to see your new skill.

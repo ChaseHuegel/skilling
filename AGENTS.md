@@ -2,7 +2,7 @@
 
 Welcome to the Skilling repository. This file provides architectural context, coding constraints, and design philosophies. **Read these instructions carefully before writing or modifying any code.**
 
-Companion files with deeper specifications: `README.md`, `REQUIREMENTS.md`, `DESIGN.md`, `template-skill.yml`, `CONVENTIONS-COMMITS.md` (commit message format), and `web/AGENTS.md` for Web GUI configuration (including Minecraft asset texture version).
+Companion files with deeper specifications: `README.md`, `docs/dev/REQUIREMENTS.md`, `docs/dev/DESIGN.md`, `docs/dev/template-skill.yml`, `docs/dev/CONVENTIONS-COMMITS.md` (commit message format), and `web/AGENTS.md` for Web GUI configuration (including Minecraft asset texture version).
 
 ## Project Context
 Skilling is a high-performance, data-driven RPG skills engine for PaperMC (Minecraft). It acts as a rules engine, not a traditional plugin.
@@ -67,15 +67,15 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 
 ## Issue Resolution Workflow
 
-When resolving items from `ISSUES.md`, follow this strict sequence:
+When resolving items from `docs/project/ISSUES.md`, follow this strict sequence:
 
 1. **One issue at a time** — Tackle one issue (including all its sub-bullets) completely before starting the next.
 2. **Plan first (if complex)** — For issues with sub-bullets or non-trivial scope, write a brief development plan before writing any code.
 3. **Build** — After making changes, run `./gradlew build`. Fix any compiler errors before continuing.
 4. **Test** — Run `./gradlew test`. Fix any test failures introduced by the changes.
 5. **Self-review** — Read the diff (`git diff`) to verify correctness, style, and adherence to conventions.
-6. **Mark complete** — Check off the resolved bullet(s) in `ISSUES.md`.
-7. **Commit** — `git add -A && git commit -m "..."` with a message following `CONVENTIONS-COMMITS.md`. **All commits MUST adhere to this convention.**
+6. **Mark complete** — Check off the resolved bullet(s) in `docs/project/ISSUES.md`.
+7. **Commit** — `git add -A && git commit -m "..."` with a message following `docs/dev/CONVENTIONS-COMMITS.md`. **All commits MUST adhere to this convention.**
 8. **Next issue** — Repeat from step 1 for the next unchecked item.
 
 ## Testing & Validation
@@ -97,11 +97,11 @@ When resolving items from `ISSUES.md`, follow this strict sequence:
 
 ### External Documentation
 * A `docs/` directory must exist at project root containing markdown files for end-users and addon developers:
-  * `docs/getting-started.md` — Installation, first run, basic usage (`/skills` commands).
-  * `docs/configuration.md` — Reference for `config.yml` and `tags.yml` with all supported keys.
-  * `docs/creating-skills.md` — Full YAML schema for skill definitions, abilities, XP sources, and requirements, with annotated examples.
-  * `docs/api-integration.md` — How to register custom mechanics, triggers, and evaluators via the API. Maven/Gradle coordinates, code samples.
-  * `docs/capabilities.md` — Catalog of every built-in mechanic, trigger, and evaluator with their parameters and YAML usage.
+  * `docs/users/getting-started.md` — Installation, first run, basic usage (`/skills` commands).
+  * `docs/users/configuration.md` — Reference for `config.yml` and `tags.yml` with all supported keys.
+  * `docs/users/creating-skills.md` — Full YAML schema for skill definitions, abilities, XP sources, and requirements, with annotated examples.
+  * `docs/users/api-integration.md` — How to register custom mechanics, triggers, and evaluators via the API. Maven/Gradle coordinates, code samples.
+  * `docs/users/capabilities.md` — Catalog of every built-in mechanic, trigger, and evaluator with their parameters and YAML usage.
 * These docs are **user-facing** and must use clear language free of implementation jargon.
 
 ## Coding Style & Conventions

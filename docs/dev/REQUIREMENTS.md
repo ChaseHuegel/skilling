@@ -99,4 +99,4 @@ Administrative commands must execute safely without corrupting the async data pi
 | **Framework** | JUnit 5 with `./gradlew test` invocation |
 | **Coverage targets** | All `ParameterEvaluator` implementations, `RequirementEngine` lifecycle, `TagResolver` resolution, `LoreResolver` placeholder injection |
 | **Validation gate** | `./gradlew test` must pass alongside `./gradlew build` at the end of each development phase |
-| **Test location** | `src/test/java/io/github/chasehuegel/skilling/` mirroring the main source tree |
+| **Test location** | `../../src/test/java/io/github/chasehuegel/skilling` mirroring the main source tree |
