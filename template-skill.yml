@@ -1,15 +1,15 @@
 # ==========================================
 # SKILL CONFIGURATION TEMPLATE
 # ==========================================
-id: "mining"
-max_level: 100
+id: "mining"                      # Unique skill identifier (used in commands and DB)
+max_level: 100                    # Maximum achievable level (default: 100)
 
 # ----------------------------------------
 # UI & VISUAL IDENTITY
 # ----------------------------------------
 display:
-  name: "Mining"
-  icon: "minecraft:iron_pickaxe"
+  name: "Mining"                 # Skill display name shown in the GUI
+  icon: "minecraft:iron_pickaxe" # Material for the GUI icon
   custom_model_data: 1001       # Maps to the server's custom resource pack
   color: "GREEN"                # Spigot BossBar Color (GREEN, RED, BLUE, etc.)
   style: "SEGMENTED_10"         # Spigot BossBar Style
@@ -22,19 +22,19 @@ display:
 # ----------------------------------------
 progression:
   curve: "polynomial"           # Evaluator type for the overall curve
-  base_xp: 50
-  exponent: 2.5
+  base_xp: 50                   # XP required for level 1
+  exponent: 2.5                 # Exponent for the polynomial curve
 
 # ----------------------------------------
 # EXPERIENCE SOURCES
 # ----------------------------------------
 xp_sources:
-  - trigger: "block_break"
+  - trigger: "block_break"               # Event trigger key (block_break, entity_kill, craft_item, etc.)
     filters:
       - target: "#c:ores"                    # Uses the Tag Resolver
       - state: "player_placed:false"         # Checks the PDC anti-exploit flag
     reward:
-      constant: 15.0
+      constant: 15.0                        # XP reward (constant evaluator)
 
   - trigger: "block_break"
     filters:
@@ -58,37 +58,39 @@ xp_sources:
 abilities:
 
   # -- ABILITY 1: The Core Passive (Linear Scaling) --
-  - id: "geologist"
-    display_name: "Geologist"
-    unlock_level: 1
+  - id: "geologist"              # Unique ability identifier
+    display_name: "Geologist"    # Human-readable name (default: same as id)
+    unlock_level: 1              # Level required to unlock (default: 1)
+    trigger: "block_break"              # Required: the event that activates this ability (see docs for valid keys)
 
     display:
       # {yield_chance} is injected dynamically by the ParameterEvaluator during UI generation
       lore:
         - "&7Increases raw ore yield by &a{yield_chance}%&7."
 
-    mechanics:
-      - type: "core:yield_multiplier"
+    mechanics:                   # Mechanic actions executed when the trigger fires
+      - type: "core:yield_multiplier"    # Mechanic registry key (see docs/capabilities.md)
         filters:
           - target: "#c:ores"
           - tool: "#minecraft:pickaxes"
-        parameters:
+        parameters:              # Evaluator parameters for the mechanic
           yield_chance:                        # Maps directly to the placeholder in the lore
             linear:
               base: 0.5                        # Value at unlock_level
               step: 0.5                        # Amount added per level
               max: 50.0                        # Hard clamp
 
-    feedback:
+    feedback:                    # Success feedback
       notify:
         action_bar: false                      # Suppress passive spam
         chat: false
 
 
   # -- ABILITY 2: The Gated Active (Requirements & Milestones) --
-  - id: "vein_miner"
-    display_name: "Vein Miner"
-    unlock_level: 15
+  - id: "vein_miner"              # Unique ability identifier
+    display_name: "Vein Miner"    # Human-readable name (default: same as id)
+    unlock_level: 15              # Level required to unlock (default: 1)
+    trigger: "block_break"              # Required: the event that activates this ability (see docs for valid keys)
 
     display:
       lore:
@@ -99,10 +101,13 @@ abilities:
 
     # Requirements must all return TRUE before mechanics execute
     requirements:
-      cooldown: 5.0
-      state:
+      cooldown: 5.0                     # Plain scalar = constant. Accepts evaluator syntax too:
+      # cooldown:                        # Requirements.cooldown evaluator syntax for inverse sub-scaling:
+      #   linear: { base: 5.0, step: -0.02, max: 1.0 }
+      state:                             # Required player states (key:value list)
         - "is_sneaking"
-      items:
+        # - "equipped:heavy"            # Must be wearing full diamond/netherite armor
+      items:                             # Item requirements (possession = must have, cost = consumed)
         - action: "possession"
           tag: "#minecraft:pickaxes"
           slot: "MAIN_HAND"
@@ -118,15 +123,15 @@ abilities:
 
     # Result Object Pattern feedback overrides
     on_failure:
-      cooldown:
+      cooldown:                            # Feedback when the ability is on cooldown
         action_bar: "&cVein Miner cooling down: {time}s"
         sounds:
           - type: "BLOCK_NOTE_BLOCK_BASS"
             volume: 1.0
             pitch: 0.5
-      missing_item:
+      missing_item:                        # Feedback when item requirements are not met
         action_bar: "&cRequires {amount}x {item} to power Vein Miner!"
-      exhaustion:
+      exhaustion:                          # Feedback when the player is too exhausted
         action_bar: "&cToo exhausted to mine!"
         sounds:
           - type: "ENTITY_PLAYER_BURP"
@@ -134,9 +139,9 @@ abilities:
             pitch: 0.5
             target: "self"
 
-    mechanics:
-      - type: "core:chain_break"
-        parameters:
+    mechanics:                   # Mechanic actions executed when the trigger fires
+      - type: "core:chain_break"          # Mechanic registry key (see docs/capabilities.md)
+        parameters:              # Evaluator parameters for the mechanic
           chain_limit:
             milestones:                        # O(log N) TreeMap lookup for tiered upgrades
               15: 3
