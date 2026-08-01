@@ -68,6 +68,7 @@ const FALLBACK_TRIGGERS = [
   'block_break', 'block_place', 'entity_damage', 'entity_damage_taken',
   'entity_kill', 'craft_item', 'furnace_extract', 'brew_potion',
   'player_interact', 'consume_item', 'fishing', 'crop_grow', 'breed_animals',
+  'resurrect', 'elytra_glide',
 ]
 
 function updateSource(index: number, patch: Partial<XpSource>) {

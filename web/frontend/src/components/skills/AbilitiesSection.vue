@@ -70,7 +70,7 @@ const FALLBACK_TRIGGERS = [
   'craft_item', 'furnace_extract', 'brew_potion', 'player_interact', 'consume_item',
   'fishing', 'crop_grow', 'breed_animals', 'sprint', 'sneak', 'ride_horse',
   'collect_xp', 'level_up', 'enchant_item', 'shoot_bow', 'item_damage',
-  'player_shear', 'player_tame', 'launch_projectile',
+  'player_shear', 'player_tame', 'launch_projectile', 'resurrect', 'elytra_glide',
 ]
 
 const TRIGGER_SUGGESTIONS = computed(() =>
@@ -80,7 +80,8 @@ const TRIGGER_SUGGESTIONS = computed(() =>
 const FALLBACK_MECHANICS = [
   'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
   'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
-  'core:modify_attribute',
+  'core:modify_attribute', 'core:knockback', 'core:shield_disable', 'core:offhand_strike',
+  'core:set_cooldown', 'core:modify_attack_speed', 'core:ally_aura',
 ]
 
 const MECHANIC_PARAM_NAMES = computed(() =>
@@ -104,6 +105,12 @@ const FALLBACK_PARAM_NAMES: Record<string, string[]> = {
   'core:aoe_effect': ['effect', 'radius', 'duration', 'amplifier'],
   'core:projectile': ['speed', 'damage'],
   'core:teleport': ['range'],
+  'core:knockback': ['force', 'radius', 'vertical'],
+  'core:shield_disable': ['ticks'],
+  'core:offhand_strike': ['multiplier', 'reach'],
+  'core:set_cooldown': ['material', 'ticks'],
+  'core:modify_attack_speed': ['multiplier', 'duration'],
+  'core:ally_aura': ['effect', 'radius', 'duration', 'amplifier'],
 }
 
 interface FilterEntry {
