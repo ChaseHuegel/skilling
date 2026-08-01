@@ -28,15 +28,20 @@ Breaks connected blocks of the same type up to a limit (vein mining).
 
 ### core:block_damage
 
-Damages blocks in an area for instant breaking.
+Chance to fully negate incoming damage (shield/armor "block" flavor).
+
+> **Note:** `core:block_damage` and `core:cancel_damage` behave identically — both roll
+> a `chance` (0-100%) to cancel an incoming damage event. They are kept as separate keys
+> purely for flavor: `block_damage` reads as a shield/armor block (used by armor and
+> shield skills) while `cancel_damage` reads as a dodge/evade (used by evasion skills).
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `chance` | double | `0` | Probability (0-100%) of block damage |
+| `chance` | double | `0` | Probability (0-100%) to fully block damage |
 
-**Event:** `BlockBreakEvent`
+**Event:** `EntityDamageEvent`
 
 ### core:modify_damage
 
@@ -58,7 +63,7 @@ Applies a potion effect to the damaged entity on hit.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | double | — | Legacy numeric potion effect ID (e.g., `2` for Slowness, `10` for Regeneration) |
+| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:slowness`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `duration` | double | `3` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier (0 = level I) |
 
@@ -66,7 +71,12 @@ Applies a potion effect to the damaged entity on hit.
 
 ### core:cancel_damage
 
-Chance to completely cancel incoming damage (evasion/block).
+Chance to completely cancel incoming damage (dodge/evade flavor).
+
+> **Note:** `core:cancel_damage` and `core:block_damage` behave identically — both roll
+> a `chance` (0-100%) to cancel an incoming damage event. They are kept as separate keys
+> purely for flavor: `cancel_damage` reads as a dodge/evade (used by evasion skills)
+> while `block_damage` reads as a shield/armor block (used by armor and shield skills).
 
 **Parameters:**
 
@@ -84,7 +94,7 @@ Temporarily modifies a player attribute.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `attribute` | double | — | Legacy numeric attribute ID (1=MAX_HEALTH, 2=FOLLOW_RANGE, 3=KNOCKBACK_RESISTANCE, 4=MOVEMENT_SPEED, 5=FLYING_SPEED, 6=ARMOR, 7=ARMOR_TOUGHNESS, 8=ATTACK_DAMAGE, 9=ATTACK_SPEED, 10=LUCK) |
+| `attribute` | string | — | Namespaced attribute key (e.g., `minecraft:movement_speed`). Legacy numeric IDs (1-10) remain supported but are deprecated; see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `amount` | double | `0` | Modifier value |
 | `duration` | double | `5` | Duration in seconds |
 
@@ -108,6 +118,7 @@ Applies a temporary knockback resistance attribute modifier.
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `amount` | double | `0` | Knockback resistance (0-1) |
+| `duration` | double | `300` | Duration in seconds |
 
 ### core:speed_bonus
 
@@ -120,7 +131,7 @@ Applies a temporary movement speed attribute modifier.
 | `multiplier` | double | `1.0` | Multiplicative speed multiplier (1.5 = 50% faster, not a percentage) |
 | `duration` | double | `300` | Duration in seconds |
 
-**Event:** `PlayerToggleSprintEvent`
+**Event:** Fires on the trigger declared by the ability (e.g., `entity_damage_taken`, `consume_item`). Gives the player a temporary movement speed boost for the configured `duration`.
 
 ### core:modify_craft_output
 
@@ -190,10 +201,12 @@ Applies a potion effect to all entities within a radius (excluding the player).
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | double | — | Legacy numeric potion effect ID |
+| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:regeneration`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `radius` | double | `5` | Effect radius in blocks |
 | `duration` | double | `5` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
+
+**Event:** Fires on the trigger declared by the ability. Applies the effect to all living entities within `radius` (excluding the player).
 
 ### core:projectile
 
@@ -222,15 +235,54 @@ Short-range teleport in the player's looking direction.
 
 ### core:thorns_damage
 
-Reflects a percentage of incoming damage back to the attacker.
+Reflects a flat amount of incoming damage back to the attacker.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `percentage` | double | `0` | Damage reflection percentage (0-100) |
+| `damage` | double | `0` | Flat damage reflected to the attacker |
 
-**Event:** `EntityDamageEvent`
+**Event:** `EntityDamageByEntityEvent`
+
+### core:knockback
+
+Applies a directional velocity impulse (knockback) to the damaged entity, or to all living entities in a radius around the player.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `force` | double | `0` | Horizontal impulse strength (velocity magnitude) |
+| `radius` | double | `0` | Radius in blocks; `0` = single target only (the damaged entity) |
+| `vertical` | double | `0.3` | Upward component added to the impulse |
+
+**Event:** `EntityDamageByEntityEvent` (single target) / `PlayerInteractEvent` (radial shove)
+
+### core:shield_disable
+
+Triggers the vanilla shield raise-lockout cooldown on a target player, rendering them unable to block with a shield for the duration.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ticks` | double | `0` | Shield disable duration in ticks |
+
+**Event:** `EntityDamageByEntityEvent` (applied to the damaged player) / `PlayerInteractEvent` (applied to the activating player)
+
+### core:offhand_strike
+
+Deals a melee hit using the base attack damage of the off-hand weapon to the entity the player is looking at, consuming 1 off-hand durability.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Scales the off-hand weapon's base damage |
+| `reach` | double | `4` | Maximum targeting distance in blocks |
+
+**Event:** `PlayerInteractEvent`
 
 ### core:dodge
 
@@ -264,7 +316,7 @@ Applies a potion effect to nearby enemies within a radius on damaging an entity.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | double | — | Legacy numeric potion effect ID |
+| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:poison`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `duration` | double | `3` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
 | `radius` | double | `5` | Effect radius in blocks |
@@ -301,7 +353,7 @@ Applies a multiplicative XP bonus to all XP gains for the player's session.
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Multiplicative XP multiplier applied to all gains (1.5 = +50%, 2.0 = double; not a percentage increase) |
 
-**Event:** Varies (triggered by ability activation)
+**Event:** Fires on the trigger declared by the ability.
 
 ### core:fishing_yield
 
@@ -371,7 +423,7 @@ Applies the HASTE potion effect to the player, increasing mining/digging speed.
 | `amplifier` | double | `0` | Effect amplifier (0 = level I) |
 | `duration` | double | `300` | Duration in seconds |
 
-**Event:** `BlockBreakEvent`
+**Event:** Fires on the trigger declared by the ability. Applies the HASTE potion effect to the player, increasing mining/digging speed — not movement or placement speed.
 
 ### core:repair_discount
 
@@ -429,12 +481,43 @@ Applies a potion effect to the player and all nearby living entities within a ra
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | double | — | Legacy numeric potion effect ID (e.g., `10` for Regeneration) |
+| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:regeneration`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `radius` | double | `8` | Aura radius in blocks |
 | `duration` | double | `5` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
 
-**Event:** Varies (triggered by ability activation)
+**Event:** Fires on the trigger declared by the ability.
+
+> **Caution:** `core:field_aura` applies the effect to ALL nearby `LivingEntity`,
+> including hostile mobs. For player-only buffs, use `core:ally_aura` instead.
+
+### core:ally_aura
+
+Applies a potion effect to the casting player and all nearby **players** (allies) within a radius. Hostile mobs are never affected.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:regeneration`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `radius` | double | `8` | Aura radius in blocks (max 32) |
+| `duration` | double | `5` | Duration in seconds |
+| `amplifier` | double | `0` | Effect amplifier |
+
+**Event:** Fires on the trigger declared by the ability (typically `player_interact`). Applies to nearby players only, not living entities.
+
+### core:set_cooldown
+
+Triggers the vanilla item-stack cooldown animation on the activating player for the given material.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `material` | string | — | Namespaced material key (e.g., `minecraft:shield`, `minecraft:goat_horn`) |
+| `ticks` | double | `0` | Cooldown duration in ticks |
+
+**Event:** Any — applies to the activating player
 
 ### core:modify_jump
 
@@ -446,6 +529,37 @@ Temporarily increases the player's jump strength.
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Jump multiplier (1.5 = 50% higher) |
 | `duration` | double | `300` | Duration in seconds |
+
+### core:modify_attack_speed
+
+Temporarily increases the player's attack speed for a configurable duration.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Attack speed multiplier (1.2 = +20% faster) |
+| `duration` | double | `300` | Duration in seconds |
+
+**Event:** Fires on the trigger declared by the ability (temporary attack speed bonus).
+
+## Effect & Attribute Parameter Keys
+
+Mechanics that accept an `effect` parameter (`core:apply_status`, `core:aoe_effect`,
+`core:crowd_control`, `core:field_aura`, `core:ally_aura`) or an `attribute` parameter
+(`core:modify_attribute`) now accept **namespaced keys**:
+
+```yaml
+effect: { constant: "minecraft:poison" }
+attribute: { constant: "minecraft:movement_speed" }
+```
+
+- **Namespaced keys** (e.g., `"minecraft:poison"`, `"minecraft:movement_speed"`) are
+  resolved against the live Paper registry and are the recommended form.
+- **Legacy numeric IDs** (e.g., `19` for Poison, `4` for Movement Speed) remain
+  supported for backward compatibility but are **deprecated** and log a warning on use.
+- **Unknown keys or IDs throw `IllegalArgumentException`** at runtime (fail-fast) so
+  misconfigurations surface immediately rather than silently failing.
 
 ## Built-In Triggers
 
@@ -475,6 +589,8 @@ Temporarily increases the player's jump strength.
 | `player_shear` | `PlayerShearEntityEvent` | Shearing a sheep or other shearable entity |
 | `player_tame` | `EntityTameEvent` | Taming a wild animal |
 | `launch_projectile` | `ProjectileLaunchEvent` | Launching a projectile (trident, snowball, etc.) |
+| `resurrect` | `EntityResurrectEvent` | Totem of Undying activation |
+| `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
 
 ## Built-In State Filters
 
@@ -501,6 +617,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `offhand` | `empty`, `weapon` | Offhand item state |
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
 | `armor` | `empty` | All armor slots are empty |
+| `equipped` | `light`, `medium`, `heavy`, `none` | Verifies the armor type worn; all four slots must match. `light`=leather, `medium`=chainmail/iron/golden/turtle, `heavy`=diamond/netherite, `none`=empty |
 
 ## Built-In Evaluators
 
