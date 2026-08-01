@@ -1,153 +1,93 @@
 id: "unarmed"
 max_level: 100
-
-display:
-  name: "Unarmed"
-  icon: "minecraft:player_head"
-  color: "RED"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Unarmed", icon: "minecraft:player_head", color: "RED", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
-    filters:
-      - state: "hand:empty"
-    reward:
-      constant: 5.0
-
+    filters: [ { state: "hand:empty" } ]
+    reward: { constant: 5.0 }
   - trigger: "entity_kill"
-    filters:
-      - state: "hand:empty"
-    reward:
-      constant: 25.0
-
+    filters: [ { state: "hand:empty" } ]
+    reward: { constant: 25.0 }
 abilities:
   - id: "iron_fist"
     display_name: "Iron Fist"
     unlock_level: 1
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Increases unarmed damage by &a{multiplier}x&7."
+    display: { lore: [ "&7Unarmed damage &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - state: "hand:empty"
+        filters: [ { state: "hand:empty" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.005
-              max: 1.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+    feedback: { notify: { action_bar: false } }
   - id: "lightning_reflexes"
     display_name: "Lightning Reflexes"
     unlock_level: 15
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&a{chance}% &7chance to dodge attacks."
+    display: { lore: [ "&7Unarmored & empty-handed: &a{chance}%&7 dodge." ] }
     mechanics:
       - type: "core:dodge"
+        filters: [ { state: "hand:empty" } ]
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.2
-              max: 25.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "pressure_points"
     display_name: "Pressure Points"
     unlock_level: 25
     trigger: "entity_damage"
     display:
       lore:
-        - "&7Unarmed strikes weaken targets for &a{duration}s&7."
+        - "&7Sneak-strike unarmed to weaken targets &a{duration}s&7 & bonus damage."
+        - "&8Requires: Sneaking, empty hands."
+    requirements:
+      cooldown: 5.0
+      state: [ "is_sneaking", "hand:empty" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&ePressure Points cooling down: {time}s" } }
     mechanics:
       - type: "core:apply_status"
-        filters:
-          - state: "hand:empty"
+        filters: [ { state: "hand:empty" } ]
         parameters:
-          effect:
-            constant: 18.0
-          duration:
-            linear:
-              base: 3.0
-              step: 0.03
-              max: 6.0
-          amplifier:
-            constant: 1.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          effect: { constant: "minecraft:weakness" }      # P2-11
+          duration: { linear: { base: 3.0, step: 0.03, max: 6.0 } }
+          amplifier: { constant: 1.0 }
+      - type: "core:modify_damage"
+        filters: [ { state: "hand:empty" } ]
+        parameters:
+          multiplier: { linear: { base: 1.2, step: 0.01, max: 1.5 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Pressure Points! ✦" } }
   - id: "chi_flow"
     display_name: "Chi Flow"
     unlock_level: 50
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Move &a{multiplier}x &7faster in combat."
+    display: { lore: [ "&7Unarmed hits grant &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
+        filters: [ { state: "hand:empty" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.25
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          duration: { constant: 6.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "counter_strike"
     display_name: "Counter Strike"
     unlock_level: 75
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Heal &a{percentage}% &7of unarmed damage dealt."
+    display: { lore: [ "&7Heal &a{percentage}%&7 of unarmed damage dealt." ] }
     mechanics:
       - type: "core:lifesteal"
-        filters:
-          - state: "hand:empty"
+        filters: [ { state: "hand:empty" } ]
         parameters:
-          percentage:
-            linear:
-              base: 3.0
-              step: 0.05
-              max: 10.0
-    feedback:
-      notify:
-        action_bar: false
-
+          percentage: { linear: { base: 3.0, step: 0.05, max: 10.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "master_martial_artist"
     display_name: "Master Martial Artist"
     unlock_level: 100
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Massive unarmed damage boost."
+    display: { lore: [ "&7Unarmed damage &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - state: "hand:empty"
+        filters: [ { state: "hand:empty" } ]
         parameters:
-          multiplier:
-            constant: 2.5
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 2.0, step: 0.03, max: 2.8 } }
+    feedback: { notify: { action_bar: false } }

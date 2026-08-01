@@ -141,3 +141,7 @@ custom_tags:
     - "minecraft:leather_chestplate"
     - "minecraft:leather_leggings"
     - "minecraft:leather_boots"
+
+  bows:
+    - "minecraft:bow"
+    - "minecraft:crossbow"

@@ -1,166 +1,91 @@
 id: "archery"
 max_level: 100
-
-display:
-  name: "Archery"
-  icon: "minecraft:bow"
-  color: "RED"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Archery", icon: "minecraft:bow", color: "RED", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
-    filters:
-      - target: "#minecraft:arrows"
-    reward:
-      constant: 5.0
-
+    filters: [ { target: "#minecraft:arrows" } ]
+    reward: { constant: 5.0 }
   - trigger: "entity_kill"
-    filters:
-      - target: "#minecraft:arrows"
-    reward:
-      constant: 15.0
-
+    filters: [ { target: "#minecraft:arrows" } ]
+    reward: { constant: 15.0 }
 abilities:
   - id: "steady_hand"
     display_name: "Steady Hand"
     unlock_level: 1
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Increases bow damage by &a{multiplier}x&7."
+    display: { lore: [ "&7Arrow damage &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - target: "#minecraft:arrows"
+        filters: [ { target: "#minecraft:arrows" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.0045
-              max: 1.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "quick_reload"
-    display_name: "Quick Reload"
+          multiplier: { linear: { base: 1.05, step: 0.0045, max: 1.5 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "arrow_recovery"
+    display_name: "Arrow Recovery"
     unlock_level: 15
+    trigger: "shoot_bow"
+    display: { lore: [ "&a{chance}%&7 chance arrows are not consumed on shoot." ] }
+    mechanics:
+      - type: "core:projectile_return"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.4, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "power_shot"
+    display_name: "Power Shot"
+    unlock_level: 25
     trigger: "shoot_bow"
     display:
       lore:
-        - "&7Reduces bow draw time."
-    mechanics:
-      - type: "core:haste_effect"
-        filters:
-          - tool: "#minecraft:bows"
-        parameters:
-          amplifier:
-            linear:
-              base: 1
-              step: 0.002
-              max: 2
-          duration:
-            constant: 300.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "piercing_shot"
-    display_name: "Piercing Shot"
-    unlock_level: 25
-    trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Arrows pierce through targets."
+        - "&7Sneak-fire a bow for &a{multiplier}x&7 arrow damage on next shot."
+        - "&8Requires: Sneaking, bow."
+    requirements:
+      cooldown: 5.0
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "#c:bows", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&ePower Shot cooling down: {time}s" } }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - target: "#minecraft:arrows"
+        filters: [ { target: "#minecraft:arrows" } ]
         parameters:
-          multiplier:
-            milestones:
-              25: 1.5
-              50: 2.0
-              75: 2.5
-              100: 3.0
+          multiplier: { linear: { base: 1.4, step: 0.01, max: 1.8 } }
     feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&c✦ Piercing Shot! ✦"
-      sounds:
-        - type: "ENTITY_ARROW_HIT_PLAYER"
-          volume: 0.5
-          pitch: 1.2
-          target: "self"
-
+      notify: { action_bar: true, chat: false, message: "&c✦ Power Shot! ✦" }
+      sounds: [ { type: "ENTITY_ARROW_HIT_PLAYER", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "mark_target"
     display_name: "Mark Target"
     unlock_level: 50
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Arrow hits apply slowness to targets."
+    display: { lore: [ "&7Arrow hits slow targets &a{duration}s&7." ] }
     mechanics:
       - type: "core:apply_status"
-        filters:
-          - target: "#minecraft:arrows"
+        filters: [ { target: "#minecraft:arrows" } ]
         parameters:
-          effect:
-            constant: 1.0
-          duration:
-            linear:
-              base: 2.0
-              step: 0.03
-              max: 5.0
-          amplifier:
-            constant: 1.0
-    feedback:
-      notify:
-        action_bar: false
-
+          effect: { constant: "minecraft:slowness" }      # P2-11
+          duration: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
+          amplifier: { constant: 1.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "fleet_footed"
     display_name: "Fleet-Footed"
     unlock_level: 75
     trigger: "shoot_bow"
-    display:
-      lore:
-        - "&7Move &a{multiplier}x &7faster while wielding a bow."
+    display: { lore: [ "&7Firing a bow grants &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
-        filters:
-          - tool: "#minecraft:bows"
+        filters: [ { tool: "#c:bows" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.25
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          duration: { constant: 6.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "eagle_eye"
     display_name: "Eagle Eye"
     unlock_level: 100
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Critical hits on distant targets for massive damage."
+    display: { lore: [ "&7Arrow damage &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - target: "#minecraft:arrows"
+        filters: [ { target: "#minecraft:arrows" } ]
         parameters:
-          multiplier:
-            constant: 3.5
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 2.5, step: 0.03, max: 3.5 } }
+    feedback: { notify: { action_bar: false } }

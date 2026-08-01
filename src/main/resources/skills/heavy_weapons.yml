@@ -1,173 +1,98 @@
 id: "heavy_weapons"
 max_level: 100
-
-display:
-  name: "Heavy Weapons"
-  icon: "minecraft:iron_sword"
-  color: "RED"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Heavy Weapons", icon: "minecraft:iron_sword", color: "RED", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
-    filters:
-      - tool: "#c:heavy_weapons"
-    reward:
-      constant: 5.0
-
+    filters: [ { tool: "#c:heavy_weapons" } ]       # FIX: was target
+    reward: { constant: 5.0 }
   - trigger: "entity_kill"
-    filters:
-      - tool: "#c:heavy_weapons"
-    reward:
-      constant: 20.0
-
+    filters: [ { tool: "#c:heavy_weapons" } ]
+    reward: { constant: 20.0 }
 abilities:
   - id: "heavy_strikes"
     display_name: "Heavy Strikes"
     unlock_level: 1
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Increases melee damage by &a{multiplier}x&7."
+    display: { lore: [ "&7Heavy-weapon damage &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - tool: "#c:heavy_weapons"
+        filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.003
-              max: 1.35
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.003, max: 1.35 } }
+    feedback: { notify: { action_bar: false } }
   - id: "stun_impact"
     display_name: "Stun Impact"
     unlock_level: 15
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Heavy hits slow targets for &a{duration}s&7."
+    display: { lore: [ "&7Heavy hits slow targets &a{duration}s&7." ] }
     mechanics:
       - type: "core:apply_status"
-        filters:
-          - tool: "#c:heavy_weapons"
+        filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          effect:
-            constant: 2.0
-          duration:
-            linear:
-              base: 2.0
-              step: 0.02
-              max: 4.0
-          amplifier:
-            constant: 1.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          effect: { constant: "minecraft:slowness" }    # P2-11
+          duration: { linear: { base: 2.0, step: 0.02, max: 4.0 } }
+          amplifier: { constant: 1.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "cleave"
     display_name: "Cleave"
     unlock_level: 25
     trigger: "entity_damage"
     display:
       lore:
-        - "&7Attacks apply weakness to nearby enemies."
+        - "&7Shift-attack to cleave: &a{multiplier}x&7 damage + weakness in &a{radius}&7 radius."
+        - "&8Requires: Sneaking, heavy weapon."
+    requirements:
+      cooldown: 6.0
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "#c:heavy_weapons", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.5, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&eCleave cooling down: {time}s" } }
     mechanics:
-      - type: "core:crowd_control"
-        filters:
-          - tool: "#c:heavy_weapons"
+      - type: "core:modify_damage"
+        filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          effect:
-            constant: 18.0
-          radius:
-            linear:
-              base: 2.0
-              step: 0.03
-              max: 5.0
-          duration:
-            constant: 3.0
-          amplifier:
-            linear:
-              base: 0
-              step: 0.01
-              max: 1
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.2, step: 0.01, max: 1.5 } }
+      - type: "core:crowd_control"
+        filters: [ { tool: "#c:heavy_weapons" } ]
+        parameters:
+          effect: { constant: "minecraft:weakness" }   # P2-11
+          radius: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
+          duration: { linear: { base: 3.0, step: 0.05, max: 6.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Cleave! ✦" } }
   - id: "berserker"
     display_name: "Berserker"
     unlock_level: 50
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Heal &a{percentage}% &7of damage dealt to enemies."
+    display: { lore: [ "&7Heal &a{percentage}%&7 of heavy-weapon damage." ] }
     mechanics:
       - type: "core:lifesteal"
-        filters:
-          - tool: "#c:heavy_weapons"
+        filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          percentage:
-            linear:
-              base: 2.0
-              step: 0.05
-              max: 8.0
-    feedback:
-      notify:
-        action_bar: false
-
+          percentage: { linear: { base: 2.0, step: 0.05, max: 8.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "execute"
     display_name: "Execute"
     unlock_level: 75
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Enemies below &a{threshold}% &7health are instantly killed."
+    display: { lore: [ "&7Heavy hits kill targets below &a{threshold}%&7 HP." ] }
     mechanics:
       - type: "core:execute"
-        filters:
-          - tool: "#c:heavy_weapons"
+        filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          threshold:
-            linear:
-              base: 3.0
-              step: 0.05
-              max: 7.0
+          threshold: { linear: { base: 3.0, step: 0.05, max: 7.0 } }
     feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&c✦ Execute! ✦"
-      sounds:
-        - type: "ENTITY_PLAYER_ATTACK_CRIT"
-          volume: 0.5
-          pitch: 0.8
-          target: "self"
-
+      notify: { action_bar: true, chat: false, message: "&c✦ Execute! ✦" }
+      sounds: [ { type: "ENTITY_PLAYER_ATTACK_CRIT", volume: 0.5, pitch: 0.8, target: "self" } ]
   - id: "master_at_arms"
     display_name: "Master at Arms"
     unlock_level: 100
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Massive damage boost with heavy weapons."
+    display: { lore: [ "&7Heavy-weapon damage &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - tool: "#c:heavy_weapons"
+        filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          multiplier:
-            constant: 2.0
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 1.8, step: 0.02, max: 2.4 } }
+    feedback: { notify: { action_bar: false } }

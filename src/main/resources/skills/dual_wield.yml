@@ -1,166 +1,96 @@
 id: "dual_wield"
 max_level: 100
-
-display:
-  name: "Dual Wield"
-  icon: "minecraft:netherite_sword"
-  color: "RED"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Dual Wield", icon: "minecraft:netherite_sword", color: "RED", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
-    filters:
-      - state: "offhand:weapon"
-    reward:
-      constant: 6.0
-
+    filters: [ { state: "offhand:weapon" } ]
+    reward: { constant: 6.0 }
   - trigger: "entity_kill"
-    filters:
-      - state: "offhand:weapon"
-    reward:
-      constant: 25.0
-
+    filters: [ { state: "offhand:weapon" } ]
+    reward: { constant: 25.0 }
 abilities:
   - id: "dual_strike"
     display_name: "Dual Strike"
     unlock_level: 1
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Increases dual-wield damage by &a{multiplier}x&7."
+    display: { lore: [ "&7Main-hand damage &a{multiplier}x&7 while offhand holds a weapon." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - state: "offhand:weapon"
+        filters: [ { state: "offhand:weapon" }, { tool: "#minecraft:swords" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.003
-              max: 1.35
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.003, max: 1.35 } }
+    feedback: { notify: { action_bar: false } }
   - id: "whirlwind"
     display_name: "Whirlwind"
     unlock_level: 15
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Dual attacks weaken nearby enemies."
+    display: { lore: [ "&7Main-hand hits weaken nearby foes." ] }
     mechanics:
       - type: "core:crowd_control"
-        filters:
-          - state: "offhand:weapon"
+        filters: [ { state: "offhand:weapon" }, { tool: "#minecraft:swords" } ]
         parameters:
-          effect:
-            constant: 18.0
-          radius:
-            linear:
-              base: 2.0
-              step: 0.03
-              max: 5.0
-          duration:
-            constant: 3.0
-          amplifier:
-            linear:
-              base: 0
-              step: 0.01
-              max: 1
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "cross_cut"
-    display_name: "Cross Cut"
+          effect: { constant: "minecraft:weakness" }     # P2-11
+          radius: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
+          duration: { linear: { base: 3.0, step: 0.04, max: 6.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+  - id: "offhand_strike"
+    display_name: "Offhand Strike"
     unlock_level: 25
-    trigger: "entity_damage"
+    trigger: "player_interact"
     display:
       lore:
-        - "&7Dual strikes poison targets for &a{duration}s&7."
+        - "&7Left-Click with a weapon in offhand to strike for &a{multiplier}x&7 offhand damage."
+        - "&7Applies poison &a{duration}s&7."
+        - "&8Requires: Sneaking, weapon in offhand."
+    requirements:
+      cooldown: 3.0
+      state: [ "is_sneaking", "offhand:weapon" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&eOffhand Strike cooling down: {time}s" } }
     mechanics:
-      - type: "core:apply_status"
-        filters:
-          - state: "offhand:weapon"
+      - type: "core:offhand_strike"        # P2-4
         parameters:
-          effect:
-            constant: 19.0
-          duration:
-            linear:
-              base: 2.0
-              step: 0.03
-              max: 5.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 0.6, step: 0.01, max: 1.0 } }
+          reach: { constant: 4.0 }
+      - type: "core:apply_status"
+        parameters:
+          effect: { constant: "minecraft:poison" }     # P2-11
+          duration: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Offhand Strike! ✦" } }
   - id: "rapid_assault"
     display_name: "Rapid Assault"
     unlock_level: 50
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Move &a{multiplier}x &7faster with two weapons."
+    display: { lore: [ "&7Dual-wield hits grant &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
-        filters:
-          - state: "offhand:weapon"
+        filters: [ { state: "offhand:weapon" }, { tool: "#minecraft:swords" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.25
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          duration: { constant: 6.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "dual_parry"
     display_name: "Dual Parry"
     unlock_level: 75
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&a{chance}% &7chance to block attacks with two weapons."
+    display: { lore: [ "&7With a weapon in offhand: &a{chance}%&7 block chance." ] }
     mechanics:
       - type: "core:block_damage"
-        filters:
-          - state: "offhand:weapon"
+        filters: [ { state: "offhand:weapon" } ]
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.2
-              max: 25.0
-    feedback:
-      notify:
-        action_bar: false
-
+          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "storm_blade"
     display_name: "Storm Blade"
     unlock_level: 100
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Massive dual-wield damage boost."
+    display: { lore: [ "&7Dual-wield main-hand damage &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - state: "offhand:weapon"
+        filters: [ { state: "offhand:weapon" }, { tool: "#minecraft:swords" } ]
         parameters:
-          multiplier:
-            constant: 2.5
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 2.0, step: 0.03, max: 2.8 } }
+    feedback: { notify: { action_bar: false } }

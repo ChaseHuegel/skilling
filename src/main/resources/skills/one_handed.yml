@@ -1,157 +1,91 @@
 id: "one_handed"
 max_level: 100
-
-display:
-  name: "One Handed"
-  icon: "minecraft:iron_sword"
-  color: "RED"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "One Handed", icon: "minecraft:iron_sword", color: "RED", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
-    filters:
-      - state: "offhand:empty"
-    reward:
-      constant: 5.0
-
+    filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
+    reward: { constant: 5.0 }
   - trigger: "entity_kill"
-    filters:
-      - state: "offhand:empty"
-    reward:
-      constant: 20.0
-
+    filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
+    reward: { constant: 20.0 }
 abilities:
   - id: "precise_strikes"
     display_name: "Precise Strikes"
     unlock_level: 1
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Increases damage by &a{multiplier}x &7with a free offhand."
+    display: { lore: [ "&7Sword damage &a{multiplier}x&7 with free offhand." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - state: "offhand:empty"
+        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.003
-              max: 1.35
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.003, max: 1.35 } }
+    feedback: { notify: { action_bar: false } }
   - id: "quick_hands"
     display_name: "Quick Hands"
     unlock_level: 15
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Move &a{multiplier}x &7faster with one hand free."
+    display: { lore: [ "&7Sword hits with free offhand grant &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
-        filters:
-          - state: "offhand:empty"
+        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.25
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          duration: { constant: 6.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "parry"
     display_name: "Parry"
     unlock_level: 25
     trigger: "entity_damage_taken"
     display:
       lore:
-        - "&a{chance}% &7chance to dodge attacks with one hand free."
+        - "&7Sneak+Left-Click with a sword & free offhand to negate next hit &a{chance}%&7."
+        - "&8Requires: Sneaking, sword, offhand empty."
+    requirements:
+      cooldown: 5.0
+      state: [ "is_sneaking", "offhand:empty" ]
+      items: [ { action: "possession", tag: "#minecraft:swords", slot: "MAIN_HAND" } ]
+    on_failure: { cooldown: { action_bar: "&eParry cooling down: {time}s" } }
     mechanics:
-      - type: "core:dodge"
-        filters:
-          - state: "offhand:empty"
+      - type: "core:cancel_damage"
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.2
-              max: 25.0
+          chance: { linear: { base: 50.0, step: 0.4, max: 85.0 } }
     feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+      notify: { action_bar: true, chat: false, message: "&b✦ Parry! ✦" }
+      sounds: [ { type: "ITEM_SHIELD_BLOCK", volume: 0.4, pitch: 1.5, target: "self" } ]
   - id: "fencing"
     display_name: "Fencing"
     unlock_level: 50
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Attacks slow targets for &a{duration}s&7."
+    display: { lore: [ "&7Sword hits slow targets &a{duration}s&7." ] }
     mechanics:
       - type: "core:apply_status"
-        filters:
-          - state: "offhand:empty"
+        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
         parameters:
-          effect:
-            constant: 2.0
-          duration:
-            linear:
-              base: 2.0
-              step: 0.03
-              max: 5.0
-          amplifier:
-            constant: 0.0
-    feedback:
-      notify:
-        action_bar: false
-
+          effect: { constant: "minecraft:slowness" }    # P2-11
+          duration: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "duelist"
     display_name: "Duelist"
     unlock_level: 75
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Increased attack speed with one hand free."
+    display: { lore: [ "&7Sword hits with free offhand grant &a{multiplier}x&7 attack speed for {duration}s." ] }
     mechanics:
-      - type: "core:lifesteal"
-        filters:
-          - state: "offhand:empty"
+      - type: "core:modify_attack_speed"     # P2-10 (was lifesteal — mismatched)
+        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
         parameters:
-          percentage:
-            linear:
-              base: 2.0
-              step: 0.04
-              max: 8.0
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.4 } }
+          duration: { constant: 6.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "blade_master"
     display_name: "Blade Master"
     unlock_level: 100
     trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Massive damage with a free offhand."
+    display: { lore: [ "&7Sword damage &a{multiplier}x&7 with free offhand." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - state: "offhand:empty"
+        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
         parameters:
-          multiplier:
-            constant: 2.0
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 1.8, step: 0.02, max: 2.3 } }
+    feedback: { notify: { action_bar: false } }
