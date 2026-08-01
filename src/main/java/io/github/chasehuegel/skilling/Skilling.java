@@ -2,6 +2,7 @@ package io.github.chasehuegel.skilling;
 
 import io.github.chasehuegel.skilling.api.Registries;
 import io.github.chasehuegel.skilling.api.SkillingAPI;
+import io.github.chasehuegel.skilling.engine.ArmorTierMatcher;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.db.DatabaseManager;
@@ -457,6 +458,9 @@ public final class Skilling extends JavaPlugin {
             }
             default -> false;
         });
+
+        sf.register("equipped", (p, e, v) ->
+                ArmorTierMatcher.matchesArmorTier(p.getInventory().getArmorContents(), v));
     }
 
     private void loadSkills() {
