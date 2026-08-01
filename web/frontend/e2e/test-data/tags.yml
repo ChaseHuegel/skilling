@@ -10,3 +10,6 @@ custom_tags:
     - "minecraft:andesite"
     - "minecraft:granite"
     - "minecraft:diorite"
+  c:veinminer:
+    - "#c:ores"
+    - "#c:stone"

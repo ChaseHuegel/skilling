@@ -1,105 +1,100 @@
 id: "mining"
 max_level: 100
-display:
-  name: "Mining"
-  icon: "minecraft:iron_pickaxe"
-  custom_model_data: 1001
-  color: "GREEN"
-  style: "SEGMENTED_10"
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
+display: { name: "Mining", icon: "minecraft:iron_pickaxe", color: "GREEN", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "block_break"
-    filters:
-      - target: "#c:ores"
-        state: "player_placed:false"
-    reward:
-      constant: 15
+    filters: [ { target: "#c:ores" }, { state: "player_placed:false" } ]
+    reward: { constant: 15.0 }
   - trigger: "block_break"
-    filters:
-      - target: "#c:stone"
-        state: "player_placed:false"
-    reward:
-      constant: 5
+    filters: [ { target: "#c:stone" }, { state: "player_placed:false" } ]
+    reward: { constant: 2.0 }
 abilities:
   - id: "geologist"
     display_name: "Geologist"
     unlock_level: 1
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Increases raw ore yield by &a{yield_chance}%&7."
-    requirements:
-      cooldown: 0
-      state: []
-      items: []
+    display: { lore: [ "&7Ore yield +&a{yield_chance}%&7." ] }
     mechanics:
       - type: "core:yield_multiplier"
-        filters:
-          - target: "#c:ores"
-          - tool: "#minecraft:pickaxes"
+        filters: [ { target: "#c:ores" }, { tool: "#minecraft:pickaxes" } ]
         parameters:
-          yield_chance:
-            linear:
-              base: 0.5
-              step: 0.5
-              max: 50.0
-    feedback:
-      action_bar: false
-      chat: false
-      message: ""
-      particles: []
-      sounds: []
+          yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "prospector"
+    display_name: "Prospector"
+    unlock_level: 15
+    trigger: "block_break"
+    display: { lore: [ "&7Bonus ore XP &a{multiplier}x&7." ] }
+    mechanics:
+      - type: "core:xp_bonus"
+        filters: [ { target: "#c:ores" } ]
+        parameters:
+          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
+    feedback: { notify: { action_bar: false } }
   - id: "vein_miner"
     display_name: "Vein Miner"
-    unlock_level: 15
+    unlock_level: 25
     trigger: "block_break"
     display:
       lore:
-        - "&7Mines up to &a{chain_limit} &7connected ores at once."
+        - "&7Sneak-mine to break up to &a{chain_limit}&7 connected ore/stone."
+        - "&7Costs 2 hunger + 1 Coal."
+        - "&8Requires: Sneaking, pickaxe."
     requirements:
       cooldown: 5.0
-      state:
-        - "is_sneaking"
+      state: [ "is_sneaking" ]
       items:
-        - action: "cost"
-          tag: "minecraft:coal"
-          slot: "HAND"
-          amount: 1
-          item_cooldown: 0.0
+        - { action: "possession", tag: "#minecraft:pickaxes", slot: "MAIN_HAND" }
+        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&cVein Miner cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires 1x Coal to power Vein Miner!" }
+      exhaustion: { action_bar: "&cToo exhausted!" }
     mechanics:
       - type: "core:chain_break"
-        filters:
-          - target: "#c:ores"
+        filters: [ { target: "#c:veinminer" } ]
         parameters:
-          chain_limit:
-            milestones:
-              15: 3
-              40: 8
-              80: 16
-          exhaustion:
-            constant: 2.0
-    on_failure:
-      cooldown:
-        action_bar: "&cAbility on cooldown: &e{time}s remaining"
-        sounds: []
-      missing_state:
-        action_bar: "&cYou must be sneaking to use Vein Miner"
-        sounds: []
+          chain_limit: { milestones: { 25: 3, 50: 8, 75: 16, 100: 32 } }
     feedback:
-      action_bar: true
-      chat: true
-      message: "&a⚡ Vein Miner activated!"
-      particles:
-        - type: "BLOCK_DUST"
-          count: 10
-          target: "target"
-          offset: [0.5, 0.5, 0.5]
-          speed: 0.1
-      sounds:
-        - type: "BLOCK_STONE_BREAK"
-          volume: 0.5
-          pitch: 1.2
-          target: "target"
+      notify: { action_bar: true, chat: false, message: "&b✦ Vein Miner! ✦" }
+      sounds: [ { type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR", volume: 0.5, pitch: 1.2, target: "self" } ]
+  - id: "magma_forge"
+    display_name: "Magma Forge"
+    unlock_level: 50
+    trigger: "block_break"
+    display: { lore: [ "&7Ores have &a{chance}%&7 chance to auto-smelt." ] }
+    mechanics:
+      - type: "core:auto_smelt"
+        filters: [ { target: "#c:ores" } ]
+        parameters:
+          chance: { linear: { base: 25.0, step: 0.5, max: 75.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "sturdy_miner"
+    display_name: "Sturdy Miner"
+    unlock_level: 75
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7While holding a pick, gain &a{amount}&7 armor on hit." ] }
+    mechanics:
+      - type: "core:armor_bonus"
+        filters: [ { tool: "#minecraft:pickaxes" } ]
+        parameters:
+          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }
+  - id: "perfect_yield"
+    display_name: "Perfect Yield"
+    unlock_level: 100
+    trigger: "block_break"
+    display: { lore: [ "&7Ore breaks always double; &a{yield_chance}%&7 chance to triple." ] }
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters: [ { target: "#c:ores" } ]
+        parameters:
+          yield_chance: { constant: 100.0 }
+      - type: "core:yield_multiplier"
+        filters: [ { target: "#c:ores" } ]
+        parameters:
+          yield_chance: { linear: { base: 10.0, step: 0.9, max: 80.0 } }
+    feedback: { notify: { action_bar: false } }

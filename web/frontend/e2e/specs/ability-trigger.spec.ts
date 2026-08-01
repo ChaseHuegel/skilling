@@ -41,7 +41,7 @@ test.describe('Ability Trigger Field', () => {
           unlockLevel: 1,
           trigger: 'block_break',
           display: { lore: [] },
-          requirements: { cooldown: 0, state: [], items: [] },
+          requirements: { cooldown: { type: 'constant', params: { value: 0 } }, state: [], items: [] },
           mechanics: [],
           onFailure: { reasons: {} },
           feedback: { actionBar: false, chat: false, message: '', particles: [], sounds: [] },

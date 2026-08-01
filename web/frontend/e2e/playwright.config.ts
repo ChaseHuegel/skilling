@@ -16,7 +16,7 @@ export default defineConfig({
     baseURL: 'http://localhost:8082',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
-    storageState: '.auth/admin.json',
+    storageState: 'e2e/.auth/admin.json',
     launchOptions: {
       // The skill-card icons fetch textures from raw.githubusercontent.com. In
       // sandboxed/offline environments these keep-alive connections prevent
@@ -35,7 +35,7 @@ export default defineConfig({
       name: 'desktop',
       use: {
         viewport: { width: 1280, height: 720 },
-        storageState: '.auth/admin.json',
+        storageState: 'e2e/.auth/admin.json',
       },
       dependencies: ['setup'],
     },
@@ -43,7 +43,7 @@ export default defineConfig({
       name: 'mobile',
       use: {
         viewport: { width: 375, height: 667 },
-        storageState: '.auth/admin.json',
+        storageState: 'e2e/.auth/admin.json',
       },
       dependencies: ['setup'],
     },
