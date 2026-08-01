@@ -1,143 +1,92 @@
 id: "masonry"
 max_level: 100
-
-display:
-  name: "Masonry"
-  icon: "minecraft:stone_bricks"
-  color: "YELLOW"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Masonry", icon: "minecraft:stone_bricks", color: "YELLOW", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "furnace_extract"
-    reward:
-      constant: 5.0
-
-  - trigger: "block_place"
     filters:
-      - target: "#c:stone_products"
-    reward:
-      constant: 1.0
-
+      - target: "minecraft:terracotta"
+    reward: { constant: 5.0 }
+  - trigger: "furnace_extract"
+    filters:
+      - target: "minecraft:glass"
+    reward: { constant: 4.0 }
+  - trigger: "block_place"
+    filters: [ { target: "#c:stone_products" } ]
+    reward: { constant: 1.0 }
 abilities:
   - id: "stone_folding"
     display_name: "Stone Folding"
     unlock_level: 1
     trigger: "furnace_extract"
-    display:
-      lore:
-        - "&7Increases smelting output for stone and clay."
+    display: { lore: [ "&7Smelting stone/clay yields &a{multiplier}x&7 output." ] }
     mechanics:
       - type: "core:modify_furnace_output"
+        filters: [ { target: "minecraft:smooth_stone" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.0
-              step: 0.005
-              max: 1.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.0, step: 0.005, max: 1.5 } }
+    feedback: { notify: { action_bar: false } }
   - id: "kiln_master"
     display_name: "Kiln Master"
     unlock_level: 15
     trigger: "furnace_extract"
-    display:
-      lore:
-        - "&7Gain bonus XP from smelting stone and ores."
+    display: { lore: [ "&7Bonus XP from smelting stone &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:xp_bonus"
         parameters:
-          multiplier:
-            linear:
-              base: 1.5
-              step: 0.01
-              max: 2.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
+    feedback: { notify: { action_bar: false } }
   - id: "reinforced_walls"
     display_name: "Reinforced Walls"
     unlock_level: 25
     trigger: "craft_item"
     display:
       lore:
-        - "&7Bonus stone brick output when crafting."
+        - "&7Shift+Craft stone bricks to gain &a{multiplier}x&7 output."
+        - "&8Requires: Sneaking."
+    requirements:
+      cooldown: 8.0
+      state: [ "is_sneaking" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&eReinforced Walls cooling down: {time}s" } }
     mechanics:
       - type: "core:modify_craft_output"
+        filters: [ { target: "#minecraft:stone_bricks" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.0
-              step: 0.008
-              max: 1.75
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.1, step: 0.01, max: 1.75 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&e✦ Reinforced Walls! ✦" } }
   - id: "geometric_eye"
     display_name: "Geometric Eye"
     unlock_level: 50
-    trigger: "block_place"
+    trigger: "block_break"
     display:
-      lore:
-        - "&7Place stone blocks &a{amplifier}x &7faster."
+      lore: [ "&7Breaking stone with a pick grants &a{amplifier}&7 Haste for {duration}s." ]
     mechanics:
       - type: "core:haste_effect"
-        filters:
-          - target: "#c:stone_products"
+        filters: [ { tool: "#minecraft:pickaxes" }, { target: "#c:stone" } ]
         parameters:
-          amplifier:
-            linear:
-              base: 1
-              step: 0.01
-              max: 3
-          duration:
-            constant: 300.0
-    feedback:
-      notify:
-        action_bar: false
-
+          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
+          duration: { constant: 30.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "glaze_artisan"
     display_name: "Glaze Artisan"
     unlock_level: 75
     trigger: "furnace_extract"
-    display:
-      lore:
-        - "&7Doubles terracotta and glass output from smelting."
+    display: { lore: [ "&7Terracotta & glass output &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_furnace_output"
+        filters: [ { target: "minecraft:terracotta" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.0
-              step: 0.015
-              max: 2.0
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "master_mason"
     display_name: "Master Mason"
     unlock_level: 100
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Triples stone brick output when crafting."
+    display: { lore: [ "&7Stone brick crafts yield &a{multiplier}x&7 output." ] }
     mechanics:
       - type: "core:modify_craft_output"
+        filters: [ { target: "#minecraft:stone_bricks" } ]
         parameters:
-          multiplier:
-            constant: 3.0
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 2.0, step: 0.01, max: 3.0 } }
+    feedback: { notify: { action_bar: false } }

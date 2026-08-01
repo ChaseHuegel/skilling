@@ -1,151 +1,91 @@
 id: "cooking"
 max_level: 100
-
-display:
-  name: "Cooking"
-  icon: "minecraft:furnace"
-  color: "YELLOW"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Cooking", icon: "minecraft:furnace", color: "YELLOW", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "furnace_extract"
-    reward:
-      constant: 4.0
-
+    filters: [ { target: "minecraft:cooked_beef" } ]   # representative cooked-food filter
+    reward: { constant: 4.0 }
   - trigger: "consume_item"
-    reward:
-      constant: 2.0
-
+    filters: [ { target: "minecraft:cooked_beef" } ]
+    reward: { constant: 2.0 }
 abilities:
   - id: "seasoning"
     display_name: "Seasoning"
     unlock_level: 1
     trigger: "consume_item"
-    display:
-      lore:
-        - "&7Cooked food gives &a{saturation} &7extra saturation."
+    display: { lore: [ "&7Cooked food grants +&a{saturation}&7 saturation." ] }
     mechanics:
       - type: "core:saturation_inject"
+        filters: [ { target: "minecraft:cooked_beef" } ]
         parameters:
-          saturation:
-            linear:
-              base: 1.0
-              step: 0.02
-              max: 3.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          saturation: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "heat_control"
     display_name: "Heat Control"
     unlock_level: 15
     trigger: "furnace_extract"
-    display:
-      lore:
-        - "&7Increases food output from smelting by &a{multiplier}x&7."
+    display: { lore: [ "&7Cooked-food smelting output &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_furnace_output"
+        filters: [ { target: "minecraft:cooked_beef" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.0
-              step: 0.005
-              max: 1.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+    feedback: { notify: { action_bar: false } }
   - id: "nutritionist"
     display_name: "Nutritionist"
     unlock_level: 25
     trigger: "consume_item"
     display:
       lore:
-        - "&7All food gives &a{saturation} &7extra saturation."
+        - "&7Shift+eat to gain &a{multiplier}x&7 XP from food for {duration}s."
+        - "&8Requires: Sneaking."
+    requirements:
+      cooldown: 15.0
+      state: [ "is_sneaking" ]
+      exhaustion: { amount: 0.5, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&eNutritionist cooling down: {time}s" } }
     mechanics:
-      - type: "core:saturation_inject"
+      - type: "core:xp_bonus"
         parameters:
-          saturation:
-            linear:
-              base: 1.0
-              step: 0.02
-              max: 3.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.1, step: 0.01, max: 1.8 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&6✦ Nutritionist! ✦" } }
   - id: "hearty_stew"
     display_name: "Hearty Stew"
     unlock_level: 50
     trigger: "consume_item"
-    display:
-      lore:
-        - "&7Eating cooked food gives &a{saturation} &7extra saturation."
+    display: { lore: [ "&7Cooked food grants +&a{saturation}&7 saturation." ] }
     mechanics:
       - type: "core:saturation_inject"
+        filters: [ { target: "minecraft:cooked_beef" } ]
         parameters:
-          saturation:
-            linear:
-              base: 2.0
-              step: 0.03
-              max: 5.0
-    feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&6✦ Hearty Stew — Deeply satisfying! ✦"
-
+          saturation: { linear: { base: 2.0, step: 0.04, max: 6.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "gourmand"
     display_name: "Gourmand"
     unlock_level: 75
     trigger: "consume_item"
-    display:
-      lore:
-        - "&7After eating, move &a{multiplier}x &7faster for 10 seconds."
+    display: { lore: [ "&7Eating grants &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.25
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
+          duration: { linear: { base: 10.0, step: 0.2, max: 30.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "master_chef"
     display_name: "Master Chef"
     unlock_level: 100
     trigger: "consume_item"
-    display:
-      lore:
-        - "&7All food gives &a{saturation} &7extra saturation."
-        - "&7Move &a{multiplier}x &7faster after eating."
+    display: { lore: [ "&7Cooked food grants +&a{saturation}&7 saturation & speed burst." ] }
     mechanics:
       - type: "core:saturation_inject"
+        filters: [ { target: "minecraft:cooked_beef" } ]
         parameters:
-          saturation:
-            constant: 6.0
+          saturation: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
       - type: "core:speed_bonus"
         parameters:
-          multiplier:
-            constant: 1.15
+          multiplier: { linear: { base: 1.2, step: 0.002, max: 1.4 } }
+          duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
     feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&6✦ Master Chef — Peak nourishment! ✦"
-      sounds:
-        - type: "ENTITY_PLAYER_LEVELUP"
-          volume: 0.5
-          pitch: 1.5
-          target: "self"
+      notify: { action_bar: true, chat: false, message: "&6✦ Master Chef! ✦" }
+      sounds: [ { type: "ENTITY_PLAYER_LEVELUP", volume: 0.5, pitch: 1.5, target: "self" } ]

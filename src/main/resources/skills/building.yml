@@ -1,182 +1,117 @@
 id: "building"
 max_level: 100
-
 display:
   name: "Building"
   icon: "minecraft:bricks"
   color: "YELLOW"
   style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "block_place"
-    reward:
-      constant: 2.0
-
+    filters:
+      - target: "#c:stone_products"
+    reward: { constant: 2.0 }
   - trigger: "craft_item"
-    reward:
-      constant: 6.0
-
+    filters:
+      - target: "#minecraft:stone_bricks"      # decorative block crafts only
+    reward: { constant: 6.0 }
 abilities:
   - id: "scaffolding"
     display_name: "Scaffolding"
     unlock_level: 1
-    trigger: "block_place"
+    trigger: "block_place"           # P2-1: only fires on placement
     display:
       lore:
-        - "&7Place blocks &a{amplifier}x &7faster."
+        - "&7Placing decorative blocks grants &a{amplifier}&7 Haste"
+        - "&7(mining/digging speed) for {duration}s to speed teardown."
     mechanics:
-      - type: "core:haste_effect"
-        filters:
-          - state: "is_sneaking"
+      - type: "core:haste_effect"     # honestly described: Haste = break speed
         parameters:
-          amplifier:
-            linear:
-              base: 1
-              step: 0.005
-              max: 2
-          duration:
-            constant: 300.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
+          duration: { constant: 30.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "structural_knowledge"
     display_name: "Structural Knowledge"
     unlock_level: 15
     trigger: "block_place"
     display:
-      lore:
-        - "&7Gain bonus XP from placing blocks."
+      lore: [ "&7Bonus XP from building &a{multiplier}x&7." ]
     mechanics:
       - type: "core:xp_bonus"
+        filters:
+          - target: "#c:stone_products"
         parameters:
-          multiplier:
-            linear:
-              base: 1.5
-              step: 0.015
-              max: 3.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.5 } }
+    feedback: { notify: { action_bar: false } }
   - id: "swift_build"
     display_name: "Swift Build"
     unlock_level: 25
     trigger: "block_place"
     display:
       lore:
-        - "&7Move &a{multiplier}x &7faster while carrying building materials."
+        - "&7Shift+Place to gain &a{multiplier}x&7 move speed for {duration}s."
+        - "&8Requires: Sneaking, holding a decorative block."
+    requirements:
+      cooldown: 12.0
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "#c:stone_products", slot: "MAIN_HAND" }
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eSwift Build cooling down: {time}s" }
+      exhaustion: { action_bar: "&cToo exhausted to build!" }
     mechanics:
       - type: "core:speed_bonus"
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.002
-              max: 1.3
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.35 } }
+          duration: { linear: { base: 8.0, step: 0.1, max: 20.0 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&e✦ Swift Build! ✦" } }
   - id: "reinforced_structure"
     display_name: "Reinforced Structure"
     unlock_level: 50
     trigger: "block_place"
     display:
-      lore:
-        - "&7Gain knockback resistance while building."
+      lore: [ "&7While standing on a placed block, gain &a{amount}&7 knockback resistance." ]
     mechanics:
-      - type: "core:modify_attribute"
+      - type: "core:knockback_resist"
         parameters:
-          attribute:
-            constant: 3.0
-          amount:
-            linear:
-              base: 0.2
-              step: 0.005
-              max: 0.8
-          duration:
-            constant: 600.0
-    feedback:
-      notify:
-        action_bar: false
-
+          amount: { linear: { base: 0.1, step: 0.005, max: 0.6 } }
+          duration: { constant: 10.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "architects_vision"
     display_name: "Architect's Vision"
     unlock_level: 75
-    trigger: "block_break"
+    trigger: "block_place"
     display:
       lore:
-        - "&7Sneak-paste to place a &a{radius}&7-block radius of blocks."
+        - "&7Shift+Place a decorative block to instantly"
+        - "&7break &a{max_blocks}&7 adjacent decorative blocks for re-use."
+        - "&7Restores block to inventory for rapid re-placement."
     requirements:
       cooldown: 15.0
-      state:
-        - "is_sneaking"
-      exhaustion:
-        amount: 4.0
-        minimum: 6.0
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "#c:stone_products", slot: "MAIN_HAND" }
+      exhaustion: { amount: 4.0, minimum: 6.0 }
     on_failure:
-      cooldown:
-        action_bar: "&eArchitect's Vision cooling down: {time}s"
-        sounds:
-          - type: "BLOCK_NOTE_BLOCK_BASS"
-            volume: 1.0
-            pitch: 0.5
-      exhaustion:
-        action_bar: "&cToo exhausted to build!"
-        sounds:
-          - type: "ENTITY_PLAYER_BURP"
-            volume: 0.5
-            pitch: 0.5
-            target: "self"
+      cooldown: { action_bar: "&eArchitect's Vision cooling down: {time}s" }
+      exhaustion: { action_bar: "&cToo exhausted to build!" }
     mechanics:
-      - type: "core:area_harvest"
+      - type: "core:area_harvest"     # now honestly a teardown-for-rebuild tool
         parameters:
-          radius:
-            milestones:
-              75: 1
-              85: 2
-              95: 3
-              100: 4
-          max_blocks:
-            constant: 64.0
-    feedback:
-      notify:
-        action_bar: true
-        chat: false
-        message: "&e✦ Architect's Vision ✦"
-      particles:
-        - type: "BLOCK_CRACK"
-          count: 20
-          offset: [1.0, 0.5, 1.0]
-          speed: 0.1
-          target: "target"
-      sounds:
-        - type: "ENTITY_ENDERMAN_TELEPORT"
-          volume: 0.3
-          pitch: 1.5
-          target: "self"
-
+          radius: { milestones: { 75: 1, 85: 2, 95: 3, 100: 4 } }
+          max_blocks: { linear: { base: 16.0, step: 1.0, max: 64.0 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&e✦ Architect's Vision ✦" } }
   - id: "master_builder"
     display_name: "Master Builder"
     unlock_level: 100
     trigger: "craft_item"
     display:
-      lore:
-        - "&7Multiplies output for decorative blocks."
+      lore: [ "&7Decorative block crafts yield &a{multiplier}x&7 output." ]
     mechanics:
       - type: "core:modify_craft_output"
+        filters:
+          - target: "#minecraft:stone_bricks"
         parameters:
-          multiplier:
-            constant: 2.5
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 1.5, step: 0.01, max: 2.5 } }
+    feedback: { notify: { action_bar: false } }

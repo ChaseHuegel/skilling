@@ -1,149 +1,89 @@
 id: "smithing"
 max_level: 100
-
-display:
-  name: "Smithing"
-  icon: "minecraft:anvil"
-  color: "YELLOW"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Smithing", icon: "minecraft:anvil", color: "YELLOW", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "craft_item"
-    reward:
-      constant: 12.0
-
+    filters: [ { target: "#c:tools" } ]   # representative; tools/armor only
+    reward: { constant: 12.0 }
   - trigger: "furnace_extract"
-    filters:
-      - target: "#minecraft:gold_ores"
-    reward:
-      constant: 8.0
-
+    filters: [ { target: "#minecraft:iron_ores" } ]
+    reward: { constant: 6.0 }
   - trigger: "furnace_extract"
-    filters:
-      - target: "#minecraft:iron_ores"
-    reward:
-      constant: 6.0
-
+    filters: [ { target: "#minecraft:gold_ores" } ]
+    reward: { constant: 8.0 }
 abilities:
   - id: "efficient_smith"
     display_name: "Efficient Smith"
     unlock_level: 1
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Increases output when crafting tools and armor."
+    display: { lore: [ "&7Tool/armor crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
+        filters: [ { target: "#c:tools" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.0
-              step: 0.005
-              max: 1.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+    feedback: { notify: { action_bar: false } }
   - id: "tempered_metal"
     display_name: "Tempered Metal"
     unlock_level: 15
     trigger: "item_damage"
-    display:
-      lore:
-        - "&7Tools and armor last &a{chance}% &7longer."
+    display: { lore: [ "&7Smithed gear has &a{chance}%&7 chance to lose no durability." ] }
     mechanics:
       - type: "core:durability_save"
         parameters:
-          chance:
-            linear:
-              base: 10.0
-              step: 0.4
-              max: 50.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          chance: { linear: { base: 10.0, step: 0.4, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "weighted_strike"
     display_name: "Weighted Strike"
     unlock_level: 25
     trigger: "entity_damage"
     display:
       lore:
-        - "&7Increases melee damage by &a{multiplier}x&7."
+        - "&7Shift-attack with a sword for &a{multiplier}x&7 damage on next hit."
+        - "&8Requires: Sneaking, sword."
+    requirements:
+      cooldown: 8.0
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "#minecraft:swords", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&eWeighted Strike cooling down: {time}s" } }
     mechanics:
       - type: "core:modify_damage"
-        filters:
-          - tool: "#minecraft:swords"
+        filters: [ { tool: "#minecraft:swords" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.003
-              max: 1.35
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.2, step: 0.01, max: 1.6 } }
+    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Weighted Strike! ✦" } }
   - id: "reforging"
     display_name: "Reforging"
     unlock_level: 50
     trigger: "furnace_extract"
-    display:
-      lore:
-        - "&7Doubles ingot output when smelting ore."
+    display: { lore: [ "&7Ore smelting yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_furnace_output"
         parameters:
-          multiplier:
-            linear:
-              base: 1.0
-              step: 0.01
-              max: 2.0
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "master_smith"
     display_name: "Master Smith"
     unlock_level: 75
-    trigger: "entity_damage"
-    display:
-      lore:
-        - "&7Gain &a{amount} &7armor while wielding a smithed weapon."
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7While holding a sword, gain &a{amount}&7 armor on hit." ] }
     mechanics:
       - type: "core:armor_bonus"
-        filters:
-          - tool: "#minecraft:swords"
+        filters: [ { tool: "#minecraft:swords" } ]
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.01
-              max: 1.0
-    feedback:
-      notify:
-        action_bar: false
-
+          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }
   - id: "legendary_artisan"
     display_name: "Legendary Artisan"
     unlock_level: 100
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Guaranteed double output on all smithed items."
+    display: { lore: [ "&7Tool/armor crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
+        filters: [ { target: "#c:tools" } ]
         parameters:
-          multiplier:
-            constant: 2.0
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 1.8, step: 0.01, max: 2.5 } }
+    feedback: { notify: { action_bar: false } }

@@ -1,137 +1,85 @@
 id: "tailoring"
 max_level: 100
-
-display:
-  name: "Tailoring"
-  icon: "minecraft:leather_chestplate"
-  color: "YELLOW"
-  style: "SEGMENTED_10"
-
-progression:
-  curve: "polynomial"
-  base_xp: 50
-  exponent: 2.5
-
+display: { name: "Tailoring", icon: "minecraft:leather_chestplate", color: "YELLOW", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "craft_item"
-    reward:
-      constant: 10.0
-
+    filters: [ { target: "#minecraft:wool" } ]     # representative fabric crafts
+    reward: { constant: 10.0 }
   - trigger: "item_damage"
-    reward:
-      constant: 1.0
-
+    filters: [ { target: "#c:leather_armor" } ]   # leather armor only
+    reward: { constant: 1.0 }
 abilities:
   - id: "spinner"
     display_name: "Spinner"
     unlock_level: 1
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Increases output when crafting wool and carpet."
+    display: { lore: [ "&7Wool/carpet crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
+        filters: [ { target: "#minecraft:wool" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.0
-              step: 0.005
-              max: 1.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+    feedback: { notify: { action_bar: false } }
   - id: "reinforced_stitch"
     display_name: "Reinforced Stitch"
     unlock_level: 15
     trigger: "item_damage"
-    display:
-      lore:
-        - "&7Armor lasts &a{chance}% &7longer."
+    display: { lore: [ "&7Leather armor has &a{chance}%&7 chance to lose no durability." ] }
     mechanics:
       - type: "core:durability_save"
+        filters: [ { target: "#c:leather_armor" } ]
         parameters:
-          chance:
-            linear:
-              base: 10.0
-              step: 0.3
-              max: 40.0
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "padded_linings"
     display_name: "Padded Linings"
     unlock_level: 25
     trigger: "entity_damage_taken"
     display:
       lore:
-        - "&7Gain &a{amount} &7bonus armor from tailored gear."
+        - "&7Shift-craft leather armor to embed &a{amount}&7 armor for {duration}s on wear."
+        - "&8Requires: Sneaking."
+    requirements:
+      cooldown: 15.0
+      state: [ "is_sneaking" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { cooldown: { action_bar: "&ePadded Linings cooling down: {time}s" } }
     mechanics:
       - type: "core:armor_bonus"
         parameters:
-          amount:
-            linear:
-              base: 0.0
-              step: 0.005
-              max: 0.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
+          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          duration: { constant: 30.0 }
+    feedback: { notify: { action_bar: true, chat: false, message: "&6✦ Padded Linings! ✦" } }
   - id: "dye_master"
     display_name: "Dye Master"
     unlock_level: 50
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Chance for double output on colored items and banners."
+    display: { lore: [ "&7Banner & dye crafts yield &a{multiplier}x&7." ] }
     mechanics:
-      - type: "core:yield_multiplier"
+      - type: "core:modify_craft_output"
+        filters: [ { target: "#minecraft:banners" } ]
         parameters:
-          yield_chance:
-            linear:
-              base: 5.0
-              step: 0.3
-              max: 35.0
-    feedback:
-      notify:
-        action_bar: false
-
+          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "nimble_fingers"
     display_name: "Nimble Fingers"
     unlock_level: 75
     trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Chance &a{chance}% &7to dodge incoming damage."
+    display: { lore: [ "&a{chance}%&7 chance to dodge incoming damage." ] }
     mechanics:
       - type: "core:dodge"
+        filters: [ { target: "#c:leather_armor", state: "equipped:light" } ]
         parameters:
-          chance:
-            linear:
-              base: 5.0
-              step: 0.3
-              max: 35.0
-    feedback:
-      notify:
-        action_bar: false
-
+          chance: { linear: { base: 5.0, step: 0.3, max: 35.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "legendary_tailor"
     display_name: "Legendary Tailor"
     unlock_level: 100
     trigger: "craft_item"
-    display:
-      lore:
-        - "&7Doubles output on all armor and fabric crafting."
+    display: { lore: [ "&7All fabric/armor crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
         parameters:
-          multiplier:
-            constant: 2.0
-    feedback:
-      notify:
-        action_bar: false
+          multiplier: { linear: { base: 1.8, step: 0.01, max: 2.5 } }
+    feedback: { notify: { action_bar: false } }

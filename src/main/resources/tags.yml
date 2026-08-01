@@ -120,3 +120,24 @@ custom_tags:
     - "minecraft:stone_sword"
     - "minecraft:golden_sword"
     - "minecraft:trident"
+
+  tools:
+    - "#minecraft:pickaxes"
+    - "#minecraft:axes"
+    - "#minecraft:shovels"
+    - "#minecraft:hoes"
+    - "#minecraft:swords"
+    - "minecraft:bow"
+    - "minecraft:crossbow"
+    - "minecraft:trident"
+    - "minecraft:mace"
+    - "#minecraft:chest_armor"
+    - "#minecraft:foot_armor"
+    - "#minecraft:head_armor"
+    - "#minecraft:leg_armor"
+
+  leather_armor:
+    - "minecraft:leather_helmet"
+    - "minecraft:leather_chestplate"
+    - "minecraft:leather_leggings"
+    - "minecraft:leather_boots"
