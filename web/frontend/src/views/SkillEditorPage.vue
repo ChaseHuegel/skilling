@@ -269,6 +269,7 @@ function apiAbilityToForm(ab: any): any {
         } : ab.feedback,
         requirements: {
             ...ab.requirements,
+            cooldown: cooldownToNumber(ab.requirements?.cooldown),
             items: (ab.requirements?.items || []).map((item: any) => ({
                 action: item.action || 'possession',
                 tag: item.tag || '',
@@ -283,6 +284,15 @@ function apiAbilityToForm(ab: any): any {
             parameters: undefined,
         })),
     };
+}
+
+function cooldownToNumber(cooldown: any): number {
+    if (typeof cooldown === 'number') return cooldown;
+    if (cooldown && typeof cooldown === 'object') {
+        const value = cooldown.params?.value;
+        if (typeof value === 'number') return value;
+    }
+    return 0;
 }
 
 function formAbilityToApi(ab: any): any {

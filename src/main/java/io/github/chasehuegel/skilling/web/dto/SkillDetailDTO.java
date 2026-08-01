@@ -71,11 +71,12 @@ public record SkillDetailDTO(
         List<String> lore
     ) {}
 
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = RequirementsDTODeserializer.class)
     public record RequirementsDTO(
-        EvaluatorDTO cooldown,
-        List<String> state,
-        List<ItemRequirementDTO> items,
-        ExhaustionDTO exhaustion
+            EvaluatorDTO cooldown,
+            List<String> state,
+            List<ItemRequirementDTO> items,
+            ExhaustionDTO exhaustion
     ) {
         public RequirementsDTO(double cooldown, List<String> state, List<ItemRequirementDTO> items) {
             this(new EvaluatorDTO("constant", Map.of("value", cooldown)), state, items, null);

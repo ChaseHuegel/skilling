@@ -32,6 +32,9 @@ dependencies {
         exclude("org.slf4j")
         exclude("com.fasterxml.jackson.core")
     }
+    // Jackson is provided by the Paper runtime; compileOnly so the plugin
+    // never shades it (Javalin's default JSON mapper is Jackson).
+    compileOnly("com.fasterxml.jackson.core:jackson-databind:2.13.4.2")
     implementation("org.slf4j:slf4j-api:2.0.17")
     implementation("org.slf4j:jul-to-slf4j:2.0.17")
 
@@ -44,6 +47,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockito:mockito-core:5.15.2")
     testImplementation("org.mockito:mockito-junit-jupiter:5.15.2")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.13.4.2")
 }
 
 val shouldBuildFrontend = providers.provider {

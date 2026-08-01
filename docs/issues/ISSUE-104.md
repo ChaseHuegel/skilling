@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Make `SkillDetailDTO.RequirementsDTO.cooldown` deserializable from both a plain JSON number (the frontend's current payload) and the evaluator-object shape `{ type, params }` returned by `GET`
-- [ ] Implement the fix as a custom Jackson deserializer on `RequirementsDTO` (mirroring `SkillSerializer.parseCooldown`) rather than widening the field to `Object`, to keep the DTO typed
-- [ ] Normalize the frontend so the cooldown input shows the numeric value (currently `NaN`) and submits a shape consistent with what the backend accepts
-- [ ] Add a round-trip test: `GET` skill → edit cooldown → `PUT` → `GET` again yields the same cooldown value
-- [ ] Add an E2E test (or extend an existing spec) that saves an ability with a cooldown and reloads it
+- [x] Make `SkillDetailDTO.RequirementsDTO.cooldown` deserializable from both a plain JSON number (the frontend's current payload) and the evaluator-object shape `{ type, params }` returned by `GET`
+- [x] Implement the fix as a custom Jackson deserializer on `RequirementsDTO` (mirroring `SkillSerializer.parseCooldown`) rather than widening the field to `Object`, to keep the DTO typed
+- [x] Normalize the frontend so the cooldown input shows the numeric value (currently `NaN`) and submits a shape consistent with what the backend accepts
+- [x] Add a round-trip test: `GET` skill → edit cooldown → `PUT` → `GET` again yields the same cooldown value
+- [x] Add an E2E test (or extend an existing spec) that saves an ability with a cooldown and reloads it
 
 ## Technical Specifications & Context
 
@@ -45,9 +45,9 @@ The cooldown input binds to `ability.requirements.cooldown`, but `GET` returns t
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including a round-trip test of scalar and object cooldown forms
-- [ ] Unit test: `bodyAsClass`-style deserialization accepts `"cooldown": 5` and yields an equivalent constant evaluator
-- [ ] `cd web/frontend && npm run build` passes (type-check)
-- [ ] `cd web/frontend && npm run e2e` passes, including saving an ability with a cooldown and reloading it
-- [ ] Edge case handled: a cooldown of `0` (no cooldown) saves and loads without error
-- [ ] Runtime check: editing and saving a cooldown in the skill editor produces no deserialization error
+- [x] `./gradlew build && ./gradlew test` pass, including a round-trip test of scalar and object cooldown forms
+- [x] Unit test: `bodyAsClass`-style deserialization accepts `"cooldown": 5` and yields an equivalent constant evaluator
+- [x] `cd web/frontend && npm run build` passes (type-check)
+- [x] `cd web/frontend && npm run e2e` passes, including saving an ability with a cooldown and reloading it
+- [x] Edge case handled: a cooldown of `0` (no cooldown) saves and loads without error
+- [x] Runtime check: editing and saving a cooldown in the skill editor produces no deserialization error

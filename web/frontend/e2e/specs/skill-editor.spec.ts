@@ -78,4 +78,27 @@ test.describe('Skill Editor', () => {
     await editor.waitForLoad();
     await takeScreenshot(page, 'skill-editor-loaded');
   });
+
+  test('edits cooldown and reloads the saved value', async ({ page }) => {
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    await dashboard.clickSkill('Mining');
+
+    const editor = new SkillEditorPage(page);
+    await editor.waitForLoad();
+    await editor.assertNoError();
+
+    // The mining fixture's vein_miner ability has a numeric cooldown; read the
+    // current value so the test is idempotent across runs.
+    const before = Number(await editor.getCooldown('vein_miner'));
+    const target = before + 1;
+    await editor.setCooldown('vein_miner', target);
+    await editor.save();
+    await dashboard.assertBannerVisible();
+
+    // Reload the editor and confirm the cooldown round-trips as a number
+    await editor.waitForLoad();
+    await editor.assertNoError();
+    expect(await editor.getCooldown('vein_miner')).toBe(String(target));
+  });
 });

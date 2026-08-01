@@ -20,7 +20,7 @@ Provide an administrative browser UI for the Skilling plugin: view and edit skil
 | Layer | Technology |
 |-------|-----------|
 | **HTTP Server** | Javalin 7 (embedded Jetty, shaded into plugin JAR) |
-| **JSON** | Javalin built-in (via Gson/reflection) |
+| **JSON** | Javalin built-in (Jackson, default mapper). Jackson is provided by the Paper runtime; declared `compileOnly` in `build.gradle.kts` so it is never shaded. Custom DTO deserialization lives in the `web/dto` package. |
 | **Frontend** | Vue 3 + Vite + TypeScript |
 | **UI Library** | PrimeVue 4 (Aura theme) |
 | **State** | Pinia |

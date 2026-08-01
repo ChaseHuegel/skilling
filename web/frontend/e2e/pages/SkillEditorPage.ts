@@ -112,4 +112,25 @@ export class SkillEditorPage {
   async assertNoError() {
     await expect(this.errorBanner).not.toBeVisible({ timeout: 3000 });
   }
+
+  async getCooldown(abilityId: string): Promise<string> {
+    const card = this.page.locator(`#ability-${abilityId}`);
+    await this.expandAbility(card);
+    const input = card.locator('.field-row', { hasText: 'Cooldown (s)' }).locator('input[type="number"]');
+    return input.inputValue();
+  }
+
+  async setCooldown(abilityId: string, cooldown: number) {
+    const card = this.page.locator(`#ability-${abilityId}`);
+    await this.expandAbility(card);
+    const input = card.locator('.field-row', { hasText: 'Cooldown (s)' }).locator('input[type="number"]');
+    await input.fill(String(cooldown));
+  }
+
+  private async expandAbility(card: Locator) {
+    const body = card.locator('.ability-body');
+    if (await body.isVisible()) return;
+    await card.locator('.ability-header').click();
+    await expect(body).toBeVisible();
+  }
 }
