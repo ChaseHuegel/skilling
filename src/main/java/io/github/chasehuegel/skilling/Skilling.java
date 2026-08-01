@@ -293,6 +293,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:projectile_return", ProjectileReturnMechanic.class, List.of("chance"));
         mechReg.register("core:modify_enchant_cost", ModifyEnchantCostMechanic.class, List.of("discount"));
         mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
+        mechReg.register("core:ally_aura", AllyAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
         mechReg.register("core:modify_jump", ModifyJumpMechanic.class, List.of("multiplier", "duration"));
 
         var trigReg = registries.getTriggerRegistry();
