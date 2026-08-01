@@ -155,6 +155,16 @@ abilities:
     #       duration: { constant: 3.0 }
     #       amplifier: { constant: 0.0 }
 
+    # Attribute-modifier mechanics (speed_bonus, armor_bonus, knockback_resist,
+    # modify_attack_speed, modify_jump, modify_attribute) accept an optional
+    # "uuid" constant. Providing a stable UUID makes repeated activations replace
+    # the previous modifier instead of stacking it. Omit it for a fresh random
+    # modifier per activation (legacy behavior):
+    #   parameters:
+    #     amount: { constant: 1.0 }
+    #     duration: { constant: 8.0 }
+    #     uuid: { constant: "3f2b9c4a-1e5d-4a6b-8c7d-9e0f1a2b3c4d" }
+
     # Executed strictly after successful requirements consumption
     feedback:
       notify:

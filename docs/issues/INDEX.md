@@ -4,7 +4,7 @@
 
 ### Bugs
 - [x] [ISSUE-101](ISSUE-101.md) - Preserve string-valued parameter constants through inline evaluator parsing
-- [ ] [ISSUE-102](ISSUE-102.md) - Prevent attribute-modifier abilities from stacking with themselves on repeated activation
+- [x] [ISSUE-102](ISSUE-102.md) - Prevent attribute-modifier abilities from stacking with themselves on repeated activation
 - [ ] [ISSUE-103](ISSUE-103.md) - Fix web skill parsing of string-valued evaluator constants (breaks riding and 12 other skills)
 - [ ] [ISSUE-104](ISSUE-104.md) - Accept scalar cooldown values in the web API (fix saving a cooldown in the skill editor)
 

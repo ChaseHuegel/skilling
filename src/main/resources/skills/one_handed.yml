@@ -31,6 +31,7 @@ abilities:
         filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          uuid: { constant: "1d313b98-bd9d-5fb7-880d-0bab575a6e05" }
           duration: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
   - id: "parry"
@@ -76,6 +77,7 @@ abilities:
         filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
         parameters:
           multiplier: { linear: { base: 1.1, step: 0.003, max: 1.4 } }
+          uuid: { constant: "1a714067-76b2-5384-b70c-345e890e592e" }
           duration: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
   - id: "blade_master"

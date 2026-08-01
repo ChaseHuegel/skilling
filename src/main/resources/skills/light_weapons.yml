@@ -31,6 +31,7 @@ abilities:
         filters: [ { tool: "#c:light_weapons" } ]
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          uuid: { constant: "22148c0b-ebf1-5c2e-af30-0d3c15b6d09d" }
           duration: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
   - id: "flurry"

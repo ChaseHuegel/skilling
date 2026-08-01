@@ -78,6 +78,7 @@ abilities:
       - type: "core:armor_bonus"
         parameters:
           amount: { linear: { base: 2.0, step: 0.04, max: 5.0 } }
+          uuid: { constant: "03a8ca81-2f30-5f96-94e5-aa861e36f5f6" }
           duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&d✦ Arcane Ward! ✦" }
@@ -147,5 +148,6 @@ abilities:
       - type: "core:armor_bonus"
         parameters:
           amount: { linear: { base: 3.0, step: 0.1, max: 6.0 } }
+          uuid: { constant: "9ff15768-d47d-5ec8-8e17-a4e0c711021d" }
           duration: { constant: 10.0 }
     feedback: { notify: { action_bar: false } }

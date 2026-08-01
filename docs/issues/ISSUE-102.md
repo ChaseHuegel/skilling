@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Add an optional `uuid` string parameter to every attribute-modifier mechanic; when absent, generate a random UUID (preserving current behavior)
-- [ ] When a `uuid` is provided, check whether a modifier with that UUID already exists on the player's attribute instance; if it does, remove it before adding the new one (refreshing any duration)
-- [ ] Extract the parse/check/remove/re-add logic into a shared helper to avoid duplicating it across all six mechanics
-- [ ] Add the `uuid` parameter to each bundled skill ability that uses an attribute mechanic, using a stable UUID string per ability
-- [ ] Add unit tests covering: no-`uuid` behavior (random modifier, unchanged), re-trigger with same `uuid` (replace, no stacking), and different `uuid` values (independent modifiers may coexist)
+- [x] Add an optional `uuid` string parameter to every attribute-modifier mechanic; when absent, generate a random UUID (preserving current behavior)
+- [x] When a `uuid` is provided, check whether a modifier with that UUID already exists on the player's attribute instance; if it does, remove it before adding the new one (refreshing any duration)
+- [x] Extract the parse/check/remove/re-add logic into a shared helper to avoid duplicating it across all six mechanics
+- [x] Add the `uuid` parameter to each bundled skill ability that uses an attribute mechanic, using a stable UUID string per ability
+- [x] Add unit tests covering: no-`uuid` behavior (random modifier, unchanged), re-trigger with same `uuid` (replace, no stacking), and different `uuid` values (independent modifiers may coexist)
 
 ## Technical Specifications & Context
 
@@ -47,9 +47,9 @@ The six mechanics share this shape, so implement one helper (e.g. `AttributeModi
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new unit tests
-- [ ] Unit test: re-triggering an ability with the same `uuid` results in a single active modifier (no stacking)
-- [ ] Unit test: no `uuid` provided behaves exactly as before (fresh random modifier each activation)
-- [ ] Unit test: two different `uuid` values on the same attribute can coexist
-- [ ] Edge case handled: malformed `uuid` string in YAML fails fast with a clear `IllegalArgumentException` at parse time
-- [ ] Runtime smoke check: repeatedly triggering a bundled ability (e.g. `speed_bonus`) shows the attribute returning to base after the configured duration, with no growth over repeated activations
+- [x] `./gradlew build && ./gradlew test` pass, including new unit tests
+- [x] Unit test: re-triggering an ability with the same `uuid` results in a single active modifier (no stacking)
+- [x] Unit test: no `uuid` provided behaves exactly as before (fresh random modifier each activation)
+- [x] Unit test: two different `uuid` values on the same attribute can coexist
+- [x] Edge case handled: malformed `uuid` string in YAML fails fast with a clear `IllegalArgumentException` at parse time
+- [x] Runtime smoke check: repeatedly triggering a bundled ability (e.g. `speed_bonus`) shows the attribute returning to base after the configured duration, with no growth over repeated activations

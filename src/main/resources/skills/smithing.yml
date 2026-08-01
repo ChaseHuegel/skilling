@@ -74,6 +74,7 @@ abilities:
         filters: [ { tool: "#minecraft:swords" } ]
         parameters:
           amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          uuid: { constant: "2d6d17d5-7e09-5197-8c04-fdf4cf1d52cc" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
   - id: "legendary_artisan"

@@ -76,6 +76,7 @@ abilities:
         filters: [ { tool: "#c:bows" } ]
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          uuid: { constant: "62dbe60b-ec15-54ad-a54b-1f9cd5b9c0a7" }
           duration: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
   - id: "eagle_eye"

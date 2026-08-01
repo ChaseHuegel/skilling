@@ -17,6 +17,7 @@ abilities:
       - type: "core:speed_bonus"
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          uuid: { constant: "bc67b59a-ea91-5708-af4f-8e088383251a" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
   - id: "soft_landing"
@@ -46,6 +47,7 @@ abilities:
       - type: "core:modify_jump"
         parameters:
           multiplier: { linear: { base: 1.3, step: 0.01, max: 1.8 } }
+          uuid: { constant: "5ce1a199-41ed-5b8e-80d8-474db73cbee6" }
           duration: { constant: 1.0 }   # single leap
     feedback:
       notify: { action_bar: true, chat: false, message: "&f✦ Leap! ✦" }
@@ -62,6 +64,7 @@ abilities:
       - type: "core:speed_bonus"
         parameters:
           multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
+          uuid: { constant: "51178d5c-1948-5617-8f93-81dc01571e58" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
   - id: "endurance"
@@ -73,10 +76,12 @@ abilities:
       - type: "core:speed_bonus"
         parameters:
           multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
+          uuid: { constant: "00578402-d942-5ac2-91d8-e6da1cf83e8d" }
           duration: { constant: 15.0 }
       - type: "core:modify_jump"
         parameters:
           multiplier: { linear: { base: 1.1, step: 0.004, max: 1.5 } }
+          uuid: { constant: "00578402-d942-5ac2-91d8-e6da1cf83e8d" }
           duration: { constant: 15.0 }
     feedback: { notify: { action_bar: false } }
   - id: "gravity_defier"
@@ -88,9 +93,11 @@ abilities:
       - type: "core:speed_bonus"
         parameters:
           multiplier: { linear: { base: 1.3, step: 0.002, max: 1.4 } }
+          uuid: { constant: "6619f61a-7b3c-5a90-97e2-16dd792a3930" }
           duration: { linear: { base: 30.0, step: 0.5, max: 60.0 } }
       - type: "core:modify_jump"
         parameters:
           multiplier: { linear: { base: 1.6, step: 0.005, max: 1.8 } }
+          uuid: { constant: "6619f61a-7b3c-5a90-97e2-16dd792a3930" }
           duration: { linear: { base: 30.0, step: 0.5, max: 60.0 } }
     feedback: { notify: { action_bar: false } }

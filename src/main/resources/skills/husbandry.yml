@@ -29,6 +29,7 @@ abilities:
       - type: "core:armor_bonus"
         parameters:
           amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          uuid: { constant: "bbe92a19-add1-5ada-b964-a6c1c1961f1f" }
           duration: { constant: 15.0 }
     feedback: { notify: { action_bar: false } }
   - id: "gentle_hands"
@@ -57,6 +58,7 @@ abilities:
       - type: "core:knockback_resist"
         parameters:
           amount: { linear: { base: 0.1, step: 0.005, max: 0.5 } }
+          uuid: { constant: "35acb93d-aa99-5d0c-bcde-c4e4959bca0c" }
           duration: { constant: 20.0 }
     feedback: { notify: { action_bar: false } }
   - id: "animal_whisperer"
@@ -68,6 +70,7 @@ abilities:
       - type: "core:speed_bonus"
         parameters:
           multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
+          uuid: { constant: "6093ffbe-f598-5af3-801e-8618fa98ec40" }
           duration: { constant: 30.0 }
     feedback: { notify: { action_bar: false } }
   - id: "master_husbander"

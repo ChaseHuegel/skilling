@@ -54,6 +54,7 @@ abilities:
       - type: "core:armor_bonus"
         parameters:
           amount: { linear: { base: 2.0, step: 0.03, max: 4.0 } }
+          uuid: { constant: "e4b58c1d-b272-5a76-826f-44745d8f32a2" }
           duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&6✦ Prayer! ✦" }

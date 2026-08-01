@@ -7,8 +7,14 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import java.util.Map;
-import java.util.UUID;
 
+/**
+ * Temporarily increases {@code GENERIC_JUMP_STRENGTH} for the specified duration.
+ *
+ * <p>YAML key: {@code core:modify_jump}
+ * <br>Params: {@code multiplier} (e.g. 1.5 = 50% higher jumps), {@code duration} (optional, seconds, default 300),
+ * {@code uuid} (optional, stable modifier UUID so repeated activations refresh instead of stacking)
+ */
 public final class ModifyJumpMechanic implements SkillMechanic {
 
     @Override
@@ -21,12 +27,8 @@ public final class ModifyJumpMechanic implements SkillMechanic {
         double base = inst.getBaseValue();
         double added = base * (multiplier - 1.0);
         if (added <= 0) return false;
-        var modifier = new AttributeModifier(UUID.randomUUID(), "skilling_jump", added, AttributeModifier.Operation.ADD_NUMBER);
-        inst.addTransientModifier(modifier);
-        player.getScheduler().runDelayed(
-            io.github.chasehuegel.skilling.Skilling.getInstance(),
-            t -> inst.removeModifier(modifier), null, duration * 20L
-        );
-        return true;
+        return AttributeModifierHelper.applyTransient(
+                player, Attribute.JUMP_STRENGTH, AttributeModifierHelper.resolveUuid(params.get("uuid")),
+                "skilling_jump", added, duration);
     }
 }

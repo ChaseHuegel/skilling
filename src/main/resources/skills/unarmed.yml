@@ -67,6 +67,7 @@ abilities:
         filters: [ { state: "hand:empty" } ]
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          uuid: { constant: "e325e8dd-2e41-5492-87e5-c301e0c795f7" }
           duration: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
   - id: "counter_strike"

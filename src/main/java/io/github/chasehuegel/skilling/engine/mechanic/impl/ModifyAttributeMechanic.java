@@ -4,12 +4,10 @@ import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -20,7 +18,8 @@ import java.util.logging.Logger;
  * <p><b>YAML key:</b> {@code modify_attribute}
  * <p><b>Required parameters:</b> {@code attribute} (namespaced key, e.g. {@code minecraft:movement_speed},
  * or a legacy numeric attribute ID, e.g. {@code 4} for Movement Speed)
- * <p><b>Optional parameters:</b> {@code amount} (modifier value), {@code duration} (default 5s)
+ * <p><b>Optional parameters:</b> {@code amount} (modifier value), {@code duration} (default 5s),
+ * {@code uuid} (stable modifier UUID so repeated activations refresh instead of stacking)
  *
  * <p>Numeric IDs: 1=MAX_HEALTH, 2=FOLLOW_RANGE, 3=KNOCKBACK_RESISTANCE, 4=MOVEMENT_SPEED,
  * 5=FLYING_SPEED, 6=ARMOR, 7=ARMOR_TOUGHNESS, 8=ATTACK_DAMAGE, 9=ATTACK_SPEED, 10=LUCK.
@@ -51,23 +50,9 @@ public final class ModifyAttributeMechanic implements SkillMechanic {
         int duration = ((Number) params.getOrDefault("duration", 5.0)).intValue();
         if (amount == 0) return false;
 
-        AttributeInstance instance = player.getAttribute(attribute);
-        if (instance == null) return false;
-
-        var modifier = new AttributeModifier(
-                UUID.randomUUID(),
-                "skilling_modifier",
-                amount,
-                AttributeModifier.Operation.ADD_NUMBER
-        );
-        instance.addTransientModifier(modifier);
-        player.getScheduler().runDelayed(
-                io.github.chasehuegel.skilling.Skilling.getInstance(),
-                task -> instance.removeModifier(modifier),
-                null,
-                duration * 20L
-        );
-        return true;
+        return AttributeModifierHelper.applyTransient(
+                player, attribute, AttributeModifierHelper.resolveUuid(params.get("uuid")),
+                "skilling_modifier", amount, duration);
     }
 
     /**

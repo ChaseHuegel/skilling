@@ -97,6 +97,7 @@ Temporarily modifies a player attribute.
 | `attribute` | string | — | Namespaced attribute key (e.g., `minecraft:movement_speed`). Legacy numeric IDs (1-10) remain supported but are deprecated; see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `amount` | double | `0` | Modifier value |
 | `duration` | double | `5` | Duration in seconds |
+| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:armor_bonus
 
@@ -108,6 +109,7 @@ Applies a temporary armor bonus attribute modifier.
 |---|---|---|---|
 | `amount` | double | `0` | Additional armor points |
 | `duration` | double | `300` | Duration in seconds |
+| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:knockback_resist
 
@@ -119,6 +121,7 @@ Applies a temporary knockback resistance attribute modifier.
 |---|---|---|---|
 | `amount` | double | `0` | Knockback resistance (0-1) |
 | `duration` | double | `300` | Duration in seconds |
+| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:speed_bonus
 
@@ -130,6 +133,7 @@ Applies a temporary movement speed attribute modifier.
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Multiplicative speed multiplier (1.5 = 50% faster, not a percentage) |
 | `duration` | double | `300` | Duration in seconds |
+| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 **Event:** Fires on the trigger declared by the ability (e.g., `entity_damage_taken`, `consume_item`). Gives the player a temporary movement speed boost for the configured `duration`.
 
@@ -529,6 +533,7 @@ Temporarily increases the player's jump strength.
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Jump multiplier (1.5 = 50% higher) |
 | `duration` | double | `300` | Duration in seconds |
+| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:modify_attack_speed
 
@@ -540,6 +545,7 @@ Temporarily increases the player's attack speed for a configurable duration.
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Attack speed multiplier (1.2 = +20% faster) |
 | `duration` | double | `300` | Duration in seconds |
+| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 **Event:** Fires on the trigger declared by the ability (temporary attack speed bonus).
 

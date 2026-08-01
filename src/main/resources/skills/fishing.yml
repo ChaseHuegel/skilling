@@ -120,6 +120,7 @@ abilities:
               base: 0.2
               step: 0.005
               max: 0.7
+          uuid: { constant: "91b24164-6939-55f0-8afe-4f08f6ca825a" }
     feedback:
       notify:
         action_bar: false

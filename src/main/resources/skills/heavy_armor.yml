@@ -17,6 +17,7 @@ abilities:
         filters: [ { state: "equipped:heavy" } ]
         parameters:
           amount: { linear: { base: 1.0, step: 0.02, max: 4.0 } }
+          uuid: { constant: "7b24cdbd-a100-5976-8d7b-a8a39f69e3e7" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
   - id: "fortified"
@@ -29,6 +30,7 @@ abilities:
         filters: [ { state: "equipped:heavy" } ]
         parameters:
           amount: { linear: { base: 0.1, step: 0.005, max: 0.6 } }
+          uuid: { constant: "aa36168a-9b62-52e7-9032-c81490f6e344" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
   - id: "bulwark"
@@ -71,6 +73,7 @@ abilities:
         filters: [ { state: "equipped:heavy" } ]
         parameters:
           amount: { linear: { base: 0.3, step: 0.005, max: 0.8 } }
+          uuid: { constant: "28eb51b9-9cfe-5e18-b945-5d39a7389a3d" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
   - id: "juggernaut"
@@ -83,10 +86,12 @@ abilities:
         filters: [ { state: "equipped:heavy" } ]
         parameters:
           amount: { linear: { base: 3.0, step: 0.05, max: 6.0 } }
+          uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
           duration: { constant: 10.0 }
       - type: "core:knockback_resist"
         filters: [ { state: "equipped:heavy" } ]
         parameters:
           amount: { linear: { base: 0.5, step: 0.005, max: 0.9 } }
+          uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
           duration: { constant: 10.0 }
     feedback: { notify: { action_bar: false } }
