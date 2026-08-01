@@ -13,12 +13,12 @@
 
 ## Implementation Requirements
 
-- [ ] Evaluate the XP curves and XP source rewards of every bundled skill in `src/main/resources/skills/`
-- [ ] Estimate the time to reach level 100 for each skill, with the assumptions and methodology explained
-- [ ] Assess whether the time investment is consistent, fair, and consistent across all skills
-- [ ] Research comparable RPG skill plugins (e.g. AuraSkills, mcMMO) and skilling games (e.g. RuneScape, Valheim) as an informed baseline for comparison
-- [ ] Produce suggested adjustments and a reusable framework for designing XP source rewards
-- [ ] Deliver the full report as `docs/issues/REPORT_XP-CURVE.md`
+- [x] Evaluate the XP curves and XP source rewards of every bundled skill in `src/main/resources/skills/`
+- [x] Estimate the time to reach level 100 for each skill, with the assumptions and methodology explained
+- [x] Assess whether the time investment is consistent, fair, and consistent across all skills
+- [x] Research comparable RPG skill plugins (e.g. AuraSkills, mcMMO) and skilling games (e.g. RuneScape, Valheim) as an informed baseline for comparison
+- [x] Produce suggested adjustments and a reusable framework for designing XP source rewards
+- [x] Deliver the full report as `docs/issues/REPORT_XP-CURVE.md`
 
 ## Technical Specifications & Context
 
@@ -30,8 +30,8 @@
 
 ## Verification & Definition of Done
 
-- [ ] `docs/issues/REPORT_XP-CURVE.md` exists and documents the methodology (assumptions, rates, hours-per-level math)
-- [ ] Every bundled skill has a time-to-100 estimate with reasoning
-- [ ] A comparison section covers at least AuraSkills/mcMMO and one of RuneScape/Valheim
-- [ ] Concrete, prioritized suggestions and a framework for designing XP source rewards are included
-- [ ] Report renders as clean Markdown with valid cross-references; cross-references to skill YAML use real file paths
+- [x] `docs/issues/REPORT_XP-CURVE.md` exists and documents the methodology (assumptions, rates, hours-per-level math)
+- [x] Every bundled skill has a time-to-100 estimate with reasoning
+- [x] A comparison section covers at least AuraSkills/mcMMO and one of RuneScape/Valheim
+- [x] Concrete, prioritized suggestions and a framework for designing XP source rewards are included
+- [x] Report renders as clean Markdown with valid cross-references; cross-references to skill YAML use real file paths

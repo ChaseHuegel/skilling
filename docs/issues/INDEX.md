@@ -16,7 +16,7 @@
 - [x] [ISSUE-110](ISSUE-110.md) - Sort skill items in the skills navigation flyout by color then name
 
 ### Research
-- [ ] [ISSUE-107](ISSUE-107.md) - Produce an XP-curve balance research report (REPORT_XP-CURVE.md)
+- [x] [ISSUE-107](ISSUE-107.md) - Produce an XP-curve balance research report (REPORT_XP-CURVE.md)
 
 ## Backlog
 
