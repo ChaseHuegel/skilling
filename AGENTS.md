@@ -33,14 +33,14 @@ All code lives under `io.github.chasehuegel.skilling`.
 All commits MUST follow `docs/dev/CONVENTIONS-COMMITS.md`. No commit skips this convention.
 
 ### Issue Resolution Workflow
-When resolving items from `docs/project/ISSUES.md`, follow this strict sequence:
+When resolving items from `docs/issues/INDEX.md`, follow this strict sequence:
 
 1. **One issue at a time** — Tackle one issue (including all its sub-bullets) completely before starting the next.
 2. **Plan first (if complex)** — For issues with sub-bullets or non-trivial scope, write a brief development plan before writing any code.
 3. **Build** — After making changes, run `./gradlew build`. Fix any compiler errors before continuing.
 4. **Test** — Run `./gradlew test`. Fix any test failures introduced by the changes.
 5. **Self-review** — Read the diff (`git diff`) to verify correctness, style, and adherence to conventions.
-6. **Mark complete** — Check off the resolved bullet(s) in `docs/project/ISSUES.md`.
+6. **Mark complete** — Check off the resolved bullet(s) in `docs/issues/INDEX.md`.
 7. **Commit** — `git add -A && git commit -m "..."` following `docs/dev/CONVENTIONS-COMMITS.md`.
 8. **Next issue** — Repeat from step 1 for the next unchecked item.
 
@@ -61,7 +61,7 @@ After each development phase, `./gradlew build` AND `./gradlew test` must pass b
 | `src/AGENTS.md` | Java plugin backend: `src/main/java/io/github/chasehuegel/skilling/engine/**`, `api/**`, `resources/**`, and `src/test/**`. Does NOT own `io.github.chasehuegel.skilling.web` (see `web/AGENTS.md`). |
 | `skilling-api/AGENTS.md` | The published addon-facing API module (`skilling-api/src/**`). |
 | `web/AGENTS.md` | Web GUI subsystem: `web/frontend/**`, `web/frontend/e2e/**`, and the Java backend package `io.github.chasehuegel.skilling.web`. |
-| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/project/**`. |
+| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/issues/**`. |
 
 # DOX framework
 
@@ -150,4 +150,4 @@ When the user requests a durable behavior change, record it here or in the relev
 | `src/AGENTS.md` | Java plugin backend: `src/main/java/io/github/chasehuegel/skilling/engine/**`, `api/**`, `resources/**`, and `src/test/**`. Does NOT own `io.github.chasehuegel.skilling.web` (see `web/AGENTS.md`). |
 | `skilling-api/AGENTS.md` | The published addon-facing API module (`skilling-api/src/**`). |
 | `web/AGENTS.md` | Web GUI subsystem: `web/frontend/**`, `web/frontend/e2e/**`, and the Java backend package `io.github.chasehuegel.skilling.web`. |
-| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/project/**`. |
+| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/issues/**`. |

@@ -10,7 +10,7 @@ Provide the durable reference material for the project: user-facing guides for s
 
 - `docs/users/**` — user-facing documentation (installation, configuration, skill authoring, API integration, capability catalog).
 - `docs/dev/**` — developer-facing specs and conventions (architecture, requirements, skill design framework, skill template, commit spec).
-- `docs/project/**` — issue tracking (`ISSUES.md`), detailed issue write-ups, and research reports.
+- `docs/issues/**` — issue tracking (`INDEX.md`), detailed issue write-ups, and research reports.
 - `docs/AGENTS.md` itself — owns documentation content standards only; Java/Javadoc rules and config-template rules live in `src/AGENTS.md`.
 
 ## Local Contracts
@@ -35,9 +35,9 @@ These docs are **user-facing** and must use clear language free of implementatio
 ### YAML Template Documentation
 Every configurable YAML template (in `docs/dev/` and shipped under `src/main/resources/`) must include commented documentation for each key: supported values, defaults, and a brief description, plus commented-out examples inline.
 
-### Project Tracking (`docs/project/`)
-* `ISSUES.md` — the issue backlog. Resolve items one at a time per the Issue Resolution Workflow in root `AGENTS.md`; check off bullets only when fully done.
-* Detailed single-issue write-ups follow the naming pattern `ISSUE-<n>.md` and are referenced from `ISSUES.md`.
+### Issue Tracking (`docs/issues/`)
+* `INDEX.md` — the issue index. Resolve items one at a time per the Issue Resolution Workflow in root `AGENTS.md`; check off bullets only when fully done.
+* Detailed single-issue write-ups follow the naming pattern `ISSUE-<n>.md` and are referenced from `INDEX.md`.
 * Research reports (e.g., `REPORT_XP-CURVE.md`) land here.
 
 #### Issue Ticket Template
