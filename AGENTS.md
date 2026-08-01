@@ -1,72 +1,38 @@
-# AI Agent Instructions for Skilling
+# AI Agent Instructions for Skilling (DOX Root)
 
-Welcome to the Skilling repository. This file provides architectural context, coding constraints, and design philosophies. **Read these instructions carefully before writing or modifying any code.**
+Welcome to the Skilling repository. This file is the **root DOX rail**: it carries project-wide instructions, global preferences, durable workflow rules, and the top-level Child DOX Index. Read it before writing or modifying any code, then read every AGENTS.md along the path to the files you will touch.
 
-Companion files with deeper specifications: `README.md`, `docs/dev/REQUIREMENTS.md`, `docs/dev/DESIGN.md`, `docs/dev/template-skill.yml`, `docs/dev/CONVENTIONS-COMMITS.md` (commit message format), and `web/AGENTS.md` for Web GUI configuration (including Minecraft asset texture version).
+Companion deeper specs: `README.md`, `docs/dev/REQUIREMENTS.md`, `docs/dev/DESIGN.md`, `docs/dev/SKILL-DESIGN-FRAMEWORK.md`, `docs/dev/template-skill.yml`, and `docs/dev/CONVENTIONS-COMMITS.md` (commit message format).
 
-## Project Context
+## Purpose
+
 Skilling is a high-performance, data-driven RPG skills engine for PaperMC (Minecraft). It acts as a rules engine, not a traditional plugin.
 * **The Golden Rule:** There are ZERO hardcoded skills, levels, or abilities in the Java backend.
 * All mechanics, triggers, and evaluators are decoupled modules.
 * Content is constructed entirely via YAML configurations by the end-user.
 * The system is designed to maintain 20 TPS under heavy load.
 
-## Package Base
+## Ownership
+
+This file owns the entire repository. Durable sub-boundaries (engine, API, web GUI, docs) are delegated to the child AGENTS.md files indexed below; anything not claimed by a child remains owned here.
+
+## Local Contracts
+
+### Package Base
 All code lives under `io.github.chasehuegel.skilling`.
 
-## Tech Stack
+### Tech Stack
 * **Target API:** Paper API (Latest release)
 * **Language:** Java 21 (LTS) — *Use modern features: Records, Switch Expressions, Pattern Matching.*
-* **Build System:** Gradle (Kotlin DSL)
+* **Build System:** Gradle (Kotlin DSL); `skilling-api` is a published subproject.
 * **Database:** Embedded SQLite (WAL mode) with HikariCP pooling.
-* **Command Framework:** Incendo Cloud (with `cloud-paper` and `cloud-annotations`)
+* **Command Framework:** Incendo Cloud (with `cloud-paper` and `cloud-annotations`).
+* **Web GUI:** Javalin 7 + Vue 3 (see `web/AGENTS.md`).
 
----
+### Commit Conventions
+All commits MUST follow `docs/dev/CONVENTIONS-COMMITS.md`. No commit skips this convention.
 
-## Architectural Rules
-
-### 1. Composition Over Inheritance (ECS-Style)
-Do not create classes like `MiningSkill` or `WoodcuttingAbility`. Instead, build reusable components:
-* **Triggers:** Listeners that hook into Spigot events.
-* **Mechanics:** Executable actions (e.g., `YieldMultiplierMechanic`, `ApplyStatusMechanic`).
-* **Parameter Evaluators:** Classes that take `(currentLevel, unlockLevel)` and return a `double`.
-* All new Mechanics and Evaluators must be registered in their respective `Registry` singletons during `onEnable()`.
-
-### 2. Thread Safety & Database I/O
-* **Never block the Bukkit Main Thread.**
-* All SQLite database reads/writes must be executed asynchronously.
-* **State Management:** Use the Write-Behind Cache pattern. Update the `PlayerProfile` in-memory `ConcurrentHashMap`, flag it as `isDirty = true`, and let the async batch worker handle the SQL `UPSERT`.
-* Keep SQLite in `PRAGMA journal_mode=WAL;` to prevent file contention.
-
-### 3. The Requirements Engine
-Ability execution must follow the **Check, Execute, Consume** pattern:
-1. `requirements.check(player)`: Evaluate conditions (cooldowns, items, states). Returns a `RequirementResult` object. Do NOT return raw booleans.
-2. `mechanic.execute(...)`: Run the logic if the check passes.
-3. `requirements.consume(player)`: Deduct items and apply cooldowns only after successful execution.
-
-### 4. UI & Inventory Security
-* **Lazy Instantiation:** Build Bukkit `Inventory` objects on-demand and cache them in the `PlayerProfile`. Invalidate the cache entirely when a player's level changes.
-* **Dynamic Lore:** Use `LoreResolver` to inject live math from `ParameterEvaluator` outputs into strings. Never hardcode `{placeholder}` values.
-* **Anti-Dupe (Poison Pill):** Every UI `ItemStack` must be tagged with a hidden byte via Paper's `PersistentDataContainer`. The global inventory listener must `setCancelled(true)` on all clicks/drags in custom holders and vaporize any tagged item found outside the UI.
-
-### 5. Configs & Tags
-* **Plugin Config:** Global settings (`config.yml`) govern database pool size, boss bar pool capacity, and debounce intervals.
-* When writing block or item filters, support Vanilla namespaces (e.g., `#minecraft:logs`).
-* Always route tag checks through the custom `TagResolver` to support user-defined custom tags in `tags.yml`.
-* Flatten tag resolution into `EnumSet<Material>` or `EnumSet<EntityType>` during plugin load to keep event listener lookups at O(1) complexity.
-
-### 6. Command & Administration
-* Use Incendo Cloud for command registration, argument casting, and permission routing.
-* All functionality lives under a single `/skills` command tree — no separate `/skillsadmin`.
-* A bare `/skills` (no arguments) opens the player's skill overview UI.
-* Skill IDs auto-complete by querying the live `SkillRegistry`.
-* Admin commands targeting offline players must execute directly against the database and flag the row for fanfare on next login.
-* `/skills reload` follows a strict lockdown sequence: freeze interactions, close GUIs, flush DB, rebuild registries, invalidate UI caches, unlock.
-
----
-
-## Issue Resolution Workflow
-
+### Issue Resolution Workflow
 When resolving items from `docs/project/ISSUES.md`, follow this strict sequence:
 
 1. **One issue at a time** — Tackle one issue (including all its sub-bullets) completely before starting the next.
@@ -75,40 +41,27 @@ When resolving items from `docs/project/ISSUES.md`, follow this strict sequence:
 4. **Test** — Run `./gradlew test`. Fix any test failures introduced by the changes.
 5. **Self-review** — Read the diff (`git diff`) to verify correctness, style, and adherence to conventions.
 6. **Mark complete** — Check off the resolved bullet(s) in `docs/project/ISSUES.md`.
-7. **Commit** — `git add -A && git commit -m "..."` with a message following `docs/dev/CONVENTIONS-COMMITS.md`. **All commits MUST adhere to this convention.**
+7. **Commit** — `git add -A && git commit -m "..."` following `docs/dev/CONVENTIONS-COMMITS.md`.
 8. **Next issue** — Repeat from step 1 for the next unchecked item.
 
-## Testing & Validation
-* **Test Framework:** Use JUnit 5 for unit testing all non-Bukkit logic (evaluators, parsers, requirements engine).
-* **What to Test:** Every `ParameterEvaluator` implementation, the `RequirementEngine` check/consume lifecycle, `TagResolver` resolution, and `LoreResolver` placeholder injection must have unit tests.
-* **Phase Validation:** After each development phase, run `./gradlew test` in addition to `./gradlew build`. All tests must pass before proceeding.
+### Validation Gate
+After each development phase, `./gradlew build` AND `./gradlew test` must pass before proceeding.
 
-## Documentation & Self-Documenting Code
+## Work Guidance
 
-### Java Code Documentation
-* **Javadoc is required** on all public API methods, interfaces, abstract classes, and non-trivial overrides. Keep it concise: explain *what* and *why*, not *how*.
-* **Avoid inline comments that restate the code.** Bad: `x += 1; // increment x by 1`. Good: `x += 1; // shift window start to exclude the just-consumed entry`.
-* **Use inline comments only** to explain non-obvious edge cases, performance considerations, or why a seemingly wrong approach was chosen.
-* Every `SkillMechanic`, `SkillTrigger`, and `ParameterEvaluator` implementation must have a class-level Javadoc explaining its purpose, YAML key, and required/optional parameters.
+* Engine implementation rules (ECS composition, thread safety, requirements engine, UI security, configs & tags, commands, Javadoc, coding style) live in `src/AGENTS.md`.
+* The published addon-facing API module is governed by `skilling-api/AGENTS.md`.
+* The Web GUI subsystem (frontend, REST API, E2E, asset textures) is governed by `web/AGENTS.md`.
+* Documentation structure and content standards live in `docs/AGENTS.md`.
 
-### YAML Template Documentation
-* Every configurable YAML file (`config.yml`, `tags.yml`, skill definitions) must include commented documentation for each key: supported values, defaults, and a brief description.
-* Include commented-out examples showing configuration possibilities inline in templates.
+## Child DOX Index
 
-### External Documentation
-* A `docs/` directory must exist at project root containing markdown files for end-users and addon developers:
-  * `docs/users/getting-started.md` — Installation, first run, basic usage (`/skills` commands).
-  * `docs/users/configuration.md` — Reference for `config.yml` and `tags.yml` with all supported keys.
-  * `docs/users/creating-skills.md` — Full YAML schema for skill definitions, abilities, XP sources, and requirements, with annotated examples.
-  * `docs/users/api-integration.md` — How to register custom mechanics, triggers, and evaluators via the API. Maven/Gradle coordinates, code samples.
-  * `docs/users/capabilities.md` — Catalog of every built-in mechanic, trigger, and evaluator with their parameters and YAML usage.
-* These docs are **user-facing** and must use clear language free of implementation jargon.
-
-## Coding Style & Conventions
-* **Fail-Fast:** Throw `IllegalArgumentException` during YAML parsing if a config is malformed. Do not let bad configs silently fail at runtime.
-* **Performance:** Avoid regex compilation inside loops or high-frequency events.
-* **Debouncing:** When providing failure feedback (e.g., playing a dud sound for an ability on cooldown), route it through the `FeedbackDebouncer` to prevent client-side spam.
-* **Component API:** Use Paper's modern Component API for items and text. Avoid legacy `&` color code translations where MiniMessage or Components are applicable.
+| Path | Scope |
+|---|---|
+| `src/AGENTS.md` | Java plugin backend: `src/main/java/io/github/chasehuegel/skilling/engine/**`, `api/**`, `resources/**`, and `src/test/**`. Does NOT own `io.github.chasehuegel.skilling.web` (see `web/AGENTS.md`). |
+| `skilling-api/AGENTS.md` | The published addon-facing API module (`skilling-api/src/**`). |
+| `web/AGENTS.md` | Web GUI subsystem: `web/frontend/**`, `web/frontend/e2e/**`, and the Java backend package `io.github.chasehuegel.skilling.web`. |
+| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/project/**`. |
 
 # DOX framework
 
@@ -192,4 +145,9 @@ When the user requests a durable behavior change, record it here or in the relev
 
 ## Child DOX Index
 
-This project is not yet indexed. Before continuing you must scan the project, build the DOX tree and replace this message with the actual index. Go deep and scan files recursively to properly evaluate complexity and create nested DOX files where needed.
+| Path | Scope |
+|---|---|
+| `src/AGENTS.md` | Java plugin backend: `src/main/java/io/github/chasehuegel/skilling/engine/**`, `api/**`, `resources/**`, and `src/test/**`. Does NOT own `io.github.chasehuegel.skilling.web` (see `web/AGENTS.md`). |
+| `skilling-api/AGENTS.md` | The published addon-facing API module (`skilling-api/src/**`). |
+| `web/AGENTS.md` | Web GUI subsystem: `web/frontend/**`, `web/frontend/e2e/**`, and the Java backend package `io.github.chasehuegel.skilling.web`. |
+| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/project/**`. |
