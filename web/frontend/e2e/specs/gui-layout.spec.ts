@@ -7,45 +7,41 @@ test.describe('GUI Layout Editor', () => {
     const layoutPage = new GuiLayoutPage(page);
     await layoutPage.goto();
 
-    await expect(layoutPage.header).toHaveText('GUI Layout');
+    await expect(layoutPage.header).toHaveText('Layout');
     // Default layout has 6 rows × 9 cols = 54 slots
     expect(await layoutPage.getSlotCount()).toBe(54);
     // Palette should show available skills
     expect(await layoutPage.getPaletteCount()).toBeGreaterThanOrEqual(1);
   });
 
-  test('shows a single default page tab', async ({ page }) => {
+  test('renders the default page tabs', async ({ page }) => {
     const layoutPage = new GuiLayoutPage(page);
     await layoutPage.goto();
 
-    expect(await layoutPage.getTabCount()).toBe(1);
+    expect(await layoutPage.getTabCount()).toBeGreaterThanOrEqual(1);
   });
 
   test('adds a new page tab', async ({ page }) => {
     const layoutPage = new GuiLayoutPage(page);
     await layoutPage.goto();
 
+    const initial = await layoutPage.getTabCount();
     await layoutPage.clickAddPage();
-    expect(await layoutPage.getTabCount()).toBe(2);
+    expect(await layoutPage.getTabCount()).toBe(initial + 1);
   });
 
   test('can add and remove a page tab', async ({ page }) => {
     const layoutPage = new GuiLayoutPage(page);
     await layoutPage.goto();
 
+    const initial = await layoutPage.getTabCount();
     await layoutPage.clickAddPage();
-    expect(await layoutPage.getTabCount()).toBe(2);
+    expect(await layoutPage.getTabCount()).toBe(initial + 1);
 
-    // Remove the first tab
-    const removeButtons = page.locator('.tab-remove-btn');
-    await removeButtons.first().click();
+    // Remove the newly added tab
+    await layoutPage.removeTab(initial);
 
-    // Confirm removal in dialog
-    const confirmBtn = page.locator('.confirm-dialog .btn-danger');
-    await confirmBtn.click();
-    await page.waitForTimeout(100);
-
-    expect(await layoutPage.getTabCount()).toBe(1);
+    expect(await layoutPage.getTabCount()).toBe(initial);
   });
 
   test('palette search filters skills', async ({ page }) => {

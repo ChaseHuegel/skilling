@@ -13,7 +13,6 @@ export class SkillEditorPage {
   readonly maxLevelInput: Locator;
 
   // Display fields
-  readonly iconInput: Locator;
   readonly colorSelect: Locator;
   readonly styleSelect: Locator;
 
@@ -24,9 +23,9 @@ export class SkillEditorPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.header = page.locator('.editor-header h1');
-    this.saveBtn = page.locator('.editor-header .btn-primary');
-    this.cancelBtn = page.locator('.editor-header .btn-secondary');
+    this.header = page.locator('.editor-banner .banner-name');
+    this.saveBtn = page.getByRole('button', { name: 'Save Changes' });
+    this.cancelBtn = page.getByRole('button', { name: 'Cancel' });
     this.errorBanner = page.locator('.error-banner');
 
     // Identity
@@ -35,7 +34,6 @@ export class SkillEditorPage {
     this.maxLevelInput = page.locator('input[placeholder*="Max Level"], input[max="1000"]');
 
     // Display
-    this.iconInput = page.locator('input[placeholder*="minecraft:"]');
     this.colorSelect = page.locator('select').first();
     this.styleSelect = page.locator('select').nth(1);
 
@@ -47,7 +45,7 @@ export class SkillEditorPage {
 
   async isNewSkill(): Promise<boolean> {
     const text = await this.header.textContent();
-    return text?.includes('Create Skill') ?? false;
+    return text?.includes('New Skill') ?? false;
   }
 
   async getHeaderText(): Promise<string> {
@@ -67,7 +65,10 @@ export class SkillEditorPage {
   }
 
   async setIcon(icon: string) {
-    await this.iconInput.fill(icon);
+    const picker = this.page.locator('.display-section .material-picker');
+    await picker.locator('.picker-trigger').click();
+    await this.page.locator('.picker-search-input').fill(icon);
+    await this.page.locator('.picker-option').filter({ hasText: icon }).first().click();
   }
 
   async selectColor(color: string) {
@@ -87,8 +88,11 @@ export class SkillEditorPage {
   }
 
   async save() {
+    const saved = this.page.waitForResponse(
+      res => res.url().includes('/api/skills') && (res.request().method() === 'PUT' || res.request().method() === 'POST')
+    );
     await this.saveBtn.click();
-    await this.page.waitForLoadState('networkidle');
+    await saved;
   }
 
   // Get identity form values for verification
@@ -102,7 +106,7 @@ export class SkillEditorPage {
 
   // Wait for editor to load
   async waitForLoad() {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('load');
   }
 
   async assertNoError() {

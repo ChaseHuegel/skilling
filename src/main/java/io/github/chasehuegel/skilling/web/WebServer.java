@@ -79,6 +79,7 @@ public final class WebServer {
                         "status", "error",
                         "message", "Invalid credentials"
                     ));
+                    ctx.skipRemainingHandlers();
                 }
             });
 

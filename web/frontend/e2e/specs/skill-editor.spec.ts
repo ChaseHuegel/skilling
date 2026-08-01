@@ -35,10 +35,7 @@ test.describe('Skill Editor', () => {
     await editor.setDisplayName('Mining Pro');
     await editor.save();
 
-    // Should redirect to dashboard
-    await expect(page).toHaveURL(/\/$/);
-
-    // Verify pending changes banner appears
+    // The editor reloads in place and the pending changes banner appears
     await dashboard.assertBannerVisible();
   });
 
@@ -68,8 +65,7 @@ test.describe('Skill Editor', () => {
 
     await editor.save();
 
-    // Should redirect to dashboard
-    await expect(page).toHaveURL(/\/$/);
+    // The editor reloads in place and the pending changes banner appears
     await dashboard.assertBannerVisible();
   });
 

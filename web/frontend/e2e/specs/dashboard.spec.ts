@@ -30,7 +30,7 @@ test.describe('Dashboard', () => {
 
     // Should navigate to editor, URL contains /skills/
     await expect(page).toHaveURL(/\/skills\//);
-    await expect(page.locator('.editor-header')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.editor-banner')).toBeVisible({ timeout: 5000 });
   });
 
   test('clicking create navigates to new skill', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('Dashboard', () => {
     await dashboard.goto();
     await dashboard.clickCreateSkill();
     await expect(page).toHaveURL(/\/skills\/new/);
-    await expect(page.locator('h1')).toContainText('Create Skill');
+    await expect(page.locator('.editor-banner .banner-name')).toHaveText('New Skill');
   });
 
   test('dashboard screenshot matches baseline', async ({ page }) => {

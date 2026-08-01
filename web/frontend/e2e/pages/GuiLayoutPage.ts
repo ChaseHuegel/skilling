@@ -17,7 +17,7 @@ export class GuiLayoutPage {
     this.header = page.locator('.page-title');
     this.pageTabs = page.locator('.page-tab');
     this.addPageBtn = page.locator('.tab-add-btn');
-    this.applyBtn = page.locator('.btn-primary');
+    this.applyBtn = page.getByRole('button', { name: 'Save Changes' });
     this.resetBtn = page.locator('.btn-ghost');
     this.chestSlots = page.locator('.chest-slot');
     this.paletteItems = page.locator('.palette-item');
@@ -27,10 +27,11 @@ export class GuiLayoutPage {
   async goto() {
     await ensureLoggedIn(this.page);
     await this.page.goto('/#/layout');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('load');
   }
 
   async getTabCount(): Promise<number> {
+    await this.pageTabs.first().waitFor({ state: 'visible', timeout: 10000 });
     return this.pageTabs.count();
   }
 
@@ -52,13 +53,22 @@ export class GuiLayoutPage {
     await this.pageTabs.nth(index).click();
   }
 
-  async clickAddPage() {
+  async clickAddPage(label = 'Test Page') {
     await this.addPageBtn.click();
+    await this.page.locator('.modal-dialog .modal-input').first().fill(label);
+    await this.page.getByRole('button', { name: 'Add', exact: true }).click();
+    await this.pageTabs.first().waitFor({ state: 'visible', timeout: 5000 });
+  }
+
+  async removeTab(index: number) {
+    await this.pageTabs.nth(index).locator('.tab-action-danger').click();
+    await this.page.locator('.modal-dialog').getByRole('button', { name: 'Remove' }).click();
   }
 
   async clickApply() {
+    const applied = this.page.waitForResponse(res => res.url().includes('/api/gui-layout'));
     await this.applyBtn.click();
-    await this.page.waitForLoadState('networkidle');
+    await applied;
   }
 
   async dragPaletteToSlot(skillIndex: number, slotIndex: number) {

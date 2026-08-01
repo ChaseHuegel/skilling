@@ -12,14 +12,14 @@ export class ConfigPage {
     this.page = page;
     this.header = page.locator('.page-header h1');
     this.sections = page.locator('.config-section');
-    this.saveBtn = page.locator('.btn-primary');
+    this.saveBtn = page.getByRole('button', { name: 'Save Changes' });
     this.resetBtn = page.locator('.btn-secondary');
   }
 
   async goto() {
     await ensureLoggedIn(this.page);
     await this.page.goto('/#/config');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('load');
   }
 
   async getSectionCount(): Promise<number> {
@@ -52,7 +52,8 @@ export class ConfigPage {
   }
 
   async save() {
+    const saved = this.page.waitForResponse(res => res.url().includes('/api/config'));
     await this.saveBtn.click();
-    await this.page.waitForLoadState('networkidle');
+    await saved;
   }
 }

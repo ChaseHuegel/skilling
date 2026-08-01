@@ -21,7 +21,10 @@ export class DashboardPage {
   async goto() {
     await ensureLoggedIn(this.page);
     await this.page.goto('/#/');
-    await this.page.waitForLoadState('networkidle');
+    // The SPA issues post-load API fetches, so Chromium never re-emits the
+    // networkIdle lifecycle event and networkidle would hang. load + the
+    // element waits used by callers cover data readiness deterministically.
+    await this.page.waitForLoadState('load');
   }
 
   async clickSkill(id: string) {
@@ -49,12 +52,16 @@ export class DashboardPage {
   }
 
   async applyChanges() {
+    const reloaded = this.page.waitForResponse(res => res.url().includes('/api/reload'));
     await this.applyBtn.click();
-    await this.page.waitForLoadState('networkidle');
+    await reloaded;
   }
 
   async discardChanges() {
+    const discarded = this.page.waitForResponse(
+      res => res.url().includes('/api/staging') && res.request().method() === 'DELETE'
+    );
     await this.discardBtn.click();
-    await this.page.waitForLoadState('networkidle');
+    await discarded;
   }
 }

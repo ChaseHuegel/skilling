@@ -7,7 +7,7 @@ test.describe('Responsive Layout', () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await ensureLoggedIn(page);
     await page.goto('/#/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await page.waitForSelector('.skill-card', { timeout: 15000 });
     await takeScreenshot(page, 'responsive-desktop');
   });
@@ -16,7 +16,7 @@ test.describe('Responsive Layout', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await ensureLoggedIn(page);
     await page.goto('/#/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await page.waitForSelector('.skill-card', { timeout: 15000 });
     await takeScreenshot(page, 'responsive-mobile');
   });
@@ -25,7 +25,8 @@ test.describe('Responsive Layout', () => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await ensureLoggedIn(page);
     await page.goto('/#/skills/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
+    await page.waitForSelector('.field-input', { timeout: 15000 });
     await takeScreenshot(page, 'responsive-tablet-editor');
   });
 });

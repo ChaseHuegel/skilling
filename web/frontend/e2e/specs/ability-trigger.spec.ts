@@ -50,13 +50,22 @@ test.describe('Ability Trigger Field', () => {
       levelUpCommands: [],
     };
 
-    const created = await request.post('/api/skills', { data: payload });
+    const authHeaders = {
+      Authorization: 'Basic ' + Buffer.from('admin:skilling').toString('base64'),
+    };
+
+    const created = await request.post('/api/skills', { data: payload, headers: authHeaders });
     expect(created.ok()).toBeTruthy();
 
-    const fetched = await request.get(`/api/skills/${skillId}`);
+    const fetched = await request.get(`/api/skills/${skillId}`, { headers: authHeaders });
     expect(fetched.ok()).toBeTruthy();
     const body = await fetched.json();
     expect(body.abilities.length).toBeGreaterThan(0);
     expect(body.abilities[0].trigger).toBe('block_break');
+
+    // Clean up the staged skill so the round trip doesn't leave a pending
+    // change that would surface the "Apply & Reload" banner for later tests.
+    const deleted = await request.delete(`/api/skills/${skillId}`, { headers: authHeaders });
+    expect(deleted.ok()).toBeTruthy();
   });
 });
