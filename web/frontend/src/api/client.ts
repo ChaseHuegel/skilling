@@ -73,4 +73,7 @@ export const api = {
     triggers: {
         list: () => apiFetch<{ triggers: string[] }>('/api/triggers'),
     },
+    stateFilters: {
+        list: () => apiFetch<{ stateFilters: string[] }>('/api/state-filters'),
+    },
 };

@@ -189,7 +189,9 @@ const abilities = computed({
 })
 const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abilities)
 
-const STATE_OPTIONS = STATE_SUGGESTIONS
+const STATE_OPTIONS = computed(() =>
+  registriesStore.stateFilters.length > 0 ? registriesStore.stateFilters : STATE_SUGGESTIONS
+)
 
 const expanded = ref<Record<number, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)

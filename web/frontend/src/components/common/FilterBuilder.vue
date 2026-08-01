@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import AppCombobox from './AppCombobox.vue'
-import { STATE_SUGGESTIONS } from './stateFilters'
+import { useRegistriesStore } from '../../stores/registries'
+import { STATE_SUGGESTIONS as FALLBACK_STATE_SUGGESTIONS } from './stateFilters'
 
 interface FilterEntry {
   target?: string
@@ -16,6 +18,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: FilterEntry[]]
 }>()
+
+const registriesStore = useRegistriesStore()
+
+const stateSuggestions = computed(() =>
+  registriesStore.stateFilters.length > 0 ? registriesStore.stateFilters : FALLBACK_STATE_SUGGESTIONS
+)
 
 function addFilter() {
   emit('update:modelValue', [...props.modelValue, {}])
@@ -53,7 +61,7 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
 
         <AppCombobox
           :model-value="entry.state ?? ''"
-          :suggestions="STATE_SUGGESTIONS"
+          :suggestions="stateSuggestions"
           label="State"
           placeholder="e.g. is_sneaking"
           :name="'state-' + idx"

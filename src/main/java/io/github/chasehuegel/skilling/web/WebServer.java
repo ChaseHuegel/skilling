@@ -9,6 +9,7 @@ import io.github.chasehuegel.skilling.web.handler.ConfigHandler;
 import io.github.chasehuegel.skilling.web.handler.GuiLayoutHandler;
 import io.github.chasehuegel.skilling.web.handler.ReloadHandler;
 import io.github.chasehuegel.skilling.web.handler.SkillHandler;
+import io.github.chasehuegel.skilling.web.handler.StateFilterHandler;
 import io.github.chasehuegel.skilling.web.handler.TagHandler;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.Javalin;
@@ -147,6 +148,9 @@ public final class WebServer {
                 var keys = plugin.getRegistries().getTriggerRegistry().keys();
                 ctx.json(Map.of("triggers", keys));
             });
+
+            var stateFilterHandler = new StateFilterHandler(plugin);
+            routes.get("/api/state-filters", stateFilterHandler::list);
 
             app.start(config.port());
             plugin.getLogger().info("Web GUI started on port " + config.port());

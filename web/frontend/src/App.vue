@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import { useStagingStore } from './stores/staging';
@@ -20,10 +20,15 @@ const stagingStore = useStagingStore();
 const registriesStore = useRegistriesStore();
 const route = useRoute();
 authStore.checkSession();
-onMounted(() => {
-    stagingStore.fetchStatus();
-    registriesStore.fetch();
-});
+// Fetch registry catalogs (mechanics, triggers, state filters) and staging
+// status only once authenticated — on first load they would 401 and never
+// retry, leaving the UI on fallback suggestion lists.
+watch(() => authStore.isAuthenticated, (auth) => {
+    if (auth) {
+        stagingStore.fetchStatus();
+        registriesStore.fetch();
+    }
+}, { immediate: true });
 watch(() => route.path, () => {
     stagingStore.fetchStatus();
 });
