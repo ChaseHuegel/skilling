@@ -569,6 +569,13 @@ attribute: { constant: "minecraft:movement_speed" }
 
 ## Built-In Triggers
 
+> **Bulk-operation scaling:** XP rewards for the `collect_xp`, `consume_item`, and
+> `furnace_extract` triggers are multiplied by the magnitude of the operation —
+> the number of XP orbs collected, the stack size consumed, or the XP extracted
+> from a furnace, respectively. For example, a configured reward of 2 skill XP
+> grants 6 skill XP for a bulk of 3. All other triggers grant the flat configured
+> reward.
+
 | Key | Event | Description |
 |---|---|---|
 | `block_break` | `BlockBreakEvent` | Breaking a block |

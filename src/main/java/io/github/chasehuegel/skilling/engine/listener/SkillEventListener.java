@@ -378,10 +378,9 @@ public final class SkillEventListener implements Listener {
                     continue;
                 }
                 int oldLevel = skill.getLevelForXp(profile.getXp(skill.id()));
-                double xp = source.reward().evaluate(oldLevel, 1) * plugin.getGlobalXpModifier();
-                xp *= io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.getMultiplier(player.getUniqueId());
-                if (xp > 0) {
-                    long rounded = Math.round(xp);
+                long rounded = computeXpGain(source.reward().evaluate(oldLevel, 1),
+                        resolveEventBulkScalar(event), plugin.getGlobalXpModifier(), player.getUniqueId());
+                if (rounded > 0) {
                     profile.addXp(skill.id(), rounded);
                     int newLevel = skill.getLevelForXp(profile.getXp(skill.id()));
                     showXpBossBar(player, skill, profile);
@@ -603,6 +602,51 @@ public final class SkillEventListener implements Listener {
 
     private void broadcastLevelUp(Player player, SkillDefinition skill, int newLevel) {
         LevelUpDispatcher.broadcastLevelUp(player, skill, newLevel, plugin, bossBarPool);
+    }
+
+    /**
+     * Resolves the bulk-operation scalar for an event. Bulk triggers
+     * ({@code collect_xp}, {@code consume_item}, {@code furnace_extract}) scale XP
+     * rewards by the magnitude of the operation (orbs collected, stack size
+     * consumed, furnace XP extracted); all other events return a scalar of {@code 1}.
+     *
+     * <p>The raw value is returned so a bulk of {@code 0} yields {@code 0} XP
+     * rather than rounding up to a positive reward.
+     *
+     * @param event the event to inspect
+     * @return the bulk scalar, or {@code 1} for non-bulk events
+     */
+    static double resolveEventBulkScalar(Event event) {
+        if (event instanceof org.bukkit.event.player.PlayerExpChangeEvent e) {
+            return e.getAmount();
+        }
+        if (event instanceof org.bukkit.event.player.PlayerItemConsumeEvent e) {
+            return e.getItem().getAmount();
+        }
+        if (event instanceof org.bukkit.event.inventory.FurnaceExtractEvent e) {
+            return e.getExpToDrop();
+        }
+        return 1;
+    }
+
+    /**
+     * Computes the rounded XP gain for a single trigger firing: the configured
+     * reward is scaled by the bulk-operation scalar and the global XP modifier,
+     * then multiplied by the active {@link XpBonusMechanic} multiplier. Rounding
+     * happens once, after all scaling. Non-positive gains return {@code 0} so
+     * they never grant or round up to a positive amount.
+     *
+     * @param reward         the configured base reward
+     * @param scalar         the bulk-operation scalar (1 for non-bulk events)
+     * @param globalModifier the global XP modifier from config
+     * @param playerId       the player's UUID (for the session XP bonus)
+     * @return the rounded XP gain, or {@code 0} if non-positive
+     */
+    static long computeXpGain(double reward, double scalar, double globalModifier, UUID playerId) {
+        double xp = reward * scalar * globalModifier;
+        xp *= io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.getMultiplier(playerId);
+        if (xp <= 0) return 0;
+        return Math.round(xp);
     }
 
     private Material resolveEventMaterial(Event event) {

@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Add a helper that resolves the bulk scalar from the event (mirroring the existing `resolveEventMaterial` pattern): `PlayerExpChangeEvent.getAmount()` for `collect_xp`, `PlayerItemConsumeEvent.getItem().getAmount()` for `consume_item`, `FurnaceExtractEvent.getExpToDrop()` for `furnace_extract`
-- [ ] Apply the scalar as a multiplier in `grantXp` so a reward of 2 skill XP for a bulk of 3 yields 6 skill XP
-- [ ] Ensure events that are not bulk operations return a scalar of `1` (no behavior change)
-- [ ] Add unit tests for the scalar resolution and for XP math (including the global XP modifier and `XpBonusMechanic` multiplier interplay)
-- [ ] Add a note to `docs/users/capabilities.md` documenting that bulk-operation triggers scale rewards by operation size
+- [x] Add a helper that resolves the bulk scalar from the event (mirroring the existing `resolveEventMaterial` pattern): `PlayerExpChangeEvent.getAmount()` for `collect_xp`, `PlayerItemConsumeEvent.getItem().getAmount()` for `consume_item`, `FurnaceExtractEvent.getExpToDrop()` for `furnace_extract`
+- [x] Apply the scalar as a multiplier in `grantXp` so a reward of 2 skill XP for a bulk of 3 yields 6 skill XP
+- [x] Ensure events that are not bulk operations return a scalar of `1` (no behavior change)
+- [x] Add unit tests for the scalar resolution and for XP math (including the global XP modifier and `XpBonusMechanic` multiplier interplay)
+- [x] Add a note to `docs/users/capabilities.md` documenting that bulk-operation triggers scale rewards by operation size
 
 ## Technical Specifications & Context
 
@@ -30,9 +30,9 @@
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new unit tests
-- [ ] Unit test: a `collect_xp` event with amount 3 and a reward of 2 grants 6 skill XP
-- [ ] Unit test: a `consume_item` event consuming a stack of 3 doors and a reward of 2 grants 6 skill XP
-- [ ] Unit test: a `furnace_extract` event with 3 XP and a reward of 2 grants 6 skill XP
-- [ ] Unit test: a non-bulk trigger (e.g. `block_break`) still grants the flat configured reward (scalar 1)
-- [ ] Edge case handled: a bulk scalar of `0` grants `0` XP and does not round up to a positive amount
+- [x] `./gradlew build && ./gradlew test` pass, including new unit tests
+- [x] Unit test: a `collect_xp` event with amount 3 and a reward of 2 grants 6 skill XP
+- [x] Unit test: a `consume_item` event consuming a stack of 3 doors and a reward of 2 grants 6 skill XP
+- [x] Unit test: a `furnace_extract` event with 3 XP and a reward of 2 grants 6 skill XP
+- [x] Unit test: a non-bulk trigger (e.g. `block_break`) still grants the flat configured reward (scalar 1)
+- [x] Edge case handled: a bulk scalar of `0` grants `0` XP and does not round up to a positive amount
