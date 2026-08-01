@@ -15,13 +15,13 @@ progression:
 xp_sources:
   - trigger: "entity_damage"
     filters:
-      - target: "#c:light_weapons"
+      - tool: "#c:light_weapons"
     reward:
       constant: 5.0
 
   - trigger: "entity_kill"
     filters:
-      - target: "#c:light_weapons"
+      - tool: "#c:light_weapons"
     reward:
       constant: 20.0
 
@@ -36,7 +36,7 @@ abilities:
     mechanics:
       - type: "core:modify_damage"
         filters:
-          - target: "#c:light_weapons"
+          - tool: "#c:light_weapons"
         parameters:
           multiplier:
             linear:
@@ -58,7 +58,7 @@ abilities:
     mechanics:
       - type: "core:speed_bonus"
         filters:
-          - target: "#c:light_weapons"
+          - tool: "#c:light_weapons"
         parameters:
           multiplier:
             linear:
@@ -80,7 +80,7 @@ abilities:
     mechanics:
       - type: "core:apply_status"
         filters:
-          - target: "#c:light_weapons"
+          - tool: "#c:light_weapons"
         parameters:
           effect:
             constant: 19.0
@@ -106,7 +106,7 @@ abilities:
     mechanics:
       - type: "core:lifesteal"
         filters:
-          - target: "#c:light_weapons"
+          - tool: "#c:light_weapons"
         parameters:
           percentage:
             linear:
@@ -127,7 +127,7 @@ abilities:
     mechanics:
       - type: "core:dodge"
         filters:
-          - target: "#c:light_weapons"
+          - tool: "#c:light_weapons"
         parameters:
           chance:
             linear:
@@ -148,7 +148,7 @@ abilities:
     mechanics:
       - type: "core:modify_damage"
         filters:
-          - target: "#c:light_weapons"
+          - tool: "#c:light_weapons"
         parameters:
           multiplier:
             constant: 2.5

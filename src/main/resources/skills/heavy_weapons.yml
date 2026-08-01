@@ -15,13 +15,13 @@ progression:
 xp_sources:
   - trigger: "entity_damage"
     filters:
-      - target: "#c:heavy_weapons"
+      - tool: "#c:heavy_weapons"
     reward:
       constant: 5.0
 
   - trigger: "entity_kill"
     filters:
-      - target: "#c:heavy_weapons"
+      - tool: "#c:heavy_weapons"
     reward:
       constant: 20.0
 
@@ -36,7 +36,7 @@ abilities:
     mechanics:
       - type: "core:modify_damage"
         filters:
-          - target: "#c:heavy_weapons"
+          - tool: "#c:heavy_weapons"
         parameters:
           multiplier:
             linear:
@@ -58,7 +58,7 @@ abilities:
     mechanics:
       - type: "core:apply_status"
         filters:
-          - target: "#c:heavy_weapons"
+          - tool: "#c:heavy_weapons"
         parameters:
           effect:
             constant: 2.0
@@ -84,7 +84,7 @@ abilities:
     mechanics:
       - type: "core:crowd_control"
         filters:
-          - target: "#c:heavy_weapons"
+          - tool: "#c:heavy_weapons"
         parameters:
           effect:
             constant: 18.0
@@ -115,7 +115,7 @@ abilities:
     mechanics:
       - type: "core:lifesteal"
         filters:
-          - target: "#c:heavy_weapons"
+          - tool: "#c:heavy_weapons"
         parameters:
           percentage:
             linear:
@@ -136,7 +136,7 @@ abilities:
     mechanics:
       - type: "core:execute"
         filters:
-          - target: "#c:heavy_weapons"
+          - tool: "#c:heavy_weapons"
         parameters:
           threshold:
             linear:
@@ -164,7 +164,7 @@ abilities:
     mechanics:
       - type: "core:modify_damage"
         filters:
-          - target: "#c:heavy_weapons"
+          - tool: "#c:heavy_weapons"
         parameters:
           multiplier:
             constant: 2.0
