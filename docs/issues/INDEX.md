@@ -8,11 +8,6 @@
 - [x] [ISSUE-103](ISSUE-103.md) - Fix web skill parsing of string-valued evaluator constants (breaks riding and 12 other skills)
 - [x] [ISSUE-104](ISSUE-104.md) - Accept scalar cooldown values in the web API (fix saving a cooldown in the skill editor)
 
-## Backlog
-
-### Bugs
-
-
 ### Improvements
 - [ ] [ISSUE-105](ISSUE-105.md) - Multiply XP source rewards by bulk-operation scalars (collect_xp, consume_item, furnace_extract)
 - [ ] [ISSUE-106](ISSUE-106.md) - Add lore tooltips to ability names in unlock chat messages
@@ -22,3 +17,12 @@
 
 ### Research
 - [ ] [ISSUE-107](ISSUE-107.md) - Produce an XP-curve balance research report (REPORT_XP-CURVE.md)
+
+## Backlog
+
+### Bugs
+
+
+### Improvements
+
+### Research
