@@ -14,6 +14,8 @@ See AGENTS.md §Issue Resolution Workflow for details.
 - [x] (plugin) SkillBonusMechanic says it is a % increase 
 - [ ] (plugin) Abilities using mechanics providing attribute modifiers can stack with themselves repeatedly. Mechanics that use attribute modifiers should have an optional parameter for a UUID string; if not provided a random one is generated. If one is provided, then we must check if it already exists on the player. If it does then we remove it before adding it again (to refresh any duration).
   - [ ] (plugin) In the bundled skill ymls, add a separate UUID parameter to each skill ability that is using an attribute mechanic
+- [ ] (plugin) `SkillManager.parseInlineEvaluator` coerces string-valued parameters to `0.0` at parse time, so namespaced effect/attribute/material keys never reach mechanics at runtime (`effect: { constant: "minecraft:poison" }` → `ConstantEvaluator(0.0)`); affected abilities throw `IllegalArgumentException` when triggered. See [ISSUE-101.md](ISSUE-101.md).
+  - [ ] (plugin) Add a string-capable evaluator (or raw-parameter passthrough) so string constants survive parsing and reach `PotionEffectResolver` / `ModifyAttributeMechanic` / `SetCooldownMechanic`
 
 # Improvements
 - [x] (web) Sort skills on the skills dashboard page by color -> name
