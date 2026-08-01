@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Apply the same color-then-name sort used on the dashboard (`DashboardPage.vue`) to the skills navigation flyout
-- [ ] Apply the sort before rendering so searching still filters the already-sorted list
-- [ ] Add an E2E assertion that the flyout order matches the dashboard order for the seeded skills
+- [x] Apply the same color-then-name sort used on the dashboard (`DashboardPage.vue`) to the skills navigation flyout
+- [x] Apply the sort before rendering so searching still filters the already-sorted list
+- [x] Add an E2E assertion that the flyout order matches the dashboard order for the seeded skills
 
 ## Technical Specifications & Context
 
@@ -27,6 +27,6 @@
 
 ## Verification & Definition of Done
 
-- [ ] `cd web/frontend && npm run build` passes (type-check)
-- [ ] `cd web/frontend && npm run e2e` passes, including the new ordering assertion
-- [ ] Runtime check: the navigation flyout orders skills by color then name, matching the dashboard
+- [x] `cd web/frontend && npm run build` passes (type-check)
+- [x] `cd web/frontend && npm run e2e` passes, including the new ordering assertion
+- [x] Runtime check: the navigation flyout orders skills by color then name, matching the dashboard

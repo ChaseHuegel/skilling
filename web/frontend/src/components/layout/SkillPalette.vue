@@ -62,9 +62,14 @@ const listRef = ref<HTMLElement | null>(null)
 const selectedSkillId = inject('selectedSkillId') as ReturnType<typeof ref<string | null>>
 
 const filteredSkills = computed(() => {
+  const sorted = [...props.skills].sort((a, b) => {
+    const colorCmp = (a.color || '').localeCompare(b.color || '')
+    if (colorCmp !== 0) return colorCmp
+    return (a.displayName || a.id || '').localeCompare(b.displayName || b.id || '')
+  })
   const q = query.value.toLowerCase().trim()
-  if (!q) return props.skills
-  return props.skills.filter(s =>
+  if (!q) return sorted
+  return sorted.filter(s =>
     s.id.toLowerCase().includes(q) ||
     (s.displayName || '').toLowerCase().includes(q) ||
     (s.abilities || []).some(a => a.name.toLowerCase().includes(q))

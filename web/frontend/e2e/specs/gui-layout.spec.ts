@@ -56,6 +56,26 @@ test.describe('GUI Layout Editor', () => {
     expect(filteredCount).toBeGreaterThanOrEqual(0);
   });
 
+  test('palette skills sort by color then name, matching the dashboard', async ({ page }) => {
+    const layoutPage = new GuiLayoutPage(page);
+    await layoutPage.goto();
+
+    // Reference order: the dashboard sorts by color then displayName/id
+    await page.goto('/#/');
+    const dashboardCards = page.locator('.skill-card');
+    await dashboardCards.first().waitFor({ state: 'visible', timeout: 10000 });
+    const dashboardNames = await dashboardCards.locator('.skill-name').allTextContents();
+    expect(dashboardNames.length).toBeGreaterThanOrEqual(2);
+
+    // The navigation flyout must present the same order
+    await page.goto('/#/layout');
+    const paletteItems = page.locator('.palette-item');
+    await paletteItems.first().waitFor({ state: 'visible', timeout: 10000 });
+    const paletteNames = await page.locator('.palette-item-name').allTextContents();
+
+    expect(paletteNames).toEqual(dashboardNames);
+  });
+
   test('layout page screenshot', async ({ page }) => {
     const layoutPage = new GuiLayoutPage(page);
     await layoutPage.goto();
