@@ -10,9 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class ModifyAttributeMechanicTest {
 
     @Test
-    void returnsFalseWithBlankAttribute() {
+    void throwsOnBlankAttribute() {
         var mechanic = new ModifyAttributeMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("attribute", ""), BukkitMock.mockBlockBreakEvent(player)));
+        assertThrows(IllegalArgumentException.class,
+                () -> mechanic.execute(player, Map.of("attribute", ""), BukkitMock.mockBlockBreakEvent(player)));
     }
 }
