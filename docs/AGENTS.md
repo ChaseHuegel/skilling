@@ -40,6 +40,29 @@ Every configurable YAML template (in `docs/dev/` and shipped under `src/main/res
 * Detailed single-issue write-ups follow the naming pattern `ISSUE-<n>.md` and are referenced from `ISSUES.md`.
 * Research reports (e.g., `REPORT_XP-CURVE.md`) land here.
 
+#### Issue Ticket Template
+Every issue ticket (`ISSUE-<n>.md`) must follow this section structure (keep low-complexity items terse):
+
+```
+# ISSUE-<n>: Clear, Actionable Goal
+
+## Context & User Story
+- **Goal:** As a [role], I want to [action] so that [benefit].
+- **Agent Role:** You are an expert [frontend/backend/QA] engineer executing this task.
+
+## Implementation Requirements
+- [ ] Explicit, atomic requirement statements
+
+## Technical Specifications & Context
+- **Target Files:** `path/to/file`
+- **Dependencies:** ...
+- **Constraints:** ...
+
+## Verification & Definition of Done
+- [ ] Automated tests / build / type-check pass
+- [ ] Edge case handled: ...
+```
+
 ## Work Guidance
 
 * When a change alters a user-visible behavior or the API, update the affected `docs/users/` file in the same change.
