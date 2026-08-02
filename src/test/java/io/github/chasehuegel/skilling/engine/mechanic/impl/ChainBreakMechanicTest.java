@@ -125,7 +125,6 @@ class ChainBreakMechanicTest {
     @Test
     void chainedBreakSkipsPipelineDispatch() {
         var block = block(mock(World.class), 5, 5, 5, Material.STONE);
-        ChainBreakMechanic.markChainProcessingForTest(block);
 
         var profileManager = mock(ProfileManager.class);
         var listener = new SkillEventListener(
@@ -137,6 +136,9 @@ class ChainBreakMechanicTest {
         when(event.getPlayer()).thenReturn(mock(Player.class));
         when(event.getBlock()).thenReturn(block);
 
+        // Mark the block as mid-chain-break immediately before the listener call
+        // so no intervening allocation can disturb the shared processing set.
+        ChainBreakMechanic.markChainProcessingForTest(block);
         listener.onBlockBreak(event);
 
         // dispatch() would look up the profile; a chained break must not reach it.

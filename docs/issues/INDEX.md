@@ -8,7 +8,7 @@
 - [x] [ISSUE-181](ISSUE-181.md) - Replace hard-coded equipped:* states with equipped_all / equipped_any + bundled armor tags
 - [x] [ISSUE-182](ISSUE-182.md) - Document that backwards compatibility is not a concern
 - [x] [ISSUE-184](ISSUE-184.md) - Add projectile_hit trigger; rebind throwing return_chance to it
-- [ ] [ISSUE-185](ISSUE-185.md) - Add level_break chain-break variant (XZ plane only)
+- [x] [ISSUE-185](ISSUE-185.md) - Add level_break chain-break variant (XZ plane only)
 
 ### Research
 - [ ] [ISSUE-183](ISSUE-183.md) - Research: supporting custom items in tags & filters

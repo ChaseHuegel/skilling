@@ -16,9 +16,26 @@ Multiplies block drops by a percentage chance on each break.
 
 ### core:chain_break
 
-Breaks connected blocks of the same type up to a limit (vein mining). Each
-chained block consumes 1 tool durability; chained blocks are broken without
-re-triggering XP or ability processing (only the originating break awards XP).
+Breaks connected blocks of the same type up to a limit (vein mining), expanding
+in all six directions (including up/down). Each chained block consumes 1 tool
+durability; chained blocks are broken without re-triggering XP or ability
+processing (only the originating break awards XP).
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chain_limit` | double | `0` | Maximum connected blocks to break |
+
+**Event:** `BlockBreakEvent`
+
+### core:level_break
+
+Like `core:chain_break`, but expands only on the XZ plane (four horizontal
+directions) and never along the Y axis — for vein/strip mining that must not
+propagate up or down into adjacent layers. Same parameters and behavior as
+`core:chain_break` (per-block tool durability, `chain_limit` cap, no double XP
+for chained blocks).
 
 **Parameters:**
 

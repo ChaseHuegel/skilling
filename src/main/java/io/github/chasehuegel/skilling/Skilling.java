@@ -272,6 +272,7 @@ public final class Skilling extends JavaPlugin {
     public static void registerBuiltinMechanics(MechanicRegistry mechReg) {
         mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class, List.of("yield_chance"));
         mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit"));
+        mechReg.register("core:level_break", LevelBreakMechanic.class, List.of("chain_limit"));
         mechReg.register("core:modify_damage", ModifyDamageMechanic.class, List.of("multiplier"));
         mechReg.register("core:apply_status", ApplyStatusMechanic.class, List.of("effect", "duration", "amplifier"));
         mechReg.register("core:cancel_damage", CancelDamageMechanic.class, List.of("chance"));

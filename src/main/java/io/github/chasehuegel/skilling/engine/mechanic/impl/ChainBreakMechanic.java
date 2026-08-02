@@ -12,7 +12,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import java.util.*;
 
-public final class ChainBreakMechanic implements SkillMechanic {
+/**
+ * Breaks connected blocks of the same material as the broken origin block,
+ * expanding in all six directions (including up/down).
+ *
+ * <p>Expansion direction is configurable via the protected
+ * {@link #directions()} hook so a plane-only variant ({@link LevelBreakMechanic})
+ * reuses the same BFS, tool-damage, and guard logic.
+ *
+ * <p><b>YAML key:</b> {@code core:chain_break}
+ * <br>Params: {@code chain_limit} (max total blocks broken including the origin)
+ */
+public class ChainBreakMechanic implements SkillMechanic {
 
     private static final Set<UUID> CHAINING_PLAYERS = new HashSet<>();
     private static final ThreadLocal<Set<Location>> PROCESSING =
@@ -42,6 +53,16 @@ public final class ChainBreakMechanic implements SkillMechanic {
         PROCESSING.remove();
     }
 
+    /**
+     * The neighbor offsets to expand into. Subclasses override to restrict the
+     * expansion (e.g. XZ-plane only).
+     *
+     * @return an array of {@code {dx, dy, dz}} offsets
+     */
+    protected int[][] directions() {
+        return DIRECTIONS;
+    }
+
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof BlockBreakEvent breakEvent)) return false;
@@ -60,11 +81,12 @@ public final class ChainBreakMechanic implements SkillMechanic {
         visited.add(origin.getLocation());
 
         Set<Location> processing = PROCESSING.get();
+        int[][] dirs = directions();
         try {
             int broken = 0;
             while (!queue.isEmpty() && broken < limit) {
                 Block current = queue.poll();
-                for (int[] dir : DIRECTIONS) {
+                for (int[] dir : dirs) {
                     if (broken >= limit) break;
                     Block neighbor = current.getRelative(dir[0], dir[1], dir[2]);
                     Location loc = neighbor.getLocation();

@@ -147,6 +147,14 @@ abilities:
       # Note: exhaustion param is no longer in chain_break.
       # Use the requirements.exhaustion block instead.
 
+    # core:level_break is the XZ-plane-only variant of core:chain_break — it
+    # breaks connected same-type blocks in the same horizontal layer only and
+    # never propagates up or down the Y axis. Same params (chain_limit) and
+    # behavior (per-block tool durability, no double XP for chained blocks).
+    #   - type: "core:level_break"
+    #     parameters:
+    #       chain_limit: { constant: 8 }
+
     # Some mechanics take namespaced string constants (effect, attribute, material).
     # Use a quoted constant value; the raw string is passed through verbatim:
     #   - type: "core:apply_status"

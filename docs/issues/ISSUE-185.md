@@ -7,13 +7,13 @@
 `core:chain_break` chains in all six directions (including up/down). Introduce a `level_break` variant that chains only on the XZ plane (four horizontal directions) and never moves along Y.
 
 ## Implementation Requirements
-- [ ] Add a `core:level_break` mechanic that reuses the chain logic but restricts expansion to the four XZ directions (`{±1,0,0}`, `{0,0,±1}`), never `{0,±1,0}`.
-- [ ] Prefer refactoring `ChainBreakMechanic` so the direction set is shared/configurable rather than duplicating the BFS, tool-damage, and guard logic.
-- [ ] Register `core:level_break` in `MechanicRegistry` (via `Skilling.registerBuiltinMechanics()`) with the same params as `core:chain_break` (e.g., `chain_limit`).
-- [ ] Share the chain-processing guard (`isChainProcessing` / `PROCESSING`) so chained blocks skip XP/ability re-processing for both mechanics.
-- [ ] Preserve behavior parity with `core:chain_break`: per-block tool durability cost, `chain_limit` cap, cancel-respect on the synthetic `BlockBreakEvent`.
-- [ ] Update `template-skill.yml` and `docs/users/capabilities.md` with the new mechanic.
-- [ ] Add unit tests: XZ-only chaining never breaks blocks above/below the origin; `chain_limit` respected; guard behavior matches `chain_break`.
+- [x] Add a `core:level_break` mechanic that reuses the chain logic but restricts expansion to the four XZ directions (`{±1,0,0}`, `{0,0,±1}`), never `{0,±1,0}`.
+- [x] Prefer refactoring `ChainBreakMechanic` so the direction set is shared/configurable rather than duplicating the BFS, tool-damage, and guard logic.
+- [x] Register `core:level_break` in `MechanicRegistry` (via `Skilling.registerBuiltinMechanics()`) with the same params as `core:chain_break` (e.g., `chain_limit`).
+- [x] Share the chain-processing guard (`isChainProcessing` / `PROCESSING`) so chained blocks skip XP/ability re-processing for both mechanics.
+- [x] Preserve behavior parity with `core:chain_break`: per-block tool durability cost, `chain_limit` cap, cancel-respect on the synthetic `BlockBreakEvent`.
+- [x] Update `template-skill.yml` and `docs/users/capabilities.md` with the new mechanic.
+- [x] Add unit tests: XZ-only chaining never breaks blocks above/below the origin; `chain_limit` respected; guard behavior matches `chain_break`.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -29,7 +29,7 @@
   - Follow the same fail-fast param validation as `core:chain_break`.
 
 ## Verification & Definition of Done
-- [ ] `./gradlew build` and `./gradlew test` pass
-- [ ] Unit: a vertical stack of the same material is untouched by `level_break`; horizontal neighbors chain; `chain_limit` caps the total
-- [ ] Manual: breaking a block with `core:level_break` clears the layer but not columns above/below
-- [ ] No double-XP/double-ability for chained blocks
+- [x] `./gradlew build` and `./gradlew test` pass
+- [x] Unit: a vertical stack of the same material is untouched by `level_break`; horizontal neighbors chain; `chain_limit` caps the total
+- [x] Manual: breaking a block with `core:level_break` clears the layer but not columns above/below
+- [x] No double-XP/double-ability for chained blocks
