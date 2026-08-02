@@ -394,6 +394,7 @@ async function leaveSave() {
         return;
     }
     saving.value = true;
+    error.value = null;
     try {
         const payload: Record<string, any> = {
             id: form.id,
@@ -413,10 +414,16 @@ async function leaveSave() {
         } else {
             await api.skills.update(skillId || form.id, payload);
         }
-    } catch { /* navigate anyway */ }
-    saving.value = false;
-    pendingNavigation?.();
-    pendingNavigation = null;
+        saving.value = false;
+        pendingNavigation?.();
+        pendingNavigation = null;
+    } catch (e: any) {
+        // A failed save must never silently navigate away: surface the error
+        // and re-open the leave dialog so the admin can retry or discard.
+        saving.value = false;
+        error.value = e.message || 'Failed to save changes';
+        showLeaveDialog.value = true;
+    }
 }
 
 function leaveDiscard() {

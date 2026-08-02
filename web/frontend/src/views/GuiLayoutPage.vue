@@ -194,7 +194,12 @@ async function leaveSave() {
   try {
     await store.save()
     await stagingStore.fetchStatus()
-  } catch { /* navigate anyway */ }
+  } catch {
+    // A failed save must never silently navigate away: the store already set
+    // store.error; re-open the leave dialog so the admin can retry or discard.
+    showLeaveDialog.value = true
+    return
+  }
   pendingNavigation?.()
   pendingNavigation = null
 }

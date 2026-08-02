@@ -137,4 +137,38 @@ test.describe('Skill Editor', () => {
     await expect(colored).toHaveCSS('color', 'rgb(255, 85, 85)');
     await expect(colored).toHaveCSS('font-weight', '700');
   });
+
+  test('a failed leave-save keeps the user on the page with edits intact', async ({ page }) => {
+    // Force every skill PUT to fail so the save cannot succeed
+    await page.route('**/api/skills/**', route => {
+      if (route.request().method() === 'PUT') {
+        route.abort('failed');
+      } else {
+        route.continue();
+      }
+    });
+
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    await dashboard.clickSkill('Mining');
+
+    const editor = new SkillEditorPage(page);
+    await editor.waitForLoad();
+    await editor.assertNoError();
+
+    await editor.setDisplayName('Mining Save Fail Test');
+    await expect(editor.displayNameInput).toHaveValue('Mining Save Fail Test');
+
+    // Attempt to navigate away; the unsaved-changes dialog appears
+    await page.locator('nav a', { hasText: 'Skills' }).click();
+    await page.locator('.modal h3', { hasText: 'Unsaved changes' }).waitFor({ state: 'visible', timeout: 5000 });
+
+    // Saving while leaving fails (the PUT is aborted)
+    await page.getByRole('button', { name: 'Save & Leave' }).click();
+    await page.waitForSelector('.error-banner', { timeout: 5000 });
+
+    // The user stays on the editor with the unsaved edit intact
+    await expect(editor.displayNameInput).toBeVisible();
+    await expect(editor.displayNameInput).toHaveValue('Mining Save Fail Test');
+  });
 });

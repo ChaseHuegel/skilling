@@ -142,12 +142,19 @@ function discardTags() {
 async function leaveSave() {
     showLeaveDialog.value = false;
     saving.value = true;
+    error.value = null;
     try {
         await api.tags.update({ ...tags });
-    } catch { /* navigate anyway */ }
-    saving.value = false;
-    pendingNavigation?.();
-    pendingNavigation = null;
+        saving.value = false;
+        pendingNavigation?.();
+        pendingNavigation = null;
+    } catch (e: any) {
+        // A failed save must never silently navigate away: surface the error
+        // and re-open the leave dialog so the admin can retry or discard.
+        saving.value = false;
+        error.value = e.message || 'Failed to save tags';
+        showLeaveDialog.value = true;
+    }
 }
 
 function leaveDiscard() {
