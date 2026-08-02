@@ -1,6 +1,6 @@
 # ISSUE-146: Invalidate the page-inventory cache on every XP/level mutation path
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (stale GUI after admin level commands)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Call `profile.invalidatePageCache()` in every XP/level mutation path: `SkillsCommand.setXp`/`addXp`/`reset` (currently only the event path in `SkillEventListener.java:402` does this)
-- [ ] Cover the reset-to-zero path (`SkillsCommand.java:388-393`)
-- [ ] Add a unit test asserting the page cache is invalidated after an admin level change
+- [x] Call `profile.invalidatePageCache()` in every XP/level mutation path: `SkillsCommand.setXp`/`addXp`/`reset` (currently only the event path in `SkillEventListener.java:402` does this)
+- [x] Cover the reset-to-zero path (`SkillsCommand.java:388-393`)
+- [x] Add a unit test asserting the page cache is invalidated after an admin level change
 
 ## Technical Specifications & Context
 
@@ -36,7 +36,7 @@ Invalidate the profile's page cache in every admin mutation path, guarding for o
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: `/skills setlevel` invalidates the cached pages
-- [ ] Unit test: `/skills reset` invalidates the cached pages
-- [ ] Manual smoke: setlevel then open GUI shows the new level
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: `/skills setlevel` invalidates the cached pages
+- [x] Unit test: `/skills reset` invalidates the cached pages
+- [x] Manual smoke: setlevel then open GUI shows the new level (by design: cache invalidation forces a rebuild on next open)

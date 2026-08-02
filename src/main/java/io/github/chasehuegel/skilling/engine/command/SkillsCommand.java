@@ -273,6 +273,7 @@ public final class SkillsCommand {
             int oldLevel = def.getLevelForXp(profile.getXp(skillId));
             long xp = (long) def.progression().evaluator().evaluate(level, 0);
             profile.setXp(skillId, xp);
+            profile.invalidatePageCache();
             int actualLevel = def.getLevelForXp(profile.getXp(skillId));
             sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + actualLevel + "."));
             showXpBossBar(target, def, profile);
@@ -334,6 +335,7 @@ public final class SkillsCommand {
             }
             int oldLevel = def.getLevelForXp(profile.getXp(skillId));
             profile.addXp(skillId, amount);
+            profile.invalidatePageCache();
             int newLevel = def.getLevelForXp(profile.getXp(skillId));
             sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + "."));
             showXpBossBar(target, def, profile);
@@ -388,11 +390,13 @@ public final class SkillsCommand {
             }
             if (skillId != null) {
                 profile.setXp(skillId, 0);
+                profile.invalidatePageCache();
                 sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset " + playerName + "'s " + skillId + "."));
             } else {
                 for (String id : new HashSet<>(profile.getXpMap().keySet())) {
                     profile.setXp(id, 0);
                 }
+                profile.invalidatePageCache();
                 sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset all skills for " + playerName + "."));
             }
         } else {
