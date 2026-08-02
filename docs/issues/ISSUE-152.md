@@ -1,6 +1,6 @@
 # ISSUE-152: Fail loudly (not silently) when a reload drops skills due to malformed YAML
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (admin told success while skills vanished)
 
@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Make `SkillManager.loadSkills()` validate all skill files **before** clearing the live map (parse-first, then commit), so a malformed file cannot leave a partially populated registry
-- [ ] Surface the specific failing file and parse error through `LockdownManager.reload()` and `ReloadHandler` (HTTP 4xx/5xx with a clear message) instead of swallowing it in the broad `catch (Exception)`
-- [ ] Keep staging intact on failure so the admin can fix and retry (coordinate with ISSUE-151)
-- [ ] Add server-side validation of staged YAML in the staging path (triggers, evaluator types, mechanics) so malformed content is rejected before apply
-- [ ] Add a unit test covering: one malformed file among many → reload reports failure and no skills are silently dropped
+- [x] Make `SkillManager.loadSkills()` validate all skill files **before** clearing the live map (parse-first, then commit), so a malformed file cannot leave a partially populated registry
+- [x] Surface the specific failing file and parse error through `LockdownManager.reload()` and `ReloadHandler` (HTTP 4xx/5xx with a clear message) instead of swallowing it in the broad `catch (Exception)`
+- [x] Keep staging intact on failure so the admin can fix and retry (coordinate with ISSUE-151)
+- [x] Add server-side validation of staged YAML in the staging path (triggers, evaluator types, mechanics) so malformed content is rejected before apply
+- [x] Add a unit test covering: one malformed file among many → reload reports failure and no skills are silently dropped
 
 ## Technical Specifications & Context
 
@@ -39,7 +39,7 @@ Parse into a fresh map first; only swap it into `SkillManager.skills` when every
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Test: one malformed skill among many → reload returns an error naming the file and the previous skill set is preserved
-- [ ] Test: `POST /api/skills` / `PUT /api/skills/{id}` reject YAML with unknown triggers/evaluators/mechanics
-- [ ] Manual smoke: stage a broken skill, reload, confirm a clear error and no lost skills
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Test: one malformed skill among many → reload returns an error naming the file and the previous skill set is preserved
+- [x] Test: `POST /api/skills` / `PUT /api/skills/{id}` reject YAML with unknown triggers/evaluators/mechanics
+- [x] Manual smoke: stage a broken skill, reload, confirm a clear error and no lost skills

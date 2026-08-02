@@ -88,11 +88,15 @@ public final class LockdownManager {
                 plugin.getRequirementEngine().setTagResolver(tagResolver);
                 plugin.getSkillEventListener().setTagResolver(tagResolver);
                 plugin.setCustomTagLoader(customTagLoader);
-                skillManager.clear();
+                // loadSkills parses every file first and swaps atomically, so a
+                // malformed skill is rejected here with the previous set preserved.
                 skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
                 plugin.debug("Phase 4/6: Registries rebuilt.");
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to rebuild registries during reload", e);
+                // Fail loudly: surface the error to the caller (ReloadHandler) so the
+                // admin is never told success while skills silently vanished.
+                throw e;
             }
 
             // Phase 5: Invalidate UI caches

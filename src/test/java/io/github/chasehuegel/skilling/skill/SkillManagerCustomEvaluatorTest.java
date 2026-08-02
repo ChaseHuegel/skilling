@@ -30,13 +30,19 @@ class SkillManagerCustomEvaluatorTest {
         }
     }
 
+    private static TriggerRegistry builtinTriggers() {
+        var reg = new TriggerRegistry();
+        Skilling.registerBuiltinTriggers(reg);
+        return reg;
+    }
+
     private SkillManager skillManagerWithLogistic() {
         var evalReg = new EvaluatorRegistry();
         Skilling.registerBuiltinEvaluators(evalReg);
         evalReg.register("logistic", LogisticEvaluator.class);
         var mechReg = new MechanicRegistry();
         Skilling.registerBuiltinMechanics(mechReg);
-        return new SkillManager(evalReg, mechReg, new TriggerRegistry(),
+        return new SkillManager(evalReg, mechReg, builtinTriggers(),
                 new TagResolver(new CustomTagLoader()));
     }
 
@@ -45,7 +51,7 @@ class SkillManagerCustomEvaluatorTest {
         Skilling.registerBuiltinEvaluators(evalReg);
         var mechReg = new MechanicRegistry();
         Skilling.registerBuiltinMechanics(mechReg);
-        return new SkillManager(evalReg, mechReg, new TriggerRegistry(),
+        return new SkillManager(evalReg, mechReg, builtinTriggers(),
                 new TagResolver(new CustomTagLoader()));
     }
 

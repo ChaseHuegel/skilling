@@ -87,6 +87,7 @@ public final class SkillHandler {
             SkillDetailDTO dto = ctx.bodyAsClass(SkillDetailDTO.class);
             validateSkill(dto);
             String yaml = SkillSerializer.toYaml(dto);
+            validateStagedSkill(yaml);
             stagingManager.stageSkillFile(dto.id(), yaml);
             ctx.status(201).json(Map.of("status", "ok", "id", dto.id()));
         } catch (IllegalArgumentException e) {
@@ -104,6 +105,7 @@ public final class SkillHandler {
             validateSkill(dto);
             String newId = dto.id();
             String yaml = SkillSerializer.toYaml(dto);
+            validateStagedSkill(yaml);
             if (!newId.equals(oldId)) {
                 stagingManager.stageSkillFile(newId, yaml);
                 stagingManager.stageSkillDeletion(oldId);
@@ -186,6 +188,22 @@ public final class SkillHandler {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Rejects staged skill YAML that references unknown triggers, mechanics,
+     * evaluators, or tags by parsing it through the live {@link SkillManager},
+     * so malformed content is caught before it can be applied by a reload.
+     */
+    private void validateStagedSkill(String yaml) {
+        if (skillManager == null) return;
+        try {
+            var config = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
+                    new java.io.StringReader(yaml));
+            skillManager.parseSkill(config);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid skill YAML: " + e.getMessage(), e);
+        }
     }
 
     private static void validateSkill(SkillDetailDTO dto) {

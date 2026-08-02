@@ -58,12 +58,19 @@ public final class SkillManager {
     public void loadSkills(File skillsDir) {
         // Build into a local map and atomically swap in an immutable snapshot so
         // concurrent readers (web threads, addons) never see a half-loaded view.
+        // A malformed file throws here, leaving the previous skill set intact.
         Map<String, SkillDefinition> built = new LinkedHashMap<>();
         if (skillsDir.exists() && skillsDir.isDirectory()) {
             File[] files = skillsDir.listFiles((dir, name) -> name.endsWith(".yml"));
             if (files != null) {
                 for (File file : files) {
-                    SkillDefinition def = parseSkill(file);
+                    SkillDefinition def;
+                    try {
+                        def = parseSkill(file);
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException(
+                                "Failed to parse skill file " + file.getName() + ": " + e.getMessage(), e);
+                    }
                     if (built.containsKey(def.id())) {
                         throw new IllegalArgumentException("Duplicate skill ID '" + def.id() + "' in file: " + file.getName());
                     }
@@ -219,6 +226,9 @@ public final class SkillManager {
             String trigger = (String) abilityMap.get("trigger");
             if (trigger == null || trigger.isBlank()) {
                 throw new IllegalArgumentException("Ability '" + id + "' missing required 'trigger' field");
+            }
+            if (!triggerRegistry.contains(trigger)) {
+                throw new IllegalArgumentException("Ability '" + id + "' has unknown trigger: " + trigger);
             }
 
             // Display lore
