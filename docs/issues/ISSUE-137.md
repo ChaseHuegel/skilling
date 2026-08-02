@@ -1,6 +1,6 @@
 # ISSUE-137: Wire `EvaluatorRegistry` into parsing so custom evaluators actually work
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (published addon extension point is a silent no-op)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Make `SkillManager.parseProgression` and `parseInlineEvaluator` consult `EvaluatorRegistry` for the evaluator type instead of hardcoding `polynomial`/`linear`/`constant`/`milestones`
-- [ ] Validate the registered evaluator contract (must be a `ParameterEvaluator` with the expected evaluate signature) at registration and/or parse time with clear errors
-- [ ] Keep built-in evaluators registered exactly as today so all bundled YAML parses unchanged
-- [ ] Add unit tests covering: a registered custom evaluator type parses and evaluates; an unregistered type still fails fast with `IllegalArgumentException`
+- [x] Make `SkillManager.parseProgression` and `parseInlineEvaluator` consult `EvaluatorRegistry` for the evaluator type instead of hardcoding `polynomial`/`linear`/`constant`/`milestones`
+- [x] Validate the registered evaluator contract (must be a `ParameterEvaluator` with the expected evaluate signature) at registration and/or parse time with clear errors
+- [x] Keep built-in evaluators registered exactly as today so all bundled YAML parses unchanged
+- [x] Add unit tests covering: a registered custom evaluator type parses and evaluates; an unregistered type still fails fast with `IllegalArgumentException`
 
 ## Technical Specifications & Context
 
@@ -38,8 +38,8 @@ Route evaluator construction through `EvaluatorRegistry.get(type)` with a fallba
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: registering `logistic` then parsing `evaluator_type: logistic` succeeds and evaluates correctly
-- [ ] Unit test: unregistered type still throws `IllegalArgumentException` at parse
-- [ ] All bundled skill YAML parses unchanged (existing `SkillYamlValidationTest` passes)
-- [ ] `docs/users/api-integration.md` example remains accurate (now actually functional)
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: registering `logistic` then parsing `evaluator_type: logistic` succeeds and evaluates correctly
+- [x] Unit test: unregistered type still throws `IllegalArgumentException` at parse
+- [x] All bundled skill YAML parses unchanged (existing `SkillYamlValidationTest` passes)
+- [x] `docs/users/api-integration.md` example remains accurate (now actually functional)

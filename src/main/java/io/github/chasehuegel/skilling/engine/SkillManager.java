@@ -145,7 +145,12 @@ public final class SkillManager {
             case "polynomial" -> new PolynomialEvaluator(baseXp, exponent);
             case "linear" -> new LinearEvaluator(baseXp, baseXp * 0.1, 0, Double.MAX_VALUE);
             case "constant" -> new ConstantEvaluator(baseXp);
-            default -> throw new IllegalArgumentException("Unknown progression curve: " + curve);
+            default -> {
+                if (evaluatorRegistry.contains(curve)) {
+                    yield evaluatorRegistry.create(curve);
+                }
+                throw new IllegalArgumentException("Unknown progression curve: " + curve);
+            }
         };
 
         return new SkillDefinition.Progression(curve, baseXp, exponent, evaluator);
@@ -447,6 +452,15 @@ public final class SkillManager {
             double baseXp = ((Number) polyMap.getOrDefault("base_xp", 50.0)).doubleValue();
             double exponent = ((Number) polyMap.getOrDefault("exponent", 2.5)).doubleValue();
             return new PolynomialEvaluator(baseXp, exponent);
+        }
+
+        // A registered custom evaluator type (e.g. { logistic: {...} }) is usable
+        // as a YAML parameter evaluator key.
+        if (map.size() == 1) {
+            String type = map.keySet().iterator().next();
+            if (evaluatorRegistry.contains(type)) {
+                return evaluatorRegistry.create(type);
+            }
         }
 
         // Fallback: treat the entire map as a constant with single value
