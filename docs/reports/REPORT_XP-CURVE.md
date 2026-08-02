@@ -1,7 +1,7 @@
 # REPORT_XP-CURVE.md — XP-Curve Balance Research Report
 
 **Status:** Research report (no production changes applied)
-**Issue:** [ISSUE-107](ISSUE-107.md)
+**Issue:** [ISSUE-107](../issues/ISSUE-107.md)
 **Date:** 2026-08-01
 **Inputs:** `src/main/resources/skills/*.yml` (32 bundled skills), `docs/dev/SKILL-DESIGN-FRAMEWORK.md`, `docs/dev/template-skill.yml`
 

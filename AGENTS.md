@@ -69,7 +69,7 @@ After each development phase, `./gradlew build` AND `./gradlew test` must pass b
 | `src/AGENTS.md` | Java plugin backend: `src/main/java/io/github/chasehuegel/skilling/engine/**`, `api/**`, `resources/**`, and `src/test/**`. Does NOT own `io.github.chasehuegel.skilling.web` (see `web/AGENTS.md`). |
 | `skilling-api/AGENTS.md` | The published addon-facing API module (`skilling-api/src/**`). |
 | `web/AGENTS.md` | Web GUI subsystem: `web/frontend/**`, `web/frontend/e2e/**`, and the Java backend package `io.github.chasehuegel.skilling.web`. |
-| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/issues/**`. |
+| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/reports/**`, `docs/issues/**`. |
 
 # DOX framework
 
@@ -158,4 +158,4 @@ When the user requests a durable behavior change, record it here or in the relev
 | `src/AGENTS.md` | Java plugin backend: `src/main/java/io/github/chasehuegel/skilling/engine/**`, `api/**`, `resources/**`, and `src/test/**`. Does NOT own `io.github.chasehuegel.skilling.web` (see `web/AGENTS.md`). |
 | `skilling-api/AGENTS.md` | The published addon-facing API module (`skilling-api/src/**`). |
 | `web/AGENTS.md` | Web GUI subsystem: `web/frontend/**`, `web/frontend/e2e/**`, and the Java backend package `io.github.chasehuegel.skilling.web`. |
-| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/issues/**`. |
+| `docs/AGENTS.md` | Documentation standards and structure: `docs/users/**`, `docs/dev/**`, `docs/reports/**`, `docs/issues/**`. |

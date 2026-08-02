@@ -13,10 +13,11 @@
 - [x] [ISSUE-106](ISSUE-106.md) - Add lore tooltips to ability names in unlock chat messages
 - [x] [ISSUE-108](ISSUE-108.md) - Ensure thorough, useful event logging when debug_logging is enabled
 - [x] [ISSUE-109](ISSUE-109.md) - Add `Cost:` and `Requirements:` lines to all ability lore
-- [x] [ISSUE-110](ISSUE-110.md) - Sort skill items in the skills navigation flyout by color then name
+- [x] [ISSUE-110](ISSUE-110.md) - Sort skill items in the skills navigation flyout by color then name *(superseded by ISSUE-172 — fix sorted the wrong component)*
+- [ ] [ISSUE-172](ISSUE-172.md) - Follow-up to ISSUE-110 — sort the actual navigation flyout (topbar dropdown) by color then name
 
 ### Research
-- [x] [ISSUE-107](ISSUE-107.md) - Produce an XP-curve balance research report (REPORT_XP-CURVE.md)
+- [x] [ISSUE-107](ISSUE-107.md) - Produce an XP-curve balance research report ([REPORT_XP-CURVE.md](../reports/REPORT_XP-CURVE.md))
 
 ## Backlog
 
@@ -73,6 +74,9 @@
 - [ ] [ISSUE-162](ISSUE-162.md) - Keep the Pinia auth store in sync with 401/session expiry
 - [ ] [ISSUE-163](ISSUE-163.md) - Implement the E2E "automatic mode" (server bootstrap + fixture seeding)
 - [ ] [ISSUE-170](ISSUE-170.md) - Fix cooldown display on ability cards (row shows on all abilities and renders raw evaluator JSON)
+- [ ] [ISSUE-171](ISSUE-171.md) - Fix `resolveEventBulkScalar` — drop the `consume_item` scalar and add `craft_item` scaling
+- [ ] [ISSUE-173](ISSUE-173.md) - Fix `resolveEventBulkScalar` — `furnace_extract` must scale by extracted item count, not dropped XP orbs
+- [ ] [ISSUE-174](ISSUE-174.md) - Rework `ProjectileReturnMechanic` — preserve projectile metadata, prevent duplication, support arrows
 
 ### Improvements
 
@@ -85,5 +89,9 @@
 - [ ] [ISSUE-167](ISSUE-167.md) - Standardize all lore/description rendering on the escaping helper (no raw `v-html`)
 - [ ] [ISSUE-168](ISSUE-168.md) - Add unit-test coverage for critical untested code paths
 - [ ] [ISSUE-169](ISSUE-169.md) - Clean up test-quality issues (misnamed, no-op, duplicated, and guard-only tests)
+- [ ] [ISSUE-176](ISSUE-176.md) - Add "bury bones" as a `player_interact` XP source and ability for the `piety` skill
 
 ### Research
+
+- [ ] [ISSUE-175](ISSUE-175.md) - Research integrating the DualWield plugin API (ranull) for the `dual_wield` skill
+- [ ] [ISSUE-177](ISSUE-177.md) - Research & design a plan to revise XP sources for all skills (multi-source, 50-hour-to-100 target)

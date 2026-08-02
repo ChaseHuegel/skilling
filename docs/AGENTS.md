@@ -4,13 +4,14 @@ This is the documentation subsystem of Skilling. It is the closest DOX contract 
 
 ## Purpose
 
-Provide the durable reference material for the project: user-facing guides for server owners and addon developers, developer-facing architecture specs and conventions, and project issue tracking.
+Provide the durable reference material for the project: user-facing guides for server owners and addon developers, developer-facing architecture specs and conventions, research reports, and project issue tracking.
 
 ## Ownership
 
 - `docs/users/**` — user-facing documentation (installation, configuration, skill authoring, API integration, capability catalog).
 - `docs/dev/**` — developer-facing specs and conventions (architecture, requirements, skill design framework, skill template, commit spec).
-- `docs/issues/**` — issue tracking (`INDEX.md`), detailed issue write-ups, and research reports.
+- `docs/reports/**` — research reports delivered by research tickets (e.g. `REPORT_XP-CURVE.md`). All research reports live here, not in `docs/issues/`.
+- `docs/issues/**` — issue tracking (`INDEX.md`) and detailed issue write-ups.
 - `docs/AGENTS.md` itself — owns documentation content standards only; Java/Javadoc rules and config-template rules live in `src/AGENTS.md`.
 
 ## Local Contracts
@@ -35,11 +36,15 @@ These docs are **user-facing** and must use clear language free of implementatio
 ### YAML Template Documentation
 Every configurable YAML template (in `docs/dev/` and shipped under `src/main/resources/`) must include commented documentation for each key: supported values, defaults, and a brief description, plus commented-out examples inline.
 
+### Research Reports (`docs/reports/`)
+
+* Research tickets (e.g., `ISSUE-107`) deliver reports to `docs/reports/` (e.g., `docs/reports/REPORT_XP-CURVE.md`) and involve no production code changes. Reports follow a `REPORT_<TOPIC>.md` naming pattern, state the owning ticket and date in their header, and cross-link back to the ticket (`../issues/ISSUE-<n>.md`).
+
 ### Issue Tracking (`docs/issues/`)
 * `INDEX.md` — the issue index, split into **Active Sprint / Current Milestone** (the default work target) and **Backlog** (worked only on explicit request). Resolve items one at a time per the Issue Resolution Workflow in root `AGENTS.md`; flip a bullet to `[x]` only when the ticket is fully done.
 * Detailed single-issue write-ups follow the naming pattern `ISSUE-<n>.md` and are referenced from `INDEX.md`. Numbers are sequential and unique; a new ticket uses the next free number and is filed under Backlog unless told otherwise.
 * **Mark-complete gate:** an issue is done when its ticket's Implementation Requirements and Verification & Definition of Done checkboxes are all satisfied AND the `INDEX.md` bullet is flipped.
-* Research tickets (e.g., `ISSUE-107`) deliver reports (e.g., `REPORT_XP-CURVE.md`) here and involve no production code changes.
+* Research tickets reference their deliverable report in `docs/reports/` (see above).
 
 #### Issue Ticket Template
 Every issue ticket (`ISSUE-<n>.md`) must follow this section structure (keep low-complexity items terse):

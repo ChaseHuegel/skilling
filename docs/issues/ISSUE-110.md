@@ -29,4 +29,6 @@
 
 - [x] `cd web/frontend && npm run build` passes (type-check)
 - [x] `cd web/frontend && npm run e2e` passes, including the new ordering assertion
-- [x] Runtime check: the navigation flyout orders skills by color then name, matching the dashboard
+- [ ] Runtime check: the navigation flyout orders skills by color then name, matching the dashboard
+
+> **Superseded by [ISSUE-172](ISSUE-172.md).** The original change sorted `SkillPalette.vue` — the GUI **Layout page palette** — not the topbar navigation flyout (`AppTopbar.vue`). The flyout still renders `api.skills.list()` in raw API order, and the added E2E assertion tested the palette (`.palette-item`), so it passed without covering the real flyout. This goal remains unfulfilled; track the real fix in ISSUE-172.
