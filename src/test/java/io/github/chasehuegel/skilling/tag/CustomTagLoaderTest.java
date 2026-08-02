@@ -59,4 +59,15 @@ class CustomTagLoaderTest {
         loader.clear();
         assertTrue(loader.getKeys().isEmpty());
     }
+
+    @Test
+    void malformedTagMaterialFailsFast() throws IOException {
+        File tagsFile = tempDir.resolve("tags.yml").toFile();
+        try (var w = new FileWriter(tagsFile)) {
+            w.write("custom_tags:\n  ores:\n    - \"minecraft:not_a_real_material\"\n");
+        }
+
+        var loader = new CustomTagLoader();
+        assertThrows(IllegalArgumentException.class, () -> loader.load(tagsFile));
+    }
 }

@@ -50,12 +50,7 @@ class SkillYamlValidationTest {
 
     @BeforeEach
     void setUp() {
-        skillManager = new SkillManager(
-                new EvaluatorRegistry(),
-                new MechanicRegistry(),
-                new TriggerRegistry(),
-                new TagResolver(new CustomTagLoader())
-        );
+        skillManager = io.github.chasehuegel.skilling.TestSkillManager.newBuiltIn();
     }
 
     @Test

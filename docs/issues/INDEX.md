@@ -33,7 +33,7 @@
 - [x] [ISSUE-124](ISSUE-124.md) - Dispatch `BrewEvent` and `PrepareAnvilEvent` so blocked mechanics become reachable
 - [x] [ISSUE-171](ISSUE-171.md) - Fix `resolveEventBulkScalar` — drop the `consume_item` scalar and add `craft_item` scaling
 - [x] [ISSUE-173](ISSUE-173.md) - Fix `resolveEventBulkScalar` — `furnace_extract` must scale by extracted item count, not dropped XP orbs
-- [ ] [ISSUE-133](ISSUE-133.md) - Replace silent parsing failures with fail-fast errors in `SkillManager` and `CustomTagLoader`
+- [x] [ISSUE-133](ISSUE-133.md) - Replace silent parsing failures with fail-fast errors in `SkillManager` and `CustomTagLoader`
 - [ ] [ISSUE-132](ISSUE-132.md) - Fail-fast at load for unknown tags/materials instead of throwing inside event handlers
 - [ ] [ISSUE-131](ISSUE-131.md) - Add fail-fast numeric validation to parameter evaluators
 - [ ] [ISSUE-137](ISSUE-137.md) - Wire `EvaluatorRegistry` into parsing so custom evaluators actually work

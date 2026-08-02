@@ -155,7 +155,9 @@ public final class SkillManager {
         if (list == null) return List.of();
         List<SkillDefinition.XpSource> sources = new ArrayList<>();
         for (Object raw : list) {
-            if (!(raw instanceof Map<?, ?> map)) continue;
+            if (!(raw instanceof Map<?, ?> map)) {
+                throw new IllegalArgumentException("XP source must be a map, got: " + raw);
+            }
             Map<String, Object> entry = castMap(map);
             String trigger = (String) entry.get("trigger");
             if (trigger == null) throw new IllegalArgumentException("XP source missing 'trigger'");
@@ -174,8 +176,11 @@ public final class SkillManager {
                 }
             }
 
-            Map<String, Object> rewardRaw = castMap(entry.get("reward"));
-            ParameterEvaluator reward = parseInlineEvaluator(rewardRaw);
+            Object rewardRaw = entry.get("reward");
+            if (rewardRaw == null) {
+                throw new IllegalArgumentException("XP source for trigger '" + trigger + "' missing 'reward'");
+            }
+            ParameterEvaluator reward = parseInlineEvaluator(castMap(rewardRaw));
 
             sources.add(new SkillDefinition.XpSource(trigger, filters, reward));
         }
@@ -187,7 +192,9 @@ public final class SkillManager {
         List<SkillDefinition.Ability> abilities = new ArrayList<>();
         Set<String> seenIds = new HashSet<>();
         for (Object raw : list) {
-            if (!(raw instanceof Map<?, ?> map)) continue;
+            if (!(raw instanceof Map<?, ?> map)) {
+                throw new IllegalArgumentException("Ability must be a map, got: " + raw);
+            }
             Map<String, Object> abilityMap = castMap(map);
 
             String id = (String) abilityMap.get("id");
@@ -197,7 +204,7 @@ public final class SkillManager {
             }
 
             String displayName = (String) abilityMap.getOrDefault("display_name", id);
-            int unlockLevel = ((Number) abilityMap.getOrDefault("unlock_level", 1)).intValue();
+            int unlockLevel = parseUnlockLevel(id, abilityMap.getOrDefault("unlock_level", 1));
 
             String trigger = (String) abilityMap.get("trigger");
             if (trigger == null || trigger.isBlank()) {
@@ -221,6 +228,12 @@ public final class SkillManager {
                     requirements, onFailure, mechanics, feedback));
         }
         return abilities;
+    }
+
+    private int parseUnlockLevel(String abilityId, Object raw) {
+        if (raw instanceof Number n) return n.intValue();
+        throw new IllegalArgumentException("Ability '" + abilityId
+                + "' unlock_level must be a number, got: " + raw);
     }
 
     private SkillDefinition.AbilityDisplay parseAbilityDisplay(Map<String, Object> map) {
@@ -260,8 +273,12 @@ public final class SkillManager {
      * @return the resolved cooldown evaluator
      */
     private ParameterEvaluator parseCooldown(Object raw) {
+        if (raw == null) return new ConstantEvaluator(0.0);
         if (raw instanceof Number n) {
             return new ConstantEvaluator(n.doubleValue());
+        }
+        if (raw instanceof String s) {
+            throw new IllegalArgumentException("Cooldown must be a number or evaluator block, got string: " + s);
         }
         return parseInlineEvaluator(castMap(raw));
     }
@@ -292,10 +309,15 @@ public final class SkillManager {
         if (!(mechanicsRaw instanceof List<?> list)) return List.of();
         List<SkillDefinition.MechanicEntry> entries = new ArrayList<>();
         for (Object raw : list) {
-            if (!(raw instanceof Map<?, ?> map)) continue;
+            if (!(raw instanceof Map<?, ?> map)) {
+                throw new IllegalArgumentException("Mechanic entry must be a map, got: " + raw);
+            }
             Map<String, Object> mechanicMap = castMap(map);
             String type = (String) mechanicMap.get("type");
             if (type == null) throw new IllegalArgumentException("Mechanic entry missing 'type'");
+            if (!mechanicRegistry.contains(type)) {
+                throw new IllegalArgumentException("Unknown mechanic type: " + type);
+            }
 
             @SuppressWarnings("unchecked")
             Map<String, Object> rawParams = (Map<String, Object>) mechanicMap.getOrDefault("parameters", Map.of());

@@ -252,13 +252,22 @@ public final class Skilling extends JavaPlugin {
     }
 
     public void registerBuiltins() {
-        var evalReg = registries.getEvaluatorRegistry();
+        registerBuiltinEvaluators(registries.getEvaluatorRegistry());
+        registerBuiltinMechanics(registries.getMechanicRegistry());
+        registerBuiltinTriggers(registries.getTriggerRegistry());
+        registerBuiltinStateFilters(stateFilterRegistry);
+    }
+
+    /** Registers the built-in parameter evaluators into the given registry. */
+    public static void registerBuiltinEvaluators(EvaluatorRegistry evalReg) {
         evalReg.register("linear", new LinearEvaluator(0, 1, 0, Double.MAX_VALUE));
         evalReg.register("constant", new ConstantEvaluator(0));
         evalReg.register("milestone", new MilestoneEvaluator(new TreeMap<>()));
         evalReg.register("polynomial", new PolynomialEvaluator(50, 2.5));
+    }
 
-        var mechReg = registries.getMechanicRegistry();
+    /** Registers the built-in mechanics into the given registry. */
+    public static void registerBuiltinMechanics(MechanicRegistry mechReg) {
         mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class, List.of("yield_chance"));
         mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit"));
         mechReg.register("core:modify_damage", ModifyDamageMechanic.class, List.of("multiplier"));
@@ -302,8 +311,10 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
         mechReg.register("core:ally_aura", AllyAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
         mechReg.register("core:modify_jump", ModifyJumpMechanic.class, List.of("multiplier", "duration"));
+    }
 
-        var trigReg = registries.getTriggerRegistry();
+    /** Registers the built-in triggers into the given registry. */
+    public static void registerBuiltinTriggers(TriggerRegistry trigReg) {
         trigReg.register("block_break", BlockBreakTrigger.class);
         trigReg.register("block_place", BlockPlaceTrigger.class);
         trigReg.register("entity_damage", EntityDamageTrigger.class);
@@ -332,13 +343,10 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("launch_projectile", LaunchProjectileTrigger.class);
         trigReg.register("resurrect", ResurrectTrigger.class);
         trigReg.register("elytra_glide", ElytraGlideTrigger.class);
-
-        registerBuiltinStateFilters();
     }
 
-    private void registerBuiltinStateFilters() {
-        var sf = stateFilterRegistry;
-
+    /** Registers the built-in state filters into the given registry. */
+    public static void registerBuiltinStateFilters(StateFilterRegistry sf) {
         sf.register("is_sneaking", (p, e, v) -> p.isSneaking());
         sf.register("is_sprinting", (p, e, v) -> p.isSprinting());
         sf.register("is_in_water", (p, e, v) -> p.isInWater());

@@ -61,14 +61,8 @@ class SkillEventListenerBrewAnvilTriggerTest {
     void setUp() throws IOException {
         RecordingMechanic.EVENTS.clear();
 
-        var evalReg = new EvaluatorRegistry();
-        evalReg.register("linear", new LinearEvaluator(0, 1, 0, Double.MAX_VALUE));
-        evalReg.register("constant", new ConstantEvaluator(0));
-        evalReg.register("milestone", new MilestoneEvaluator(new java.util.TreeMap<>()));
-        evalReg.register("polynomial", new PolynomialEvaluator(50, 2.5));
-
-        SkillManager skillManager = new SkillManager(evalReg, new MechanicRegistry(),
-                new TriggerRegistry(), new TagResolver(new CustomTagLoader()));
+        SkillManager skillManager = io.github.chasehuegel.skilling.TestSkillManager.newWith(
+                reg -> reg.register("test:record", RecordingMechanic.class, java.util.List.of()));
 
         Path skillsDir = tempDir.resolve("skills");
         Files.createDirectories(skillsDir);

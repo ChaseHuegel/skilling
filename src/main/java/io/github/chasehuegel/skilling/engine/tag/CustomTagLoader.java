@@ -8,6 +8,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
@@ -16,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
 /**
  * Loads and resolves custom tag definitions from {@code tags.yml}.
@@ -34,7 +34,7 @@ public final class CustomTagLoader {
      * Loads custom tags from the given YAML file.
      *
      * @param file the tags.yml file
-     * @throws IllegalArgumentException if the file is malformed
+     * @throws IllegalArgumentException if the file or a tag definition is malformed
      */
     public void load(File file) {
         customTags.clear();
@@ -54,8 +54,8 @@ public final class CustomTagLoader {
             for (String key : rawEntries.keySet()) {
                 resolve(key, rawEntries, resolving);
             }
-        } catch (Exception e) {
-            Bukkit.getLogger().log(Level.WARNING, "Failed to load custom tags from tags.yml", e);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to read tags.yml: " + file, e);
         }
     }
 
@@ -86,21 +86,17 @@ public final class CustomTagLoader {
                 target.addAll(resolve(tagKey.substring(2), rawEntries, resolving));
             } else {
                 Tag<Material> tag = loadVanillaTag(tagKey);
-                if (tag != null) {
-                    target.addAll(tag.getValues());
+                if (tag == null) {
+                    throw new IllegalArgumentException("Unknown tag in custom tag definition: " + entry);
                 }
+                target.addAll(tag.getValues());
             }
         } else {
-            try {
-                Material material = Material.matchMaterial(entry);
-                if (material != null) {
-                    target.add(material);
-                } else {
-                    Bukkit.getLogger().warning("Unknown material in custom tag: " + entry);
-                }
-            } catch (Exception e) {
-                Bukkit.getLogger().log(Level.WARNING, "Failed to resolve entry: " + entry, e);
+            Material material = Material.matchMaterial(entry);
+            if (material == null) {
+                throw new IllegalArgumentException("Unknown material in custom tag definition: " + entry);
             }
+            target.add(material);
         }
     }
 

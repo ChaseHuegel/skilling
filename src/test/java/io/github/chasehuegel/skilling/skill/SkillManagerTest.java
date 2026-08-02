@@ -27,17 +27,7 @@ class SkillManagerTest {
 
     @BeforeEach
     void setUp() {
-        var evaluatorRegistry = new EvaluatorRegistry();
-        evaluatorRegistry.register("linear", new LinearEvaluator(0, 1, 0, Double.MAX_VALUE));
-        evaluatorRegistry.register("constant", new ConstantEvaluator(0));
-        evaluatorRegistry.register("milestone", new MilestoneEvaluator(new TreeMap<>()));
-        evaluatorRegistry.register("polynomial", new PolynomialEvaluator(50, 2.5));
-        skillManager = new SkillManager(
-                evaluatorRegistry,
-                new MechanicRegistry(),
-                new TriggerRegistry(),
-                new TagResolver(new CustomTagLoader())
-        );
+        skillManager = io.github.chasehuegel.skilling.TestSkillManager.newBuiltIn();
     }
 
     @Test
@@ -190,5 +180,68 @@ class SkillManagerTest {
         ParameterEvaluator eval = skillManager.parseInlineEvaluator(null);
         assertInstanceOf(ConstantEvaluator.class, eval);
         assertEquals(0.0, eval.evaluate(1, 0));
+    }
+
+    private YamlConfiguration minimalSkill() {
+        var config = new YamlConfiguration();
+        config.set("id", "test");
+        config.set("progression.curve", "constant");
+        config.set("progression.base_xp", 100);
+        return config;
+    }
+
+    @Test
+    void xpSourceMissingRewardThrows() {
+        var config = minimalSkill();
+        config.set("xp_sources", java.util.List.of(java.util.Map.of("trigger", "block_break")));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("reward"));
+    }
+
+    @Test
+    void nonMapXpSourceThrows() {
+        var config = minimalSkill();
+        config.set("xp_sources", java.util.List.of("not-a-map"));
+        assertThrows(IllegalArgumentException.class, () -> skillManager.parseSkill(config));
+    }
+
+    @Test
+    void stringCooldownThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "requirements", java.util.Map.of("cooldown", "5"))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("Cooldown"));
+    }
+
+    @Test
+    void stringUnlockLevelThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", "5", "trigger", "block_break")));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("unlock_level"));
+    }
+
+    @Test
+    void nonMapAbilityThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of("not-a-map"));
+        assertThrows(IllegalArgumentException.class, () -> skillManager.parseSkill(config));
+    }
+
+    @Test
+    void unknownMechanicTypeThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "mechanics", java.util.List.of(java.util.Map.of("type", "core:nonexistent")))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("Unknown mechanic"));
     }
 }

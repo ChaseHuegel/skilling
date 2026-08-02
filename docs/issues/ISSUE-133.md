@@ -1,6 +1,6 @@
 # ISSUE-133: Replace silent parsing failures with fail-fast errors in `SkillManager` and `CustomTagLoader`
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (bad configs silently disable features)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Throw `IllegalArgumentException` at parse time for: missing `reward` in an XP source, string-valued numeric fields (e.g. `cooldown: "5"`), unknown mechanic types, non-map entries in `xp_sources`/abilities, and string `unlock_level` values
-- [ ] Make `CustomTagLoader.load` fail fast on malformed tag definitions instead of catching everything and leaving tags empty
-- [ ] Ensure the failure surface surfaces during `/skills reload` (see ISSUE-152 for reload error handling)
-- [ ] Add unit tests for each silent-failure path asserting a clear exception
+- [x] Throw `IllegalArgumentException` at parse time for: missing `reward` in an XP source, string-valued numeric fields (e.g. `cooldown: "5"`), unknown mechanic types, non-map entries in `xp_sources`/abilities, and string `unlock_level` values
+- [x] Make `CustomTagLoader.load` fail fast on malformed tag definitions instead of catching everything and leaving tags empty
+- [x] Ensure the failure surface surfaces during `/skills reload` (see ISSUE-152 for reload error handling)
+- [x] Add unit tests for each silent-failure path asserting a clear exception
 
 ## Technical Specifications & Context
 
@@ -36,8 +36,8 @@ Add strict type/required-key validation in each parse path and throw descriptive
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: XP source without `reward` throws at parse
-- [ ] Unit test: string-valued numeric fields throw a descriptive `IllegalArgumentException`
-- [ ] Unit test: unknown mechanic type throws instead of silently producing no mechanics
-- [ ] Unit test: malformed `tags.yml` fails load with a clear message
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: XP source without `reward` throws at parse
+- [x] Unit test: string-valued numeric fields throw a descriptive `IllegalArgumentException`
+- [x] Unit test: unknown mechanic type throws instead of silently producing no mechanics
+- [x] Unit test: malformed `tags.yml` fails load with a clear message
