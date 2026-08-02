@@ -191,6 +191,7 @@ public final class SkillManager {
                         String tool = (String) filterMap.get("tool");
                         validateTagReference(target);
                         validateTagReference(tool);
+                        warmStateTarget(state);
                         filters.add(new SkillDefinition.Filter(target, state, tool));
                     }
                 }
@@ -304,6 +305,7 @@ public final class SkillManager {
         ParameterEvaluator cooldown = parseCooldown(map.get("cooldown"));
         @SuppressWarnings("unchecked")
         List<String> state = (List<String>) map.getOrDefault("state", List.of());
+        state.forEach(this::warmStateTarget);
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> itemsRaw = (List<Map<String, Object>>) map.getOrDefault("items", List.of());
         List<SkillDefinition.ItemRequirement> items = itemsRaw.stream().map(this::parseItemRequirement).toList();
@@ -362,6 +364,21 @@ public final class SkillManager {
         if (reference != null && !reference.isBlank()) {
             tagResolver.warm(reference);
         }
+    }
+
+    /**
+     * Pre-warms the target reference of an {@code equipped_all}/{@code equipped_any}
+     * state value (the part after the colon) so armor gating performs no tag
+     * resolution on the event path. Other state values have no tag reference.
+     *
+     * @param state the state string (e.g. {@code equipped_all:#c:heavy_armor})
+     */
+    private void warmStateTarget(String state) {
+        if (state == null || !state.startsWith("equipped_all:") && !state.startsWith("equipped_any:")) {
+            return;
+        }
+        String target = state.substring(state.indexOf(':') + 1);
+        validateTagReference(target);
     }
 
     private SkillDefinition.OnFailure parseOnFailure(Map<String, Object> map) {

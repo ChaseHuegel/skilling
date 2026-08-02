@@ -657,8 +657,13 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `target_type` | `minecraft:entity_id` | Type of entity being damaged |
 | `offhand` | `empty`, `weapon` | Offhand item state |
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
-| `armor` | `empty` | All armor slots are empty |
-| `equipped` | `light`, `medium`, `heavy`, `none` | Verifies the armor type worn; all four slots must match. `light`=leather, `medium`=chainmail/iron/golden/turtle, `heavy`=diamond/netherite, `none`=empty |
+| `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |
+| `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
+
+The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`
+custom tags (in `tags.yml`) reproduce the historical armor tiers as data; no
+tier knowledge is hard-coded in Java. `#c:unarmored` includes empty slots
+(`minecraft:air`), the elytra, and headwear.
 
 ## Built-In Evaluators
 

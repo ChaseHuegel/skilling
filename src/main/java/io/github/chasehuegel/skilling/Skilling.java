@@ -2,7 +2,6 @@ package io.github.chasehuegel.skilling;
 
 import io.github.chasehuegel.skilling.api.Registries;
 import io.github.chasehuegel.skilling.api.SkillingAPI;
-import io.github.chasehuegel.skilling.engine.ArmorTierMatcher;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.db.DatabaseManager;
@@ -79,6 +78,7 @@ public final class Skilling extends JavaPlugin {
     private LockdownManager lockdownManager;
     private SkillsCommand skillsCommand;
     private CustomTagLoader customTagLoader;
+    private volatile TagResolver tagResolver;
     private SkillEventListener skillEventListener;
     private WebServer webServer;
     private IntegrationManager integrationManager;
@@ -160,6 +160,9 @@ public final class Skilling extends JavaPlugin {
                 new EvaluatorRegistry()
         );
         this.stateFilterRegistry = new StateFilterRegistry();
+        this.customTagLoader = new CustomTagLoader();
+        customTagLoader.load(new File(getDataFolder(), "tags.yml"));
+        this.tagResolver = new TagResolver(customTagLoader);
         registerBuiltins();
 
         // Initialize database
@@ -175,9 +178,7 @@ public final class Skilling extends JavaPlugin {
         this.asyncBatchWorker.start();
 
         // Load skill definitions from YAML
-        this.customTagLoader = new CustomTagLoader();
-        customTagLoader.load(new File(getDataFolder(), "tags.yml"));
-        var tagResolver = new TagResolver(customTagLoader);
+        var tagResolver = this.tagResolver;
         this.skillManager = new SkillManager(
                 registries.getEvaluatorRegistry(),
                 registries.getMechanicRegistry(),
@@ -256,7 +257,7 @@ public final class Skilling extends JavaPlugin {
         registerBuiltinEvaluators(registries.getEvaluatorRegistry());
         registerBuiltinMechanics(registries.getMechanicRegistry());
         registerBuiltinTriggers(registries.getTriggerRegistry());
-        registerBuiltinStateFilters(stateFilterRegistry);
+        registerBuiltinStateFilters(stateFilterRegistry, tagResolver);
     }
 
     /** Registers the built-in parameter evaluators into the given registry. */
@@ -348,7 +349,7 @@ public final class Skilling extends JavaPlugin {
     }
 
     /** Registers the built-in state filters into the given registry. */
-    public static void registerBuiltinStateFilters(StateFilterRegistry sf) {
+    public static void registerBuiltinStateFilters(StateFilterRegistry sf, TagResolver tagResolver) {
         sf.register("is_sneaking", (p, e, v) -> p.isSneaking());
         sf.register("is_sprinting", (p, e, v) -> p.isSprinting());
         sf.register("is_in_water", (p, e, v) -> p.isInWater());
@@ -464,23 +465,47 @@ public final class Skilling extends JavaPlugin {
             };
         });
 
-        sf.register("armor", (p, e, v) -> switch (v) {
-            case "empty" -> {
-                var armor = p.getInventory().getArmorContents();
-                boolean allEmpty = true;
-                for (var piece : armor) {
-                    if (piece != null && piece.getType() != org.bukkit.Material.AIR) {
-                        allEmpty = false;
-                        break;
-                    }
-                }
-                yield allEmpty;
-            }
-            default -> false;
-        });
+        // Target-driven armor gating: the value is a material or #... tag resolved
+        // through the cached TagResolver (O(1) after warmup), so no armor-tier
+        // knowledge is hard-coded here. `equipped_all` requires every armor slot to
+        // match; `equipped_any` requires at least one. Empty slots are treated as AIR.
+        sf.register("equipped_all", (p, e, v) -> matchesEquipped(p, v, true, tagResolver));
+        sf.register("equipped_any", (p, e, v) -> matchesEquipped(p, v, false, tagResolver));
+    }
 
-        sf.register("equipped", (p, e, v) ->
-                ArmorTierMatcher.matchesArmorTier(p.getInventory().getArmorContents(), v));
+    /**
+     * Evaluates an {@code equipped_all}/{@code equipped_any} state filter: every
+     * armor slot (or at least one) must hold an item whose material is in the
+     * target's resolved set. Empty slots count as {@link org.bukkit.Material#AIR}.
+     *
+     * @param player  the player whose armor to inspect
+     * @param target  a material or {@code #...} tag reference
+     * @param requireAll true for {@code equipped_all}, false for {@code equipped_any}
+     * @param tagResolver the tag resolver used to resolve the target
+     * @return true if the armor contents match the target requirement
+     */
+    private static boolean matchesEquipped(org.bukkit.entity.Player player, String target,
+            boolean requireAll, TagResolver tagResolver) {
+        if (target == null || target.isBlank()) return false;
+        java.util.Set<org.bukkit.Material> matches;
+        try {
+            matches = tagResolver.resolve(target);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+        if (matches.isEmpty()) return false;
+        var armor = player.getInventory().getArmorContents();
+        boolean any = false;
+        for (var piece : armor) {
+            var type = piece == null ? org.bukkit.Material.AIR : piece.getType();
+            if (matches.contains(type)) {
+                any = true;
+                if (!requireAll) return true;
+            } else if (requireAll) {
+                return false;
+            }
+        }
+        return requireAll ? any : false;
     }
 
     private void loadSkills() {
@@ -576,6 +601,15 @@ public final class Skilling extends JavaPlugin {
 
     public void setCustomTagLoader(CustomTagLoader customTagLoader) {
         this.customTagLoader = customTagLoader;
+    }
+
+    /**
+     * Replaces the active tag resolver (used on reload when tags.yml changes).
+     *
+     * @param tagResolver the new tag resolver
+     */
+    public void setTagResolver(TagResolver tagResolver) {
+        this.tagResolver = tagResolver;
     }
 
     public boolean isReloading() {

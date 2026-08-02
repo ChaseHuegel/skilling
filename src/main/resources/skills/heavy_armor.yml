@@ -4,7 +4,7 @@ display: { name: "Heavy Armor", icon: "minecraft:diamond_chestplate", color: "BL
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
-    filters: [ { state: "equipped:heavy" } ]
+    filters: [ { state: "equipped_all:#c:heavy_armor" } ]
     reward: { constant: 3.0 }
 abilities:
   - id: "steel_plating"
@@ -14,7 +14,7 @@ abilities:
     display: { lore: [ "&7In heavy armor, gain &a{amount}&7 armor on hit for {duration}s." ] }
     mechanics:
       - type: "core:armor_bonus"
-        filters: [ { state: "equipped:heavy" } ]
+        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
         parameters:
           amount: { linear: { base: 1.0, step: 0.02, max: 4.0 } }
           uuid: { constant: "7b24cdbd-a100-5976-8d7b-a8a39f69e3e7" }
@@ -27,7 +27,7 @@ abilities:
     display: { lore: [ "&7In heavy armor, gain &a{amount}&7 knockback resistance on hit." ] }
     mechanics:
       - type: "core:knockback_resist"
-        filters: [ { state: "equipped:heavy" } ]
+        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
         parameters:
           amount: { linear: { base: 0.1, step: 0.005, max: 0.6 } }
           uuid: { constant: "aa36168a-9b62-52e7-9032-c81490f6e344" }
@@ -43,7 +43,7 @@ abilities:
         - "&8Requires: Sneaking, heavy armor, 6s cooldown."
     requirements:
       cooldown: 6.0
-      state: [ "is_sneaking", "equipped:heavy" ]
+      state: [ "is_sneaking", "equipped_all:#c:heavy_armor" ]
     on_failure: { cooldown: { action_bar: "&eBulwark cooling down: {time}s" } }
     mechanics:
       - type: "core:thorns_damage"
@@ -59,7 +59,7 @@ abilities:
     display: { lore: [ "&a{chance}%&7 chance to block damage in heavy armor." ] }
     mechanics:
       - type: "core:block_damage"
-        filters: [ { state: "equipped:heavy" } ]
+        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
         parameters:
           chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
     feedback: { notify: { action_bar: false } }
@@ -70,7 +70,7 @@ abilities:
     display: { lore: [ "&7In heavy armor, knockback resist +&a{amount}&7 on hit." ] }
     mechanics:
       - type: "core:knockback_resist"
-        filters: [ { state: "equipped:heavy" } ]
+        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
         parameters:
           amount: { linear: { base: 0.3, step: 0.005, max: 0.8 } }
           uuid: { constant: "28eb51b9-9cfe-5e18-b945-5d39a7389a3d" }
@@ -83,13 +83,13 @@ abilities:
     display: { lore: [ "&7In heavy armor: +&a{amount}&7 armor & KB resist on hit." ] }
     mechanics:
       - type: "core:knockback_resist"
-        filters: [ { state: "equipped:heavy" } ]
+        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
         parameters:
           amount: { linear: { base: 0.5, step: 0.005, max: 0.9 } }
           uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
           duration: { constant: 10.0 }
       - type: "core:armor_bonus"
-        filters: [ { state: "equipped:heavy" } ]
+        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
         parameters:
           amount: { linear: { base: 3.0, step: 0.05, max: 6.0 } }
           uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }

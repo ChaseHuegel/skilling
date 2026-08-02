@@ -4,7 +4,7 @@ display: { name: "Medium Armor", icon: "minecraft:iron_chestplate", color: "BLUE
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
-    filters: [ { state: "equipped:medium" } ]
+    filters: [ { state: "equipped_all:#c:medium_armor" } ]
     reward: { constant: 3.0 }
 abilities:
   - id: "tempered_guard"
@@ -14,7 +14,7 @@ abilities:
     display: { lore: [ "&7In medium armor, gain &a{amount}&7 armor on hit for {duration}s." ] }
     mechanics:
       - type: "core:armor_bonus"
-        filters: [ { state: "equipped:medium" } ]
+        filters: [ { state: "equipped_all:#c:medium_armor" } ]
         parameters:
           amount: { linear: { base: 1.0, step: 0.02, max: 4.0 } }
           uuid: { constant: "3e932615-90f0-54ce-a849-172857a13a68" }
@@ -27,7 +27,7 @@ abilities:
     display: { lore: [ "&a{chance}%&7 chance to block damage in medium armor." ] }
     mechanics:
       - type: "core:block_damage"
-        filters: [ { state: "equipped:medium" } ]
+        filters: [ { state: "equipped_all:#c:medium_armor" } ]
         parameters:
           chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
     feedback: { notify: { action_bar: false } }
@@ -41,7 +41,7 @@ abilities:
         - "&8Requires: Sneaking, medium armor, 5s cooldown."
     requirements:
       cooldown: 5.0
-      state: [ "is_sneaking", "equipped:medium" ]
+      state: [ "is_sneaking", "equipped_all:#c:medium_armor" ]
     on_failure: { cooldown: { action_bar: "&eRiposte cooling down: {time}s" } }
     mechanics:
       - type: "core:thorns_damage"
@@ -57,7 +57,7 @@ abilities:
     display: { lore: [ "&7Hit in medium armor grants &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
-        filters: [ { state: "equipped:medium" } ]
+        filters: [ { state: "equipped_all:#c:medium_armor" } ]
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.002, max: 1.2 } }
           uuid: { constant: "dc53ff77-1f3b-59d2-b45d-df457df8065d" }
@@ -70,7 +70,7 @@ abilities:
     display: { lore: [ "&a{chance}%&7 chance to fully negate damage in medium armor." ] }
     mechanics:
       - type: "core:cancel_damage"
-        filters: [ { state: "equipped:medium" } ]
+        filters: [ { state: "equipped_all:#c:medium_armor" } ]
         parameters:
           chance: { linear: { base: 5.0, step: 0.2, max: 30.0 } }
     feedback: { notify: { action_bar: false } }
@@ -81,13 +81,13 @@ abilities:
     display: { lore: [ "&7In medium armor: +&a{amount}&7 armor & &a{chance}%&7 damage negate." ] }
     mechanics:
       - type: "core:armor_bonus"
-        filters: [ { state: "equipped:medium" } ]
+        filters: [ { state: "equipped_all:#c:medium_armor" } ]
         parameters:
           amount: { linear: { base: 2.0, step: 0.05, max: 5.0 } }
           uuid: { constant: "cf6fefdb-4947-5df6-8750-c46b931d5880" }
           duration: { constant: 10.0 }
       - type: "core:cancel_damage"
-        filters: [ { state: "equipped:medium" } ]
+        filters: [ { state: "equipped_all:#c:medium_armor" } ]
         parameters:
           chance: { linear: { base: 10.0, step: 0.3, max: 35.0 } }
     feedback: { notify: { action_bar: false } }

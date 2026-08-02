@@ -71,7 +71,7 @@ abilities:
     display: { lore: [ "&a{chance}%&7 chance to dodge incoming damage." ] }
     mechanics:
       - type: "core:dodge"
-        filters: [ { target: "#c:leather_armor", state: "equipped:light" } ]
+        filters: [ { target: "#c:leather_armor", state: "equipped_all:#c:light_armor" } ]
         parameters:
           chance: { linear: { base: 5.0, step: 0.3, max: 35.0 } }
     feedback: { notify: { action_bar: false } }

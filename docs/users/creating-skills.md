@@ -101,10 +101,14 @@ Available states:
 | `hunger:above:\<value\>` | Player food level is above threshold (0-20) |
 | `biome:\<key\>` | Player is in a specific biome (e.g., `minecraft:plains`) |
 | `target_type:\<key\>` | Damaged entity type matches (e.g., `minecraft:zombie`, `#minecraft:skeletons`) |
-| `equipped:light` | All four armor slots are leather |
-| `equipped:medium` | All four armor slots are chainmail/iron/golden/turtle |
-| `equipped:heavy` | All four armor slots are diamond/netherite |
-| `equipped:none` | All four armor slots are empty |
+| `equipped_all:\<target\>` | Every armor slot holds an item matching `target` (a material like `minecraft:leather_helmet` or a `#...` tag like `#c:light_armor`) |
+| `equipped_any:\<target\>` | At least one armor slot holds an item matching `target` |
+
+The bundled tags `#c:unarmored`, `#c:light_armor`, `#c:medium_armor`, and
+`#c:heavy_armor` reproduce the historical armor tiers as data. `#c:unarmored`
+includes empty slots (`minecraft:air`), the elytra, and headwear (pumpkins,
+skulls), so `equipped_all:#c:unarmored` passes when every slot is empty or
+holds such an item.
 
 #### reward
 
@@ -324,7 +328,7 @@ abilities:
       cooldown: 5.0
       state:
         - "is_sneaking"
-        # - "equipped:heavy"            # Must be wearing full diamond/netherite armor
+        # - "equipped_all:#c:heavy_armor"   # Must be wearing full heavy armor
       items:
         - { action: "possession", tag: "#minecraft:pickaxes", slot: "MAIN_HAND" }
       exhaustion: { amount: 2.0, minimum: 3.0 }

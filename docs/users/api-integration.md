@@ -167,9 +167,8 @@ Register the listener with Bukkit (`getServer().getPluginManager().registerEvent
 in your `onEnable()`. Server owners can then use `trigger: "resurrect"` on their abilities.
 
 ## Registering a Custom State Filter
-
 State filters are evaluated against a player, the triggering event, and the filter
-value after the `:` in YAML (e.g., `state: "equipped:heavy"`). Register them as lambdas
+value after the `:` in YAML (e.g., `state: "equipped_all:#c:heavy_armor"`). Register them as lambdas
 on the `StateFilterRegistry`:
 
 ```java
@@ -177,6 +176,7 @@ import io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry;
 
 StateFilterRegistry sf = Skilling.getInstance().getStateFilterRegistry();
 sf.register("equipped", (p, e, v) -> {
+
     var armor = p.getInventory().getArmorContents();
     return switch (v) {
         case "heavy" -> {
@@ -195,8 +195,11 @@ sf.register("equipped", (p, e, v) -> {
 });
 ```
 
-The built-in `state:equipped` filter (Phase 2) uses this exact pattern to gate armor-skill
-XP and abilities to light/medium/heavy/none tiers. Custom filters accept any `value`
+Armor gating is provided by the built-in `equipped_all` / `equipped_any` filters, which
+resolve their `value` as a material or `#...` tag through the cached `TagResolver` — no
+armor-tier knowledge lives in Java. The bundled `#c:light_armor`, `#c:medium_armor`,
+`#c:heavy_armor`, and `#c:unarmored` tags reproduce the historical tiers as data (see
+`tags.yml`). Custom filters accept any `value`
 string and are available in both `requirements.state` and filter `state` fields.
 
 ### Constructor Requirements

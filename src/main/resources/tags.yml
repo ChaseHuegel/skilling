@@ -141,6 +141,53 @@ custom_tags:
     - "minecraft:leather_leggings"
     - "minecraft:leather_boots"
 
+  # Armor tier tags drive the equipped_all / equipped_any state filters. They
+  # reproduce the historical hard-coded tier sets as data, so armor gating is
+  # fully configurable and no tier knowledge lives in Java.
+  light_armor:
+    - "#c:leather_armor"
+
+  medium_armor:
+    - "minecraft:chainmail_helmet"
+    - "minecraft:chainmail_chestplate"
+    - "minecraft:chainmail_leggings"
+    - "minecraft:chainmail_boots"
+    - "minecraft:iron_helmet"
+    - "minecraft:iron_chestplate"
+    - "minecraft:iron_leggings"
+    - "minecraft:iron_boots"
+    - "minecraft:golden_helmet"
+    - "minecraft:golden_chestplate"
+    - "minecraft:golden_leggings"
+    - "minecraft:golden_boots"
+    - "minecraft:turtle_helmet"
+
+  heavy_armor:
+    - "minecraft:diamond_helmet"
+    - "minecraft:diamond_chestplate"
+    - "minecraft:diamond_leggings"
+    - "minecraft:diamond_boots"
+    - "minecraft:netherite_helmet"
+    - "minecraft:netherite_chestplate"
+    - "minecraft:netherite_leggings"
+    - "minecraft:netherite_boots"
+
+  # Anything wearable in an armor slot that is not armor: empty (AIR) plus
+  # helmet-slot headwear and the elytra. Used with equipped_all:#c:unarmored so
+  # the unarmored skill grants XP when every slot is empty or holds such an item.
+  unarmored:
+    - "minecraft:air"
+    - "minecraft:elytra"
+    - "minecraft:carved_pumpkin"
+    - "minecraft:jack_o_lantern"
+    - "minecraft:skeleton_skull"
+    - "minecraft:wither_skeleton_skull"
+    - "minecraft:zombie_head"
+    - "minecraft:player_head"
+    - "minecraft:creeper_head"
+    - "minecraft:dragon_head"
+    - "minecraft:piglin_head"
+
   bows:
     - "minecraft:bow"
     - "minecraft:crossbow"

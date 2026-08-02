@@ -80,10 +80,11 @@ public final class LockdownManager {
                 plugin.getRegistries().getEvaluatorRegistry().clear();
                 plugin.getRegistries().getMechanicRegistry().clear();
                 plugin.getRegistries().getTriggerRegistry().clear();
-                plugin.registerBuiltins();
                 var customTagLoader = new CustomTagLoader();
                 customTagLoader.load(new File(plugin.getDataFolder(), "tags.yml"));
                 var tagResolver = new TagResolver(customTagLoader);
+                plugin.setTagResolver(tagResolver);
+                plugin.registerBuiltins();
                 skillManager.setTagResolver(tagResolver);
                 plugin.getRequirementEngine().setTagResolver(tagResolver);
                 plugin.getSkillEventListener().setTagResolver(tagResolver);
