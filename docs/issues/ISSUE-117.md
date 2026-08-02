@@ -1,6 +1,6 @@
 # ISSUE-117: Guard `ProjectileHitEvent` handler against non-`LivingEntity` hits
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (unhandled `ClassCastException` in a HIGHEST-priority main-thread handler)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Replace the unconditional cast to `LivingEntity` with an `instanceof LivingEntity` guard in the projectile-hit handler
-- [ ] Ensure a non-`LivingEntity` hit (item frame, painting, armor stand edge cases) safely returns without dispatching abilities
-- [ ] Add a unit test exercising a hit on a `Hanging` entity that does not throw
+- [x] Replace the unconditional cast to `LivingEntity` with an `instanceof LivingEntity` guard in the projectile-hit handler
+- [x] Ensure a non-`LivingEntity` hit (item frame, painting, armor stand edge cases) safely returns without dispatching abilities
+- [x] Add a unit test exercising a hit on a `Hanging` entity that does not throw
 
 ## Technical Specifications & Context
 
@@ -33,6 +33,6 @@ Guard with `if (!(event.getHitEntity() instanceof LivingEntity living)) return;`
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: hit on a `Hanging` entity does not throw and dispatches nothing
-- [ ] Unit test: hit on a `LivingEntity` still dispatches abilities
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: hit on a `Hanging` entity does not throw and dispatches nothing
+- [x] Unit test: hit on a `LivingEntity` still dispatches abilities

@@ -618,7 +618,9 @@ public final class SkillEventListener implements Listener {
         if (!pdc.has(io.github.chasehuegel.skilling.engine.mechanic.impl.ProjectileMechanic.DAMAGE_KEY, PersistentDataType.DOUBLE)) return;
         double damage = pdc.get(io.github.chasehuegel.skilling.engine.mechanic.impl.ProjectileMechanic.DAMAGE_KEY, PersistentDataType.DOUBLE);
         if (damage <= 0) return;
-        org.bukkit.entity.LivingEntity target = (org.bukkit.entity.LivingEntity) event.getHitEntity();
+        // The hit entity can be a Hanging (item frame, painting) rather than a
+        // LivingEntity; guard so the HIGHEST handler never throws for those hits.
+        if (!(event.getHitEntity() instanceof org.bukkit.entity.LivingEntity target)) return;
         if (projectile.getShooter() instanceof org.bukkit.entity.LivingEntity shooter) {
             target.damage(damage, shooter);
         } else {
