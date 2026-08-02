@@ -54,6 +54,18 @@ Global settings for the Skilling engine.
 |---|---|---|---|
 | `skills_guide_book.enabled` | bool | `true` | Enable the craftable Skills Guide book that opens the GUI on right-click |
 
+### web
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `web.enabled` | bool | `false` | Enable the embedded admin web GUI. When first enabled with the shipped default password, the plugin generates a random password and logs it to the console once. |
+| `web.port` | int | `8082` | Port the web GUI listens on |
+| `web.bind_address` | string | `0.0.0.0` | Address to bind. Use `127.0.0.1` to restrict the GUI to this machine only (recommended without a reverse proxy). |
+| `web.username` | string | `admin` | Basic auth username |
+| `web.password` | string | `skilling` | Basic auth password. The shipped default is replaced by a generated random password the first time the web GUI is enabled. |
+
+The web GUI uses Basic auth over plaintext HTTP, so credentials are base64-encoded, not encrypted. Put the GUI behind a TLS-terminating reverse proxy (nginx, Caddy) or bind to `127.0.0.1` in production. Failed logins are rate-limited per client IP (locked out after 10 failures within 15 minutes). Changing `web.port`, `web.username`, or `web.password` requires editing `config.yml` and restarting the server; the web UI rejects such changes with a "requires restart" message.
+
 ## tags.yml
 
 Defines custom namespaced tag groups referenced in skill YAML files.

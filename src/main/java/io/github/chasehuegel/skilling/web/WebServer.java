@@ -3,6 +3,7 @@ package io.github.chasehuegel.skilling.web;
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
+import io.github.chasehuegel.skilling.web.auth.AuthRateLimiter;
 import io.github.chasehuegel.skilling.web.auth.BasicAuthenticator;
 import io.github.chasehuegel.skilling.web.config.WebConfig;
 import io.github.chasehuegel.skilling.web.handler.ConfigHandler;
@@ -14,14 +15,20 @@ import io.github.chasehuegel.skilling.web.handler.TagHandler;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.Javalin;
 import java.io.File;
+import java.time.Duration;
 import java.util.Map;
 import java.util.logging.Level;
 
 public final class WebServer {
 
+    private static final int MAX_AUTH_FAILURES = 10;
+    private static final Duration AUTH_WINDOW = Duration.ofMinutes(15);
+    private static final Duration AUTH_BLOCK = Duration.ofMinutes(15);
+
     private final Skilling plugin;
     private final WebConfig config;
     private final BasicAuthenticator authenticator;
+    private final AuthRateLimiter rateLimiter;
     private final SkillManager skillManager;
     private final StagingManager stagingManager;
     private final LockdownManager lockdownManager;
@@ -34,6 +41,7 @@ public final class WebServer {
         this.stagingManager = stagingManager;
         this.lockdownManager = lockdownManager;
         this.authenticator = new BasicAuthenticator(config);
+        this.rateLimiter = new AuthRateLimiter(MAX_AUTH_FAILURES, AUTH_WINDOW, AUTH_BLOCK);
     }
 
     public void start() {
@@ -74,13 +82,25 @@ public final class WebServer {
                 if (ctx.method().name().equals("OPTIONS")) return;
                 if (ctx.path().equals("/api/auth/check")) return;
                 if (ctx.path().equals("/api/health")) return;
+                String ip = ctx.ip();
+                if (rateLimiter.isBlocked(ip)) {
+                    ctx.status(429).json(Map.of(
+                        "status", "error",
+                        "message", "Too many failed attempts. Try again later."
+                    ));
+                    ctx.skipRemainingHandlers();
+                    return;
+                }
                 String auth = ctx.header("Authorization");
                 if (auth == null || !authenticator.valid(auth)) {
+                    rateLimiter.recordFailure(ip);
                     ctx.status(401).json(Map.of(
                         "status", "error",
                         "message", "Invalid credentials"
                     ));
                     ctx.skipRemainingHandlers();
+                } else {
+                    rateLimiter.recordSuccess(ip);
                 }
             });
 
@@ -89,13 +109,23 @@ public final class WebServer {
             });
 
             routes.get("/api/auth/check", ctx -> {
+                String ip = ctx.ip();
+                if (rateLimiter.isBlocked(ip)) {
+                    ctx.status(429).json(Map.of(
+                        "status", "error",
+                        "message", "Too many failed attempts. Try again later."
+                    ));
+                    return;
+                }
                 String auth = ctx.header("Authorization");
                 if (auth == null || !authenticator.valid(auth)) {
+                    rateLimiter.recordFailure(ip);
                     ctx.status(401).json(Map.of(
                         "status", "error",
                         "message", "Invalid credentials"
                     ));
                 } else {
+                    rateLimiter.recordSuccess(ip);
                     ctx.json(Map.of(
                         "status", "ok",
                         "user", config.username()
@@ -152,8 +182,8 @@ public final class WebServer {
             var stateFilterHandler = new StateFilterHandler(plugin);
             routes.get("/api/state-filters", stateFilterHandler::list);
 
-            app.start(config.port());
-            plugin.getLogger().info("Web GUI started on port " + config.port());
+            app.start(config.bindAddress(), config.port());
+            plugin.getLogger().info("Web GUI started on " + config.bindAddress() + ":" + config.port());
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to start Web GUI on port " + config.port(), e);
         }

@@ -47,13 +47,21 @@ skills_guide_book:
 
 # Web-based administration interface
 # Disabled by default. Enable only if you need the browser GUI.
-# WARNING: Credentials are stored in plaintext. Use a reverse proxy (nginx, Caddy)
-# for HTTPS in production. This is a local admin tool for trusted networks only.
+# WARNING: Credentials are sent in plaintext via Basic auth over HTTP. Use a
+# reverse proxy (nginx, Caddy) for TLS in production, or set bind_address to
+# "127.0.0.1" to restrict the GUI to this machine. This is a local admin tool
+# for trusted networks only.
 web:
   # Enable the web server
   enabled: false
   # Port to listen on (use a port > 1024 on Linux)
   port: 8082
+  # Address to bind. "0.0.0.0" listens on all interfaces; "127.0.0.1" restricts
+  # the GUI to this machine only (recommended without a reverse proxy).
+  bind_address: "0.0.0.0"
   # Basic authentication credentials
   username: "admin"
+  # The shipped default is replaced by a generated random password (logged to
+  # console) the first time the web GUI is enabled. Do not leave it as the
+  # known default "skilling".
   password: "skilling"

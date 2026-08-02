@@ -106,7 +106,9 @@ https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/{VERSION}/
 
 ### Security Considerations
 
-- **Auth:** Basic Auth over HTTP. All API routes (except `/api/health` and `/api/auth/check`) require a valid `Authorization: Basic ...` header.
+- **Auth:** Basic Auth over HTTP. All API routes (except `/api/health` and `/api/auth/check`) require a valid `Authorization: Basic ...` header. Credential comparison is constant-time (`MessageDigest.isEqual`).
+- **Brute-force protection:** `AuthRateLimiter` tracks failed attempts per client IP and locks out after 10 failures within 15 minutes (HTTP 429). Failures are counted on `/api/auth/check` and the global `/api/*` auth filter; a successful login resets the counter.
+- **Default credentials:** On first enable with the shipped default password, `Skilling.ensureWebPassword` generates and persists a random password and logs it once. The web GUI binds to `web.bind_address` (`0.0.0.0` by default; `127.0.0.1` restricts to localhost).
 - **CORS:** All origins/methods/headers allowed (admin tool, trusted network).
 - **XSS:** Vue's template compiler sanitizes all user input. No `v-html`.
 - **Path traversal:** Skill IDs are validated against `[a-z_][a-z0-9_]*`.

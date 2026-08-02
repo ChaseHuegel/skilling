@@ -207,6 +207,7 @@ public final class Skilling extends JavaPlugin {
         this.lockdownManager = new LockdownManager(this, profileManager, asyncBatchWorker, skillManager);
 
         // Web GUI
+        ensureWebPassword(config);
         WebConfig webConfig = WebConfig.load(config);
         var stagingManager = new io.github.chasehuegel.skilling.web.staging.StagingManager(getDataFolder());
         this.webServer = new WebServer(this, webConfig, skillManager, stagingManager, lockdownManager);
@@ -605,5 +606,40 @@ public final class Skilling extends JavaPlugin {
         this.titleStayDuration = config.getInt(CONFIG_TITLES_STAY_DURATION, 5000);
         this.globalXpModifier = config.getDouble(CONFIG_GLOBAL_XP_MODIFIER, 1.0);
         this.cropGrowRadius = config.getInt(CONFIG_CROP_GROW_RADIUS, 10);
+    }
+
+    private static final String WEB_PASSWORD_CHARS =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    private static final String WEB_DEFAULT_PASSWORD = "skilling";
+
+    /**
+     * Replaces the shipped default web password with a freshly generated one the
+     * first time the web GUI is enabled, so publicly-known credentials are never
+     * used. Logs the generated credential once; the admin can rotate it by
+     * editing {@code config.yml} and restarting.
+     *
+     * @param config the plugin configuration
+     */
+    private void ensureWebPassword(YamlConfiguration config) {
+        if (!config.getBoolean("web.enabled", false)) return;
+        String password = config.getString("web.password", "");
+        if (password == null || password.isBlank() || WEB_DEFAULT_PASSWORD.equals(password)) {
+            String generated = generateWebPassword();
+            config.set("web.password", generated);
+            saveConfig();
+            getLogger().warning("Web GUI enabled with a generated admin password. "
+                + "Username: '" + config.getString("web.username", "admin")
+                + "', Password: '" + generated
+                + "'. Store it securely; the web GUI uses Basic auth over plaintext HTTP.");
+        }
+    }
+
+    private static String generateWebPassword() {
+        var random = new java.security.SecureRandom();
+        StringBuilder sb = new StringBuilder(24);
+        for (int i = 0; i < 24; i++) {
+            sb.append(WEB_PASSWORD_CHARS.charAt(random.nextInt(WEB_PASSWORD_CHARS.length())));
+        }
+        return sb.toString();
     }
 }

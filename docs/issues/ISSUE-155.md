@@ -1,6 +1,6 @@
 # ISSUE-155: Harden web authentication (defaults, rate limiting, constant-time compare)
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (publicly-known default credentials, no brute-force protection)
 
@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Generate a random admin password on first enable (or force a password change) instead of shipping known `admin`/`skilling` defaults
-- [ ] Add rate limiting / lockout on `/api/auth/check` (and all auth attempts) to slow brute force
-- [ ] Make the credential comparison constant-time to avoid a timing side channel
-- [ ] Document the risk of Basic auth over plaintext HTTP (or support an optional HTTPS/bind-to-localhost hardening flag)
-- [ ] Add tests covering: constant-time compare behavior, rate-limit triggers after N failures
+- [x] Generate a random admin password on first enable (or force a password change) instead of shipping known `admin`/`skilling` defaults
+- [x] Add rate limiting / lockout on `/api/auth/check` (and all auth attempts) to slow brute force
+- [x] Make the credential comparison constant-time to avoid a timing side channel
+- [x] Document the risk of Basic auth over plaintext HTTP (or support an optional HTTPS/bind-to-localhost hardening flag)
+- [x] Add tests covering: constant-time compare behavior, rate-limit triggers after N failures
 
 ## Technical Specifications & Context
 
@@ -39,7 +39,7 @@ On first enable (no configured password), generate and log a random password. Ad
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new auth tests
-- [ ] Test: comparison is constant-time (no early-exit timing observable)
-- [ ] Test: after N failed attempts, `/api/auth/check` returns 429/lockout for that client
-- [ ] First-enable flow logs a generated password and stores it hashed/configured
+- [x] `./gradlew build && ./gradlew test` pass, including new auth tests
+- [x] Test: comparison is constant-time (no early-exit timing observable)
+- [x] Test: after N failed attempts, `/api/auth/check` returns 429/lockout for that client
+- [x] First-enable flow logs a generated password and stores it hashed/configured

@@ -61,6 +61,7 @@ public final class ConfigHandler {
             web.put("enabled", config.getBoolean("web.enabled", false));
             web.put("port", config.getInt("web.port", 8082));
             web.put("username", config.getString("web.username", "admin"));
+            web.put("bindAddress", config.getString("web.bind_address", "0.0.0.0"));
             // Never echo the stored credential back to any client.
             web.put("password", "");
             result.put("web", web);
@@ -134,6 +135,10 @@ public final class ConfigHandler {
             // Blank password means "keep current"; preserve it so an apply
             // round-trip never resets credentials to the default.
             yamlConfig.set("web.password", currentPassword);
+
+            // Preserve the bind address (not exposed in the editor) so a save
+            // round-trip never drops a locally-scoped binding.
+            yamlConfig.set("web.bind_address", liveConfig.getString("web.bind_address", "0.0.0.0"));
 
             String yamlContent = yamlConfig.saveToString();
             stagingManager.stageConfigFile(yamlContent);

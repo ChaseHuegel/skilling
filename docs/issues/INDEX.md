@@ -4,7 +4,7 @@
 - [x] [ISSUE-149](ISSUE-149.md) - Validate `{id}` path params in `/api/skills/{id}` against path traversal
 - [x] [ISSUE-159](ISSUE-159.md) - Fix stored XSS via unescaped `v-html` in the skill lore preview
 - [x] [ISSUE-154](ISSUE-154.md) - Redact the web password from API responses and make web credential/port changes take effect
-- [ ] [ISSUE-155](ISSUE-155.md) - Harden web authentication (defaults, rate limiting, constant-time compare)
+- [x] [ISSUE-155](ISSUE-155.md) - Harden web authentication (defaults, rate limiting, constant-time compare)
 - [ ] [ISSUE-111](ISSUE-111.md) - Fix `markSaved()` lost-update race that silently drops player XP
 - [ ] [ISSUE-112](ISSUE-112.md) - Make profile load/unload atomic on player reconnect to prevent XP loss
 - [ ] [ISSUE-143](ISSUE-143.md) - Consume `fanfare_pending` on profile load so offline admin XP/level changes get fanfare
