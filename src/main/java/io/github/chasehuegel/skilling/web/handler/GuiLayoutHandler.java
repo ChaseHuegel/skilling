@@ -52,17 +52,38 @@ public final class GuiLayoutHandler {
     }
 
     /**
-     * PUT handler: accepts a GuiLayoutDTO JSON body, serializes it to YAML,
-     * and stages it for the next reload.
+     * PUT handler: accepts a GuiLayoutDTO JSON body, validates it, serializes it
+     * to YAML, and stages it for the next reload. Returns 400 on invalid input.
      */
     public void update(Context ctx) {
         try {
             GuiLayoutDTO body = ctx.bodyAsClass(GuiLayoutDTO.class);
+            String validationError = validate(body);
+            if (validationError != null) {
+                ctx.status(400).json(Map.of("status", "error", "message", validationError));
+                return;
+            }
             String yamlContent = GuiLayoutSerializer.serialize(body);
             stagingManager.stageGuiFile(yamlContent);
             ctx.json(Map.of("status", "ok"));
         } catch (Exception e) {
             ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
         }
+    }
+
+    private static String validate(GuiLayoutDTO dto) {
+        if (dto.rows() < 1 || dto.rows() > 6) {
+            return "rows must be between 1 and 6, got " + dto.rows();
+        }
+        int maxSlot = dto.rows() * 9;
+        for (var page : dto.pages()) {
+            for (int slot : page.slots().keySet()) {
+                if (slot < 0 || slot >= maxSlot) {
+                    return "page '" + page.label() + "' has invalid slot " + slot
+                            + " (must be 0-" + (maxSlot - 1) + " for " + dto.rows() + " rows)";
+                }
+            }
+        }
+        return null;
     }
 }

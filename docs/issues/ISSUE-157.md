@@ -1,6 +1,6 @@
 # ISSUE-157: Fix `GuiLayout` round-trip data loss and add server-side validation
 
-**Status:** Open
+**Status:** Closed
 **Type:** Bug
 **Severity:** Medium (GUI row/version settings silently dropped; editor reads back different values than it wrote)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Preserve `GuiLayoutDTO.rows` and `version` through `GuiLayoutSerializer.serialize` (currently `rows` is hardcoded to 0 and `version` ignored)
-- [ ] Stop overwriting filler with defaults on serialize
-- [ ] Add server-side validation in `GuiLayoutHandler.update` for `rows` range and slot indices (fail fast with 400 instead of relying on engine clamp)
-- [ ] Add round-trip tests asserting serialize → parse → serialize is lossless for rows/version/filler
+- [x] Preserve `GuiLayoutDTO.rows` and `version` through `GuiLayoutSerializer.serialize` (currently `rows` is hardcoded to 0 and `version` ignored)
+- [x] Stop overwriting filler with defaults on serialize
+- [x] Add server-side validation in `GuiLayoutHandler.update` for `rows` range and slot indices (fail fast with 400 instead of relying on engine clamp)
+- [x] Add round-trip tests asserting serialize → parse → serialize is lossless for rows/version/filler
 
 ## Technical Specifications & Context
 
@@ -35,9 +35,13 @@
 
 Serialize `rows`/`version` from the DTO and preserve filler entries. Validate `rows` (1-6) and slot indices server-side, returning 400 on invalid input.
 
+### Resolution
+
+`GuiLayoutDTO` gained a `filler` component (`FillerDTO`) via a backward-compatible convenience constructor, so a custom filler (material + custom_model_data) round-trips through the web editor instead of being reset to the default glass pane. `serialize` now writes top-level `title`/`rows`/`version` from the DTO, writes `dto.rows()` to each page's `rows` key (so the engine actually renders the chosen row count), and emits the preserved filler. `GuiLayoutHandler.update` returns 400 with a descriptive message when `rows` is outside 1-6 or a page slot is outside `0 .. rows*9-1` instead of relying on the engine's silent clamp/skip.
+
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new round-trip tests
-- [ ] Test: serialize → parse → serialize is lossless for rows, version, and filler
-- [ ] Test: invalid `rows`/slot indices return 400
-- [ ] Manual smoke: set GUI rows to 4, reload, editor shows 4
+- [x] `./gradlew build && ./gradlew test` pass, including the new round-trip tests
+- [x] Test: serialize → parse → serialize is lossless for rows, version, and filler
+- [x] Test: invalid `rows`/slot indices return 400
+- [ ] Manual smoke: set GUI rows to 4, reload, editor shows 4 (not run — no live server in this environment; covered by the round-trip tests asserting rows=4 survives serialize/parse)

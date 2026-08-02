@@ -58,17 +58,31 @@ public final class GuiLayoutSerializer {
             return parseLegacyFormat(map, (Map<String, Object>) (Map<?, ?>) pagesMap);
         }
 
+        return parseCommon(map, List.of());
+    }
+
+    private static GuiLayoutDTO parseCommon(Map<String, Object> map, List<GuiLayoutDTO.GuiPageDTO> pages) {
         String title = str(map, "title", DEFAULT_TITLE);
         int rows = intVal(map, "rows", DEFAULT_ROWS);
         int version = intVal(map, "version", 1);
-        return new GuiLayoutDTO(title, rows, List.of(), version);
+        FillerDTO filler = parseFiller(map.get("filler"));
+        return new GuiLayoutDTO(title, rows, pages, version, filler);
+    }
+
+    private static FillerDTO parseFiller(Object fillerObj) {
+        if (fillerObj instanceof Map<?, ?> fillerRaw) {
+            String material = fillerRaw.get("material") != null ? fillerRaw.get("material").toString() : null;
+            if (material != null && !material.isBlank()) {
+                int customModelData = 0;
+                Object cmd = fillerRaw.get("custom_model_data");
+                if (cmd instanceof Number n) customModelData = n.intValue();
+                return new FillerDTO(material, customModelData);
+            }
+        }
+        return FillerDTO.DEFAULT;
     }
 
     private static GuiLayoutDTO parseNewFormat(Map<String, Object> map, List<Map<String, Object>> pagesList) {
-        String title = str(map, "title", DEFAULT_TITLE);
-        int rows = intVal(map, "rows", DEFAULT_ROWS);
-        int version = intVal(map, "version", 1);
-
         List<GuiLayoutDTO.GuiPageDTO> pages = new ArrayList<>();
         for (var pageMap : pagesList) {
             String label = str(pageMap, "label", "&6Page");
@@ -78,14 +92,10 @@ public final class GuiLayoutSerializer {
             pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots, icon, cmd));
         }
 
-        return new GuiLayoutDTO(title, rows, pages, version);
+        return parseCommon(map, pages);
     }
 
     private static GuiLayoutDTO parseLegacyFormat(Map<String, Object> map, Map<String, Object> pagesMap) {
-        String title = str(map, "title", DEFAULT_TITLE);
-        int rows = intVal(map, "rows", DEFAULT_ROWS);
-        int version = intVal(map, "version", 1);
-
         List<GuiLayoutDTO.GuiPageDTO> pages = new ArrayList<>();
         for (var pageEntry : pagesMap.entrySet()) {
             if (!(pageEntry.getValue() instanceof Map<?, ?> pageData)) continue;
@@ -97,7 +107,7 @@ public final class GuiLayoutSerializer {
             pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots, icon, cmd));
         }
 
-        return new GuiLayoutDTO(title, rows, pages, version);
+        return parseCommon(map, pages);
     }
 
     private static Map<Integer, String> parseSlotsMap(Object slotsObj) {
@@ -152,11 +162,16 @@ public final class GuiLayoutSerializer {
     public static String serialize(GuiLayoutDTO dto) {
         Map<String, Object> map = new LinkedHashMap<>();
 
-        // Filler config with defaults
-        Map<String, Object> filler = new LinkedHashMap<>();
-        filler.put("material", "minecraft:black_stained_glass_pane");
-        filler.put("custom_model_data", 0);
-        map.put("filler", filler);
+        map.put("title", dto.title());
+        map.put("rows", dto.rows());
+        map.put("version", dto.version());
+
+        // Filler config, preserved from the DTO instead of defaulted
+        FillerDTO filler = dto.filler() != null ? dto.filler() : FillerDTO.DEFAULT;
+        Map<String, Object> fillerMap = new LinkedHashMap<>();
+        fillerMap.put("material", filler.material());
+        fillerMap.put("custom_model_data", filler.customModelData());
+        map.put("filler", fillerMap);
 
         // Pages as a map with auto-generated keys
         Map<String, Object> pagesMap = new LinkedHashMap<>();
@@ -167,7 +182,7 @@ public final class GuiLayoutSerializer {
             pageMap.put("title", page.label());
             pageMap.put("icon", page.icon() != null ? page.icon() : "minecraft:book");
             pageMap.put("custom_model_data", page.customModelData());
-            pageMap.put("rows", 0);
+            pageMap.put("rows", dto.rows());
 
             // Invert slots: slot_index → skill_id becomes skill_id → slot_index
             Map<String, Integer> skillsMap = new LinkedHashMap<>();

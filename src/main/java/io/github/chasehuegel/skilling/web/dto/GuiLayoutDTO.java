@@ -6,20 +6,30 @@ import java.util.Map;
 
 /**
  * Data transfer object for the gui.yml configuration file.
- * Defines the skill overview chest GUI layout: title, row count, and named pages
- * with slot-to-skill-id mappings.
+ * Defines the skill overview chest GUI layout: title, row count, named pages
+ * with slot-to-skill-id mappings, schema version, and global filler.
  *
  * @param title   The chest GUI title (supports MiniMessage &amp; color codes)
- * @param rows    Number of chest rows (3-6)
+ * @param rows    Number of chest rows (1-6)
  * @param pages   Ordered list of page definitions
  * @param version Schema version for future migration support
+ * @param filler  Global filler for unassigned slots
  */
 public record GuiLayoutDTO(
     String title,
     int rows,
     List<GuiPageDTO> pages,
-    int version
+    int version,
+    FillerDTO filler
 ) {
+    public GuiLayoutDTO {
+        if (filler == null) filler = FillerDTO.DEFAULT;
+    }
+
+    public GuiLayoutDTO(String title, int rows, List<GuiPageDTO> pages, int version) {
+        this(title, rows, pages, version, FillerDTO.DEFAULT);
+    }
+
     public static GuiLayoutDTO empty() {
         return new GuiLayoutDTO(
             "&8\u2692 &6Skills &8\u2692",

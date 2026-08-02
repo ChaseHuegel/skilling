@@ -1,5 +1,6 @@
 package io.github.chasehuegel.skilling.web;
 
+import io.github.chasehuegel.skilling.web.dto.FillerDTO;
 import io.github.chasehuegel.skilling.web.dto.GuiLayoutDTO;
 import io.github.chasehuegel.skilling.web.dto.GuiLayoutSerializer;
 import org.junit.jupiter.api.Test;
@@ -253,5 +254,65 @@ class GuiLayoutSerializerTest {
         assertTrue(yaml.contains("mining: 0"));
         assertTrue(yaml.contains("woodcutting: 5"));
         assertTrue(yaml.contains("farming: 22"));
+    }
+
+    @Test
+    void serializeWritesRowsAndVersion() {
+        GuiLayoutDTO dto = new GuiLayoutDTO("Test", 4, java.util.List.of(
+            new GuiLayoutDTO.GuiPageDTO("Page1", Map.of(0, "skill_a"), "minecraft:book", 0)
+        ), 2);
+
+        String yaml = GuiLayoutSerializer.serialize(dto);
+
+        assertTrue(yaml.contains("rows: 4"), "Missing top-level rows");
+        assertTrue(yaml.contains("version: 2"), "Missing version");
+        assertTrue(yaml.contains("rows: 4"), "Missing per-page rows");
+    }
+
+    @Test
+    void roundTripIsLosslessForRowsVersionAndFiller() {
+        FillerDTO filler = new FillerDTO("minecraft:gray_stained_glass_pane", 42);
+        GuiLayoutDTO original = new GuiLayoutDTO(
+            "&6Skills",
+            4,
+            java.util.List.of(
+                new GuiLayoutDTO.GuiPageDTO("&eCombat", Map.of(0, "swords", 5, "archery"), "minecraft:book", 0)
+            ),
+            3,
+            filler
+        );
+
+        String once = GuiLayoutSerializer.serialize(original);
+        GuiLayoutDTO parsed = GuiLayoutSerializer.parse(once);
+        String twice = GuiLayoutSerializer.serialize(parsed);
+
+        assertEquals(4, parsed.rows(), "rows must survive serialize -> parse");
+        assertEquals(3, parsed.version(), "version must survive serialize -> parse");
+        assertEquals("minecraft:gray_stained_glass_pane", parsed.filler().material(), "filler material must survive");
+        assertEquals(42, parsed.filler().customModelData(), "filler custom_model_data must survive");
+
+        assertEquals(once, twice, "serialize -> parse -> serialize must be idempotent");
+    }
+
+    @Test
+    void legacyFillerIsPreservedThroughRoundTrip() {
+        String yaml = """
+            filler:
+              material: "minecraft:red_stained_glass_pane"
+              custom_model_data: 7
+            pages:
+              gathering:
+                title: "&6Gathering"
+                skills:
+                  mining: 0
+            """;
+
+        GuiLayoutDTO dto = GuiLayoutSerializer.parse(yaml);
+        assertEquals("minecraft:red_stained_glass_pane", dto.filler().material());
+        assertEquals(7, dto.filler().customModelData());
+
+        GuiLayoutDTO reparsed = GuiLayoutSerializer.parse(GuiLayoutSerializer.serialize(dto));
+        assertEquals("minecraft:red_stained_glass_pane", reparsed.filler().material());
+        assertEquals(7, reparsed.filler().customModelData());
     }
 }

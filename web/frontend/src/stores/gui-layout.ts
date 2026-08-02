@@ -14,6 +14,7 @@ export interface GuiLayoutDTO {
   rows: number
   pages: GuiPageDTO[]
   version: number
+  filler?: { material: string; customModelData: number }
 }
 
 export interface SkillSummary {
