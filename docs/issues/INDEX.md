@@ -16,7 +16,7 @@
 - [x] [ISSUE-130](ISSUE-130.md) - Honor `slot` and `amount` in item requirements
 - [x] [ISSUE-134](ISSUE-134.md) - Unify state-filter logic between the requirements engine and XP filters
 - [x] [ISSUE-117](ISSUE-117.md) - Guard `ProjectileHitEvent` handler against non-`LivingEntity` hits
-- [ ] [ISSUE-114](ISSUE-114.md) - Fix 3x loot duplication in `YieldMultiplierMechanic`
+- [x] [ISSUE-114](ISSUE-114.md) - Fix 3x loot duplication in `YieldMultiplierMechanic`
 - [ ] [ISSUE-119](ISSUE-119.md) - Fix `AutoSmeltMechanic` destroying Fortune/Silk-Touch drops and inflating nugget ores
 - [ ] [ISSUE-115](ISSUE-115.md) - Fix 3x catch duplication in `FishingYieldMechanic`
 - [ ] [ISSUE-118](ISSUE-118.md) - Fix `ModifyFurnaceOutputMechanic` handing out furnace blocks instead of smelted product

@@ -1,6 +1,6 @@
 # ISSUE-114: Fix 3× loot duplication in `YieldMultiplierMechanic`
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (item duplication exploit)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Cancel the vanilla drops (`breakEvent.setDropItems(false)`) when the mechanic runs and spawns its own doubled drops
-- [ ] Keep the doubling math: natural drops × 2 dropped once at the block location
-- [ ] Preserve the existing `yield_chance` roll semantics (percentage chance)
-- [ ] Add a unit test asserting vanilla drops are suppressed and exactly the doubled amount is dropped
+- [x] Cancel the vanilla drops (`breakEvent.setDropItems(false)`) when the mechanic runs and spawns its own doubled drops
+- [x] Keep the doubling math: natural drops × 2 dropped once at the block location
+- [x] Preserve the existing `yield_chance` roll semantics (percentage chance)
+- [x] Add a unit test asserting vanilla drops are suppressed and exactly the doubled amount is dropped
 
 ## Technical Specifications & Context
 
@@ -34,6 +34,6 @@ Inside the `execute` path that spawns the doubled drops, call `breakEvent.setDro
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: `setDropItems(false)` is invoked and only doubled drops are spawned
-- [ ] Unit test: `yield_chance` of 0 or <= 0 leaves vanilla drops untouched
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: `setDropItems(false)` is invoked and only doubled drops are spawned
+- [x] Unit test: `yield_chance` of 0 or <= 0 leaves vanilla drops untouched

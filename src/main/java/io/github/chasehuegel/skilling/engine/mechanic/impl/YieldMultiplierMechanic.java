@@ -10,8 +10,9 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Duplicates block drops with a percentage chance on {@link BlockBreakEvent}. When triggered, the block's
- * natural drops are doubled and dropped as additional items.
+ * Duplicates block drops with a percentage chance on {@link BlockBreakEvent}. When triggered, the
+ * block's natural drops are doubled and dropped once at the block location, replacing the vanilla
+ * drops (the vanilla drop pipeline is suppressed so a break never yields original + doubled = 3x).
  *
  * <p><b>YAML key:</b> {@code yield_multiplier}
  * <p><b>Required parameters:</b> {@code yield_chance} (0-100, percentage chance to double drops)
@@ -25,6 +26,8 @@ public final class YieldMultiplierMechanic implements SkillMechanic {
         if (chance <= 0) return false;
 
         if (ThreadLocalRandom.current().nextDouble(100) < chance) {
+            // Suppress the vanilla drops so the doubled set below is the only loot.
+            breakEvent.setDropItems(false);
             Collection<ItemStack> drops = breakEvent.getBlock().getDrops(player.getInventory().getItemInMainHand());
             for (ItemStack drop : drops) {
                 if (!drop.isEmpty()) {
