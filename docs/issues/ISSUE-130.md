@@ -1,6 +1,6 @@
 # ISSUE-130: Honor `slot` and `amount` in item requirements
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (requirement semantics ignored)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Make `hasItem(player, tag, slot)` honor the `slot` parameter instead of scanning the entire inventory
-- [ ] Make the `possession` action honor the required `amount` (require that many items, not just 1)
-- [ ] Keep `removeItems` consistent with the slot/amount semantics so costs are deducted from the same location and quantity
-- [ ] Add unit tests covering: slot-scoped possession, amount-scoped possession, slot/amount-aware cost removal
+- [x] Make `hasItem(player, tag, slot)` honor the `slot` parameter instead of scanning the entire inventory
+- [x] Make the `possession` action honor the required `amount` (require that many items, not just 1)
+- [x] Keep `removeItems` consistent with the slot/amount semantics so costs are deducted from the same location and quantity
+- [x] Add unit tests covering: slot-scoped possession, amount-scoped possession, slot/amount-aware cost removal
 
 ## Technical Specifications & Context
 
@@ -34,7 +34,7 @@ Resolve the slot to a concrete inventory index (or treat a specified slot as a f
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: `slot: OFF_HAND` possession only matches the off-hand stack
-- [ ] Unit test: `amount: 3` possession requires 3 matching items
-- [ ] Unit test: cost removal respects slot and amount
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: `slot: OFF_HAND` possession only matches the off-hand stack
+- [x] Unit test: `amount: 3` possession requires 3 matching items
+- [x] Unit test: cost removal respects slot and amount

@@ -74,16 +74,8 @@ public final class RequirementEngine {
         // Check item possession and cost availability
         for (var itemReq : requirements.items()) {
             switch (itemReq.action()) {
-                case "possession" -> {
-                    if (!hasItem(player, itemReq.tag(), itemReq.slot())) {
-                        return RequirementResult.failed(FailureReason.MISSING_ITEM, Map.of(
-                                "item", itemReq.tag(),
-                                "amount", String.valueOf(itemReq.amount())
-                        ));
-                    }
-                }
-                case "cost" -> {
-                    if (!hasItems(player, itemReq.tag(), itemReq.amount())) {
+                case "possession", "cost" -> {
+                    if (!hasItems(player, itemReq.tag(), itemReq.amount(), itemReq.slot())) {
                         return RequirementResult.failed(FailureReason.MISSING_ITEM, Map.of(
                                 "item", itemReq.tag(),
                                 "amount", String.valueOf(itemReq.amount())
@@ -129,7 +121,7 @@ public final class RequirementEngine {
         // Consume items
         for (var itemReq : requirements.items()) {
             if ("cost".equals(itemReq.action())) {
-                removeItems(player, itemReq.tag(), itemReq.amount());
+                removeItems(player, itemReq.tag(), itemReq.amount(), itemReq.slot());
             }
         }
 
@@ -161,51 +153,64 @@ public final class RequirementEngine {
         };
     }
 
-    private boolean hasItem(Player player, String tag, String slot) {
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (item == null) continue;
-            if (tag.startsWith("#")) {
-                if (tagResolver.resolve(tag).contains(item.getType())) return true;
-            } else {
-                Material mat = Material.matchMaterial(tag);
-                if (mat != null && item.getType() == mat) return true;
-            }
-        }
-        return false;
+    private boolean hasItems(Player player, String tag, int required, String slot) {
+        return countItems(player, tag, slot) >= required;
     }
 
-    private boolean hasItems(Player player, String tag, int required) {
+    private int countItems(Player player, String tag, String slot) {
         int count = 0;
-        for (ItemStack item : player.getInventory().getContents()) {
+        for (ItemStack item : slotItems(player, slot)) {
             if (item == null) continue;
-            boolean match;
-            if (tag.startsWith("#")) {
-                match = tagResolver.resolve(tag).contains(item.getType());
-            } else {
-                Material mat = Material.matchMaterial(tag);
-                match = mat != null && item.getType() == mat;
-            }
-            if (match) count += item.getAmount();
+            if (matchesItem(item, tag)) count += item.getAmount();
         }
-        return count >= required;
+        return count;
     }
 
-    private void removeItems(Player player, String tag, int amount) {
-        for (ItemStack item : player.getInventory().getContents()) {
+    private void removeItems(Player player, String tag, int amount, String slot) {
+        for (ItemStack item : slotItems(player, slot)) {
             if (item == null || amount <= 0) continue;
-            boolean match;
-            if (tag.startsWith("#")) {
-                match = tagResolver.resolve(tag).contains(item.getType());
-            } else {
-                Material mat = Material.matchMaterial(tag);
-                match = mat != null && item.getType() == mat;
-            }
-            if (match) {
+            if (matchesItem(item, tag)) {
                 int toRemove = Math.min(amount, item.getAmount());
                 item.setAmount(item.getAmount() - toRemove);
                 amount -= toRemove;
             }
         }
+    }
+
+    private boolean matchesItem(ItemStack item, String tag) {
+        if (tag.startsWith("#")) {
+            return tagResolver.resolve(tag).contains(item.getType());
+        }
+        Material mat = Material.matchMaterial(tag);
+        return mat != null && item.getType() == mat;
+    }
+
+    /**
+     * Returns the inventory items scoped to the given slot. {@code HAND}/{@code ANY}
+     * (the legacy default) scans the entire inventory; a concrete slot is resolved to
+     * that single stack. Throws on malformed slot names (fail-fast).
+     */
+    private Iterable<ItemStack> slotItems(Player player, String slot) {
+        org.bukkit.inventory.EquipmentSlot resolved = resolveSlot(slot);
+        if (resolved == null) {
+            return java.util.Arrays.asList(player.getInventory().getContents());
+        }
+        ItemStack item = player.getInventory().getItem(resolved);
+        return item == null ? java.util.List.of() : java.util.List.of(item);
+    }
+
+    private static org.bukkit.inventory.EquipmentSlot resolveSlot(String slot) {
+        if (slot == null || slot.isBlank()) return null;
+        return switch (slot.toUpperCase()) {
+            case "HAND", "ANY", "ALL" -> null;
+            case "MAIN_HAND" -> org.bukkit.inventory.EquipmentSlot.HAND;
+            case "OFF_HAND" -> org.bukkit.inventory.EquipmentSlot.OFF_HAND;
+            case "HEAD", "HELMET" -> org.bukkit.inventory.EquipmentSlot.HEAD;
+            case "CHEST" -> org.bukkit.inventory.EquipmentSlot.CHEST;
+            case "LEGS" -> org.bukkit.inventory.EquipmentSlot.LEGS;
+            case "FEET", "BOOTS" -> org.bukkit.inventory.EquipmentSlot.FEET;
+            default -> throw new IllegalArgumentException("Unknown item requirement slot: " + slot);
+        };
     }
 
     private long getRemainingCooldown(Player player, String abilityId) {

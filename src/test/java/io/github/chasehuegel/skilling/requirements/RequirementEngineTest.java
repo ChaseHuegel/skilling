@@ -119,6 +119,7 @@ class RequirementEngineTest {
         var coal = mock(ItemStack.class);
         when(coal.getType()).thenReturn(Material.COAL);
         when(coal.getAmount()).thenReturn(5);
+        when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.HAND)).thenReturn(coal);
         var contents = new ItemStack[36];
         contents[0] = coal;
         when(inventory.getContents()).thenReturn(contents);
@@ -150,5 +151,96 @@ class RequirementEngineTest {
 
         var result = engine.check(player, "test_ability", requirements, 10, 5);
         assertTrue(result.success());
+    }
+
+    @Test
+    void possessionWithOffHandSlotOnlyMatchesOffHandStack() {
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("possession", "minecraft:shield", "OFF_HAND", 1, 0.0))
+        );
+        var player = mock(Player.class);
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        var offHandShield = mock(ItemStack.class);
+        when(offHandShield.getType()).thenReturn(Material.SHIELD);
+        when(offHandShield.getAmount()).thenReturn(1);
+        when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.OFF_HAND)).thenReturn(offHandShield);
+
+        // Main hand has the item but the requirement is OFF_HAND.
+        var mainHandShield = mock(ItemStack.class);
+        when(mainHandShield.getType()).thenReturn(Material.SHIELD);
+        when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.HAND)).thenReturn(mainHandShield);
+
+        // Off-hand absent -> fail.
+        when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.OFF_HAND)).thenReturn(null);
+        assertTrue(engine.check(player, "test_ability", requirements, 10, 5).failureReason() != null);
+
+        // Off-hand present -> pass even though only the off-hand slot is inspected.
+        when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.OFF_HAND)).thenReturn(offHandShield);
+        assertTrue(engine.check(player, "test_ability", requirements, 10, 5).success());
+    }
+
+    @Test
+    void possessionWithAmountRequiresThatManyItems() {
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("possession", "minecraft:coal", "HAND", 3, 0.0))
+        );
+        var player = mock(Player.class);
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        // 2 coal in the inventory < required 3 -> fail.
+        var coal2 = mock(ItemStack.class);
+        when(coal2.getType()).thenReturn(Material.COAL);
+        when(coal2.getAmount()).thenReturn(2);
+        var contents = new ItemStack[36];
+        contents[0] = coal2;
+        when(inventory.getContents()).thenReturn(contents);
+        assertFalse(engine.check(player, "test_ability", requirements, 10, 5).success());
+
+        // 3 coal -> pass.
+        when(coal2.getAmount()).thenReturn(3);
+        assertTrue(engine.check(player, "test_ability", requirements, 10, 5).success());
+    }
+
+    @Test
+    void costRemovalRespectsSlotAndAmount() {
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("cost", "minecraft:coal", "MAIN_HAND", 2, 0.0))
+        );
+        var player = mock(Player.class);
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        var coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(5);
+        when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.HAND)).thenReturn(coal);
+
+        engine.consume(player, "test_ability", requirements, 10, 5);
+        // Amount 2 removed from the main-hand stack (5 -> 3), not the whole inventory.
+        verify(coal).setAmount(3);
+    }
+
+    @Test
+    void malformedSlotFailsFast() {
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("possession", "minecraft:coal", "not_a_slot", 1, 0.0))
+        );
+        var player = mock(Player.class);
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> engine.check(player, "test_ability", requirements, 10, 5));
     }
 }

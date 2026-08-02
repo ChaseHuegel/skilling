@@ -13,7 +13,7 @@
 - [x] [ISSUE-138](ISSUE-138.md) - Return `PlayerProfileView` from the public API instead of the mutable `PlayerProfile`
 - [x] [ISSUE-116](ISSUE-116.md) - Move ability Check/Execute/Consume to per-ability in `fireAbilities`
 - [x] [ISSUE-126](ISSUE-126.md) - Fix `TeleportMechanic` consuming cooldown/items when the teleport fails
-- [ ] [ISSUE-130](ISSUE-130.md) - Honor `slot` and `amount` in item requirements
+- [x] [ISSUE-130](ISSUE-130.md) - Honor `slot` and `amount` in item requirements
 - [ ] [ISSUE-134](ISSUE-134.md) - Unify state-filter logic between the requirements engine and XP filters
 - [ ] [ISSUE-117](ISSUE-117.md) - Guard `ProjectileHitEvent` handler against non-`LivingEntity` hits
 - [ ] [ISSUE-114](ISSUE-114.md) - Fix 3x loot duplication in `YieldMultiplierMechanic`
