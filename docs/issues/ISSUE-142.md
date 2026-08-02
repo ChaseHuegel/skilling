@@ -1,6 +1,6 @@
 # ISSUE-142: Fix `BossBarPool` LRU scope, locking, and non-applied config
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (constant boss-bar churn, races, dead config contract)
 
@@ -13,13 +13,13 @@
 
 ## Implementation Requirements
 
-- [ ] Scope the LRU eviction per player (config/class contract: "Maximum active Boss Bars visible on a player's screen"), not globally across all players
-- [ ] Hold the pool lock across the entire get-or-create (including eviction) so two concurrent `getOrCreate` calls for the same key cannot orphan a bar that is never hidden
-- [ ] Make `tickAll()` iterate under the lock (or a thread-safe iteration) to avoid `ConcurrentModificationException`
-- [ ] Coordinate eviction with TTL expiry so an evicted/hidden bar is not left visible detached from the cache
-- [ ] Ensure `bossbar.max_active`/`fade_ticks` from config actually drive the pool (currently `final` fields created in `onEnable`; see ISSUE-147) or remove the dead config keys
-- [ ] Remove the unused `BossBarPool.get()` or make it part of the tested contract
-- [ ] Add tests covering: per-player LRU, concurrent get-or-create single bar, tickAll under concurrent access
+- [x] Scope the LRU eviction per player (config/class contract: "Maximum active Boss Bars visible on a player's screen"), not globally across all players
+- [x] Hold the pool lock across the entire get-or-create (including eviction) so two concurrent `getOrCreate` calls for the same key cannot orphan a bar that is never hidden
+- [x] Make `tickAll()` iterate under the lock (or a thread-safe iteration) to avoid `ConcurrentModificationException`
+- [x] Coordinate eviction with TTL expiry so an evicted/hidden bar is not left visible detached from the cache
+- [x] Ensure `bossbar.max_active`/`fade_ticks` from config actually drive the pool (currently `final` fields created in `onEnable`; see ISSUE-147) or remove the dead config keys
+- [x] Remove the unused `BossBarPool.get()` or make it part of the tested contract
+- [x] Add tests covering: per-player LRU, concurrent get-or-create single bar, tickAll under concurrent access
 
 ## Technical Specifications & Context
 
@@ -37,8 +37,8 @@ Key the LRU per player (or maintain a per-player bounded set), synchronize the f
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: `max_active: 2` with 3 players yields 2 bars per player, not 2 server-wide
-- [ ] Unit test: concurrent get-or-create for the same key yields one active bar
-- [ ] Unit test: tickAll under concurrent get/remove does not throw CME
-- [ ] Manual smoke: 3+ players gaining XP shows no bar flicker
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: `max_active: 2` with 3 players yields 2 bars per player, not 2 server-wide
+- [x] Unit test: concurrent get-or-create for the same key yields one active bar
+- [x] Unit test: tickAll under concurrent get/remove does not throw CME
+- [x] Manual smoke: 3+ players gaining XP shows no bar flicker

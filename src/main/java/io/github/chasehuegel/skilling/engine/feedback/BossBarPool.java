@@ -10,18 +10,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * A Least Recently Used (LRU) cache for player {@link BossBar} instances.
  *
  * <p>Limits the number of active Boss Bars visible on a player's screen
- * to a configurable maximum (default: 2). When a new bar is added and
- * the pool is full, the least recently accessed bar is removed.
+ * to a configurable maximum (default: 2). When a player gains a new bar past
+ * their own cap, that player's least recently accessed bar is removed, so bars
+ * never flicker out because of <em>other</em> players' XP gains.
  *
- * <p>Uses a {@link LinkedHashMap} with access-order iteration for O(1)
- * LRU eviction. The pool is keyed by {@code <playerUUID>:<skillId>}.
+ * <p>Uses an access-ordered {@link LinkedHashMap}; the whole get-or-create
+ * (including eviction and creation) runs under the pool lock so concurrent
+ * callers (including async addons) never orphan a visible bar.
  *
- * <p>YAML configuration key: {@code bossbar.max_active}
+ * <p>YAML configuration keys: {@code bossbar.max_active}, {@code bossbar.fade_ticks}.
  */
 public final class BossBarPool {
 
-    private final int maxActive;
-    private final int fadeTicks;
+    private volatile int maxActive;
+    private volatile int fadeTicks;
     private final Map<String, BossBar> cache;
     private final Map<String, Long> ttlMap;
 
@@ -39,6 +41,24 @@ public final class BossBarPool {
     }
 
     /**
+     * Sets the per-player cap (from config) at runtime.
+     *
+     * @param maxActive maximum active bars per player
+     */
+    public void setMaxActive(int maxActive) {
+        this.maxActive = maxActive;
+    }
+
+    /**
+     * Sets the TTL in ticks (from config) at runtime.
+     *
+     * @param fadeTicks tick duration for the fade-out animation
+     */
+    public void setFadeTicks(int fadeTicks) {
+        this.fadeTicks = fadeTicks;
+    }
+
+    /**
      * Gets or creates a BossBar for the given player and skill.
      *
      * @param player  the player
@@ -47,43 +67,34 @@ public final class BossBarPool {
      */
     public BossBar getOrCreate(Player player, String skillId) {
         String key = key(player, skillId);
-
+        String prefix = player.getUniqueId() + ":";
         synchronized (cache) {
-            if (!cache.containsKey(key) && cache.size() >= maxActive) {
-                var eldest = cache.entrySet().iterator().next();
-                hideBar(eldest.getValue());
-                cache.remove(eldest.getKey());
-                ttlMap.remove(eldest.getKey());
+            // The full get-or-create (eviction + creation + insertion) is atomic.
+            BossBar bar = cache.get(key);
+            if (bar != null) {
+                ttlMap.put(key, (long) fadeTicks);
+                return bar;
             }
-        }
-
-        BossBar bar = cache.get(key);
-        if (bar != null) {
+            // Evict only this player's least-recently-used bar(s) down to the cap.
+            while (countForPrefix(prefix) >= maxActive) {
+                String eldest = null;
+                for (String k : cache.keySet()) {
+                    if (k.startsWith(prefix)) {
+                        eldest = k;
+                        break;
+                    }
+                }
+                if (eldest == null) break;
+                BossBar evicted = cache.remove(eldest);
+                ttlMap.remove(eldest);
+                hideBar(evicted);
+            }
+            bar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.WHITE, org.bukkit.boss.BarStyle.SOLID);
+            bar.addPlayer(player);
+            cache.put(key, bar);
             ttlMap.put(key, (long) fadeTicks);
             return bar;
         }
-
-        bar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.WHITE, org.bukkit.boss.BarStyle.SOLID);
-        bar.addPlayer(player);
-        cache.put(key, bar);
-        ttlMap.put(key, (long) fadeTicks);
-        return bar;
-    }
-
-    /**
-     * Returns the BossBar for the given player and skill, or null.
-     *
-     * @param player  the player
-     * @param skillId the skill identifier
-     * @return the BossBar, or null
-     */
-    public BossBar get(Player player, String skillId) {
-        String key = key(player, skillId);
-        BossBar bar = cache.get(key);
-        if (bar != null) {
-            ttlMap.put(key, (long) fadeTicks); // reset TTL on access
-        }
-        return bar;
     }
 
     /**
@@ -94,10 +105,12 @@ public final class BossBarPool {
      */
     public void remove(Player player, String skillId) {
         String key = key(player, skillId);
-        BossBar bar = cache.remove(key);
-        ttlMap.remove(key);
-        if (bar != null) {
-            hideBar(bar);
+        synchronized (cache) {
+            BossBar bar = cache.remove(key);
+            ttlMap.remove(key);
+            if (bar != null) {
+                hideBar(bar);
+            }
         }
     }
 
@@ -125,20 +138,30 @@ public final class BossBarPool {
      * Called every tick from the global update loop.
      */
     public void tickAll() {
-        var iterator = cache.entrySet().iterator();
-        while (iterator.hasNext()) {
-            var entry = iterator.next();
-            String key = entry.getKey();
-            long ttl = ttlMap.getOrDefault(key, 0L) - 1;
+        synchronized (cache) {
+            var iterator = cache.entrySet().iterator();
+            while (iterator.hasNext()) {
+                var entry = iterator.next();
+                String key = entry.getKey();
+                long ttl = ttlMap.getOrDefault(key, 0L) - 1;
 
-            if (ttl <= 0) {
-                hideBar(entry.getValue());
-                iterator.remove();
-                ttlMap.remove(key);
-            } else {
-                ttlMap.put(key, ttl);
+                if (ttl <= 0) {
+                    hideBar(entry.getValue());
+                    iterator.remove();
+                    ttlMap.remove(key);
+                } else {
+                    ttlMap.put(key, ttl);
+                }
             }
         }
+    }
+
+    private int countForPrefix(String prefix) {
+        int count = 0;
+        for (String k : cache.keySet()) {
+            if (k.startsWith(prefix)) count++;
+        }
+        return count;
     }
 
     private static void hideBar(BossBar bar) {

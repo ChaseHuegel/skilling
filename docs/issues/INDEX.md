@@ -43,7 +43,7 @@
 - [x] [ISSUE-150](ISSUE-150.md) - Preserve backups after a reload instead of wiping them in `clear()`
 - [x] [ISSUE-151](ISSUE-151.md) - Make reload apply atomic and fail-safe (no permanent plugin freeze)
 - [x] [ISSUE-152](ISSUE-152.md) - Fail loudly (not silently) when a reload drops skills due to malformed YAML
-- [ ] [ISSUE-142](ISSUE-142.md) - Fix `BossBarPool` LRU scope, locking, and non-applied config
+- [x] [ISSUE-142](ISSUE-142.md) - Fix `BossBarPool` LRU scope, locking, and non-applied config
 - [ ] [ISSUE-141](ISSUE-141.md) - Clear `FeedbackDebouncer` and `BossBarPool` state on player quit
 - [ ] [ISSUE-147](ISSUE-147.md) - Make `/skills set` configurable keys actually take effect at runtime
 - [ ] [ISSUE-144](ISSUE-144.md) - Fix the `%skilling_total_levels%` placeholder (always returns "0")
