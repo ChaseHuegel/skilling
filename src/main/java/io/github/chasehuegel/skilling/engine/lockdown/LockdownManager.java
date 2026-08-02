@@ -52,66 +52,69 @@ public final class LockdownManager {
         plugin.setReloading(true);
         plugin.debug("Phase 1/6: Freeze — interactions locked.");
 
-        // Phase 2: Close GUIs
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            Inventory top = player.getOpenInventory().getTopInventory();
-            if (top != null && top.getHolder() instanceof io.github.chasehuegel.skilling.engine.ui.SkillInventoryHolder) {
-                player.closeInventory();
-            }
-        }
-        plugin.debug("Phase 2/6: GUIs closed.");
-
-        // Phase 3: Flush DB
-        boolean flushed = false;
         try {
-            // Run the JDBC batch off the main thread; await completion with a
-            // bounded timeout so the reload rebuild can safely assume persistence.
-            asyncBatchWorker.flushDirtyProfilesAsync().get(5, TimeUnit.SECONDS);
-            flushed = true;
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Timed out flushing profiles during reload", e);
-        }
-        plugin.debug("Phase 3/6: Database flushed.");
-
-        // Phase 4: Rebuild
-        try {
-            plugin.reloadConfigSettings();
-            plugin.getRegistries().getEvaluatorRegistry().clear();
-            plugin.getRegistries().getMechanicRegistry().clear();
-            plugin.getRegistries().getTriggerRegistry().clear();
-            plugin.registerBuiltins();
-            var customTagLoader = new CustomTagLoader();
-            customTagLoader.load(new File(plugin.getDataFolder(), "tags.yml"));
-            var tagResolver = new TagResolver(customTagLoader);
-            skillManager.setTagResolver(tagResolver);
-            plugin.getRequirementEngine().setTagResolver(tagResolver);
-            plugin.getSkillEventListener().setTagResolver(tagResolver);
-            plugin.setCustomTagLoader(customTagLoader);
-            skillManager.clear();
-            skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
-            plugin.debug("Phase 4/6: Registries rebuilt.");
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to rebuild registries during reload", e);
-        }
-
-        // Phase 5: Invalidate UI caches
-        io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clearAll();
-        plugin.getSkillMenuBuilder().setGuiLayoutConfig(GuiLayoutConfig.load());
-        for (PlayerProfile profile : profileManager.getAllProfiles().values()) {
-            // The Phase 3 flush already persisted everything up to its snapshot
-            // markers; interactions are frozen, so marking clean at the current
-            // counter is safe. If the flush failed/timed out, leave profiles dirty
-            // so the periodic flush retries instead of losing data.
-            if (flushed) {
-                profile.markSaved(profile.getModCount());
+            // Phase 2: Close GUIs
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                Inventory top = player.getOpenInventory().getTopInventory();
+                if (top != null && top.getHolder() instanceof io.github.chasehuegel.skilling.engine.ui.SkillInventoryHolder) {
+                    player.closeInventory();
+                }
             }
-            profile.invalidatePageCache();
-        }
-        plugin.debug("Phase 5/6: UI caches invalidated.");
+            plugin.debug("Phase 2/6: GUIs closed.");
 
-        // Phase 6: Unlock
-        plugin.setReloading(false);
-        plugin.debug("Phase 6/6: Unlocked.");
-        plugin.getLogger().info("Reload complete.");
+            // Phase 3: Flush DB
+            boolean flushed = false;
+            try {
+                // Run the JDBC batch off the main thread; await completion with a
+                // bounded timeout so the reload rebuild can safely assume persistence.
+                asyncBatchWorker.flushDirtyProfilesAsync().get(5, TimeUnit.SECONDS);
+                flushed = true;
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Timed out flushing profiles during reload", e);
+            }
+            plugin.debug("Phase 3/6: Database flushed.");
+
+            // Phase 4: Rebuild
+            try {
+                plugin.reloadConfigSettings();
+                plugin.getRegistries().getEvaluatorRegistry().clear();
+                plugin.getRegistries().getMechanicRegistry().clear();
+                plugin.getRegistries().getTriggerRegistry().clear();
+                plugin.registerBuiltins();
+                var customTagLoader = new CustomTagLoader();
+                customTagLoader.load(new File(plugin.getDataFolder(), "tags.yml"));
+                var tagResolver = new TagResolver(customTagLoader);
+                skillManager.setTagResolver(tagResolver);
+                plugin.getRequirementEngine().setTagResolver(tagResolver);
+                plugin.getSkillEventListener().setTagResolver(tagResolver);
+                plugin.setCustomTagLoader(customTagLoader);
+                skillManager.clear();
+                skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
+                plugin.debug("Phase 4/6: Registries rebuilt.");
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to rebuild registries during reload", e);
+            }
+
+            // Phase 5: Invalidate UI caches
+            io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clearAll();
+            plugin.getSkillMenuBuilder().setGuiLayoutConfig(GuiLayoutConfig.load());
+            for (PlayerProfile profile : profileManager.getAllProfiles().values()) {
+                // The Phase 3 flush already persisted everything up to its snapshot
+                // markers; interactions are frozen, so marking clean at the current
+                // counter is safe. If the flush failed/timed out, leave profiles dirty
+                // so the periodic flush retries instead of losing data.
+                if (flushed) {
+                    profile.markSaved(profile.getModCount());
+                }
+                profile.invalidatePageCache();
+            }
+            plugin.debug("Phase 5/6: UI caches invalidated.");
+        } finally {
+            // Phase 6: Unlock — always runs so a reload that throws (e.g. a bad
+            // gui.yml) never leaves the plugin permanently frozen.
+            plugin.setReloading(false);
+            plugin.debug("Phase 6/6: Unlocked.");
+            plugin.getLogger().info("Reload complete.");
+        }
     }
 }

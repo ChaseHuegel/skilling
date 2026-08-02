@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StagingManagerConcurrencyTest {
@@ -100,5 +101,19 @@ class StagingManagerConcurrencyTest {
         assertTrue(backupDir.exists(), "backup must survive a successful reload's clear()");
         assertEquals(1, backupDir.listFiles().length);
         assertTrue(!sm.hasPendingChanges(), "pending edits are discarded, backups are not");
+    }
+
+    @Test
+    void midApplyFailureThrowsAndPreservesStagingForRetry() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        sm.stageSkillFile("foo", "id: foo\n");
+
+        // Make the live target a directory so the copy/move fails mid-apply.
+        File skillsDir = new File(tempDir.toFile(), "skills");
+        skillsDir.mkdirs();
+        Files.createDirectory(skillsDir.toPath().resolve("foo.yml"));
+
+        assertThrows(IllegalStateException.class, sm::applyAndBackup);
+        assertTrue(sm.hasPendingChanges(), "staging must be preserved for retry after a failed apply");
     }
 }

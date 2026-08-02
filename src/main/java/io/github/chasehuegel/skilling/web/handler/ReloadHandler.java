@@ -36,7 +36,8 @@ public final class ReloadHandler {
                 return;
             }
 
-            // Apply staged changes (backups created automatically by staging manager)
+            // Apply staged changes (backups created automatically by staging manager).
+            // A mid-apply copy failure throws here, leaving staging intact for retry.
             List<String> applied = stagingManager.applyAndBackup();
             if (applied.isEmpty() && stagingManager.hasPendingChanges()) {
                 ctx.status(500).json(Map.of(
@@ -61,10 +62,10 @@ public final class ReloadHandler {
                 errors.add("Reload error: " + cause.getMessage());
             }
 
-            // Clear staging on success
-            stagingManager.clear();
-
             if (errors.isEmpty()) {
+                // Only discard pending edits once the reload fully succeeded, so a
+                // failed apply can be retried from the preserved staging.
+                stagingManager.clear();
                 ctx.json(Map.of(
                     "success", true,
                     "message", "Changes applied. Plugin reloaded successfully.",
@@ -73,7 +74,7 @@ public final class ReloadHandler {
             } else {
                 ctx.status(500).json(Map.of(
                     "success", false,
-                    "message", "Reload completed with errors",
+                    "message", "Reload completed with errors; staging preserved for retry",
                     "errors", errors
                 ));
             }

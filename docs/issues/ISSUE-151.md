@@ -1,6 +1,6 @@
 # ISSUE-151: Make reload apply atomic and fail-safe (no permanent plugin freeze)
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (failed reload can leave the plugin permanently locked)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Wrap `LockdownManager.reload()` phases 5-6 (and any throw point such as `GuiLayoutConfig.load()`) in try/finally so `setReloading(false)` always runs
-- [ ] Ensure the apply step is atomic or restorable: if a mid-loop `Files.copy` fails, earlier applied files and staging are not left in a mixed state without a clear error + rollback path
-- [ ] On reload failure, report an accurate error to the admin and preserve the remaining staging for retry instead of clearing it
-- [ ] Add tests covering: `GuiLayoutConfig.load()` throwing does not leave the plugin reloading; a mid-apply copy failure does not clear remaining pending changes
+- [x] Wrap `LockdownManager.reload()` phases 5-6 (and any throw point such as `GuiLayoutConfig.load()`) in try/finally so `setReloading(false)` always runs
+- [x] Ensure the apply step is atomic or restorable: if a mid-loop `Files.copy` fails, earlier applied files and staging are not left in a mixed state without a clear error + rollback path
+- [x] On reload failure, report an accurate error to the admin and preserve the remaining staging for retry instead of clearing it
+- [x] Add tests covering: `GuiLayoutConfig.load()` throwing does not leave the plugin reloading; a mid-apply copy failure does not clear remaining pending changes
 
 ## Technical Specifications & Context
 
@@ -37,7 +37,7 @@ Use try/finally around all reload phases so the unlock always runs. Make the app
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Test: a reload that throws mid-way never leaves `isReloading()` true
-- [ ] Test: mid-apply failure preserves remaining pending changes and reports an error
-- [ ] Manual smoke: force a bad gui layout, reload, confirm the plugin stays interactive and reports the error
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Test: a reload that throws mid-way never leaves `isReloading()` true
+- [x] Test: mid-apply failure preserves remaining pending changes and reports an error
+- [x] Manual smoke: force a bad gui layout, reload, confirm the plugin stays interactive and reports the error

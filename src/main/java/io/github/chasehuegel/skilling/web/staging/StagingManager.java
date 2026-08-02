@@ -257,6 +257,9 @@ public final class StagingManager {
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to apply staged changes", e);
+                // Signal failure so the caller preserves staging for retry instead
+                // of clearing it; earlier files remain backed up for manual restore.
+                throw new IllegalStateException("Failed to apply staged changes; staging preserved for retry", e);
             }
             return applied;
         } finally {
