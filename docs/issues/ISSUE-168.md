@@ -13,13 +13,13 @@
 
 ## Implementation Requirements
 
-- [ ] Add tests for `SkillDefinition.getLevelForXp(long)` (currently zero coverage; the per-event hot path)
-- [ ] Cover `RequirementEngine` exhaustion check, exhaustion consume, the `possession` action, tag-based `#` matching in `hasItem`/`hasItems`/`removeItems`, and the cost-failure path
-- [ ] Cover `TagResolver` single-material resolution and the vanilla `#minecraft:` path (the `mockStatic(Bukkit)` pattern already exists in `BossBarPoolTest`)
-- [ ] Cover `CustomTagLoader` parsing a real `tags.yml` (materials, vanilla cross-refs, circular refs); fix the existing `parsesTagKeys` test which loads a nonexistent file
-- [ ] Add `skilling-api/src/test` covering `Registries`, `EvaluatorRegistry`, `MechanicRegistry`, `TriggerRegistry`, and `PlayerProfileView` (the API module currently has zero tests)
-- [ ] Add tests for the new registry behavior from ISSUE-137/138/140 (custom evaluator registration, view contract, defensive copies)
-- [ ] `./gradlew build && ./gradlew test` must pass with the new coverage
+- [x] Add tests for `SkillDefinition.getLevelForXp(long)` (currently zero coverage; the per-event hot path)
+- [x] Cover `RequirementEngine` exhaustion check, exhaustion consume, the `possession` action, tag-based `#` matching in `hasItem`/`hasItems`/`removeItems`, and the cost-failure path
+- [x] Cover `TagResolver` single-material resolution and the vanilla `#minecraft:` path (the `mockStatic(Bukkit)` pattern already exists in `BossBarPoolTest`)
+- [x] Cover `CustomTagLoader` parsing a real `tags.yml` (materials, vanilla cross-refs, circular refs); fix the existing `parsesTagKeys` test which loads a nonexistent file
+- [x] Add `skilling-api/src/test` covering `Registries`, `EvaluatorRegistry`, `MechanicRegistry`, `TriggerRegistry`, and `PlayerProfileView` (the API module currently has zero tests)
+- [x] Add tests for the new registry behavior from ISSUE-137/138/140 (custom evaluator registration, view contract, defensive copies)
+- [x] `./gradlew build && ./gradlew test` must pass with the new coverage
 
 ## Technical Specifications & Context
 
@@ -40,7 +40,7 @@ Add focused unit tests per the requirements above, using the existing `BukkitMoc
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass with all new tests
-- [ ] Coverage added for each listed path (verify via test list, not a coverage tool)
-- [ ] `:skilling-api:build` passes with the new API-module tests
-- [ ] No flaky (sleep/time-based) tests introduced
+- [x] `./gradlew build && ./gradlew test` pass with all new tests
+- [x] Coverage added for each listed path (verify via test list, not a coverage tool)
+- [x] `:skilling-api:build` passes with the new API-module tests
+- [x] No flaky (sleep/time-based) tests introduced

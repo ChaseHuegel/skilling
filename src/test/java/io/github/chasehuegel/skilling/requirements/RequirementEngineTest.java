@@ -347,4 +347,124 @@ class RequirementEngineTest {
         assertEquals(before, realResolver.resolutionCount(),
                 "the flattened tag set must be reused, not re-resolved per check or slot");
     }
+
+    @Test
+    void exhaustionBelowMinimumFailsCheck() {
+        var requirements = new SkillDefinition.Requirements(
+                new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0),
+                List.of(), List.of(),
+                new SkillDefinition.Exhaustion(2.0, 5.0)
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(player.getFoodLevel()).thenReturn(3);
+
+        var result = engine.check(player, "a", requirements, 10, 5);
+        assertEquals(FailureReason.EXHAUSTION, result.failureReason());
+    }
+
+    @Test
+    void exhaustionAtMinimumStillFails() {
+        // The engine requires food level strictly above the minimum.
+        var requirements = new SkillDefinition.Requirements(
+                new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0),
+                List.of(), List.of(),
+                new SkillDefinition.Exhaustion(2.0, 5.0)
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(player.getFoodLevel()).thenReturn(5);
+
+        assertEquals(FailureReason.EXHAUSTION, engine.check(player, "a", requirements, 10, 5).failureReason());
+    }
+
+    @Test
+    void exhaustionAboveMinimumPassesCheck() {
+        var requirements = new SkillDefinition.Requirements(
+                new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0),
+                List.of(), List.of(),
+                new SkillDefinition.Exhaustion(2.0, 5.0)
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(player.getFoodLevel()).thenReturn(6);
+
+        assertTrue(engine.check(player, "a", requirements, 10, 5).success());
+    }
+
+    @Test
+    void exhaustionConsumeReducesFoodLevelByAmount() {
+        var requirements = new SkillDefinition.Requirements(
+                new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0),
+                List.of(), List.of(),
+                new SkillDefinition.Exhaustion(2.0, 0.0)
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(player.getFoodLevel()).thenReturn(10);
+
+        engine.consume(player, "a", requirements, 10, 5);
+        verify(player).setFoodLevel(8);
+    }
+
+    @Test
+    void exhaustionConsumeClampsAtZero() {
+        var requirements = new SkillDefinition.Requirements(
+                new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0),
+                List.of(), List.of(),
+                new SkillDefinition.Exhaustion(5.0, 0.0)
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(player.getFoodLevel()).thenReturn(2);
+
+        engine.consume(player, "a", requirements, 10, 5);
+        verify(player).setFoodLevel(0);
+    }
+
+    @Test
+    void missingCostItemFailsCheckWithMissingItem() {
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("cost", "minecraft:coal", "HAND", 1, 0.0))
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(inventory.getContents()).thenReturn(new ItemStack[36]);
+
+        var result = engine.check(player, "a", requirements, 10, 5);
+        assertEquals(FailureReason.MISSING_ITEM, result.failureReason());
+    }
+
+    @Test
+    void tagCostConsumesOnlyMatchingItems() throws Exception {
+        java.nio.file.Path tagsFile = tempDir.resolve("tags.yml");
+        java.nio.file.Files.writeString(tagsFile,
+                "custom_tags:\n  ores:\n    - \"minecraft:coal\"\n    - \"minecraft:iron_ingot\"\n");
+        var loader = new CustomTagLoader();
+        loader.load(tagsFile.toFile());
+        TagResolver realResolver = new TagResolver(loader);
+        realResolver.warm("#c:ores");
+
+        var engine = new RequirementEngine(realResolver, newStateFilterRegistry());
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("cost", "#c:ores", "MAIN_HAND", 1, 0.0))
+        );
+
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        var coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(5);
+        when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.HAND)).thenReturn(coal);
+
+        engine.consume(player, "a", requirements, 10, 5);
+        // Only the ores-tagged stack is consumed (5 -> 4); non-matching stacks untouched.
+        verify(coal).setAmount(4);
+    }
 }
