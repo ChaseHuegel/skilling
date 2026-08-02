@@ -46,7 +46,7 @@
 - [x] [ISSUE-142](ISSUE-142.md) - Fix `BossBarPool` LRU scope, locking, and non-applied config
 - [x] [ISSUE-141](ISSUE-141.md) - Clear `FeedbackDebouncer` and `BossBarPool` state on player quit
 - [x] [ISSUE-147](ISSUE-147.md) - Make `/skills set` configurable keys actually take effect at runtime
-- [ ] [ISSUE-144](ISSUE-144.md) - Fix the `%skilling_total_levels%` placeholder (always returns "0")
+- [x] [ISSUE-144](ISSUE-144.md) - Fix the `%skilling_total_levels%` placeholder (always returns "0")
 - [ ] [ISSUE-148](ISSUE-148.md) - Fix UI navigation slot collision and close poison-pill vaporization gaps
 - [ ] [ISSUE-157](ISSUE-157.md) - Fix `GuiLayout` round-trip data loss and add server-side validation
 - [ ] [ISSUE-158](ISSUE-158.md) - Web error-handling hygiene (correct status codes, no internal message leakage)

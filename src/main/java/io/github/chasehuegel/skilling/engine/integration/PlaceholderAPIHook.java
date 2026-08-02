@@ -3,6 +3,7 @@ package io.github.chasehuegel.skilling.engine.integration;
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
+import org.bukkit.entity.Player;
 
 import java.lang.reflect.Method;
 
@@ -47,24 +48,19 @@ public class PlaceholderAPIHook {
         }
     }
 
-    private String onRequest(Object playerObj, String params) {
+    String onRequest(Object playerObj, String params) {
         var player = (org.bukkit.entity.Player) playerObj;
+        // total_levels contains an underscore, so it must be matched whole before
+        // the action/skill split (otherwise "total_levels" -> ["total", "levels"]).
+        if ("total_levels".equals(params)) {
+            return totalLevels(player);
+        }
+
         String[] parts = params.split("_", 2);
         if (parts.length < 2) return "";
 
         String action = parts[0];
         String rest = parts[1];
-
-        if (action.equals("total_levels")) {
-            int total = 0;
-            var profile = plugin.getProfileManager().getProfile(player.getUniqueId());
-            if (profile == null) return "0";
-            for (var entry : profile.getXpSnapshot().entrySet()) {
-                var skill = plugin.getSkillManager().getSkill(entry.getKey());
-                if (skill != null) total += skill.getLevelForXp(entry.getValue());
-            }
-            return String.valueOf(total);
-        }
 
         if (action.equals("evaluator")) {
             return resolveEvaluator(player, rest);
@@ -98,6 +94,16 @@ public class PlaceholderAPIHook {
             }
             default -> "";
         };
+    }
+
+    private String totalLevels(Player player) {
+        PlayerProfile profile = plugin.getProfileManager().getProfile(player.getUniqueId());
+        if (profile == null) return "0";
+        int total = 0;
+        for (SkillDefinition skill : plugin.getSkillManager().getSkills().values()) {
+            total += skill.getLevelForXp(profile.getXp(skill.id()));
+        }
+        return String.valueOf(total);
     }
 
     private String resolveEvaluator(Object playerObj, String params) {

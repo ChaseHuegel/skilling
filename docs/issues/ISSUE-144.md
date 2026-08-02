@@ -1,6 +1,6 @@
 # ISSUE-144: Fix the `%skilling_total_levels%` placeholder (always returns "0")
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (documented placeholder is dead)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Fix the action parsing in `PlaceholderAPIHook.onRequest` so `total_levels` is recognized (currently `params.split("_", 2)` turns it into `["total", "levels"]` and the check can never match)
-- [ ] Implement `total_levels` to sum the player's level across all loaded skills
-- [ ] Keep the single-skill placeholders (e.g. `%skilling_mining%`) working
-- [ ] Add a unit test covering: `total_levels` placeholder returns the summed level, single-skill placeholder unchanged
+- [x] Fix the action parsing in `PlaceholderAPIHook.onRequest` so `total_levels` is recognized (currently `params.split("_", 2)` turns it into `["total", "levels"]` and the check can never match)
+- [x] Implement `total_levels` to sum the player's level across all loaded skills
+- [x] Keep the single-skill placeholders (e.g. `%skilling_mining%`) working
+- [x] Add a unit test covering: `total_levels` placeholder returns the summed level, single-skill placeholder unchanged
 
 ## Technical Specifications & Context
 
@@ -34,6 +34,6 @@ Match the full placeholder string before splitting, or split on the first `_` on
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: `%skilling_total_levels%` returns the correct summed value
-- [ ] Unit test: `%skilling_<skill>%` single-skill expansion is unchanged
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: `%skilling_total_levels%` returns the correct summed value
+- [x] Unit test: `%skilling_<skill>%` single-skill expansion is unchanged
