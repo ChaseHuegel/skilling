@@ -1,6 +1,6 @@
 # ISSUE-171: Fix `resolveEventBulkScalar` — drop the `consume_item` scalar and add `craft_item` scaling
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (XP inflation exploit for `consume_item` sources; `craft_item` bulk scaling never applied)
 
@@ -13,12 +13,12 @@
 
 ## Implementation Requirements
 
-- [ ] Remove the `PlayerItemConsumeEvent` case from `resolveEventBulkScalar` so consuming any item returns scalar `1` (only a single item is consumed from the stack at a time)
-- [ ] Add a `CraftItemEvent` case that returns the count of the item stack that was crafted (result-slot stack count, including shift-click batch totals), with a null-guard fallback to the single-craft recipe result
-- [ ] Update the method Javadoc (`SkillEventListener.java:617-628`) — it currently documents `consume_item` as a bulk trigger and omits `craft_item`
-- [ ] Update `SkillEventListenerBulkScalarTest`: change `consumeItemScalarUsesStackSize` to expect `1`, add craft-scalar tests (single craft and shift-click batch)
-- [ ] Update `docs/users/capabilities.md` bulk-operation scaling note (lines ~572-590) to list `craft_item` instead of `consume_item`
-- [ ] Add a regression test proving a consume of a stack of 64 grants 1× the reward
+- [x] Remove the `PlayerItemConsumeEvent` case from `resolveEventBulkScalar` so consuming any item returns scalar `1` (only a single item is consumed from the stack at a time)
+- [x] Add a `CraftItemEvent` case that returns the count of the item stack that was crafted (result-slot stack count, including shift-click batch totals), with a null-guard fallback to the single-craft recipe result
+- [x] Update the method Javadoc (`SkillEventListener.java:617-628`) — it currently documents `consume_item` as a bulk trigger and omits `craft_item`
+- [x] Update `SkillEventListenerBulkScalarTest`: change `consumeItemScalarUsesStackSize` to expect `1`, add craft-scalar tests (single craft and shift-click batch)
+- [x] Update `docs/users/capabilities.md` bulk-operation scaling note (lines ~572-590) to list `craft_item` instead of `consume_item`
+- [x] Add a regression test proving a consume of a stack of 64 grants 1× the reward
 
 ## Technical Specifications & Context
 
@@ -42,10 +42,10 @@
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the updated and new tests
-- [ ] Unit test: a `PlayerItemConsumeEvent` with a stack of 64 yields scalar `1`
-- [ ] Unit test: a single `CraftItemEvent` (result stack of N) yields scalar N
-- [ ] Unit test: a shift-click `CraftItemEvent` (batch result stack) yields the batch count
-- [ ] Unit test: `collect_xp` and `furnace_extract` scalars are unchanged
-- [ ] `docs/users/capabilities.md` no longer lists `consume_item` as bulk-scaled and lists `craft_item`
-- [ ] `SkillEventListenerBulkScalarTest` class Javadoc reflects the corrected trigger set
+- [x] `./gradlew build && ./gradlew test` pass, including the updated and new tests
+- [x] Unit test: a `PlayerItemConsumeEvent` with a stack of 64 yields scalar `1`
+- [x] Unit test: a single `CraftItemEvent` (result stack of N) yields scalar N
+- [x] Unit test: a shift-click `CraftItemEvent` (batch result stack) yields the batch count
+- [x] Unit test: `collect_xp` and `furnace_extract` scalars are unchanged
+- [x] `docs/users/capabilities.md` no longer lists `consume_item` as bulk-scaled and lists `craft_item`
+- [x] `SkillEventListenerBulkScalarTest` class Javadoc reflects the corrected trigger set

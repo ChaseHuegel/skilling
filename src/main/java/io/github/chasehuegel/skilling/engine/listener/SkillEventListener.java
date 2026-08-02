@@ -680,9 +680,11 @@ public final class SkillEventListener implements Listener {
 
     /**
      * Resolves the bulk-operation scalar for an event. Bulk triggers
-     * ({@code collect_xp}, {@code consume_item}, {@code furnace_extract}) scale XP
-     * rewards by the magnitude of the operation (orbs collected, stack size
-     * consumed, furnace XP extracted); all other events return a scalar of {@code 1}.
+     * ({@code collect_xp}, {@code craft_item}, {@code furnace_extract}) scale XP
+     * rewards by the magnitude of the operation (orbs collected, items crafted,
+     * furnace XP extracted); all other events return a scalar of {@code 1}.
+     * {@code consume_item} is intentionally not bulk-scaled: vanilla consumption
+     * removes exactly one item from the stack per event.
      *
      * <p>The raw value is returned so a bulk of {@code 0} yields {@code 0} XP
      * rather than rounding up to a positive reward.
@@ -694,8 +696,12 @@ public final class SkillEventListener implements Listener {
         if (event instanceof org.bukkit.event.player.PlayerExpChangeEvent e) {
             return e.getAmount();
         }
-        if (event instanceof org.bukkit.event.player.PlayerItemConsumeEvent e) {
-            return e.getItem().getAmount();
+        if (event instanceof org.bukkit.event.inventory.CraftItemEvent e) {
+            ItemStack current = e.getCurrentItem();
+            if (current != null && !current.isEmpty()) return current.getAmount();
+            org.bukkit.inventory.Recipe recipe = e.getRecipe();
+            if (recipe != null && recipe.getResult() != null) return recipe.getResult().getAmount();
+            return 1;
         }
         if (event instanceof org.bukkit.event.inventory.FurnaceExtractEvent e) {
             return e.getExpToDrop();

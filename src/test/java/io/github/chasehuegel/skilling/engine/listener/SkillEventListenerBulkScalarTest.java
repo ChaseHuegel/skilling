@@ -17,9 +17,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Verifies that bulk-operation triggers ({@code collect_xp}, {@code consume_item},
+ * Verifies that bulk-operation triggers ({@code collect_xp}, {@code craft_item},
  * {@code furnace_extract}) scale XP rewards by the magnitude of the operation,
- * while non-bulk triggers keep the flat configured reward.
+ * while {@code consume_item} and other non-bulk triggers keep the flat
+ * configured reward.
  */
 class SkillEventListenerBulkScalarTest {
 
@@ -31,12 +32,56 @@ class SkillEventListenerBulkScalarTest {
     }
 
     @Test
-    void consumeItemScalarUsesStackSize() {
+    void consumeItemScalarIsAlwaysOne() {
+        // Vanilla consumption removes exactly one item from the stack per event,
+        // so a consume must never scale by the stack size.
         PlayerItemConsumeEvent event = mock(PlayerItemConsumeEvent.class);
         ItemStack item = mock(ItemStack.class);
         when(item.getAmount()).thenReturn(3);
         when(event.getItem()).thenReturn(item);
-        assertEquals(3, SkillEventListener.resolveEventBulkScalar(event));
+        assertEquals(1, SkillEventListener.resolveEventBulkScalar(event));
+    }
+
+    @Test
+    void consumeOfStackOfSixtyFourGrantsScalarOne() {
+        PlayerItemConsumeEvent event = mock(PlayerItemConsumeEvent.class);
+        ItemStack item = mock(ItemStack.class);
+        when(item.getAmount()).thenReturn(64);
+        when(event.getItem()).thenReturn(item);
+        assertEquals(1, SkillEventListener.resolveEventBulkScalar(event),
+                "a stack of 64 must not grant 64x the configured reward");
+    }
+
+    @Test
+    void craftScalarUsesResultStackCount() {
+        var event = mock(org.bukkit.event.inventory.CraftItemEvent.class);
+        ItemStack result = mock(ItemStack.class);
+        when(result.isEmpty()).thenReturn(false);
+        when(result.getAmount()).thenReturn(4);
+        when(event.getCurrentItem()).thenReturn(result);
+        assertEquals(4, SkillEventListener.resolveEventBulkScalar(event));
+    }
+
+    @Test
+    void shiftClickCraftScalarUsesBatchTotal() {
+        var event = mock(org.bukkit.event.inventory.CraftItemEvent.class);
+        ItemStack result = mock(ItemStack.class);
+        when(result.isEmpty()).thenReturn(false);
+        when(result.getAmount()).thenReturn(8);
+        when(event.getCurrentItem()).thenReturn(result);
+        assertEquals(8, SkillEventListener.resolveEventBulkScalar(event));
+    }
+
+    @Test
+    void craftScalarFallsBackToRecipeResult() {
+        var event = mock(org.bukkit.event.inventory.CraftItemEvent.class);
+        when(event.getCurrentItem()).thenReturn(null);
+        var recipe = mock(org.bukkit.inventory.Recipe.class);
+        ItemStack recipeResult = mock(ItemStack.class);
+        when(recipeResult.getAmount()).thenReturn(2);
+        when(recipe.getResult()).thenReturn(recipeResult);
+        when(event.getRecipe()).thenReturn(recipe);
+        assertEquals(2, SkillEventListener.resolveEventBulkScalar(event));
     }
 
     @Test
@@ -67,9 +112,9 @@ class SkillEventListenerBulkScalarTest {
     }
 
     @Test
-    void consumeItemStackOfThreeWithRewardTwoGrantsSix() {
+    void consumeItemGrantsPerActionRewardNotStackScaled() {
         var player = BukkitMock.mockPlayer();
-        assertEquals(6, SkillEventListener.computeXpGain(2, 3, 1.0, player.getUniqueId()));
+        assertEquals(2, SkillEventListener.computeXpGain(2, 1, 1.0, player.getUniqueId()));
     }
 
     @Test
