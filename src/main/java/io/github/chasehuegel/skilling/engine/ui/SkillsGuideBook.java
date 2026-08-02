@@ -20,8 +20,9 @@ import org.bukkit.inventory.ShapelessRecipe;
  * Provides a craftable "Skills Guide" book that opens the skill overview menu on right-click.
  *
  * <p>The book is an {@link Material#ENCHANTED_BOOK} with custom model data and a
- * {@link PoisonPillTag} for inventory security. A shapeless recipe (book + coal) is
- * registered and auto-unlocked for all players. The item is not consumed on use.
+ * {@link GuideBookTag} so the poison-pill vaporization net never destroys it.
+ * A shapeless recipe (book + coal) is registered and auto-unlocked for all
+ * players. The item is not consumed on use.
  *
  * <p>Can be disabled via {@code skills_guide_book.enabled} in {@code config.yml}.
  */
@@ -81,7 +82,7 @@ public final class SkillsGuideBook implements Listener {
                     Component.text("Right-click to open your skills", NamedTextColor.GRAY)
             ));
             meta.setCustomModelData(CUSTOM_MODEL_DATA);
-            PoisonPillTag.apply(meta);
+            GuideBookTag.apply(meta);
         });
         return book;
     }
@@ -93,7 +94,7 @@ public final class SkillsGuideBook implements Listener {
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
         ItemStack item = event.getItem();
         if (item == null || item.getType() != Material.ENCHANTED_BOOK) return;
-        if (!PoisonPillTag.isTagged(item.getItemMeta())) return;
+        if (!GuideBookTag.isTagged(item.getItemMeta())) return;
         event.setCancelled(true);
         var profile = profileManager.getOrCreate(event.getPlayer());
         event.getPlayer().openInventory(skillMenuBuilder.buildOverview(profile));

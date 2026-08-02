@@ -37,6 +37,16 @@ public final class UIProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        // Vaporize any tagged item on the cursor, including deposits into normal
+        // (non-Skilling) chests. Tagged items always carry an ItemMeta, so the
+        // pill check doubles as the existence check.
+        ItemStack cursor = event.getCursor();
+        if (cursor != null && cursor.hasItemMeta()
+                && PoisonPillTag.isTagged(cursor.getItemMeta())) {
+            event.setCursor(null);
+        }
+
         Inventory top = event.getView().getTopInventory();
         if (top == null) return;
 
@@ -59,6 +69,11 @@ public final class UIProtectionListener implements Listener {
     }
 
     private void handleNavigation(InventoryClickEvent event, Player player, SkillInventoryHolder holder, Inventory top) {
+        // Clicks in the player's own inventory use normalized 0-35 slots that would
+        // collide with navigation slots on pages of 4 rows or fewer; never navigate
+        // on a bottom-inventory click.
+        if (event.getClickedInventory() != top) return;
+
         List<String> pageOrder = holder.getPageOrder();
         if (pageOrder == null) return;
 
@@ -114,6 +129,35 @@ public final class UIProtectionListener implements Listener {
         if (item.hasItemMeta() && PoisonPillTag.isTagged(item.getItemMeta())) {
             event.getItem().remove();
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerAttemptPickup(org.bukkit.event.player.PlayerAttemptPickupItemEvent event) {
+        ItemStack item = event.getItem().getItemStack();
+        if (item.hasItemMeta() && PoisonPillTag.isTagged(item.getItemMeta())) {
+            event.getItem().remove();
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onInventoryMove(InventoryMoveItemEvent event) {
+        // Hopper transfers: zero the tagged stack so nothing propagates out of the UI.
+        ItemStack item = event.getItem();
+        if (item != null && item.hasItemMeta()
+                && PoisonPillTag.isTagged(item.getItemMeta())) {
+            item.setAmount(0);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onInventoryClose(org.bukkit.event.inventory.InventoryCloseEvent event) {
+        // A tagged item left on the cursor when closing an inventory is vaporized.
+        ItemStack cursor = event.getPlayer().getItemOnCursor();
+        if (cursor != null && cursor.hasItemMeta()
+                && PoisonPillTag.isTagged(cursor.getItemMeta())) {
+            event.getPlayer().setItemOnCursor(null);
         }
     }
 

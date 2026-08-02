@@ -1,6 +1,6 @@
 # ISSUE-148: Fix UI navigation slot collision and close poison-pill vaporization gaps
 
-**Status:** Open
+**Status:** Closed
 **Type:** Bug
 **Severity:** Medium (accidental page navigation + incomplete anti-dupe net)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Guard `handleNavigation` with `event.getClickedInventory() == top` so clicks in the player's own inventory cannot collide with nav slots on short pages (rows <= 4)
-- [ ] Extend the poison-pill vaporization net to the missing paths: `PlayerAttemptPickupItemEvent`, `InventoryMoveItemEvent` (hopper transfer), cursor-deposit into a normal chest, and `InventoryCloseEvent` cursor cleanup
-- [ ] Keep the existing blanket cancel inside Skilling holders unchanged
-- [ ] Add unit tests covering: bottom-inventory click on a 4-row page does not navigate; a tagged item picked up/deposited outside the UI is vaporized
+- [x] Guard `handleNavigation` with `event.getClickedInventory() == top` so clicks in the player's own inventory cannot collide with nav slots on short pages (rows <= 4)
+- [x] Extend the poison-pill vaporization net to the missing paths: `PlayerAttemptPickupItemEvent`, `InventoryMoveItemEvent` (hopper transfer), cursor-deposit into a normal chest, and `InventoryCloseEvent` cursor cleanup
+- [x] Keep the existing blanket cancel inside Skilling holders unchanged
+- [x] Add unit tests covering: bottom-inventory click on a 4-row page does not navigate; a tagged item picked up/deposited outside the UI is vaporized
 
 ## Technical Specifications & Context
 
@@ -32,10 +32,14 @@
 
 Check `event.getClickedInventory()` identity before navigating. Add handlers for the missing leak paths that vaporize `PoisonPillTag`-tagged items. Note the `SkillsGuideBook` reuses the UI tag (it is destroyed by the net) — either introduce a distinct book tag or exempt book contexts.
 
+### Resolution
+
+`handleNavigation` now returns early unless `event.getClickedInventory() == top`, so normalized bottom-inventory slots can never reach `prevSlot`/`nextSlot`. The vaporization net gained `PlayerAttemptPickupItemEvent`, `InventoryMoveItemEvent` (in-flight tagged stack zeroed so nothing propagates), cursor-deposit vaporization at the top of `onInventoryClick`, and `InventoryCloseEvent` cursor cleanup. The cursor/hopper/close handlers rely on `hasItemMeta()` + `isTagged()` (tagged items always carry meta) rather than `Material.isAir()`, which keeps them off the Paper registry path. A distinct `GuideBookTag` was introduced so `SkillsGuideBook` no longer carries the poison pill and remains a legitimately held, freely movable item.
+
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: clicking a bottom-inventory slot on a 4-row page does not navigate
-- [ ] Unit test: tagged item on the cursor deposited into a normal chest is vaporized
-- [ ] Unit test: hopper move / player pickup of a tagged item is vaporized
-- [ ] Guide book still functions as a legitimately held item
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: clicking a bottom-inventory slot on a 4-row page does not navigate
+- [x] Unit test: tagged item on the cursor deposited into a normal chest is vaporized
+- [x] Unit test: hopper move / player pickup of a tagged item is vaporized
+- [x] Guide book still functions as a legitimately held item (distinct `GuideBookTag`, with a regression test that a guide-book cursor deposit is not vaporized)
