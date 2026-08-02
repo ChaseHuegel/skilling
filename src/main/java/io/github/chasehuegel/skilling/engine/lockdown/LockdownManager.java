@@ -88,7 +88,10 @@ public final class LockdownManager {
         // Phase 5: Invalidate UI caches
         plugin.getSkillMenuBuilder().setGuiLayoutConfig(GuiLayoutConfig.load());
         for (PlayerProfile profile : profileManager.getAllProfiles().values()) {
-            profile.markSaved();
+            // The synchronous Phase 3 flush already persisted everything up to
+            // its snapshot markers; interactions are frozen, so marking clean at
+            // the current counter is safe (matches the old markSaved() semantics).
+            profile.markSaved(profile.getModCount());
             profile.invalidatePageCache();
         }
         plugin.debug("Phase 5/6: UI caches invalidated.");

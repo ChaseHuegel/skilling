@@ -1,6 +1,6 @@
 # ISSUE-111: Fix `markSaved()` lost-update race that silently drops player XP
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (silent XP data loss on the write-behind cache flush)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Capture the profile's modification counter at the time the XP snapshot is taken in the flush, and record that captured value as the saved marker instead of the live counter
-- [ ] Change `PlayerProfile.markSaved()` to accept the snapshot-time marker (e.g. `markSaved(long snapshotModCount)`) so a profile that gained XP after the snapshot correctly remains dirty
-- [ ] Update the class Javadoc on `markSaved()` so it accurately describes the retained-dirty semantics (the current Javadoc claims the opposite of the implementation)
-- [ ] Add a unit test reproducing the race: snapshot XP, add XP concurrently, flush, assert the profile is still dirty and the next flush persists the new XP
+- [x] Capture the profile's modification counter at the time the XP snapshot is taken in the flush, and record that captured value as the saved marker instead of the live counter
+- [x] Change `PlayerProfile.markSaved()` to accept the snapshot-time marker (e.g. `markSaved(long snapshotModCount)`) so a profile that gained XP after the snapshot correctly remains dirty
+- [x] Update the class Javadoc on `markSaved()` so it accurately describes the retained-dirty semantics (the current Javadoc claims the opposite of the implementation)
+- [x] Add a unit test reproducing the race: snapshot XP, add XP concurrently, flush, assert the profile is still dirty and the next flush persists the new XP
 
 ## Technical Specifications & Context
 
@@ -36,7 +36,7 @@ At snapshot time, also capture `modCount`. Pass that captured value into `markSa
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: XP added between snapshot and `markSaved` keeps the profile dirty and the next flush persists it
-- [ ] Unit test: a quiescent profile (no concurrent modification) is correctly marked clean after a successful flush
-- [ ] Code review confirms no other caller relies on the zero-arg `markSaved()` semantics
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: XP added between snapshot and `markSaved` keeps the profile dirty and the next flush persists it
+- [x] Unit test: a quiescent profile (no concurrent modification) is correctly marked clean after a successful flush
+- [x] Code review confirms no other caller relies on the zero-arg `markSaved()` semantics

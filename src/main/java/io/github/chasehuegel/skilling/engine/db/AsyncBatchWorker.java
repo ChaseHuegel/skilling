@@ -8,6 +8,7 @@ import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
@@ -73,9 +74,16 @@ public final class AsyncBatchWorker implements Runnable {
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            // Capture each profile's modCount *before* its XP snapshot so the
+            // saved marker never counts mutations the DB write did not include.
+            // Reading the counter first means any XP added concurrently leaves
+            // modCount > savedModCount and the profile stays dirty for a retry.
+            Map<UUID, Long> snapshotModCounts = new HashMap<>();
             for (var entry : dirty.entrySet()) {
                 UUID uuid = entry.getKey();
                 PlayerProfile profile = entry.getValue();
+                long snapshotModCount = profile.getModCount();
+                snapshotModCounts.put(uuid, snapshotModCount);
                 Map<String, Long> xpSnapshot = profile.getXpSnapshot();
 
                 for (var xpEntry : xpSnapshot.entrySet()) {
@@ -93,7 +101,7 @@ public final class AsyncBatchWorker implements Runnable {
                     return;
                 }
             }
-            dirty.values().forEach(PlayerProfile::markSaved);
+            dirty.forEach((uuid, profile) -> profile.markSaved(snapshotModCounts.get(uuid)));
 
         } catch (BatchUpdateException e) {
             plugin.getLogger().log(Level.SEVERE, "Batch flush partially failed", e);

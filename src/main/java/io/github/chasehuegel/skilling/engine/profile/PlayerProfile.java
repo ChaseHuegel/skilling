@@ -180,16 +180,29 @@ public final class PlayerProfile implements PlayerProfileView {
     }
 
     /**
-     * Records the current modCount as saved, making the profile appear
-     * clean if no further modifications have occurred.
+     * Returns the current modification counter.
      *
-     * <p>This should only be called by the {@code AsyncBatchWorker}
-     * after a successful database flush. If modifications occurred
-     * between the snapshot and this call, the profile will correctly
-     * remain dirty.
+     * @return the number of mutations applied to this profile
      */
-    public void markSaved() {
-        this.savedModCount = modCount.get();
+    public long getModCount() {
+        return modCount.get();
+    }
+
+    /**
+     * Records the modification counter captured at database snapshot time as
+     * saved, making the profile appear clean only if no further modifications
+     * occurred after that snapshot.
+     *
+     * <p>This should only be called by the {@code AsyncBatchWorker} after a
+     * successful database flush of the corresponding snapshot. If XP was added
+     * between taking the snapshot and this call, the live modCount exceeds the
+     * passed marker and the profile correctly remains dirty so the next flush
+     * persists the newer data.
+     *
+     * @param snapshotModCount the modCount captured when the flushed snapshot was taken
+     */
+    public void markSaved(long snapshotModCount) {
+        this.savedModCount = snapshotModCount;
     }
 
     /**

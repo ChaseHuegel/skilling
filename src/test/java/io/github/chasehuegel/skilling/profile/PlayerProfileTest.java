@@ -32,7 +32,7 @@ class PlayerProfileTest {
     void markSavedClearsDirty() {
         var profile = new PlayerProfile(UUID.randomUUID());
         profile.addXp("mining", 100);
-        profile.markSaved();
+        profile.markSaved(profile.getModCount());
         assertFalse(profile.isDirty());
     }
 
@@ -40,9 +40,39 @@ class PlayerProfileTest {
     void markSavedOnlyIfNoConcurrentModifications() {
         var profile = new PlayerProfile(UUID.randomUUID());
         profile.addXp("mining", 100);
-        profile.markSaved();
+        profile.markSaved(profile.getModCount());
         profile.addXp("mining", 50);
         assertTrue(profile.isDirty());
+    }
+
+    @Test
+    void xpAddedBetweenSnapshotAndMarkSavedKeepsProfileDirty() {
+        // Simulates the flush race: the snapshot marker is captured, then XP is
+        // added concurrently before markSaved. The profile must remain dirty so
+        // the next flush persists the newer XP instead of silently dropping it.
+        var profile = new PlayerProfile(UUID.randomUUID());
+        profile.addXp("mining", 100);
+        long snapshotModCount = profile.getModCount();
+
+        profile.addXp("mining", 50);
+
+        profile.markSaved(snapshotModCount);
+        assertTrue(profile.isDirty(), "XP gained after the snapshot must keep the profile dirty");
+        assertEquals(150L, profile.getXp("mining"));
+
+        // A retry with a fresh snapshot marker then clears the flag.
+        profile.markSaved(profile.getModCount());
+        assertFalse(profile.isDirty());
+    }
+
+    @Test
+    void quiescentProfileIsMarkedCleanBySnapshotMarker() {
+        var profile = new PlayerProfile(UUID.randomUUID());
+        profile.addXp("mining", 100);
+        long snapshotModCount = profile.getModCount();
+
+        profile.markSaved(snapshotModCount);
+        assertFalse(profile.isDirty());
     }
 
     @Test
