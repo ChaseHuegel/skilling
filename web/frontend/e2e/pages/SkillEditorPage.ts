@@ -104,9 +104,12 @@ export class SkillEditorPage {
     };
   }
 
-  // Wait for editor to load
+  // Wait for editor to load: the page `load` event only covers the initial
+  // document, not the async skill fetch, so also wait until the editor sections
+  // render (loading placeholder is replaced by real content).
   async waitForLoad() {
     await this.page.waitForLoadState('load');
+    await this.page.locator('.editor-sections').waitFor({ state: 'visible', timeout: 15000 });
   }
 
   async assertNoError() {

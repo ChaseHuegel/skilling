@@ -1,8 +1,7 @@
 ## Active Sprint / Current Milestone
 
 ### Bugs
-- [ ] [ISSUE-178](ISSUE-178.md) - Skills Guide book is vaporized when dropped (poison pill)
-- [ ] [ISSUE-179](ISSUE-179.md) - Web editor: skill-level lore lines not written to file on save
+- [x] [ISSUE-179](ISSUE-179.md) - Web editor: skill-level lore lines not written to file on save
 - [ ] [ISSUE-180](ISSUE-180.md) - Unresolved lore placeholders spam warnings and render raw in tooltips
 
 ### Improvements

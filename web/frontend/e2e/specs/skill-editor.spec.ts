@@ -1,6 +1,9 @@
 import { test, expect } from '../fixtures';
 import { DashboardPage } from '../pages/DashboardPage';
 import { SkillEditorPage } from '../pages/SkillEditorPage';
+import { BASIC_AUTH } from '../helpers/credentials';
+
+const SKILL_LORE_LINE = '&7Mines deep beneath the surface.';
 
 test.describe('Skill Editor', () => {
   test('loads existing skill fields correctly', async ({ page }) => {
@@ -203,6 +206,57 @@ test.describe('Skill Editor', () => {
     const colored = preview.locator('span').filter({ hasText: 'COLORED' });
     await expect(colored).toHaveCSS('color', 'rgb(255, 85, 85)');
     await expect(colored).toHaveCSS('font-weight', '700');
+  });
+
+  test('skill-level lore lines persist through save, apply, and reload', async ({ page }) => {
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    await dashboard.clickSkill('Mining');
+
+    const editor = new SkillEditorPage(page);
+    await editor.waitForLoad();
+    await editor.assertNoError();
+
+    // Add a skill-level lore line in the Display section
+    await page.locator('.lore-actions').getByRole('button', { name: '+ Add Line' }).click();
+    const loreInput = page.locator('.lore-input').last();
+    await loreInput.fill(SKILL_LORE_LINE);
+
+    // Save stages the skill, then apply & reload pushes it to the live file
+    await editor.save();
+    await dashboard.assertBannerVisible();
+    await dashboard.applyChanges();
+
+    // After reload, the live skill file (parsed by GET /api/skills/mining)
+    // must contain the lore line.
+    const res = await page.request.get('/api/skills/mining', {
+      headers: { Authorization: BASIC_AUTH },
+    });
+    expect(res.ok()).toBeTruthy();
+    const detail = await res.json();
+    expect(detail.lore).toContain(SKILL_LORE_LINE);
+
+    // The apply reloads the page in place to the editor route; wait for the
+    // reloaded editor and verify the lore line is present.
+    await editor.waitForLoad();
+    const values = await page.locator('.lore-input').evaluateAll(
+      inputs => inputs.map(i => (i as HTMLInputElement).value)
+    );
+    expect(values).toContain(SKILL_LORE_LINE);
+
+    // Round-trip: reloading with lore present must not mark the form dirty, and
+    // saving an unrelated edit must preserve the untouched lore.
+    await expect(page.locator('.sticky-banner')).not.toBeVisible({ timeout: 5000 });
+    await editor.setDisplayName('Mining Lore Round-Trip');
+    await editor.save();
+    await dashboard.assertBannerVisible();
+    await dashboard.applyChanges();
+    const res2 = await page.request.get('/api/skills/mining', {
+      headers: { Authorization: BASIC_AUTH },
+    });
+    expect(res2.ok()).toBeTruthy();
+    const detail2 = await res2.json();
+    expect(detail2.lore).toContain(SKILL_LORE_LINE);
   });
 
   test('a failed leave-save keeps the user on the page with edits intact', async ({ page }) => {

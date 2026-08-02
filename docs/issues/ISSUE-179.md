@@ -7,10 +7,10 @@
 Lore lines added in the Display section are not written to the file after save + reload. Ability lore persists fine; only the skill-level `display.lore` is affected.
 
 ## Implementation Requirements
-- [ ] Include the skill-level `lore` in the PUT/POST payload from both save paths in `SkillEditorPage.vue` (`save()` and `leaveSave()`).
-- [ ] Convert the editor's `_key`-enriched lore rows back to plain strings before sending — never send the client-only `_key` field to the backend.
-- [ ] Ensure loading an existing skill with lore and saving without touching lore preserves it (no data loss on round-trip).
-- [ ] Add E2E coverage: add lore lines in the Display section, apply & reload, verify the lore is present in the YAML file and in the editor after reload.
+- [x] Include the skill-level `lore` in the PUT/POST payload from both save paths in `SkillEditorPage.vue` (`save()` and `leaveSave()`).
+- [x] Convert the editor's `_key`-enriched lore rows back to plain strings before sending — never send the client-only `_key` field to the backend.
+- [x] Ensure loading an existing skill with lore and saving without touching lore preserves it (no data loss on round-trip).
+- [x] Add E2E coverage: add lore lines in the Display section, apply & reload, verify the lore is present in the YAML file and in the editor after reload.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -24,7 +24,7 @@ Lore lines added in the Display section are not written to the file after save +
   - Keep `isDirty` semantics unchanged (do not let key enrichment flip the dirty flag).
 
 ## Verification & Definition of Done
-- [ ] `cd web/frontend && npm run build` passes
-- [ ] E2E: add a lore line → save → apply & reload → lore present in the YAML and in the editor after reload
-- [ ] Round-trip: save an existing skill with lore without editing it — lore is preserved
-- [ ] Ability lore still works (no regression)
+- [x] `cd web/frontend && npm run build` passes
+- [x] E2E: add a lore line → save → apply & reload → lore present in the YAML and in the editor after reload
+- [x] Round-trip: save an existing skill with lore without editing it — lore is preserved
+- [x] Ability lore still works (no regression)

@@ -261,8 +261,9 @@ function ensureKey(row: any): string {
     return row._key;
 }
 
-function ensureArrayKeys(arr: any[]): void {
-    for (const item of arr || []) ensureKey(item);
+function ensureArrayKeys(arr: any): void {
+    if (!Array.isArray(arr)) return;
+    for (const item of arr) ensureKey(item);
 }
 
 /**
@@ -336,6 +337,15 @@ function apiAbilityToForm(ab: any): any {
             parameters: undefined,
         })),
     };
+}
+
+/**
+ * Converts the editor's `_key`-enriched skill-level lore rows back to plain
+ * strings for the save payload; the backend rejects unknown JSON properties and
+ * expects a string array (like ability lore).
+ */
+function formLoreToApi(lore: any[]): string[] {
+    return (lore || []).map((l: any) => (typeof l === 'string' ? l : l.text));
 }
 
 function formAbilityToApi(ab: any): any {
@@ -412,6 +422,7 @@ async function save() {
             customModelData: form.customModelData,
             color: form.color,
             style: form.style,
+            lore: formLoreToApi(form.lore),
             progression: form.progression,
             xpSources: (form.xpSources || []).map(stripRowKeys),
             abilities: (form.abilities || []).map(formAbilityToApi),
@@ -457,6 +468,7 @@ async function leaveSave() {
             customModelData: form.customModelData,
             color: form.color,
             style: form.style,
+            lore: formLoreToApi(form.lore),
             progression: form.progression,
             xpSources: (form.xpSources || []).map(stripRowKeys),
             abilities: (form.abilities || []).map(formAbilityToApi),
