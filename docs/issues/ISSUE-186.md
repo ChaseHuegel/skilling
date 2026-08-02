@@ -7,15 +7,15 @@
 This ticket produces a comprehensive design plan (research report) that catalogs visual improvements and sets a direction for a polished, refined presentation. It should be detailed enough to drive follow-up implementation tickets.
 
 ## Implementation Requirements
-- [ ] Inventory every current presentation surface and note where each is implemented:
+- [x] Inventory every current presentation surface and note where each is implemented:
   - Skill chest GUI: `SkillMenuBuilder` (skill icons, tooltip XP bars, page icons, nav arrows, filler panes, titles, locked states), `gui.yml` layout config
   - Feedback: `LevelUpDispatcher` (title messages, boss bar, action bar, fireworks), `FanfareDispatcher` (chat/action bar messages, sounds, particles), `FeedbackDebouncer` messages
   - Bundled skill YAML feedback/lore text (colors, message formats)
-- [ ] Propose replacing the tooltip XP bar characters — currently `|` and `.` in `SkillMenuBuilder.buildSkillLore()` (e.g., `[|||||.....]`) — with block-like characters (e.g., `█`/`░` or Unicode blocks), including the exact mapping, font/render considerations, and any color handling (filled vs empty segments).
-- [ ] Propose adding a close button to the skill GUI: placement per page layout (gui.yml), wiring through `UIProtectionListener` navigation, poison-pill tagging, and interaction with the pagination nav row.
-- [ ] Define a cohesive color palette shared across the skill GUI, chat messages, title messages, action bar, and tooltips, and map which color is used where; identify any config surfaces needed to let admins tune it.
-- [ ] Catalog remaining polish opportunities with rationale and rough effort/priority (e.g., inventory title/naming consistency, item display names, level-up fanfare refinement, page indicator styling, locked-skill presentation, feedback debouncing copy).
-- [ ] Deliver the report to `docs/reports/REPORT_VISUAL-POLISH.md` following the `REPORT_<TOPIC>.md` pattern, with the owning ticket and date in the header and a cross-link back to this ticket.
+- [x] Propose replacing the tooltip XP bar characters — currently `|` and `.` in `SkillMenuBuilder.buildSkillLore()` (e.g., `[|||||.....]`) — with block-like characters (e.g., `█`/`░` or Unicode blocks), including the exact mapping, font/render considerations, and any color handling (filled vs empty segments).
+- [x] Propose adding a close button to the skill GUI: placement per page layout (gui.yml), wiring through `UIProtectionListener` navigation, poison-pill tagging, and interaction with the pagination nav row.
+- [x] Define a cohesive color palette shared across the skill GUI, chat messages, title messages, action bar, and tooltips, and map which color is used where; identify any config surfaces needed to let admins tune it.
+- [x] Catalog remaining polish opportunities with rationale and rough effort/priority (e.g., inventory title/naming consistency, item display names, level-up fanfare refinement, page indicator styling, locked-skill presentation, feedback debouncing copy).
+- [x] Deliver the report to `docs/reports/REPORT_VISUAL-POLISH.md` following the `REPORT_<TOPIC>.md` pattern, with the owning ticket and date in the header and a cross-link back to this ticket.
 
 ## Technical Specifications & Context
 - **Target Files (read-only for research):**
@@ -32,7 +32,7 @@ This ticket produces a comprehensive design plan (research report) that catalogs
   - Prefer solutions that keep everything configurable (gui.yml / skill YAML) and consistent with the plugin's data-driven architecture (no new hard-coded skill-specifics).
 
 ## Verification & Definition of Done
-- [ ] Report exists at `docs/reports/REPORT_VISUAL-POLISH.md` with owning ticket + date header and a cross-link back
-- [ ] Report covers all Implementation Requirements (surface inventory, XP-bar block characters, GUI close button, cohesive color palette, extra polish catalog with effort/priority)
-- [ ] Every proposed change is actionable (location + rationale) for follow-up implementation tickets
-- [ ] No production code changes
+- [x] Report exists at `docs/reports/REPORT_VISUAL-POLISH.md` with owning ticket + date header and a cross-link back
+- [x] Report covers all Implementation Requirements (surface inventory, XP-bar block characters, GUI close button, cohesive color palette, extra polish catalog with effort/priority)
+- [x] Every proposed change is actionable (location + rationale) for follow-up implementation tickets
+- [x] No production code changes

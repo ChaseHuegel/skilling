@@ -12,7 +12,7 @@
 
 ### Research
 - [x] [ISSUE-183](ISSUE-183.md) - Research: supporting custom items in tags & filters
-- [ ] [ISSUE-186](ISSUE-186.md) - Research: visual polish design plan
+- [x] [ISSUE-186](ISSUE-186.md) - Research: visual polish design plan
 
 ## Backlog
 
