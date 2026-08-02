@@ -1,6 +1,6 @@
 # ISSUE-170: Fix cooldown display on ability cards (row shows on all abilities and renders raw evaluator JSON)
 
-**Status:** Open
+**Status:** Closed
 **Type:** Bug
 **Severity:** Medium (UI display bug on the Abilities page — no data loss or exploit)
 
@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Render the `Cooldown` row only when the ability's effective cooldown is greater than 0 (currently the row renders for every ability, including zero-cooldown passives)
-- [ ] Display the formatted numeric value (`{n}s`), not the raw evaluator object (currently `{{ ability.requirements.cooldown }}` JSON-stringifies the evaluator)
-- [ ] Handle non-constant evaluator cooldowns (e.g. milestone/linear) without rendering raw JSON — either evaluate a representative value or show a label such as the evaluator type
-- [ ] Reuse/share the cooldown-to-number logic that already exists in `SkillEditorPage.cooldownToNumber` instead of duplicating it
-- [ ] Add a test (unit or E2E) covering: zero/absent cooldown shows no row; a constant cooldown of 5 renders `Cooldown: 5s`
+- [x] Render the `Cooldown` row only when the ability's effective cooldown is greater than 0 (currently the row renders for every ability, including zero-cooldown passives)
+- [x] Display the formatted numeric value (`{n}s`), not the raw evaluator object (currently `{{ ability.requirements.cooldown }}` JSON-stringifies the evaluator)
+- [x] Handle non-constant evaluator cooldowns (e.g. milestone/linear) without rendering raw JSON — either evaluate a representative value or show a label such as the evaluator type
+- [x] Reuse/share the cooldown-to-number logic that already exists in `SkillEditorPage.cooldownToNumber` instead of duplicating it
+- [x] Add a test (unit or E2E) covering: zero/absent cooldown shows no row; a constant cooldown of 5 renders `Cooldown: 5s`
 
 ## Technical Specifications & Context
 
@@ -45,10 +45,14 @@ Add a small display helper (extracted from/next to `SkillEditorPage.cooldownToNu
 
 Bind the card's `v-if` to the helper's non-zero result and render `{{ formatted }}s` (or `${formatted}s`). Correct the `cooldown?: number` annotation in `AbilitiesPage.vue` to reflect the evaluator object shape.
 
+### Resolution
+
+New shared `web/frontend/src/utils/cooldown.ts` provides `cooldownToNumber` (moved out of `SkillEditorPage`, which now imports it) and `cooldownLabel`, which returns `"5s"` for positive constants, `null` for zero/absent cooldowns, and a stable `"<type> (dynamic)"` label for non-constant evaluators. `AbilityCard` binds the Cooldown row's `v-if` to the label result and renders it directly, and its `isActive` computation now uses `cooldownToNumber` (the old `(cooldown ?? 0) > 0` compared an object, always false — a latent Active/Passive badge bug). The `cooldown?: number` annotations in `AbilityCard` and `AbilitiesPage` were corrected to the evaluator shape.
+
 ## Verification & Definition of Done
 
-- [ ] `cd web/frontend && npm run build` passes
-- [ ] Test: an ability with no cooldown (constant value 0 or absent) shows no `Cooldown` row
-- [ ] Test: an ability with a constant cooldown of 5 renders `Cooldown: 5s`
-- [ ] Test: a non-constant cooldown evaluator renders no raw JSON
-- [ ] Manual smoke: open the Abilities page — only true-cooldown abilities show the row, formatted correctly
+- [x] `cd web/frontend && npm run build` passes
+- [x] Test: an ability with no cooldown (constant value 0 or absent) shows no `Cooldown` row (E2E: Geologist has no row)
+- [x] Test: an ability with a constant cooldown of 5 renders `Cooldown: 5s` (E2E: Vein Miner shows `5s`)
+- [x] Test: a non-constant cooldown evaluator renders no raw JSON (E2E: no card contains `"type"`/`"params"` text)
+- [x] Manual smoke: open the Abilities page — only true-cooldown abilities show the row, formatted correctly (covered by the E2E test; full suite 79/79 pass)

@@ -19,9 +19,9 @@
                 <span class="detail-label">ID</span>
                 <span class="detail-value" style="font-family: monospace; font-size: 0.75rem;">{{ ability.id }}</span>
             </div>
-            <div v-if="ability.requirements?.cooldown" class="ability-detail">
+            <div v-if="cooldownLabelValue" class="ability-detail">
                 <span class="detail-label">Cooldown</span>
-                <span class="detail-value">{{ ability.requirements.cooldown }}s</span>
+                <span class="detail-value">{{ cooldownLabelValue }}</span>
             </div>
             <div v-if="mechanicList.length" class="ability-detail">
                 <span class="detail-label">Mechanics</span>
@@ -34,6 +34,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { cooldownToNumber, cooldownLabel } from '../../utils/cooldown';
 
 const props = defineProps<{
     index: number;
@@ -41,7 +42,7 @@ const props = defineProps<{
         id: string;
         displayName?: string;
         unlockLevel: number;
-        requirements?: { cooldown?: number; state?: string[]; items?: any[] };
+        requirements?: { cooldown?: any; state?: string[]; items?: any[] };
         mechanics?: { type: string }[];
     };
     skillId: string;
@@ -51,8 +52,10 @@ const props = defineProps<{
 
 const isActive = computed(() => {
     const r = props.ability.requirements;
-    return (r?.cooldown ?? 0) > 0 || (r?.state?.length ?? 0) > 0 || (r?.items?.length ?? 0) > 0;
+    return cooldownToNumber(r?.cooldown) > 0 || (r?.state?.length ?? 0) > 0 || (r?.items?.length ?? 0) > 0;
 });
+
+const cooldownLabelValue = computed(() => cooldownLabel(props.ability.requirements?.cooldown));
 
 const mechanicList = computed(() => (props.ability.mechanics || []).map(m => m.type));
 

@@ -73,7 +73,7 @@ interface AbilityEntry {
         displayName?: string;
         unlockLevel: number;
         requirements?: {
-            cooldown?: number;
+            cooldown?: any;
             state?: string[];
             items?: any[];
         };

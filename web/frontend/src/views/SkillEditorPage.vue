@@ -97,6 +97,7 @@
 import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
+import { cooldownToNumber } from '../utils/cooldown';
 import { useSkillsStore } from '../stores/skills';
 import MinecraftIcon from '../components/common/MinecraftIcon.vue';
 import SkillIdentitySection from '../components/skills/SkillIdentitySection.vue';
@@ -284,15 +285,6 @@ function apiAbilityToForm(ab: any): any {
             parameters: undefined,
         })),
     };
-}
-
-function cooldownToNumber(cooldown: any): number {
-    if (typeof cooldown === 'number') return cooldown;
-    if (cooldown && typeof cooldown === 'object') {
-        const value = cooldown.params?.value;
-        if (typeof value === 'number') return value;
-    }
-    return 0;
 }
 
 function formAbilityToApi(ab: any): any {

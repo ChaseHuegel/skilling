@@ -54,7 +54,7 @@
 - [x] [ISSUE-160](ISSUE-160.md) - Fix `TagsPage` deleting non-matching tags when editing under a search filter
 - [x] [ISSUE-161](ISSUE-161.md) - Never navigate away when a save fails (SkillEditor, Config, Tags, GuiLayout)
 - [x] [ISSUE-162](ISSUE-162.md) - Keep the Pinia auth store in sync with 401/session expiry
-- [ ] [ISSUE-170](ISSUE-170.md) - Fix cooldown display on ability cards (row shows on all abilities and renders raw evaluator JSON)
+- [x] [ISSUE-170](ISSUE-170.md) - Fix cooldown display on ability cards (row shows on all abilities and renders raw evaluator JSON)
 - [ ] [ISSUE-172](ISSUE-172.md) - Follow-up to ISSUE-110 — sort the actual navigation flyout (topbar dropdown) by color then name
 
 ### Improvements
