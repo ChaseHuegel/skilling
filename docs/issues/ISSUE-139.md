@@ -1,6 +1,6 @@
 # ISSUE-139: Make registries and the skill map thread-safe for reload
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (concurrent `clear()`/`put()` during reload vs. reads can corrupt maps)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Replace plain `HashMap`s in `EvaluatorRegistry`, `MechanicRegistry`, `TriggerRegistry`, and `SkillManager.skills` with concurrent structures (or synchronize all mutation/iteration)
-- [ ] Ensure the reload sequence (`LockdownManager` phase 4) either pauses web reads or uses atomic swap of immutable snapshots so readers never see a half-cleared registry
-- [ ] Make the web handlers and `SkillingAPI` registry iteration safe against concurrent modification
-- [ ] Add a test that performs concurrent `list()`/registry iteration during a reload without `ConcurrentModificationException`
+- [x] Replace plain `HashMap`s in `EvaluatorRegistry`, `MechanicRegistry`, `TriggerRegistry`, and `SkillManager.skills` with concurrent structures (or synchronize all mutation/iteration)
+- [x] Ensure the reload sequence (`LockdownManager` phase 4) either pauses web reads or uses atomic swap of immutable snapshots so readers never see a half-cleared registry
+- [x] Make the web handlers and `SkillingAPI` registry iteration safe against concurrent modification
+- [x] Add a test that performs concurrent `list()`/registry iteration during a reload without `ConcurrentModificationException`
 
 ## Technical Specifications & Context
 
@@ -38,6 +38,6 @@ Use `ConcurrentHashMap` for the registries and swap-in immutable snapshots (`Map
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new concurrency test
-- [ ] Test: concurrent registry iteration during reload produces no CME and no torn reads
-- [ ] Web `GET /api/skills`, `/api/mechanics`, `/api/triggers` remain correct during a reload
+- [x] `./gradlew build && ./gradlew test` pass, including the new concurrency test
+- [x] Test: concurrent registry iteration during reload produces no CME and no torn reads
+- [x] Web `GET /api/skills`, `/api/mechanics`, `/api/triggers` remain correct during a reload

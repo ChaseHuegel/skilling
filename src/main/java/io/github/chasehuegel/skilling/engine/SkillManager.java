@@ -31,7 +31,7 @@ public final class SkillManager {
     private final MechanicRegistry mechanicRegistry;
     private final TriggerRegistry triggerRegistry;
     private TagResolver tagResolver;
-    private final Map<String, SkillDefinition> skills = new LinkedHashMap<>();
+    private volatile Map<String, SkillDefinition> skills = Map.of();
 
     /**
      * Constructs a new skill manager.
@@ -56,19 +56,22 @@ public final class SkillManager {
      * @throws IllegalArgumentException if a file is malformed
      */
     public void loadSkills(File skillsDir) {
-        skills.clear();
-        if (!skillsDir.exists() || !skillsDir.isDirectory()) return;
-
-        File[] files = skillsDir.listFiles((dir, name) -> name.endsWith(".yml"));
-        if (files == null) return;
-
-        for (File file : files) {
-            SkillDefinition def = parseSkill(file);
-            if (skills.containsKey(def.id())) {
-                throw new IllegalArgumentException("Duplicate skill ID '" + def.id() + "' in file: " + file.getName());
+        // Build into a local map and atomically swap in an immutable snapshot so
+        // concurrent readers (web threads, addons) never see a half-loaded view.
+        Map<String, SkillDefinition> built = new LinkedHashMap<>();
+        if (skillsDir.exists() && skillsDir.isDirectory()) {
+            File[] files = skillsDir.listFiles((dir, name) -> name.endsWith(".yml"));
+            if (files != null) {
+                for (File file : files) {
+                    SkillDefinition def = parseSkill(file);
+                    if (built.containsKey(def.id())) {
+                        throw new IllegalArgumentException("Duplicate skill ID '" + def.id() + "' in file: " + file.getName());
+                    }
+                    built.put(def.id(), def);
+                }
             }
-            skills.put(def.id(), def);
         }
+        this.skills = Collections.unmodifiableMap(built);
     }
 
     /**
@@ -487,7 +490,8 @@ public final class SkillManager {
      * @return the skill map
      */
     public Map<String, SkillDefinition> getSkills() {
-        return Collections.unmodifiableMap(skills);
+        // The field is already an immutable snapshot swapped in atomically.
+        return skills;
     }
 
     /**
@@ -524,6 +528,6 @@ public final class SkillManager {
      * Clears all loaded skills.
      */
     public void clear() {
-        skills.clear();
+        this.skills = Map.of();
     }
 }

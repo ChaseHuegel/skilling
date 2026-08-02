@@ -1,6 +1,6 @@
 package io.github.chasehuegel.skilling.engine.registry;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  */
 public final class TriggerRegistry {
 
-    private final Map<String, Supplier<Object>> registry = new HashMap<>();
+    private final Map<String, Supplier<Object>> registry = new ConcurrentHashMap<>();
 
     /**
      * Registers a trigger class under the given key.

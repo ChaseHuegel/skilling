@@ -1,7 +1,7 @@
 package io.github.chasehuegel.skilling.engine.registry;
 
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 /**
@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public final class EvaluatorRegistry {
 
-    private final Map<String, Object> registry = new HashMap<>();
+    private final Map<String, Object> registry = new ConcurrentHashMap<>();
 
     /**
      * Registers an evaluator under the given key, either a {@link ParameterEvaluator}
