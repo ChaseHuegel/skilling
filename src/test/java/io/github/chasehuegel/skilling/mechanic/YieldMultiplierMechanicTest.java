@@ -34,14 +34,14 @@ class YieldMultiplierMechanicTest {
     void returnsFalseWithChanceZero() {
         var mechanic = new YieldMultiplierMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test
     void successSuppressesVanillaDropsAndSpawnsDoubledSet() {
         var mechanic = new YieldMultiplierMechanic();
         var player = BukkitMock.mockPlayer();
-        var event = BukkitMock.mockBlockBreakEvent(player);
+        var event = BukkitMock.mockBlockBreakEvent();
         var block = mock(Block.class);
         when(event.getBlock()).thenReturn(block);
 
@@ -66,7 +66,7 @@ class YieldMultiplierMechanicTest {
     void chanceZeroLeavesVanillaDropsUntouched() {
         var mechanic = new YieldMultiplierMechanic();
         var player = BukkitMock.mockPlayer();
-        var event = BukkitMock.mockBlockBreakEvent(player);
+        var event = BukkitMock.mockBlockBreakEvent();
 
         assertFalse(mechanic.execute(player, Map.of("yield_chance", 0.0), event));
         verify(event, never()).setDropItems(false);

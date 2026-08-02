@@ -17,7 +17,7 @@ class SetCooldownMechanicTest {
     void resolvesNamespacedShieldMaterial() {
         var player = BukkitMock.mockPlayer();
         assertTrue(mechanic.execute(player, Map.of("material", "minecraft:shield", "ticks", 40.0),
-                BukkitMock.mockBlockBreakEvent(player)));
+                BukkitMock.mockBlockBreakEvent()));
         verify(player).setCooldown(Material.SHIELD, 40);
     }
 
@@ -26,19 +26,19 @@ class SetCooldownMechanicTest {
         var player = BukkitMock.mockPlayer();
         assertThrows(IllegalArgumentException.class,
                 () -> mechanic.execute(player, Map.of("material", "minecraft:not_a_real_material", "ticks", 40.0),
-                        BukkitMock.mockBlockBreakEvent(player)));
+                        BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test
     void returnsFalseWithoutMaterialParam() {
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("ticks", 40.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("ticks", 40.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test
     void returnsFalseWithNonPositiveTicks() {
         var player = BukkitMock.mockPlayer();
         assertFalse(mechanic.execute(player, Map.of("material", "minecraft:shield", "ticks", 0.0),
-                BukkitMock.mockBlockBreakEvent(player)));
+                BukkitMock.mockBlockBreakEvent()));
     }
 }

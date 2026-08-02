@@ -17,7 +17,7 @@ class ThornsDamageMechanicTest {
     void returnsFalseForNonDamageEvent() {
         var mechanic = new ThornsDamageMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

@@ -16,7 +16,7 @@ class ProjectileMechanicTest {
     void returnsFalseForNonInteractEvent() {
         var mechanic = new ProjectileMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

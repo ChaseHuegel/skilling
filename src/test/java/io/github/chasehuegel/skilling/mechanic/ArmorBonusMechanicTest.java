@@ -13,6 +13,6 @@ class ArmorBonusMechanicTest {
     void returnsFalseWithAmountZero() {
         var mechanic = new ArmorBonusMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent()));
     }
 }

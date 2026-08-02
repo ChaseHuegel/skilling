@@ -17,7 +17,7 @@ class TeleportMechanicTest {
     void returnsFalseForNonInteractEvent() {
         var mechanic = new TeleportMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("range", 10.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("range", 10.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

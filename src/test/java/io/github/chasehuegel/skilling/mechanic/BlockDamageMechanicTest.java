@@ -16,7 +16,7 @@ class BlockDamageMechanicTest {
     void returnsFalseForNonDamageEvent() {
         var mechanic = new BlockDamageMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("chance", 100.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("chance", 100.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

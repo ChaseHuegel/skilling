@@ -15,7 +15,7 @@ class ModifyBrewTimeMechanicTest {
     void returnsFalseForNonBrewEvent() {
         var mechanic = new ModifyBrewTimeMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("multiplier", 2.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 2.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

@@ -14,6 +14,6 @@ class ModifyAttributeMechanicTest {
         var mechanic = new ModifyAttributeMechanic();
         var player = BukkitMock.mockPlayer();
         assertThrows(IllegalArgumentException.class,
-                () -> mechanic.execute(player, Map.of("attribute", ""), BukkitMock.mockBlockBreakEvent(player)));
+                () -> mechanic.execute(player, Map.of("attribute", ""), BukkitMock.mockBlockBreakEvent()));
     }
 }

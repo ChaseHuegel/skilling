@@ -50,7 +50,7 @@ class AutoSmeltMechanicTest {
     void returnsFalseWithChanceZero() {
         var mechanic = new AutoSmeltMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

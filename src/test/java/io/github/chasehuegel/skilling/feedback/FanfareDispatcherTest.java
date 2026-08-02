@@ -39,24 +39,28 @@ class FanfareDispatcherTest {
     void dispatchParticlesWithNullDoesNothing() {
         var player = mock(Player.class);
         FanfareDispatcher.dispatchParticles(player, null, null);
+        verifyNoInteractions(player);
     }
 
     @Test
     void dispatchParticlesWithEmptyListDoesNothing() {
         var player = mock(Player.class);
         FanfareDispatcher.dispatchParticles(player, null, List.of());
+        verifyNoInteractions(player);
     }
 
     @Test
     void dispatchSoundsWithNullDoesNothing() {
         var player = mock(Player.class);
         FanfareDispatcher.dispatchSounds(player, null, null);
+        verifyNoInteractions(player);
     }
 
     @Test
     void dispatchSoundsWithEmptyListDoesNothing() {
         var player = mock(Player.class);
         FanfareDispatcher.dispatchSounds(player, null, List.of());
+        verifyNoInteractions(player);
     }
 
     // dispatchSounds with a valid sound config cannot be tested without a live

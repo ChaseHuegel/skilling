@@ -13,15 +13,15 @@
 
 ## Implementation Requirements
 
-- [ ] Fix `FeedbackDebouncerTest.clearRemovesPlayerState` (`FeedbackDebouncerTest.java:43-54`) — it never calls `clear()`; implement the clear-path assertion (and see ISSUE-141)
-- [ ] De-duplicate the byte-identical bulk tests in `SkillEventListenerBulkScalarTest.java:63-79` into a parameterized test
-- [ ] Remove `RequirementEngineTest.java:34-50` duplicate assertions already covered by `RequirementResultTest`
-- [ ] Fix guard-only mechanic tests so core behavior is verified (e.g. `ModifyDamageMechanicTest` asserts `execute` returns true but never verifies the damage was modified; add `verify(event).setDamage(...)` or equivalent)
-- [ ] Remove or convert the assert-nothing `FanfareDispatcherTest` smoke tests
-- [ ] Remove the ignored `player` parameter in `BukkitMock.mockBlockBreakEvent(Player)` (`BukkitMock.java:54-56`)
-- [ ] Add isolation for tests relying on the static `XpBonusMechanic` multiplier map (see ISSUE-120) so unique-UUID dependence is not the only guard
-- [ ] Fix `SkillYamlValidationTest.skillFiles()` (`SkillYamlValidationTest.java:151-156`) which resolves resources relative to CWD — resolve via classpath instead so it passes from any working directory
-- [ ] `./gradlew build && ./gradlew test` must pass after cleanup
+- [x] Fix `FeedbackDebouncerTest.clearRemovesPlayerState` (`FeedbackDebouncerTest.java:43-54`) — it never calls `clear()`; implement the clear-path assertion (and see ISSUE-141)
+- [x] De-duplicate the byte-identical bulk tests in `SkillEventListenerBulkScalarTest.java:63-79` into a parameterized test
+- [x] Remove `RequirementEngineTest.java:34-50` duplicate assertions already covered by `RequirementResultTest`
+- [x] Fix guard-only mechanic tests so core behavior is verified (e.g. `ModifyDamageMechanicTest` asserts `execute` returns true but never verifies the damage was modified; add `verify(event).setDamage(...)` or equivalent)
+- [x] Remove or convert the assert-nothing `FanfareDispatcherTest` smoke tests
+- [x] Remove the ignored `player` parameter in `BukkitMock.mockBlockBreakEvent(Player)` (`BukkitMock.java:54-56`)
+- [x] Add isolation for tests relying on the static `XpBonusMechanic` multiplier map (see ISSUE-120) so unique-UUID dependence is not the only guard
+- [x] Fix `SkillYamlValidationTest.skillFiles()` (`SkillYamlValidationTest.java:151-156`) which resolves resources relative to CWD — resolve via classpath instead so it passes from any working directory
+- [x] `./gradlew build && ./gradlew test` must pass after cleanup
 
 ## Technical Specifications & Context
 
@@ -46,7 +46,7 @@ Correct each test per the requirements above: parameterize, remove duplicates, a
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass after cleanup
-- [ ] No test is misnamed or asserts nothing
-- [ ] No byte-identical duplicated test bodies remain
-- [ ] `SkillYamlValidationTest` passes from a non-project CWD
+- [x] `./gradlew build && ./gradlew test` pass after cleanup
+- [x] No test is misnamed or asserts nothing
+- [x] No byte-identical duplicated test bodies remain
+- [x] `SkillYamlValidationTest` passes from a non-project CWD

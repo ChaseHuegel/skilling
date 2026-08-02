@@ -11,7 +11,7 @@
 - [x] [ISSUE-166](ISSUE-166.md) - Remove dead stores/components and split the `AbilitiesSection` monolith
 - [x] [ISSUE-167](ISSUE-167.md) - Standardize all lore/description rendering on the escaping helper (no raw `v-html`)
 - [x] [ISSUE-168](ISSUE-168.md) - Add unit-test coverage for critical untested code paths
-- [ ] [ISSUE-169](ISSUE-169.md) - Clean up test-quality issues (misnamed, no-op, duplicated, and guard-only tests)
+- [x] [ISSUE-169](ISSUE-169.md) - Clean up test-quality issues (misnamed, no-op, duplicated, and guard-only tests)
 - [ ] [ISSUE-176](ISSUE-176.md) - Add "bury bones" as a `player_interact` XP source and ability for the `piety` skill
 
 ### Research

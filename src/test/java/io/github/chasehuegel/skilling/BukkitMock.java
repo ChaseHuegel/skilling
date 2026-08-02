@@ -51,7 +51,7 @@ public final class BukkitMock {
         return event;
     }
 
-    public static BlockBreakEvent mockBlockBreakEvent(Player player) {
+    public static BlockBreakEvent mockBlockBreakEvent() {
         return mock(BlockBreakEvent.class);
     }
 

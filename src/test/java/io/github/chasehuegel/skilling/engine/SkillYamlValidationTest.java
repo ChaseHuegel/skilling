@@ -144,10 +144,19 @@ class SkillYamlValidationTest {
     }
 
     private List<File> skillFiles() {
-        File dir = new File("src/main/resources/skills");
-        File[] files = dir.listFiles((d, name) -> name.endsWith(".yml"));
-        assertNotNull(files, "skills directory not found at src/main/resources/skills");
-        return List.of(files);
+        // Resolve via the classpath so the sweep passes regardless of the
+        // process working directory.
+        java.net.URL url = getClass().getClassLoader().getResource("skills");
+        assertNotNull(url, "skills resources not found on the classpath");
+        try {
+            File dir = new File(url.toURI());
+            File[] files = dir.listFiles((d, name) -> name.endsWith(".yml"));
+            assertNotNull(files, "skills directory not found at " + dir);
+            return List.of(files);
+        } catch (java.net.URISyntaxException e) {
+            fail("Invalid skills resource URI: " + url, e);
+            return List.of();
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -13,7 +13,7 @@ class CrowdControlMechanicTest {
     void returnsFalseForNonDamageEvent() {
         var mechanic = new CrowdControlMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("effect", "speed"), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("effect", "speed"), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

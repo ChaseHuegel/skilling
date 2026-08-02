@@ -16,7 +16,7 @@ class ApplyStatusMechanicTest {
     void returnsFalseForNonDamageEvent() {
         var mechanic = new ApplyStatusMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("effect", "speed"), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("effect", "speed"), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

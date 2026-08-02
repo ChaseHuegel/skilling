@@ -52,24 +52,6 @@ class RequirementEngineTest {
 
 
     @Test
-    void passedResultObjectStructure() {
-        var result = RequirementResult.PASSED;
-        assertTrue(result.success());
-        assertNull(result.failureReason());
-    }
-
-    @Test
-    void failedResultContainsReasonAndPlaceholders() {
-        var result = RequirementResult.failed(
-                FailureReason.COOLDOWN,
-                Map.of("time", "3.5")
-        );
-        assertFalse(result.success());
-        assertEquals(FailureReason.COOLDOWN, result.failureReason());
-        assertEquals("3.5", result.placeholders().get("time"));
-    }
-
-    @Test
     void itemRequirementRecord() {
         var itemReq = new SkillDefinition.ItemRequirement(
                 "cost", "minecraft:coal", "MAIN_HAND", 1, 0.0

@@ -14,7 +14,7 @@ class SaturationInjectMechanicTest {
     void returnsFalseForNonConsumeEvent() {
         var mechanic = new SaturationInjectMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("saturation", 5.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("saturation", 5.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test

@@ -15,7 +15,7 @@ class ModifyDamageMechanicTest {
     void returnsFalseForNonDamageEvent() {
         var mechanic = new ModifyDamageMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("multiplier", 2.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 2.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test
@@ -31,5 +31,7 @@ class ModifyDamageMechanicTest {
         var player = BukkitMock.mockPlayer();
         var event = BukkitMock.mockDamageEvent(player, 10.0);
         assertTrue(mechanic.execute(player, Map.of("multiplier", 2.0), event));
+        // The mechanic must actually scale the incoming damage, not just return true.
+        verify(event).setDamage(20.0);
     }
 }

@@ -13,13 +13,13 @@ class KnockbackResistMechanicTest {
     void returnsFalseWithAmountZero() {
         var mechanic = new KnockbackResistMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("amount", 0.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("amount", 0.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test
     void returnsFalseWithNegativeAmount() {
         var mechanic = new KnockbackResistMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("amount", -1.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("amount", -1.0), BukkitMock.mockBlockBreakEvent()));
     }
 }

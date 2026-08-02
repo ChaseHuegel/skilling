@@ -8,7 +8,10 @@ import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.UUID;
 
@@ -105,35 +108,22 @@ class SkillEventListenerBulkScalarTest {
         assertEquals(0, SkillEventListener.resolveEventBulkScalar(event));
     }
 
-    @Test
-    void collectXpBulkOfThreeWithRewardTwoGrantsSix() {
-        var player = BukkitMock.mockPlayer();
-        UUID uuid = player.getUniqueId();
-        assertEquals(6, SkillEventListener.computeXpGain(2, 3, 1.0, uuid));
+    @BeforeEach
+    void clearXpBonusState() {
+        // The static multiplier map must not leak between tests; a fresh player
+        // UUID is not the only guard.
+        XpBonusMechanic.clearAll();
     }
 
-    @Test
-    void consumeItemGrantsPerActionRewardNotStackScaled() {
+    @ParameterizedTest
+    @CsvSource({
+            "6, 2, 3, 1.0",
+            "2, 2, 1, 1.0",
+            "9, 2, 3, 1.5",
+    })
+    void computeXpGainScalesRewardByScalarAndGlobal(long expected, double reward, double scalar, double global) {
         var player = BukkitMock.mockPlayer();
-        assertEquals(2, SkillEventListener.computeXpGain(2, 1, 1.0, player.getUniqueId()));
-    }
-
-    @Test
-    void furnaceExtractThreeXpWithRewardTwoGrantsSix() {
-        var player = BukkitMock.mockPlayer();
-        assertEquals(6, SkillEventListener.computeXpGain(2, 3, 1.0, player.getUniqueId()));
-    }
-
-    @Test
-    void nonBulkRewardGrantsFlatConfiguredAmount() {
-        var player = BukkitMock.mockPlayer();
-        assertEquals(2, SkillEventListener.computeXpGain(2, 1, 1.0, player.getUniqueId()));
-    }
-
-    @Test
-    void globalModifierScalesBulkReward() {
-        var player = BukkitMock.mockPlayer();
-        assertEquals(9, SkillEventListener.computeXpGain(2, 3, 1.5, player.getUniqueId()));
+        assertEquals(expected, SkillEventListener.computeXpGain(reward, scalar, global, player.getUniqueId()));
     }
 
     @Test

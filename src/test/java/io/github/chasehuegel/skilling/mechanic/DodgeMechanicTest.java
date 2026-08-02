@@ -16,7 +16,7 @@ class DodgeMechanicTest {
     void returnsFalseForNonDamageEvent() {
         var mechanic = new DodgeMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("chance", 100.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("chance", 100.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test
@@ -42,5 +42,7 @@ class DodgeMechanicTest {
         var player = BukkitMock.mockPlayer();
         var event = BukkitMock.mockDamageEvent(player, 10.0);
         assertTrue(mechanic.execute(player, Map.of("chance", 100.0), event));
+        // The dodge must actually negate the damage, not just return true.
+        verify(event).setCancelled(true);
     }
 }

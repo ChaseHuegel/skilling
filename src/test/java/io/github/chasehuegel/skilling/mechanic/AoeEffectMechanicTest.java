@@ -14,7 +14,7 @@ class AoeEffectMechanicTest {
         var mechanic = new AoeEffectMechanic();
         var player = BukkitMock.mockPlayer();
         assertThrows(IllegalArgumentException.class,
-                () -> mechanic.execute(player, Map.of("effect", ""), BukkitMock.mockBlockBreakEvent(player)));
+                () -> mechanic.execute(player, Map.of("effect", ""), BukkitMock.mockBlockBreakEvent()));
     }
 
 }

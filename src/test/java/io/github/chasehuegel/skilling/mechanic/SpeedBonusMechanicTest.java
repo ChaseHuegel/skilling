@@ -13,13 +13,13 @@ class SpeedBonusMechanicTest {
     void returnsFalseWithMultiplierZero() {
         var mechanic = new SpeedBonusMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("multiplier", 0.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 0.0), BukkitMock.mockBlockBreakEvent()));
     }
 
     @Test
     void returnsFalseWithNegativeMultiplier() {
         var mechanic = new SpeedBonusMechanic();
         var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("multiplier", -1.0), BukkitMock.mockBlockBreakEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("multiplier", -1.0), BukkitMock.mockBlockBreakEvent()));
     }
 }
