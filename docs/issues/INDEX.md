@@ -6,7 +6,7 @@
 - [x] [ISSUE-154](ISSUE-154.md) - Redact the web password from API responses and make web credential/port changes take effect
 - [x] [ISSUE-155](ISSUE-155.md) - Harden web authentication (defaults, rate limiting, constant-time compare)
 - [x] [ISSUE-111](ISSUE-111.md) - Fix `markSaved()` lost-update race that silently drops player XP
-- [ ] [ISSUE-112](ISSUE-112.md) - Make profile load/unload atomic on player reconnect to prevent XP loss
+- [x] [ISSUE-112](ISSUE-112.md) - Make profile load/unload atomic on player reconnect to prevent XP loss
 - [ ] [ISSUE-143](ISSUE-143.md) - Consume `fanfare_pending` on profile load so offline admin XP/level changes get fanfare
 - [ ] [ISSUE-145](ISSUE-145.md) - Move all SQLite flushes/writes off the Bukkit main thread
 - [ ] [ISSUE-146](ISSUE-146.md) - Invalidate the page-inventory cache on every XP/level mutation path

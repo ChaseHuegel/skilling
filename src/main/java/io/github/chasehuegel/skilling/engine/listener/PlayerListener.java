@@ -48,10 +48,13 @@ public final class PlayerListener implements Listener {
                 if (profile.isDirty()) {
                     asyncBatchWorker.flushDirtyProfiles();
                 }
-                profileManager.unloadProfile(player.getUniqueId());
+                // Only remove the exact instance that was unloaded; if the player
+                // reconnected and a newer profile was installed meanwhile, it must
+                // not be evicted by this completion handler.
+                profileManager.unloadProfile(player.getUniqueId(), profile);
             });
-        } else {
-            profileManager.unloadProfile(player.getUniqueId());
+        } else if (profile != null) {
+            profileManager.unloadProfile(player.getUniqueId(), profile);
         }
     }
 }

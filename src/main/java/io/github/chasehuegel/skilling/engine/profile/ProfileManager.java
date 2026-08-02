@@ -36,6 +36,10 @@ public final class ProfileManager {
     /**
      * Asynchronously loads a player's profile from the database.
      *
+     * <p>The hydrated profile is installed only when no newer dirty in-memory
+     * profile exists; a dirty profile holds mutations that the DB snapshot does
+     * not contain, so replacing it would lose XP.
+     *
      * @param playerUuid the player's UUID
      * @return a future that completes with the loaded profile
      */
@@ -44,7 +48,8 @@ public final class ProfileManager {
             PlayerProfile profile = new PlayerProfile(playerUuid);
 
             if (!databaseManager.isInitialized()) {
-                profiles.put(playerUuid, profile);
+                profile.markInitialized();
+                installHydrated(playerUuid, profile);
                 return profile;
             }
 
@@ -64,9 +69,19 @@ public final class ProfileManager {
             }
 
             loadPreferences(profile, playerUuid);
+            profile.markInitialized();
 
-            profiles.put(playerUuid, profile);
+            installHydrated(playerUuid, profile);
             return profile;
+        });
+    }
+
+    private void installHydrated(UUID playerUuid, PlayerProfile hydrated) {
+        profiles.compute(playerUuid, (uuid, existing) -> {
+            if (existing != null && existing.isDirty()) {
+                return existing;
+            }
+            return hydrated;
         });
     }
 
@@ -85,8 +100,13 @@ public final class ProfileManager {
      * if one does not already exist.
      *
      * <p>This is a synchronous operation intended for use during gameplay where an
-     * existing profile is expected. Profiles are normally loaded asynchronously
-     * during login via {@link #loadProfile}.
+     * existing profile is expected. Profiles are normally loaded and marked
+     * initialized asynchronously during login via {@link #loadProfile}, which is
+     * awaited before the player joins, so the empty fallback is only returned for a
+     * player whose cached profile is unexpectedly absent. The fallback is left
+     * uninitialized so callers can distinguish it from hydrated data; any hydration
+     * that later lands is installed by {@link #installHydrated}, which never
+     * clobbers mutations made after this call.
      *
      * @param player the player
      * @return the existing or newly created profile
@@ -102,6 +122,19 @@ public final class ProfileManager {
      */
     public void unloadProfile(UUID playerUuid) {
         profiles.remove(playerUuid);
+    }
+
+    /**
+     * Removes a player's profile from the cache only if the cached entry is the
+     * given instance. Prevents an in-flight quit flush from evicting a newer
+     * profile installed by a reconnect.
+     *
+     * @param playerUuid the player's UUID
+     * @param instance   the profile instance that was unloaded
+     * @return true if the entry was removed
+     */
+    public boolean unloadProfile(UUID playerUuid, PlayerProfile instance) {
+        return profiles.remove(playerUuid, instance);
     }
 
     /**
