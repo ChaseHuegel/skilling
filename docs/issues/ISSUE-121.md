@@ -1,6 +1,6 @@
 # ISSUE-121: Run damage-cancelling mechanics at an early priority instead of MONITOR
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (dodge/block/cancel damage easily defeated and processed too late)
 
@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Register the `entity_damage_taken` dispatch handlers at an early priority (LOWEST/HIGHEST) **without** `ignoreCancelled=true`
-- [ ] Verify `DodgeMechanic`, `BlockDamageMechanic`, and `CancelDamageMechanic` still cancel the `EntityDamageEvent` and that cancellation is respected by the new handler ordering
-- [ ] Fix the class Javadoc (`BaseDamageCancelMechanic.java:54-58`) which incorrectly claims handlers run at HIGHEST
-- [ ] Ensure the firework/projectile handlers that legitimately run at HIGHEST are unaffected
-- [ ] Add tests verifying a dodge roll at LOWEST cancels before other plugins observe the damage
+- [x] Register the `entity_damage_taken` dispatch handlers at an early priority (LOWEST/HIGHEST) **without** `ignoreCancelled=true`
+- [x] Verify `DodgeMechanic`, `BlockDamageMechanic`, and `CancelDamageMechanic` still cancel the `EntityDamageEvent` and that cancellation is respected by the new handler ordering
+- [x] Fix the class Javadoc (`BaseDamageCancelMechanic.java:54-58`) which incorrectly claims handlers run at HIGHEST
+- [x] Ensure the firework/projectile handlers that legitimately run at HIGHEST are unaffected
+- [x] Add tests verifying a dodge roll at LOWEST cancels before other plugins observe the damage
 
 ## Technical Specifications & Context
 
@@ -37,7 +37,7 @@ Move the damage-related dispatch handlers to an early priority (LOWEST) without 
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass
-- [ ] Unit test: a dodge that cancels the event does so before lower-priority handlers run
-- [ ] Unit test: a previously-cancelled damage event does not dispatch dodge abilities
-- [ ] Class Javadoc matches the actual handler priority
+- [x] `./gradlew build && ./gradlew test` pass
+- [x] Unit test: a dodge that cancels the event does so before lower-priority handlers run
+- [x] Unit test: a previously-cancelled damage event does not dispatch dodge abilities
+- [x] Class Javadoc matches the actual handler priority

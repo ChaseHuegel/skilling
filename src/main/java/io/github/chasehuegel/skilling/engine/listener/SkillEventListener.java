@@ -53,8 +53,11 @@ import java.util.logging.Level;
  * through the Skilling engine for XP granting and ability execution.
  *
  * <p>Each event handler maps to a trigger key used in YAML skill definitions.
- * Handlers are registered at {@code MONITOR} priority as read-only observers
- * (except for mechanic-required handlers at {@code HIGHEST}).
+ * Handlers are registered at {@code MONITOR} priority as read-only observers,
+ * except mechanic-required handlers: the {@code entity_damage_taken} dispatch runs
+ * at {@code LOWEST} (without {@code ignoreCancelled}) so dodge/block/cancel
+ * abilities negate damage before other plugins, and the firework/projectile
+ * handlers run at {@code HIGHEST}.
  */
 public final class SkillEventListener implements Listener {
 
@@ -147,10 +150,21 @@ public final class SkillEventListener implements Listener {
      * Handles {@link EntityDamageEvent} and routes it as an {@code entity_damage_taken} trigger
      * when the damaged entity is a player.
      *
+     * <p>Runs at {@code LOWEST} without {@code ignoreCancelled} so dodge/block/cancel
+     * abilities negate the damage before other plugins act on it.
+     *
      * @param event the entity damage event
      */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityDamageTaken(EntityDamageEvent event) {
+        // An even earlier handler already negated the damage; do not dispatch.
+        if (event.isCancelled()) return;
+        // Visual-only Skilling fireworks carry no real damage; skip abilities.
+        if (event instanceof EntityDamageByEntityEvent byEntity
+                && byEntity.getDamager() instanceof org.bukkit.entity.Firework firework
+                && firework.getPersistentDataContainer().has(Skilling.FIREWORK_KEY, PersistentDataType.BOOLEAN)) {
+            return;
+        }
         if (event.getEntity() instanceof Player player) {
             dispatch(player, event, "entity_damage_taken");
         }
