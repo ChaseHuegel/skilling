@@ -82,6 +82,7 @@ public final class Skilling extends JavaPlugin {
     private SkillEventListener skillEventListener;
     private WebServer webServer;
     private IntegrationManager integrationManager;
+    private SkillsGuideBook skillsGuideBook;
     private volatile boolean reloading;
     private volatile boolean debugLogging;
     private volatile int titleStayDuration;
@@ -190,8 +191,8 @@ public final class Skilling extends JavaPlugin {
         this.skillMenuBuilder = new SkillMenuBuilder(skillManager, guiLayoutConfig);
 
         // Skills Guide Book
-        var skillsGuideBook = new SkillsGuideBook(this, profileManager, skillMenuBuilder);
-        skillsGuideBook.register();
+        this.skillsGuideBook = new SkillsGuideBook(this, profileManager, skillMenuBuilder);
+        this.skillsGuideBook.register();
 
         // Feedback systems
         int debounceMs = config.getInt(CONFIG_DEBOUNCER_INTERVAL_MS, 500);
@@ -624,6 +625,18 @@ public final class Skilling extends JavaPlugin {
         this.titleStayDuration = config.getInt(CONFIG_TITLES_STAY_DURATION, 5000);
         this.globalXpModifier = config.getDouble(CONFIG_GLOBAL_XP_MODIFIER, 1.0);
         this.cropGrowRadius = config.getInt(CONFIG_CROP_GROW_RADIUS, 10);
+        // Refresh subsystems whose settings are otherwise fixed at construction so
+        // /skills set and web config edits actually take effect at runtime.
+        if (bossBarPool != null) {
+            bossBarPool.setMaxActive(config.getInt(CONFIG_BOSSBAR_MAX_ACTIVE, 2));
+            bossBarPool.setFadeTicks(config.getInt(CONFIG_BOSSBAR_FADE_TICKS, 40));
+        }
+        if (feedbackDebouncer != null) {
+            feedbackDebouncer.setIntervalMs(config.getLong(CONFIG_DEBOUNCER_INTERVAL_MS, 500));
+        }
+        if (skillsGuideBook != null) {
+            skillsGuideBook.setEnabled(config.getBoolean("skills_guide_book.enabled", true));
+        }
     }
 
     private static final String WEB_PASSWORD_CHARS =

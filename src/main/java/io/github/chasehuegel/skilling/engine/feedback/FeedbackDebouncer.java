@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class FeedbackDebouncer {
 
-    private final long intervalMs;
+    private volatile long intervalMs;
     private final Map<UUID, Map<String, Long>> lastFeedback;
 
     /**
@@ -27,6 +27,15 @@ public final class FeedbackDebouncer {
     public FeedbackDebouncer(long intervalMs) {
         this.intervalMs = intervalMs;
         this.lastFeedback = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * Updates the debounce interval at runtime (from config).
+     *
+     * @param intervalMs minimum interval in milliseconds
+     */
+    public void setIntervalMs(long intervalMs) {
+        this.intervalMs = intervalMs;
     }
 
     /**

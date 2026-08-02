@@ -172,4 +172,18 @@ class BossBarPoolTest {
         pool.removeAll(player);
         assertEquals(0, pool.size());
     }
+
+    @Test
+    void setMaxActiveUpdatesPerPlayerCapAtRuntime() {
+        var pool = new BossBarPool(2, 20);
+        pool.getOrCreate(player, "a");
+        pool.getOrCreate(player, "b");
+        assertEquals(2, pool.size());
+
+        pool.setMaxActive(5);
+        pool.getOrCreate(player, "c");
+        pool.getOrCreate(player, "d");
+        pool.getOrCreate(player, "e");
+        assertEquals(5, pool.size(), "raising the cap at runtime must allow more bars per player");
+    }
 }

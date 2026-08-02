@@ -33,7 +33,8 @@ public final class SkillsGuideBook implements Listener {
     private final Skilling plugin;
     private final ProfileManager profileManager;
     private final SkillMenuBuilder skillMenuBuilder;
-    private final boolean enabled;
+    private volatile boolean enabled;
+    private boolean registered;
 
     public SkillsGuideBook(Skilling plugin, ProfileManager profileManager, SkillMenuBuilder skillMenuBuilder) {
         this.plugin = plugin;
@@ -42,7 +43,22 @@ public final class SkillsGuideBook implements Listener {
         this.enabled = plugin.getConfig().getBoolean("skills_guide_book.enabled", true);
     }
 
+    /**
+     * Updates the enabled flag at runtime (from config). When enabling a book that
+     * was disabled at startup, the recipe and listener are registered on first use.
+     *
+     * @param enabled whether the guide book should be active
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        if (enabled && !registered) {
+            registered = true;
+            register();
+        }
+    }
+
     public void register() {
+        registered = true;
         if (!enabled) return;
         registerRecipe();
         Bukkit.getPluginManager().registerEvents(this, plugin);

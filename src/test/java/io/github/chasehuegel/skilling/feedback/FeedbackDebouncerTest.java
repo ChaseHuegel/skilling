@@ -63,4 +63,17 @@ class FeedbackDebouncerTest {
         assertTrue(debouncer.tryDebounce(uuid, "test"));
         assertTrue(debouncer.tryDebounce(uuid, "test"));
     }
+
+    @Test
+    void setIntervalMsAppliesAtRuntime() {
+        var debouncer = new FeedbackDebouncer(500);
+        UUID uuid = UUID.randomUUID();
+
+        assertTrue(debouncer.tryDebounce(uuid, "test"));
+        assertFalse(debouncer.tryDebounce(uuid, "test"));
+
+        debouncer.setIntervalMs(0);
+        assertTrue(debouncer.tryDebounce(uuid, "test"),
+                "a runtime interval change must take effect");
+    }
 }

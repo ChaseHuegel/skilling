@@ -1,6 +1,6 @@
 # ISSUE-147: Make `/skills set` configurable keys actually take effect at runtime
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (command reports success but nothing changes)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Either rebuild/refresh `BossBarPool` and `FeedbackDebouncer` settings when the relevant config keys change, or remove those keys from the writable set and report them as read-only
-- [ ] Make `SkillsGuideBook.enabled` respect config changes (currently a `final` captured at construction)
-- [ ] Ensure `/skills set` and the web `PUT /api/config` (ISSUE-154) behave consistently for these keys
-- [ ] Add a test (or documented behavior) covering: changing a supported key updates the subsystem; unsupported keys are rejected with a clear message
+- [x] Either rebuild/refresh `BossBarPool` and `FeedbackDebouncer` settings when the relevant config keys change, or remove those keys from the writable set and report them as read-only
+- [x] Make `SkillsGuideBook.enabled` respect config changes (currently a `final` captured at construction)
+- [x] Ensure `/skills set` and the web `PUT /api/config` (ISSUE-154) behave consistently for these keys
+- [x] Add a test (or documented behavior) covering: changing a supported key updates the subsystem; unsupported keys are rejected with a clear message
 
 ## Technical Specifications & Context
 
@@ -38,7 +38,7 @@ Make the affected subsystems rebuildable from config (mutable fields or a rebuil
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass
-- [ ] Behavior test: `/skills set bossbar.max_active 5` changes the pool's active limit (or is rejected explicitly)
-- [ ] Behavior test: guide-book enabled flag updates after config change
-- [ ] `/skills set` output never claims success for a no-op change
+- [x] `./gradlew build && ./gradlew test` pass
+- [x] Behavior test: `/skills set bossbar.max_active 5` changes the pool's active limit (or is rejected explicitly)
+- [x] Behavior test: guide-book enabled flag updates after config change
+- [x] `/skills set` output never claims success for a no-op change
