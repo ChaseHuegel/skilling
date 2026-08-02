@@ -16,7 +16,9 @@ Multiplies block drops by a percentage chance on each break.
 
 ### core:chain_break
 
-Breaks connected blocks of the same type up to a limit (vein mining).
+Breaks connected blocks of the same type up to a limit (vein mining). Each
+chained block consumes 1 tool durability; chained blocks are broken without
+re-triggering XP or ability processing (only the originating break awards XP).
 
 **Parameters:**
 

@@ -8,6 +8,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import java.util.*;
 
 public final class ChainBreakMechanic implements SkillMechanic {
@@ -19,6 +21,26 @@ public final class ChainBreakMechanic implements SkillMechanic {
     private static final int[][] DIRECTIONS = {
         {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}
     };
+
+    /**
+     * Whether a block is currently being chain-broken, used by the event pipeline
+     * to skip XP/ability processing for chained blocks (they were already handled
+     * by the originating break).
+     *
+     * @param block the block being broken
+     * @return true if the block is mid-chain-break
+     */
+    public static boolean isChainProcessing(Block block) {
+        return PROCESSING.get().contains(block.getLocation());
+    }
+
+    static void markChainProcessingForTest(Block block) {
+        PROCESSING.get().add(block.getLocation());
+    }
+
+    static void clearChainProcessingForTest() {
+        PROCESSING.remove();
+    }
 
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
@@ -56,6 +78,7 @@ public final class ChainBreakMechanic implements SkillMechanic {
                             if (!chainEvent.isCancelled()) {
                                 neighbor.breakNaturally(player.getInventory().getItemInMainHand());
                                 broken++;
+                                damageTool(player);
                                 if (broken < limit) {
                                     queue.add(neighbor);
                                 }
@@ -74,5 +97,20 @@ public final class ChainBreakMechanic implements SkillMechanic {
         }
 
         return true;
+    }
+
+    /**
+     * Consumes 1 tool durability per chained block. The vanilla break only
+     * deducts durability for the originating block, so the mechanic restores the
+     * intended cost for every additional block it breaks.
+     */
+    private static void damageTool(Player player) {
+        ItemStack tool = player.getInventory().getItemInMainHand();
+        if (tool == null || tool.getType() == Material.AIR) return;
+        if (tool.getItemMeta() instanceof Damageable damageable) {
+            damageable.setDamage(damageable.getDamage() + 1);
+            tool.setItemMeta((org.bukkit.inventory.meta.ItemMeta) damageable);
+            player.getInventory().setItemInMainHand(tool);
+        }
     }
 }

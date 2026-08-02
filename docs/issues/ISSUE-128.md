@@ -1,6 +1,6 @@
 # ISSUE-128: Fix `ChainBreakMechanic` durability cost and pipeline re-dispatch
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (free tool durability + per-block XP/ability re-processing)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Consume tool durability for each chained block (or document the intended free-durability behavior and cap it)
-- [ ] Stop re-dispatching the full event pipeline per chained block; break remaining blocks without re-entering `onBlockBreak` (or scope the re-dispatch so XP/fanfare do not repeat per block)
-- [ ] Keep the existing `CHAINING_PLAYERS` re-entry guard as a safety net
-- [ ] Add unit tests covering: durability consumption per block and single pipeline pass
+- [x] Consume tool durability for each chained block (or document the intended free-durability behavior and cap it)
+- [x] Stop re-dispatching the full event pipeline per chained block; break remaining blocks without re-entering `onBlockBreak` (or scope the re-dispatch so XP/fanfare do not repeat per block)
+- [x] Keep the existing `CHAINING_PLAYERS` re-entry guard as a safety net
+- [x] Add unit tests covering: durability consumption per block and single pipeline pass
 
 ## Technical Specifications & Context
 
@@ -34,7 +34,7 @@ Damage the player's tool per broken block (respecting unbreaking/vanilla durabil
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: tool durability decreases once per chained block
-- [ ] Unit test: a chained break does not grant XP/fanfare per block
-- [ ] Unit test: the `CHAINING_PLAYERS` guard still prevents infinite recursion
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: tool durability decreases once per chained block
+- [x] Unit test: a chained break does not grant XP/fanfare per block
+- [x] Unit test: the `CHAINING_PLAYERS` guard still prevents infinite recursion
