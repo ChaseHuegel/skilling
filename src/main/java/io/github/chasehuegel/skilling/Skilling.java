@@ -312,6 +312,8 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("craft_item", CraftItemTrigger.class);
         trigReg.register("furnace_extract", FurnaceExtractTrigger.class);
         trigReg.register("brew_potion", BrewPotionTrigger.class);
+        trigReg.register("brew_start", BrewStartTrigger.class);
+        trigReg.register("repair", RepairTrigger.class);
         trigReg.register("player_interact", PlayerInteractTrigger.class);
         trigReg.register("consume_item", ConsumeItemTrigger.class);
         trigReg.register("fishing", FishingTrigger.class);

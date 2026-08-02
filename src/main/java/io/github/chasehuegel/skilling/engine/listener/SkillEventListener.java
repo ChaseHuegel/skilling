@@ -206,19 +206,47 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
-     * Handles {@link BrewingStartEvent} and routes it as a {@code brew_potion} trigger
-     * for nearby players. Fires when a new brewing cycle begins, which is the correct
-     * timing for mechanics that modify the current batch.
+     * Handles {@link BrewingStartEvent} and routes it as a {@code brew_start} trigger
+     * for nearby players. Fires when a new brewing cycle begins, the correct timing
+     * for {@code modify_brew_time}.
      *
      * @param event the brewing start event
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBrewPotion(org.bukkit.event.block.BrewingStartEvent event) {
-        var location = event.getBlock().getLocation();
+    public void onBrewStart(org.bukkit.event.block.BrewingStartEvent event) {
+        dispatchToNearby(event, event.getBlock().getLocation(), "brew_start");
+    }
+
+    /**
+     * Handles {@link BrewEvent} and routes it as a {@code brew_potion} trigger for
+     * nearby players. Fires when the brewing stand finishes a batch, the correct
+     * timing for {@code modify_potion_duration}.
+     *
+     * @param event the brew finish event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBrewPotion(org.bukkit.event.inventory.BrewEvent event) {
+        dispatchToNearby(event, event.getContents().getLocation(), "brew_potion");
+    }
+
+    /**
+     * Handles {@link PrepareAnvilEvent} and routes it as a {@code repair} trigger,
+     * so {@code repair_discount} can adjust the anvil cost.
+     *
+     * @param event the prepare anvil event
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPrepareAnvil(org.bukkit.event.inventory.PrepareAnvilEvent event) {
+        if (event.getView().getPlayer() instanceof Player player) {
+            dispatch(player, event, "repair");
+        }
+    }
+
+    private void dispatchToNearby(Event event, org.bukkit.Location location, String triggerKey) {
         if (location.getWorld() != null) {
             var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
             for (Player player : players) {
-                dispatch(player, event, "brew_potion");
+                dispatch(player, event, triggerKey);
             }
         }
     }

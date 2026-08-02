@@ -1,6 +1,6 @@
 # ISSUE-124: Dispatch `BrewEvent` and `PrepareAnvilEvent` so blocked mechanics become reachable
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (two shipped mechanics can never execute)
 
@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Add dispatch handlers for `BrewEvent` (inventory brew finish) and `PrepareAnvilEvent` with appropriate trigger keys
-- [ ] Align the `brew_potion` trigger with the event actually dispatched (currently `BrewingStartEvent` is dispatched but `BrewPotionTrigger` declares `BrewEvent`)
-- [ ] Ensure `ModifyPotionDurationMechanic` (expects `BrewEvent`) and `RepairDiscountMechanic` (expects `PrepareAnvilEvent`) receive the events they require
-- [ ] Keep `ModifyBrewTimeMechanic` working on `BrewingStartEvent` (may warrant its own trigger key)
-- [ ] Add a unit test verifying each newly-dispatched trigger reaches its mechanic
+- [x] Add dispatch handlers for `BrewEvent` (inventory brew finish) and `PrepareAnvilEvent` with appropriate trigger keys
+- [x] Align the `brew_potion` trigger with the event actually dispatched (currently `BrewingStartEvent` is dispatched but `BrewPotionTrigger` declares `BrewEvent`)
+- [x] Ensure `ModifyPotionDurationMechanic` (expects `BrewEvent`) and `RepairDiscountMechanic` (expects `PrepareAnvilEvent`) receive the events they require
+- [x] Keep `ModifyBrewTimeMechanic` working on `BrewingStartEvent` (may warrant its own trigger key)
+- [x] Add a unit test verifying each newly-dispatched trigger reaches its mechanic
 
 ## Technical Specifications & Context
 
@@ -39,7 +39,7 @@ Add synchronous dispatch handlers for `BrewEvent` (key `brew_potion` or a new `b
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: `BrewEvent` reaches `modify_potion_duration`
-- [ ] Unit test: `PrepareAnvilEvent` reaches `repair_discount`
-- [ ] Trigger registry keys and `docs/users/capabilities.md` are consistent with actual dispatch
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: `BrewEvent` reaches `modify_potion_duration`
+- [x] Unit test: `PrepareAnvilEvent` reaches `repair_discount`
+- [x] Trigger registry keys and `docs/users/capabilities.md` are consistent with actual dispatch

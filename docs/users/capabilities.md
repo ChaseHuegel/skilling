@@ -595,7 +595,8 @@ attribute: { constant: "minecraft:movement_speed" }
 | `entity_kill` | `EntityDeathEvent` | Killing an entity |
 | `craft_item` | `CraftItemEvent` | Crafting an item |
 | `furnace_extract` | `FurnaceExtractEvent` | Extracting from a furnace |
-| `brew_potion` | `BrewEvent` | Brewing potions |
+| `brew_potion` | `BrewEvent` | A brewing stand finishes brewing a batch |
+| `brew_start` | `BrewingStartEvent` | A brewing stand begins a new brewing cycle |
 | `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
 | `fishing` | `PlayerFishEvent` | Fishing |
@@ -610,6 +611,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `shoot_bow` | `EntityShootBowEvent` | Shooting a bow or crossbow |
 | `item_damage` | `PlayerItemDamageEvent` | Item durability loss |
 | `player_shear` | `PlayerShearEntityEvent` | Shearing a sheep or other shearable entity |
+| `repair` | `PrepareAnvilEvent` | Opening an anvil or changing its inputs |
 | `player_tame` | `EntityTameEvent` | Taming a wild animal |
 | `launch_projectile` | `ProjectileLaunchEvent` | Launching a projectile (trident, snowball, etc.) |
 | `resurrect` | `EntityResurrectEvent` | Totem of Undying activation |
