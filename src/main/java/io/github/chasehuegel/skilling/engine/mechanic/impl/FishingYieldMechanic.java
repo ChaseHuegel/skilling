@@ -10,8 +10,10 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Multiplies fishing loot when a player catches a fish or treasure on {@link PlayerFishEvent}.
- * Works by doubling the caught item entity's stack when the player reels in.
+ * Doubles fishing loot with a percentage chance when a player catches a fish or
+ * treasure on {@link PlayerFishEvent}. The net multiplier is applied to the catch:
+ * only the <em>extra</em> amount (original × 1) is dropped as a bonus, so the
+ * player collects exactly 2× the original — never the original plus a full clone.
  *
  * <p><b>YAML key:</b> {@code core:fishing_yield}
  * <p><b>Required parameters:</b> {@code yield_chance} (0-100, percentage chance to double catch)
@@ -29,9 +31,12 @@ public final class FishingYieldMechanic implements SkillMechanic {
         if (!(fishEvent.getCaught() instanceof Item caught)) return false;
         if (ThreadLocalRandom.current().nextDouble(100) >= chance) return false;
 
-        ItemStack stack = caught.getItemStack().clone();
-        stack.setAmount(stack.getAmount() * 2);
-        player.getWorld().dropItemNaturally(caught.getLocation(), stack);
+        ItemStack stack = caught.getItemStack();
+        // Drop only the difference (original × (multiplier − 1) with multiplier 2),
+        // matching FishingLootMechanic, so total collected is exactly 2×, not 3×.
+        ItemStack bonus = stack.clone();
+        bonus.setAmount(stack.getAmount());
+        player.getWorld().dropItemNaturally(caught.getLocation(), bonus);
         return true;
     }
 }

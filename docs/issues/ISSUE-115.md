@@ -1,6 +1,6 @@
 # ISSUE-115: Fix 3× catch duplication in `FishingYieldMechanic`
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (item duplication exploit)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Ensure the mechanic augments/replaces the caught item rather than adding a full extra doubled stack on top of the original
-- [ ] Handle the caught item entity correctly (apply the multiplier to the caught `Item`/inventory result so total is exactly 2×, not 3×)
-- [ ] Keep the existing percentage/multiplier parameters
-- [ ] Add a unit test asserting the total caught amount equals original × multiplier (no leftover original)
+- [x] Ensure the mechanic augments/replaces the caught item rather than adding a full extra doubled stack on top of the original
+- [x] Handle the caught item entity correctly (apply the multiplier to the caught `Item`/inventory result so total is exactly 2×, not 3×)
+- [x] Keep the existing percentage/multiplier parameters
+- [x] Add a unit test asserting the total caught amount equals original × multiplier (no leftover original)
 
 ## Technical Specifications & Context
 
@@ -34,6 +34,6 @@ Apply the multiplier to the caught stack in place (or drop only the difference, 
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: a catch of amount N with multiplier 2 results in exactly 2N total (no extra clone)
-- [ ] Unit test: multiplier 1 leaves the catch unchanged
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: a catch of amount N with multiplier 2 results in exactly 2N total (no extra clone)
+- [x] Unit test: multiplier 1 leaves the catch unchanged
