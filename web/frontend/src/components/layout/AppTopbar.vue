@@ -57,6 +57,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 import { api } from '../../api/client';
+import { byColorThenName } from '../../utils/skillSort';
 import MinecraftIcon from '../common/MinecraftIcon.vue';
 
 defineEmits<{ toggleDark: [] }>();
@@ -65,7 +66,7 @@ const skills = ref<any[]>([]);
 
 onMounted(async () => {
     try {
-        skills.value = await api.skills.list();
+        skills.value = (await api.skills.list()).sort(byColorThenName);
     } catch { /* ignore */ }
 });
 

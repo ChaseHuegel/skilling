@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GuiLayoutPage } from '../pages/GuiLayoutPage';
+import { ensureLoggedIn } from '../pages/shared-login';
 import { takeScreenshot } from '../helpers/debug';
 
 test.describe('GUI Layout Editor', () => {
@@ -74,6 +75,30 @@ test.describe('GUI Layout Editor', () => {
     const paletteNames = await page.locator('.palette-item-name').allTextContents();
 
     expect(paletteNames).toEqual(dashboardNames);
+  });
+
+  test('topbar skills dropdown sorts by color then name, matching the dashboard', async ({ page }) => {
+    // Establish auth through the dashboard (handles the login page if the auth
+    // guard races ahead of session restore)
+    await ensureLoggedIn(page);
+    await page.goto('/#/');
+    const dashboardCards = page.locator('.skill-card');
+    await dashboardCards.first().waitFor({ state: 'visible', timeout: 10000 });
+    const dashboardNames = await dashboardCards.locator('.skill-name').allTextContents();
+    expect(dashboardNames.length).toBeGreaterThanOrEqual(2);
+
+    // Hover the "Skills" nav link to reveal the topbar flyout
+    await page.locator('.nav-dropdown').hover();
+    const dropdownItems = page.locator('.dropdown-item');
+    await dropdownItems.first().waitFor({ state: 'visible', timeout: 10000 });
+    const dropdownTexts = await dropdownItems.allTextContents();
+
+    // Each dropdown item embeds the skill name (plus an icon fallback letter);
+    // walking in order, every dashboard skill must appear in the flyout.
+    expect(dropdownTexts.length).toBe(dashboardNames.length);
+    for (let i = 0; i < dashboardNames.length; i++) {
+      expect(dropdownTexts[i]).toContain(dashboardNames[i]);
+    }
   });
 
   test('layout page screenshot', async ({ page }) => {

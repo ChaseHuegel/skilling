@@ -43,6 +43,7 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue'
 import MinecraftIcon from '../common/MinecraftIcon.vue'
+import { byColorThenName } from '../../utils/skillSort'
 
 export interface PaletteSkill {
   id: string
@@ -62,11 +63,7 @@ const listRef = ref<HTMLElement | null>(null)
 const selectedSkillId = inject('selectedSkillId') as ReturnType<typeof ref<string | null>>
 
 const filteredSkills = computed(() => {
-  const sorted = [...props.skills].sort((a, b) => {
-    const colorCmp = (a.color || '').localeCompare(b.color || '')
-    if (colorCmp !== 0) return colorCmp
-    return (a.displayName || a.id || '').localeCompare(b.displayName || b.id || '')
-  })
+  const sorted = [...props.skills].sort(byColorThenName)
   const q = query.value.toLowerCase().trim()
   if (!q) return sorted
   return sorted.filter(s =>

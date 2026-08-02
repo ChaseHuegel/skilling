@@ -96,6 +96,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { api } from '../api/client';
+import { byColorThenName } from '../utils/skillSort';
 import { useStagingStore } from '../stores/staging';
 import SkillCard from '../components/skills/SkillCard.vue';
 
@@ -131,11 +132,7 @@ const filteredSkills = computed(() => {
             const abilityNames = (s.abilityNames || []).join(' ').toLowerCase();
             return [id, display, triggers, abilityIds, abilityNames].some(f => f.includes(q));
         })
-        .sort((a, b) => {
-            const colorCmp = (a.color || '').localeCompare(b.color || '');
-            if (colorCmp !== 0) return colorCmp;
-            return (a.displayName || a.id || '').localeCompare(b.displayName || b.id || '');
-        });
+        .sort(byColorThenName);
 });
 
 async function fetchSkills() {

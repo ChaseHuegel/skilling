@@ -1,6 +1,6 @@
 # ISSUE-172: Follow-up to ISSUE-110 — sort the actual navigation flyout (topbar dropdown) by color then name
 
-**Status:** Open
+**Status:** Closed
 **Type:** Bug
 **Severity:** Medium (ISSUE-110 was marked done but its goal was never achieved — the wrong component was sorted)
 
@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Sort the `skills` list used by `AppTopbar.vue`'s flyout by color then name (same comparator as the dashboard) before it is rendered
-- [ ] Apply the sort so the dropdown renders sorted regardless of the API's raw response order (sort in `onMounted` after `api.skills.list()`, or expose a sorted computed used by the `v-for`)
-- [ ] Reuse the dashboard comparator (`DashboardPage.vue:134-137`) — preferably extract it into a shared helper since it now exists in three places (DashboardPage, SkillPalette, and here)
-- [ ] Add/replace an E2E assertion that targets the **topbar flyout** (`.dropdown-item` in `AppTopbar.vue`) against the dashboard order — the existing assertion in `gui-layout.spec.ts` tests the layout **palette** (`.palette-item`), not the flyout, so it never caught this
-- [ ] Update ISSUE-110's status note (it was incorrectly marked complete; see below)
+- [x] Sort the `skills` list used by `AppTopbar.vue`'s flyout by color then name (same comparator as the dashboard) before it is rendered
+- [x] Apply the sort so the dropdown renders sorted regardless of the API's raw response order (sort in `onMounted` after `api.skills.list()`, or expose a sorted computed used by the `v-for`)
+- [x] Reuse the dashboard comparator (`DashboardPage.vue:134-137`) — preferably extract it into a shared helper since it now exists in three places (DashboardPage, SkillPalette, and here)
+- [x] Add/replace an E2E assertion that targets the **topbar flyout** (`.dropdown-item` in `AppTopbar.vue`) against the dashboard order — the existing assertion in `gui-layout.spec.ts` tests the layout **palette** (`.palette-item`), not the flyout, so it never caught this
+- [x] Update ISSUE-110's status note (it was incorrectly marked complete; see below)
 
 ## Technical Specifications & Context
 
@@ -37,10 +37,14 @@ ISSUE-110's fix sorted `SkillPalette.vue`'s `filteredSkills` computed, but `Skil
 
 Sort the topbar's `skills` array (in `onMounted`, or via a computed) with the same color-then-name comparator used by the dashboard. Extract the comparator into a shared utility (e.g. `utils/skillSort.ts`) and use it in `DashboardPage.vue`, `SkillPalette.vue`, and `AppTopbar.vue` so the three views can never diverge again. Add an E2E assertion that opens the topbar dropdown and compares `.dropdown-item` order to the dashboard order.
 
+### Resolution
+
+A shared `web/frontend/src/utils/skillSort.ts` now exports `byColorThenName`, and `AppTopbar`, `DashboardPage`, and `SkillPalette` all use it, so the three views can never diverge. `AppTopbar` sorts the `api.skills.list()` result in `onMounted` before rendering the flyout. A new E2E test hovers the "Skills" nav link and asserts the `.dropdown-item` order matches the dashboard's `.skill-card` order (the previous palette-only assertion remains and still passes). ISSUE-110's ticket notes the supersession.
+
 ## Verification & Definition of Done
 
-- [ ] `cd web/frontend && npm run build` passes (type-check)
-- [ ] E2E: a new/updated assertion verifies the **topbar flyout** (`.dropdown-item`) order matches the dashboard order for the seeded skills
-- [ ] The existing `gui-layout.spec.ts` palette assertion still passes (palette behavior unchanged)
-- [ ] Runtime check: hovering the "Skills" nav link shows the flyout ordered by color then name, matching the dashboard
-- [ ] ISSUE-110's index bullet and ticket note the follow-up / corrected status
+- [x] `cd web/frontend && npm run build` passes (type-check)
+- [x] E2E: a new/updated assertion verifies the **topbar flyout** (`.dropdown-item`) order matches the dashboard order for the seeded skills
+- [x] The existing `gui-layout.spec.ts` palette assertion still passes (palette behavior unchanged)
+- [x] Runtime check: hovering the "Skills" nav link shows the flyout ordered by color then name, matching the dashboard (covered by the new E2E test)
+- [x] ISSUE-110's index bullet and ticket note the follow-up / corrected status
