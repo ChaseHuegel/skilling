@@ -74,7 +74,7 @@ All API routes are registered in `WebServer.java` using Javalin 7's `routes` API
 
 #### Conflict Detection
 
-Before applying, `StagingManager.applyAndBackup()` snapshots live file timestamps at staging time. If a live file was modified externally (e.g., FTP) since staging, the reload is rejected with HTTP 409 and a list of conflicting files.
+Before applying, `StagingManager.applyAndBackup()` snapshots live-file content fingerprints (SHA-256, including "absent" for files that did not exist at staging time). If a live file was modified externally (e.g., FTP) or a previously-absent file appeared since staging, the reload is rejected with HTTP 409 and a list of conflicting files. All staging mutations are serialized by an internal lock, writes are atomic (temp + atomic move), and each reload writes a unique backup directory.
 
 ### Minecraft Asset Textures
 

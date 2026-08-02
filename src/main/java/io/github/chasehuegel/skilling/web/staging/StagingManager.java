@@ -2,22 +2,34 @@ package io.github.chasehuegel.skilling.web.staging;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class StagingManager {
 
     private static final Logger LOGGER = Logger.getLogger(StagingManager.class.getName());
+
+    /**
+     * Serializes all staging mutations (edits, status updates, apply, clear) so
+     * concurrent web requests never lose entries or race each other.
+     */
+    private final ReentrantLock lock = new ReentrantLock();
 
     private final File stagingDir;
     private final File skillsDir;
@@ -70,6 +82,7 @@ public final class StagingManager {
     }
 
     public void writeStatus(List<String> stagedFiles) {
+        lock.lock();
         try {
             statusFile().getParentFile().mkdirs();
             var map = new LinkedHashMap<String, Object>();
@@ -77,50 +90,59 @@ public final class StagingManager {
             map.put("fileCount", stagedFiles.size());
             map.put("files", stagedFiles);
             map.put("lastModified", Instant.now().toString());
-            // Snapshot live file timestamps for conflict detection
-            Map<String, Long> timestamps = new LinkedHashMap<>();
+            // Snapshot live file fingerprints (content hashes, including "absent")
+            // so conflict detection catches same-second and new-file edits.
+            Map<String, String> fingerprints = new LinkedHashMap<>();
             for (String f : stagedFiles) {
-                File live = resolveLiveFile(f);
-                if (live.exists()) {
-                    timestamps.put(f, live.lastModified());
-                }
+                fingerprints.put(f, fingerprint(resolveLiveFile(f)));
             }
-            map.put("fileTimestamps", timestamps);
+            map.put("fileFingerprints", fingerprints);
             String json = new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(map);
-            Files.writeString(statusFile().toPath(), json, StandardCharsets.UTF_8);
+            atomicWrite(statusFile(), json);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to write staging status", e);
+        } finally {
+            lock.unlock();
         }
     }
 
     public List<String> checkConflicts() {
-        List<String> conflicts = new ArrayList<>();
-        if (!statusFile().exists()) return conflicts;
+        if (!statusFile().exists()) return List.of();
         try {
             String json = Files.readString(statusFile().toPath(), StandardCharsets.UTF_8);
             var map = new com.google.gson.Gson().fromJson(json, Map.class);
-            Map<String, Double> timestamps = (Map<String, Double>) map.get("fileTimestamps");
-            if (timestamps == null) return conflicts;
-            for (var entry : timestamps.entrySet()) {
-                File live = resolveLiveFile(entry.getKey());
-                if (live.exists() && live.lastModified() > entry.getValue().longValue()) {
-                    conflicts.add(entry.getKey());
+            List<String> conflicts = new ArrayList<>();
+            Object rawFingerprints = map.get("fileFingerprints");
+            if (!(rawFingerprints instanceof Map<?, ?> fingerprints)) return List.of();
+            for (var entry : fingerprints.entrySet()) {
+                String stagedPath = entry.getKey().toString();
+                String snapshot = entry.getValue() == null ? "absent" : entry.getValue().toString();
+                String current = fingerprint(resolveLiveFile(stagedPath));
+                if (!snapshot.equals(current)) {
+                    conflicts.add(stagedPath);
                 }
             }
-        } catch (Exception ignored) {}
-        return conflicts;
+            return conflicts;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to read staging conflicts", e);
+            return List.of();
+        }
     }
 
     public void clear() {
-        if (stagingDir.exists()) {
-            try {
-                Files.walk(stagingDir.toPath())
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to clear staging directory", e);
+        lock.lock();
+        try {
+            if (stagingDir.exists()) {
+                try (var stream = Files.walk(stagingDir.toPath())) {
+                    stream.sorted(Comparator.reverseOrder())
+                            .map(Path::toFile)
+                            .forEach(File::delete);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to clear staging directory", e);
+                }
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -135,9 +157,10 @@ public final class StagingManager {
     }
 
     public void stageSkillDeletion(String skillId) {
-        File markerDir = new File(stagingDir, "deleted_skills");
-        markerDir.mkdirs();
+        lock.lock();
         try {
+            File markerDir = new File(stagingDir, "deleted_skills");
+            markerDir.mkdirs();
             File marker = new File(markerDir, skillId + ".yml.deleted");
             marker.createNewFile();
             updateStatusAdd("deleted_skills/" + skillId + ".yml.deleted");
@@ -147,84 +170,94 @@ public final class StagingManager {
             if (staged.exists()) staged.delete();
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage deletion for skill: " + skillId, e);
+        } finally {
+            lock.unlock();
         }
     }
 
     public List<String> applyAndBackup() {
-        if (!hasPendingChanges()) return List.of();
-
-        // Check for conflicts first
-        List<String> conflicts = checkConflicts();
-        if (!conflicts.isEmpty()) {
-            LOGGER.warning("Conflict detected: live files modified since staging: " + conflicts);
-            return List.of(); // caller can check conflicts separately
-        }
-
-        List<String> applied = new ArrayList<>();
+        lock.lock();
         try {
-            File backupDir = new File(stagingDir, "backup/" + java.time.LocalDateTime.now().toString()
-                .replace(":", "-"));
-            backupDir.mkdirs();
+            if (!hasPendingChanges()) return List.of();
 
-            // Process deletions before applying new files
-            File deletedSkillsDir = new File(stagingDir, "deleted_skills");
-            if (deletedSkillsDir.exists()) {
-                File[] deletionMarkers = deletedSkillsDir.listFiles((d, n) -> n.endsWith(".yml.deleted"));
-                if (deletionMarkers != null) {
-                    for (File marker : deletionMarkers) {
-                        String name = marker.getName();
-                        String skillId = name.substring(0, name.length() - ".yml.deleted".length());
-                        File live = new File(skillsDir, skillId + ".yml");
-                        backupFile(live, backupDir);
-                        if (live.exists() && live.delete()) {
-                            LOGGER.info("Deleted live skill file: " + live.getName());
+            // Re-check conflicts under the lock (closing the TOCTOU window against
+            // other staging mutations before any file is copied into place).
+            List<String> conflicts = checkConflicts();
+            if (!conflicts.isEmpty()) {
+                LOGGER.warning("Conflict detected: live files modified since staging: " + conflicts);
+                return List.of(); // caller can check conflicts separately
+            }
+
+            List<String> applied = new ArrayList<>();
+            try {
+                // Collision-free backup directory so concurrent reloads never
+                // overwrite each other's backups.
+                File backupDir = new File(stagingDir,
+                        "backup/" + System.nanoTime() + "-" + UUID.randomUUID());
+                backupDir.mkdirs();
+
+                // Process deletions before applying new files
+                File deletedSkillsDir = new File(stagingDir, "deleted_skills");
+                if (deletedSkillsDir.exists()) {
+                    File[] deletionMarkers = deletedSkillsDir.listFiles((d, n) -> n.endsWith(".yml.deleted"));
+                    if (deletionMarkers != null) {
+                        for (File marker : deletionMarkers) {
+                            String name = marker.getName();
+                            String skillId = name.substring(0, name.length() - ".yml.deleted".length());
+                            File live = new File(skillsDir, skillId + ".yml");
+                            backupFile(live, backupDir);
+                            if (live.exists() && live.delete()) {
+                                LOGGER.info("Deleted live skill file: " + live.getName());
+                            }
+                            applied.add("deleted_skills/" + skillId + ".yml");
                         }
-                        applied.add("deleted_skills/" + skillId + ".yml");
                     }
                 }
-            }
 
-            // Apply staged skills
-            File stagedSkillsDir = new File(stagingDir, "skills");
-            if (stagedSkillsDir.exists()) {
-                File[] stagedFiles = stagedSkillsDir.listFiles((d, n) -> n.endsWith(".yml"));
-                if (stagedFiles != null) {
-                    for (File f : stagedFiles) {
-                        File live = new File(skillsDir, f.getName());
-                        backupFile(live, backupDir);
-                        Files.copy(f.toPath(), live.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        applied.add("skills/" + f.getName());
+                // Apply staged skills
+                File stagedSkillsDir = new File(stagingDir, "skills");
+                if (stagedSkillsDir.exists()) {
+                    File[] stagedFiles = stagedSkillsDir.listFiles((d, n) -> n.endsWith(".yml"));
+                    if (stagedFiles != null) {
+                        for (File f : stagedFiles) {
+                            File live = new File(skillsDir, f.getName());
+                            backupFile(live, backupDir);
+                            atomicCopy(f, live);
+                            applied.add("skills/" + f.getName());
+                        }
                     }
                 }
-            }
 
-            // Apply staged tags.yml
-            File stagedTags = new File(stagingDir, "tags.yml");
-            if (stagedTags.exists()) {
-                backupFile(tagsFile, backupDir);
-                Files.copy(stagedTags.toPath(), tagsFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                applied.add("tags.yml");
-            }
+                // Apply staged tags.yml
+                File stagedTags = new File(stagingDir, "tags.yml");
+                if (stagedTags.exists()) {
+                    backupFile(tagsFile, backupDir);
+                    atomicCopy(stagedTags, tagsFile);
+                    applied.add("tags.yml");
+                }
 
-            // Apply staged config.yml
-            File stagedConfig = new File(stagingDir, "config.yml");
-            if (stagedConfig.exists()) {
-                backupFile(configFile, backupDir);
-                Files.copy(stagedConfig.toPath(), configFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                applied.add("config.yml");
-            }
+                // Apply staged config.yml
+                File stagedConfig = new File(stagingDir, "config.yml");
+                if (stagedConfig.exists()) {
+                    backupFile(configFile, backupDir);
+                    atomicCopy(stagedConfig, configFile);
+                    applied.add("config.yml");
+                }
 
-            // Apply staged gui.yml
-            File stagedGui = new File(stagingDir, "gui.yml");
-            if (stagedGui.exists()) {
-                backupFile(guiFile, backupDir);
-                Files.copy(stagedGui.toPath(), guiFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                applied.add("gui.yml");
+                // Apply staged gui.yml
+                File stagedGui = new File(stagingDir, "gui.yml");
+                if (stagedGui.exists()) {
+                    backupFile(guiFile, backupDir);
+                    atomicCopy(stagedGui, guiFile);
+                    applied.add("gui.yml");
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to apply staged changes", e);
             }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to apply staged changes", e);
+            return applied;
+        } finally {
+            lock.unlock();
         }
-        return applied;
     }
 
     private static void backupFile(File source, File backupDir) {
@@ -232,67 +265,133 @@ public final class StagingManager {
         try {
             File target = new File(backupDir, source.getName());
             target.getParentFile().mkdirs();
-            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            atomicCopy(source, target);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to backup " + source, e);
         }
     }
 
     public void stageSkillFile(String skillId, String yamlContent) {
+        lock.lock();
         try {
             File f = stagedSkillFile(skillId);
             f.getParentFile().mkdirs();
-            Files.writeString(f.toPath(), yamlContent, StandardCharsets.UTF_8);
+            atomicWrite(f, yamlContent);
             updateStatusAdd("skills/" + skillId + ".yml");
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage skill: " + skillId, e);
+        } finally {
+            lock.unlock();
         }
     }
 
     public void stageTagsFile(String yamlContent) {
+        lock.lock();
         try {
             File f = new File(stagingDir, "tags.yml");
-            f.getParentFile().mkdirs();
-            Files.writeString(f.toPath(), yamlContent, StandardCharsets.UTF_8);
+            atomicWrite(f, yamlContent);
             updateStatusAdd("tags.yml");
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage tags.yml", e);
+        } finally {
+            lock.unlock();
         }
     }
 
     public void stageConfigFile(String yamlContent) {
+        lock.lock();
         try {
             File f = new File(stagingDir, "config.yml");
-            f.getParentFile().mkdirs();
-            Files.writeString(f.toPath(), yamlContent, StandardCharsets.UTF_8);
+            atomicWrite(f, yamlContent);
             updateStatusAdd("config.yml");
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage config.yml", e);
+        } finally {
+            lock.unlock();
         }
     }
 
     public void stageGuiFile(String yamlContent) {
+        lock.lock();
         try {
             File f = new File(stagingDir, "gui.yml");
-            f.getParentFile().mkdirs();
-            Files.writeString(f.toPath(), yamlContent, StandardCharsets.UTF_8);
+            atomicWrite(f, yamlContent);
             updateStatusAdd("gui.yml");
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage gui.yml", e);
+        } finally {
+            lock.unlock();
         }
     }
 
     private void updateStatusAdd(String filePath) {
-        var current = status();
-        List<String> files = new ArrayList<>(current.files());
-        if (!files.contains(filePath)) {
-            files.add(filePath);
+        lock.lock();
+        try {
+            var current = status();
+            List<String> files = new ArrayList<>(current.files());
+            if (!files.contains(filePath)) {
+                files.add(filePath);
+            }
+            writeStatus(files);
+        } finally {
+            lock.unlock();
         }
-        writeStatus(files);
     }
 
     private File statusFile() {
         return new File(stagingDir, "status.json");
+    }
+
+    /**
+     * Writes a file atomically (temp file + atomic move) so a concurrent reload
+     * or status read never observes a truncated/partial file.
+     */
+    private static void atomicWrite(File file, String content) throws IOException {
+        File parent = file.getParentFile();
+        if (parent != null) parent.mkdirs();
+        File tmp = new File(parent, file.getName() + ".tmp-" + UUID.randomUUID());
+        Files.writeString(tmp.toPath(), content, StandardCharsets.UTF_8);
+        atomicMove(tmp, file);
+    }
+
+    /**
+     * Copies a file into place atomically (temp + atomic move) so readers see the
+     * complete old or new file, never a partial copy.
+     */
+    private static void atomicCopy(File source, File target) throws IOException {
+        File parent = target.getParentFile();
+        if (parent != null) parent.mkdirs();
+        File tmp = new File(parent, target.getName() + ".tmp-" + UUID.randomUUID());
+        Files.copy(source.toPath(), tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        atomicMove(tmp, target);
+    }
+
+    private static void atomicMove(File tmp, File target) throws IOException {
+        try {
+            Files.move(tmp.toPath(), target.toPath(),
+                    StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException e) {
+            Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    /**
+     * Content fingerprint of a file, or {@code "absent"} when it does not exist.
+     * Using a content hash (not just mtime) catches same-second edits and new files.
+     */
+    private static String fingerprint(File file) {
+        if (!file.exists() || !file.isFile()) return "absent";
+        try (InputStream in = Files.newInputStream(file.toPath())) {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] buffer = new byte[8192];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                md.update(buffer, 0, n);
+            }
+            return HexFormat.of().formatHex(md.digest());
+        } catch (Exception e) {
+            return "absent";
+        }
     }
 
     public record StagingStatus(

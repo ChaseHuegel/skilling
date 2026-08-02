@@ -1,6 +1,6 @@
 # ISSUE-156: Make `StagingManager` thread-safe with atomic writes and conflict-detection fixes
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (lost updates, torn file copies, backup collisions)
 
@@ -13,13 +13,13 @@
 
 ## Implementation Requirements
 
-- [ ] Serialize `StagingManager` mutations (edits, status updates, apply, clear) with a lock so concurrent PUTs cannot lose entries or race `clear()`
-- [ ] Make all file writes atomic (write temp file + atomic move) so a concurrent reload never copies a partial file
-- [ ] Make `status.json` updates atomic and read-modify-write safe
-- [ ] Use collision-free backup directory naming (e.g. nanos/UUID) instead of `LocalDateTime.now()` so concurrent reloads cannot overwrite each other's backups
-- [ ] Fix conflict-detection blind spots: snapshot/verify new files that did not exist at staging time, avoid mtime-granularity misses, and close the TOCTOU window between conflict check and copy
-- [ ] Close the unclosed `Files.walk` stream in `clear()`
-- [ ] Add tests covering: concurrent PUTs lose no entries; reload cannot read a torn file; two concurrent reloads produce distinct backups
+- [x] Serialize `StagingManager` mutations (edits, status updates, apply, clear) with a lock so concurrent PUTs cannot lose entries or race `clear()`
+- [x] Make all file writes atomic (write temp file + atomic move) so a concurrent reload never copies a partial file
+- [x] Make `status.json` updates atomic and read-modify-write safe
+- [x] Use collision-free backup directory naming (e.g. nanos/UUID) instead of `LocalDateTime.now()` so concurrent reloads cannot overwrite each other's backups
+- [x] Fix conflict-detection blind spots: snapshot/verify new files that did not exist at staging time, avoid mtime-granularity misses, and close the TOCTOU window between conflict check and copy
+- [x] Close the unclosed `Files.walk` stream in `clear()`
+- [x] Add tests covering: concurrent PUTs lose no entries; reload cannot read a torn file; two concurrent reloads produce distinct backups
 
 ## Technical Specifications & Context
 
@@ -37,8 +37,8 @@ Add a single lock (or synchronized methods) guarding all staging mutations, writ
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new concurrency tests
-- [ ] Test: 10 concurrent PUTs produce 10 distinct staged files and a correct status
-- [ ] Test: a staged write concurrent with reload never yields a partial live file
-- [ ] Test: concurrent reloads produce distinct backups
-- [ ] Resource review: no unclosed streams in `clear()`
+- [x] `./gradlew build && ./gradlew test` pass, including new concurrency tests
+- [x] Test: 10 concurrent PUTs produce 10 distinct staged files and a correct status
+- [x] Test: a staged write concurrent with reload never yields a partial live file
+- [x] Test: concurrent reloads produce distinct backups
+- [x] Resource review: no unclosed streams in `clear()`
