@@ -36,7 +36,7 @@ const FALLBACK_TRIGGERS = [
   'craft_item', 'furnace_extract', 'brew_potion', 'player_interact', 'consume_item',
   'fishing', 'crop_grow', 'breed_animals', 'sprint', 'sneak', 'ride_horse',
   'collect_xp', 'level_up', 'enchant_item', 'shoot_bow', 'item_damage',
-  'player_shear', 'player_tame', 'launch_projectile', 'resurrect', 'elytra_glide',
+  'player_shear', 'player_tame', 'launch_projectile', 'projectile_hit', 'resurrect', 'elytra_glide',
 ]
 
 const TRIGGER_SUGGESTIONS = computed(() =>

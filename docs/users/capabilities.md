@@ -630,6 +630,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `repair` | `PrepareAnvilEvent` | Opening an anvil or changing its inputs |
 | `player_tame` | `EntityTameEvent` | Taming a wild animal |
 | `launch_projectile` | `ProjectileLaunchEvent` | Launching a projectile (trident, snowball, etc.) |
+| `projectile_hit` | `ProjectileHitEvent` | A projectile lands on a block or entity (use for impact-time mechanics like `core:projectile_return`) |
 | `resurrect` | `EntityResurrectEvent` | Totem of Undying activation |
 | `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
 

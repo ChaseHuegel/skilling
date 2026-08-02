@@ -374,6 +374,22 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
+     * Routes the {@code projectile_hit} trigger when a projectile (from any
+     * shooter) lands on a block or entity. The mechanic must verify the shooter is
+     * the dispatching player. Runs at MONITOR so it never conflicts with the
+     * HIGHEST {@link #onProjectileHit} handler that applies {@code core:projectile}
+     * damage.
+     *
+     * @param event the projectile hit event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onProjectileHitTrigger(org.bukkit.event.entity.ProjectileHitEvent event) {
+        if (event.getEntity().getShooter() instanceof Player player) {
+            dispatch(player, event, "projectile_hit");
+        }
+    }
+
+    /**
      * Handles {@link EntityResurrectEvent} and routes it as a {@code resurrect} trigger
      * when the resurrected entity is a player.
      *
@@ -730,7 +746,7 @@ public final class SkillEventListener implements Listener {
         return Math.round(xp);
     }
 
-    private Material resolveEventMaterial(Event event) {
+    Material resolveEventMaterial(Event event) {
         if (event instanceof BlockBreakEvent be) return be.getBlock().getType();
         if (event instanceof BlockPlaceEvent pe) return pe.getBlockPlaced().getType();
         if (event instanceof EntityDamageByEntityEvent de) {
@@ -759,6 +775,9 @@ public final class SkillEventListener implements Listener {
         }
         if (event instanceof org.bukkit.event.entity.ProjectileLaunchEvent ple) {
             return projectileToMaterial(ple.getEntity());
+        }
+        if (event instanceof org.bukkit.event.entity.ProjectileHitEvent phe) {
+            return projectileToMaterial(phe.getEntity());
         }
         if (event instanceof org.bukkit.event.player.PlayerInteractEvent ie) {
             // Only a right-click on a block carries a target block to filter on;

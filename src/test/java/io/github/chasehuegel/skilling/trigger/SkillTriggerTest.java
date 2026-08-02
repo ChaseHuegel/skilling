@@ -17,7 +17,9 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.EntityKillTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FishingTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FurnaceExtractTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LevelUpTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.LaunchProjectileTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.PlayerInteractTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.ProjectileHitTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RideHorseTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SneakTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SprintTrigger;
@@ -34,6 +36,8 @@ import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
@@ -84,7 +88,9 @@ class SkillTriggerTest {
                     Arguments.of(new FishingTrigger(), "fishing", PlayerFishEvent.class),
                     Arguments.of(new FurnaceExtractTrigger(), "furnace_extract", FurnaceExtractEvent.class),
                     Arguments.of(new LevelUpTrigger(), "level_up", SkillingLevelUpEvent.class),
+                    Arguments.of(new LaunchProjectileTrigger(), "launch_projectile", ProjectileLaunchEvent.class),
                     Arguments.of(new PlayerInteractTrigger(), "player_interact", PlayerInteractEvent.class),
+                    Arguments.of(new ProjectileHitTrigger(), "projectile_hit", ProjectileHitEvent.class),
                     Arguments.of(new RideHorseTrigger(), "ride_horse", VehicleEnterEvent.class),
                     Arguments.of(new SneakTrigger(), "sneak", PlayerToggleSneakEvent.class),
                     Arguments.of(new SprintTrigger(), "sprint", PlayerToggleSprintEvent.class)

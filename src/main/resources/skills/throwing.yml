@@ -24,9 +24,9 @@ abilities:
   - id: "return_chance"
     display_name: "Return Chance"
     unlock_level: 15
-    trigger: "launch_projectile"
+    trigger: "projectile_hit"
     display: { lore: [ "&a{chance}%&7 chance to recover thrown tridents." ] }
-    mechanics:      # NOTE: projectile_return fires on ProjectileHitEvent, not launch — trigger field should be a separate "projectile_hit" trigger. See Part 3.
+    mechanics:
       - type: "core:projectile_return"
         parameters:
           chance: { linear: { base: 20.0, step: 0.5, max: 75.0 } }
