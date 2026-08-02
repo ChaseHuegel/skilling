@@ -201,7 +201,7 @@ string and are available in both `requirements.state` and filter `state` fields.
 
 ### Constructor Requirements
 
-Both `SkillMechanic` and `SkillTrigger` implementations **must** have a public no-argument constructor. The registries use `Class::newInstance()` to instantiate them at runtime. `ParameterEvaluator` implementations are registered as instances and have no such constraint.
+Both `SkillMechanic` and `SkillTrigger` implementations **must** have a public no-argument constructor. The registries use `Class::newInstance()` to instantiate them at runtime; this is **validated at registration time** (fail-fast), so a class without a public no-arg constructor is rejected the moment you call `register(...)`, not on first use. `ParameterEvaluator` implementations can be registered either as instances (no constructor constraint) or as classes (which must have a public no-arg constructor).
 
 ## Ability Schema: The `trigger` Field
 
@@ -320,10 +320,12 @@ Example: `%skilling_evaluator_mining_geologist_yield_chance%` returns the curren
 
 | Method | Description |
 |---|---|
-| `registerMechanic(String, Class<?>)` | Register a SkillMechanic implementation |
-| `registerTrigger(String, Class<?>)` | Register a SkillTrigger implementation |
-| `registerEvaluator(String, Class<?>)` | Register a ParameterEvaluator implementation by class |
+| `registerMechanic(String, Class<? extends SkillMechanic>)` | Register a SkillMechanic implementation; public no-arg constructor validated at registration |
+| `registerTrigger(String, Class<? extends SkillTrigger>)` | Register a SkillTrigger implementation; public no-arg constructor validated at registration |
+| `registerEvaluator(String, Class<? extends ParameterEvaluator>)` | Register a ParameterEvaluator implementation by class |
 | `registerEvaluator(String, Object)` | Register a ParameterEvaluator instance (deprecated) |
 | `getMechanicRegistry()` | Direct access to mechanic registry |
 | `getTriggerRegistry()` | Direct access to trigger registry |
 | `getEvaluatorRegistry()` | Direct access to evaluator registry |
+
+All registries return **immutable snapshots** from read methods (`keys()`, `getAllParameterNames()`) and **copy** caller-supplied parameter-name lists defensively, so returned collections and later caller mutation can never corrupt registry state. Duplicate keys and classes lacking a public no-arg constructor fail fast with `IllegalArgumentException`.

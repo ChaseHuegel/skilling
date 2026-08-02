@@ -13,12 +13,12 @@
 
 ## Implementation Requirements
 
-- [ ] Type `MechanicRegistry.register(String, Class<? extends SkillMechanic>)` and `create(String)` returns `SkillMechanic` (or a documented wrapper) instead of raw `Class<?>` / `Object`
-- [ ] Type `TriggerRegistry` and `EvaluatorRegistry` similarly (or add typed typed-registry accessors alongside the untyped ones, marked for removal)
-- [ ] Validate at registration that the class has a public no-arg constructor (fail at register, not first use)
-- [ ] Return defensive copies / immutable views from `keys()` (use `Set.copyOf`) and `getAllParameterNames()` (already copies; extend to all exposures)
-- [ ] Store defensive copies of caller-supplied `paramNames` lists
-- [ ] Add unit tests covering: invalid registration fails fast, returned key sets cannot mutate the registry, `paramNames` caller mutation does not affect the registry
+- [x] Type `MechanicRegistry.register(String, Class<? extends SkillMechanic>)` and `create(String)` returns `SkillMechanic` (or a documented wrapper) instead of raw `Class<?>` / `Object`
+- [x] Type `TriggerRegistry` and `EvaluatorRegistry` similarly (or add typed typed-registry accessors alongside the untyped ones, marked for removal)
+- [x] Validate at registration that the class has a public no-arg constructor (fail at register, not first use)
+- [x] Return defensive copies / immutable views from `keys()` (use `Set.copyOf`) and `getAllParameterNames()` (already copies; extend to all exposures)
+- [x] Store defensive copies of caller-supplied `paramNames` lists
+- [x] Add unit tests covering: invalid registration fails fast, returned key sets cannot mutate the registry, `paramNames` caller mutation does not affect the registry
 
 ## Technical Specifications & Context
 
@@ -38,8 +38,8 @@ Introduce typed generics on the registry methods, validate constructor availabil
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new registry tests
-- [ ] Unit test: registering a class without a public no-arg constructor fails at registration
-- [ ] Unit test: `keys().clear()` does not empty the registry
-- [ ] Unit test: mutating a caller-owned `paramNames` list after registration does not change the registry
-- [ ] `skilling-api` javadoc build (`:skilling-api:build`) passes
+- [x] `./gradlew build && ./gradlew test` pass, including new registry tests
+- [x] Unit test: registering a class without a public no-arg constructor fails at registration
+- [x] Unit test: `keys().clear()` does not empty the registry
+- [x] Unit test: mutating a caller-owned `paramNames` list after registration does not change the registry
+- [x] `skilling-api` javadoc build (`:skilling-api:build`) passes

@@ -516,8 +516,8 @@ public final class SkillEventListener implements Listener {
                 boolean anyExecuted = false;
                 for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
                     debug("    mechanic=" + entry.type() + " skill=" + skill.id());
-                    Object raw = mechanicRegistry.create(entry.type());
-                    if (!(raw instanceof SkillMechanic mechanic)) {
+                    SkillMechanic mechanic = mechanicRegistry.create(entry.type());
+                    if (mechanic == null) {
                         debug("    -> mechanic not found in registry, skipping");
                         continue;
                     }

@@ -1,8 +1,10 @@
 package io.github.chasehuegel.skilling.engine.registry;
 
-import java.util.concurrent.ConcurrentHashMap;
+import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -13,19 +15,25 @@ import java.util.function.Supplier;
  * {@code onEnable()} under kebab-case keys like {@code core:yield_multiplier}.
  *
  * <p>YAML usage: {@code type: "core:yield_multiplier"}
+ *
+ * <p>Registration is fail-fast: the class must implement {@link SkillMechanic} and
+ * expose a public no-arg constructor, both checked at {@link #register} time. All
+ * read methods return immutable snapshots, and caller-supplied parameter lists are
+ * copied defensively so registry state can never be mutated through its API.
  */
 public final class MechanicRegistry {
 
-    private final Map<String, Supplier<Object>> registry = new ConcurrentHashMap<>();
+    private final Map<String, Supplier<? extends SkillMechanic>> registry = new ConcurrentHashMap<>();
     private final Map<String, List<String>> paramNames = new ConcurrentHashMap<>();
 
     /**
      * Registers a mechanic class under the given key.
      *
      * @param key   the registry key
-     * @param clazz the mechanic class; must have a no-arg constructor
+     * @param clazz the mechanic class; must implement {@link SkillMechanic} and have a public no-arg constructor
+     * @throws IllegalArgumentException if the key is taken or the class is invalid
      */
-    public void register(String key, Class<?> clazz) {
+    public void register(String key, Class<? extends SkillMechanic> clazz) {
         register(key, clazz, List.of());
     }
 
@@ -33,21 +41,25 @@ public final class MechanicRegistry {
      * Registers a mechanic class under the given key with its parameter names.
      *
      * @param key        the registry key
-     * @param clazz      the mechanic class; must have a no-arg constructor
-     * @param paramNames the list of supported parameter names
+     * @param clazz      the mechanic class; must implement {@link SkillMechanic} and have a public no-arg constructor
+     * @param paramNames the supported parameter names (stored defensively)
+     * @throws IllegalArgumentException if the key is taken or the class is invalid
      */
-    public void register(String key, Class<?> clazz, List<String> paramNames) {
+    public void register(String key, Class<? extends SkillMechanic> clazz, List<String> paramNames) {
         if (registry.containsKey(key)) {
             throw new IllegalArgumentException("Mechanic already registered: " + key);
         }
-        this.paramNames.put(key, paramNames);
-        registry.put(key, () -> {
-            try {
-                return clazz.getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to instantiate mechanic: " + key, e);
-            }
-        });
+        RegistrySupport.requirePublicNoArgConstructor(key, clazz);
+        this.paramNames.put(key, List.copyOf(paramNames));
+        registry.put(key, () -> instantiate(key, clazz));
+    }
+
+    private static SkillMechanic instantiate(String key, Class<? extends SkillMechanic> clazz) {
+        try {
+            return clazz.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to instantiate mechanic: " + key, e);
+        }
     }
 
     /**
@@ -56,7 +68,7 @@ public final class MechanicRegistry {
      * @param key the registry key
      * @return a new instance of the mechanic, or null if not registered
      */
-    public Object create(String key) {
+    public SkillMechanic create(String key) {
         var supplier = registry.get(key);
         return supplier != null ? supplier.get() : null;
     }
@@ -75,19 +87,21 @@ public final class MechanicRegistry {
      * Returns the parameter names for a given mechanic key.
      *
      * @param key the registry key
-     * @return list of parameter names, or empty list if unknown
+     * @return immutable list of parameter names, or empty list if unknown
      */
     public List<String> getParameterNames(String key) {
-        return paramNames.getOrDefault(key, List.of());
+        return List.copyOf(paramNames.getOrDefault(key, List.of()));
     }
 
     /**
-     * Returns a map of all mechanic keys to their parameter names.
+     * Returns an immutable snapshot of all mechanic keys to their parameter names.
      *
-     * @return map of key -> parameter name list
+     * @return map of key -> immutable parameter name list
      */
     public Map<String, List<String>> getAllParameterNames() {
-        return Map.copyOf(paramNames);
+        Map<String, List<String>> snapshot = new HashMap<>();
+        paramNames.forEach((key, names) -> snapshot.put(key, List.copyOf(names)));
+        return Map.copyOf(snapshot);
     }
 
     /**
@@ -108,7 +122,7 @@ public final class MechanicRegistry {
     }
 
     /**
-     * Returns all registered mechanic keys.
+     * Returns all registered mechanic keys as an immutable snapshot.
      *
      * @return set of registry keys
      */

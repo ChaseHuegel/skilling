@@ -18,38 +18,64 @@ public final class EvaluatorRegistry {
     private final Map<String, Object> registry = new ConcurrentHashMap<>();
 
     /**
-     * Registers an evaluator under the given key, either a {@link ParameterEvaluator}
-     * instance or a class that will be instantiated fresh per parse.
+     * Registers an evaluator class under the given key.
      *
-     * @param key       the registry key
-     * @param evaluator the evaluator instance or {@code Class<? extends ParameterEvaluator>}
-     * @throws IllegalArgumentException if the value is neither a {@link ParameterEvaluator} nor a class
+     * @param key   the registry key
+     * @param clazz the evaluator class; must implement {@link ParameterEvaluator} and have a public no-arg constructor
+     * @throws IllegalArgumentException if the key is taken or the class is invalid
      */
-    public void register(String key, Object evaluator) {
+    public void register(String key, Class<? extends ParameterEvaluator> clazz) {
         if (registry.containsKey(key)) {
             throw new IllegalArgumentException("Evaluator already registered: " + key);
         }
-        if (!(evaluator instanceof ParameterEvaluator)
-                && !(evaluator instanceof Class<?>)) {
-            throw new IllegalArgumentException(
-                    "Evaluator must be a ParameterEvaluator or a Class, got: " + evaluator);
+        RegistrySupport.requirePublicNoArgConstructor(key, clazz);
+        registry.put(key, clazz);
+    }
+
+    /**
+     * Registers an evaluator instance under the given key.
+     *
+     * @param key       the registry key
+     * @param evaluator the evaluator instance
+     * @throws IllegalArgumentException if the key is taken
+     */
+    public void register(String key, ParameterEvaluator evaluator) {
+        if (registry.containsKey(key)) {
+            throw new IllegalArgumentException("Evaluator already registered: " + key);
         }
         registry.put(key, evaluator);
     }
 
     /**
-     * Retrieves an evaluator by its registry key.
+     * Registers an evaluator under the given key, either a {@link ParameterEvaluator}
+     * instance or a class that will be instantiated fresh per parse.
      *
-     * @param key the registry key
-     * @return the evaluator instance or class, or null if not registered
+     * @param key       the registry key
+     * @param evaluator the evaluator instance or {@code Class<? extends ParameterEvaluator>}
+     * @throws IllegalArgumentException if the key is taken or the value is neither a {@link ParameterEvaluator} nor a {@code ParameterEvaluator} class
+     * @deprecated Use {@link #register(String, ParameterEvaluator)} or {@link #register(String, Class)}.
      */
-    public Object get(String key) {
-        return registry.get(key);
+    @Deprecated
+    public void register(String key, Object evaluator) {
+        if (evaluator instanceof ParameterEvaluator pe) {
+            register(key, pe);
+        } else if (evaluator instanceof Class<?> clazz) {
+            if (!ParameterEvaluator.class.isAssignableFrom(clazz)) {
+                throw new IllegalArgumentException(
+                        "Evaluator must be a ParameterEvaluator or a Class<? extends ParameterEvaluator>, got: " + evaluator);
+            }
+            @SuppressWarnings("unchecked")
+            Class<? extends ParameterEvaluator> typed = (Class<? extends ParameterEvaluator>) clazz;
+            register(key, typed);
+        } else {
+            throw new IllegalArgumentException(
+                    "Evaluator must be a ParameterEvaluator or a Class, got: " + evaluator);
+        }
     }
 
     /**
-     * Returns a usable {@link ParameterEvaluator} for the given key, instantiating
-     * registered classes via their no-arg constructor.
+     * Retrieves a usable {@link ParameterEvaluator} for the given key, instantiating
+     * registered classes via their public no-arg constructor.
      *
      * @param key the registry key
      * @return the evaluator
@@ -71,6 +97,18 @@ public final class EvaluatorRegistry {
             }
         }
         throw new IllegalArgumentException("Evaluator not registered: " + key);
+    }
+
+    /**
+     * Returns the raw registered value (instance or class) for the given key.
+     *
+     * @param key the registry key
+     * @return the evaluator instance or class, or null if not registered
+     * @deprecated Use {@link #create(String)} for a usable evaluator.
+     */
+    @Deprecated
+    public Object get(String key) {
+        return registry.get(key);
     }
 
     /**
@@ -97,5 +135,14 @@ public final class EvaluatorRegistry {
      */
     public int size() {
         return registry.size();
+    }
+
+    /**
+     * Returns all registered evaluator keys as an immutable snapshot.
+     *
+     * @return set of registry keys
+     */
+    public java.util.Set<String> keys() {
+        return java.util.Set.copyOf(registry.keySet());
     }
 }
