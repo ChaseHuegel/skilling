@@ -23,6 +23,10 @@ public final class TestSkillManager {
     }
 
     public static SkillManager newWith(Consumer<MechanicRegistry> extraMechanics) {
+        return newWith(extraMechanics, new TagResolver(new CustomTagLoader()));
+    }
+
+    public static SkillManager newWith(Consumer<MechanicRegistry> extraMechanics, TagResolver tagResolver) {
         var evalReg = new EvaluatorRegistry();
         Skilling.registerBuiltinEvaluators(evalReg);
         var mechReg = new MechanicRegistry();
@@ -30,6 +34,6 @@ public final class TestSkillManager {
         extraMechanics.accept(mechReg);
         var trigReg = new TriggerRegistry();
         Skilling.registerBuiltinTriggers(trigReg);
-        return new SkillManager(evalReg, mechReg, trigReg, new TagResolver(new CustomTagLoader()));
+        return new SkillManager(evalReg, mechReg, trigReg, tagResolver);
     }
 }

@@ -33,6 +33,43 @@ public final class TagResolver {
     }
 
     /**
+     * Whether a filter/requirement reference is known: a real material, a defined
+     * custom tag, or a resolvable vanilla tag.
+     *
+     * <p>Used for fail-fast validation at load. When the custom tag store is empty
+     * or Bukkit is unavailable (e.g. unit-test context) existence checks are
+     * deferred so validation never rejects on infrastructure the loader cannot see.
+     *
+     * @param reference the reference string (e.g. {@code #c:ores}, {@code minecraft:stone})
+     * @return true if the reference is known or cannot be verified
+     */
+    public boolean isKnown(String reference) {
+        if (reference == null || reference.isBlank()) return true;
+        if (!reference.startsWith("#")) {
+            return Material.matchMaterial(reference) != null;
+        }
+        String namespace = reference.substring(1);
+        int colonIndex = namespace.indexOf(':');
+        if (colonIndex == -1) return false;
+        String prefix = namespace.substring(0, colonIndex);
+        String key = namespace.substring(colonIndex + 1);
+        if ("c".equals(prefix)) {
+            if (customTagLoader.getKeys().isEmpty()) return true; // not loaded; defer
+            return customTagLoader.getKeys().contains("#c:" + key);
+        }
+        if ("minecraft".equals(prefix)) {
+            try {
+                NamespacedKey nsKey = NamespacedKey.minecraft(key);
+                return Bukkit.getTag(Tag.REGISTRY_BLOCKS, nsKey, Material.class) != null
+                        || Bukkit.getTag(Tag.REGISTRY_ITEMS, nsKey, Material.class) != null;
+            } catch (RuntimeException e) {
+                return true; // Bukkit unavailable; defer
+            }
+        }
+        return false;
+    }
+
+    /**
      * Resolves a tag string into an {@link EnumSet} of materials.
      *
      * @param tagString the tag string (e.g., {@code #minecraft:logs}, {@code #c:ores}, {@code minecraft:stone})

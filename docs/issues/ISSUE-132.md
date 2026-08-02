@@ -1,6 +1,6 @@
 # ISSUE-132: Fail-fast at load for unknown tags/materials instead of throwing inside event handlers
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (runtime exceptions in hot paths crash event handling)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Validate every filter/material/requirement tag at load time against known vanilla and custom tags, throwing `IllegalArgumentException` on unknown entries
-- [ ] Make `TagResolver` resolution safe at runtime: `#c:` references to nonexistent custom tags and unknown vanilla tags must behave consistently (both fail fast at load)
-- [ ] Ensure no `IllegalArgumentException` from `TagResolver.resolve` can escape into per-event filter matching or per-slot item checks
-- [ ] Add unit tests covering: unknown material rejected at load, unknown vanilla tag rejected at load, missing custom tag handled consistently
+- [x] Validate every filter/material/requirement tag at load time against known vanilla and custom tags, throwing `IllegalArgumentException` on unknown entries
+- [x] Make `TagResolver` resolution safe at runtime: `#c:` references to nonexistent custom tags and unknown vanilla tags must behave consistently (both fail fast at load)
+- [x] Ensure no `IllegalArgumentException` from `TagResolver.resolve` can escape into per-event filter matching or per-slot item checks
+- [x] Add unit tests covering: unknown material rejected at load, unknown vanilla tag rejected at load, missing custom tag handled consistently
 
 ## Technical Specifications & Context
 
@@ -38,8 +38,8 @@ Validate all tag/material references during `SkillManager.parseSkill`/`parseXpSo
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: unknown material in a filter fails load with a clear message
-- [ ] Unit test: unknown vanilla tag fails load
-- [ ] Unit test: missing custom tag is handled consistently with other unknown tags
-- [ ] Runtime review: event handlers contain no reachable `TagResolver` throw path
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: unknown material in a filter fails load with a clear message
+- [x] Unit test: unknown vanilla tag fails load
+- [x] Unit test: missing custom tag is handled consistently with other unknown tags
+- [x] Runtime review: event handlers contain no reachable `TagResolver` throw path

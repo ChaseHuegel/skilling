@@ -171,6 +171,8 @@ public final class SkillManager {
                         String target = (String) filterMap.get("target");
                         String state = (String) filterMap.get("state");
                         String tool = (String) filterMap.get("tool");
+                        validateTagReference(target);
+                        validateTagReference(tool);
                         filters.add(new SkillDefinition.Filter(target, state, tool));
                     }
                 }
@@ -287,9 +289,20 @@ public final class SkillManager {
         String action = (String) map.getOrDefault("action", "possession");
         String tag = (String) map.get("tag");
         String slot = (String) map.getOrDefault("slot", "HAND");
+        validateTagReference(tag);
         int amount = ((Number) map.getOrDefault("amount", 1)).intValue();
         double itemCooldown = ((Number) map.getOrDefault("item_cooldown", 0.0)).doubleValue();
         return new SkillDefinition.ItemRequirement(action, tag, slot, amount, itemCooldown);
+    }
+
+    /**
+     * Fail-fast validation of a filter/requirement tag or material reference so a
+     * typo is rejected at load instead of throwing inside an event handler at runtime.
+     */
+    private void validateTagReference(String reference) {
+        if (reference != null && !tagResolver.isKnown(reference)) {
+            throw new IllegalArgumentException("Unknown tag or material in filter/requirement: " + reference);
+        }
     }
 
     private SkillDefinition.OnFailure parseOnFailure(Map<String, Object> map) {
@@ -330,10 +343,14 @@ public final class SkillManager {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> filtersRaw = (List<Map<String, Object>>) mechanicMap.getOrDefault("filters", List.of());
             List<SkillDefinition.Filter> filters = filtersRaw.stream()
-                    .map(fm -> new SkillDefinition.Filter(
-                            fm.get("target") != null ? String.valueOf(fm.get("target")) : null,
-                            fm.get("state") != null ? String.valueOf(fm.get("state")) : null,
-                            fm.get("tool") != null ? String.valueOf(fm.get("tool")) : null))
+                    .map(fm -> {
+                        String target = fm.get("target") != null ? String.valueOf(fm.get("target")) : null;
+                        String state = fm.get("state") != null ? String.valueOf(fm.get("state")) : null;
+                        String tool = fm.get("tool") != null ? String.valueOf(fm.get("tool")) : null;
+                        validateTagReference(target);
+                        validateTagReference(tool);
+                        return new SkillDefinition.Filter(target, state, tool);
+                    })
                     .toList();
 
             entries.add(new SkillDefinition.MechanicEntry(type, filters, parameters));
