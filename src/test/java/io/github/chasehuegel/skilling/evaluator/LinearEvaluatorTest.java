@@ -47,4 +47,9 @@ class LinearEvaluatorTest {
         assertEquals(5.0, eval.evaluate(0, 0), 1e-9);
         assertEquals(0.0, eval.evaluate(0, 5), 1e-9);
     }
+
+    @Test
+    void minGreaterThanMaxThrows() {
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(10.0, 1.0, 50.0, 25.0));
+    }
 }

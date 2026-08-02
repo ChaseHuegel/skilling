@@ -259,7 +259,9 @@ public record SkillDefinition(
     public int getLevelForXp(long xp) {
         for (int level = 1; level <= maxLevel; level++) {
             double required = progression.evaluator().evaluate(level, 0);
-            if (xp < (long) required) return level - 1;
+            // A non-finite requirement is unreachable; treat as "level not reached"
+            // so NaN/Infinity curves never report an instant max level.
+            if (!Double.isFinite(required) || xp < (long) required) return level - 1;
         }
         return maxLevel;
     }

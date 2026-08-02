@@ -43,4 +43,21 @@ class PolynomialEvaluatorTest {
         // 1 * 100^3 = 1_000_000
         assertEquals(1_000_000.0, eval.evaluate(100, 0), 1e-9);
     }
+
+    @Test
+    void negativeBaseThrows() {
+        assertThrows(IllegalArgumentException.class, () -> new PolynomialEvaluator(-50.0, 2.5));
+    }
+
+    @Test
+    void zeroOrNegativeExponentThrows() {
+        assertThrows(IllegalArgumentException.class, () -> new PolynomialEvaluator(50.0, 0.0));
+        assertThrows(IllegalArgumentException.class, () -> new PolynomialEvaluator(50.0, -1.0));
+    }
+
+    @Test
+    void nonFiniteParamsThrow() {
+        assertThrows(IllegalArgumentException.class, () -> new PolynomialEvaluator(Double.NaN, 2.5));
+        assertThrows(IllegalArgumentException.class, () -> new PolynomialEvaluator(50.0, Double.POSITIVE_INFINITY));
+    }
 }

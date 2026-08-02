@@ -1,6 +1,6 @@
 # ISSUE-131: Add fail-fast numeric validation to parameter evaluators
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (bad curves produce NaN/`Long.MAX_VALUE` XP at runtime)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Validate evaluator numeric params at parse time: reject NaN/Infinity-producing inputs (e.g. negative base/exponent in `PolynomialEvaluator`), and validate `min <= max` for clamped evaluators (`LinearEvaluator`)
-- [ ] Guard `computeXpGain` (`SkillEventListener.java:655-660`) and `getLevelForXp` (`SkillDefinition.java:259-265`) against NaN/Infinity (`Math.round(+Infinity)` = `Long.MAX_VALUE`; `Math.round(NaN)` = 0)
-- [ ] Add unit tests covering: negative base/exponent rejected at load, `min > max` rejected, NaN/Infinity XP inputs produce no level change and no crash
+- [x] Validate evaluator numeric params at parse time: reject NaN/Infinity-producing inputs (e.g. negative base/exponent in `PolynomialEvaluator`), and validate `min <= max` for clamped evaluators (`LinearEvaluator`)
+- [x] Guard `computeXpGain` (`SkillEventListener.java:655-660`) and `getLevelForXp` (`SkillDefinition.java:259-265`) against NaN/Infinity (`Math.round(+Infinity)` = `Long.MAX_VALUE`; `Math.round(NaN)` = 0)
+- [x] Add unit tests covering: negative base/exponent rejected at load, `min > max` rejected, NaN/Infinity XP inputs produce no level change and no crash
 
 ## Technical Specifications & Context
 
@@ -37,7 +37,7 @@ Validate at parse: reject non-finite or out-of-range parameters with a descripti
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: malformed polynomial config throws at load with a clear message
-- [ ] Unit test: `min > max` linear config throws at load
-- [ ] Unit test: NaN/Infinity XP input does not crash or max out a level
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: malformed polynomial config throws at load with a clear message
+- [x] Unit test: `min > max` linear config throws at load
+- [x] Unit test: NaN/Infinity XP input does not crash or max out a level

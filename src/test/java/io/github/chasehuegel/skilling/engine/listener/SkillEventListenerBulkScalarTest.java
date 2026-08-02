@@ -155,4 +155,17 @@ class SkillEventListenerBulkScalarTest {
         var player = BukkitMock.mockPlayer();
         assertEquals(0, SkillEventListener.computeXpGain(2, -1, 1.0, player.getUniqueId()));
     }
+
+    @Test
+    void nanGainReturnsZero() {
+        var player = BukkitMock.mockPlayer();
+        assertEquals(0, SkillEventListener.computeXpGain(Double.NaN, 1, 1.0, player.getUniqueId()));
+    }
+
+    @Test
+    void infinityGainReturnsZeroNotMaxValue() {
+        var player = BukkitMock.mockPlayer();
+        assertEquals(0, SkillEventListener.computeXpGain(Double.POSITIVE_INFINITY, 1, 1.0, player.getUniqueId()),
+                "Infinity XP must never round to Long.MAX_VALUE");
+    }
 }

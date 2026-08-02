@@ -726,7 +726,8 @@ public final class SkillEventListener implements Listener {
     static long computeXpGain(double reward, double scalar, double globalModifier, UUID playerId) {
         double xp = reward * scalar * globalModifier;
         xp *= io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.getMultiplier(playerId);
-        if (xp <= 0) return 0;
+        // Non-finite inputs (NaN/Infinity) must never round to 0 or Long.MAX_VALUE.
+        if (!Double.isFinite(xp) || xp <= 0) return 0;
         return Math.round(xp);
     }
 

@@ -33,6 +33,10 @@ public final class LinearEvaluator implements ParameterEvaluator {
      * @param max  maximum clamp (use +Infinity for no ceiling)
      */
     public LinearEvaluator(double base, double step, double min, double max) {
+        if (min > max) {
+            throw new IllegalArgumentException(
+                    "linear evaluator min (" + min + ") must be <= max (" + max + ")");
+        }
         this.base = base;
         this.step = step;
         this.min = min;
