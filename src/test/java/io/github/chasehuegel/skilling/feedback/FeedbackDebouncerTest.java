@@ -48,9 +48,11 @@ class FeedbackDebouncerTest {
         assertTrue(debouncer.tryDebounce(uuid, "test"));
         assertFalse(debouncer.tryDebounce(uuid, "test"));
 
-        // Player clear method takes Player, so we test the UUID clear via internal state
-        // (the clear(UUID) method doesn't exist, but we can test that the debouncer
-        // doesn't prevent new entries)
+        debouncer.clear(uuid);
+
+        // After clear, fresh feedback is allowed again for that player.
+        assertTrue(debouncer.tryDebounce(uuid, "test"));
+        assertFalse(debouncer.tryDebounce(uuid, "test"));
     }
 
     @Test

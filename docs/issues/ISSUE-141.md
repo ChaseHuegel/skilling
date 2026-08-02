@@ -1,6 +1,6 @@
 # ISSUE-141: Clear `FeedbackDebouncer` and `BossBarPool` state on player quit
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (unbounded memory growth per unique player)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Call `feedbackDebouncer.clear(uuid)` in `PlayerListener.onPlayerQuit` (the class Javadoc at `FeedbackDebouncer.java:73-80` explicitly requires this)
-- [ ] Remove the player's boss bars on quit (`bossBarPool.removeAll(player)` or equivalent) and hide them so no bar is left visible
-- [ ] Guard against quit racing a level-up/dispatch (only clear, never break in-flight behavior)
-- [ ] Add a test asserting `tryDebounce` state for a UUID is released after `clear(uuid)`
+- [x] Call `feedbackDebouncer.clear(uuid)` in `PlayerListener.onPlayerQuit` (the class Javadoc at `FeedbackDebouncer.java:73-80` explicitly requires this)
+- [x] Remove the player's boss bars on quit (`bossBarPool.removeAll(player)` or equivalent) and hide them so no bar is left visible
+- [x] Guard against quit racing a level-up/dispatch (only clear, never break in-flight behavior)
+- [x] Add a test asserting `tryDebounce` state for a UUID is released after `clear(uuid)`
 
 ## Technical Specifications & Context
 
@@ -37,7 +37,7 @@ In `onPlayerQuit`, clear the debouncer entry for the player and remove/hide thei
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new test
-- [ ] Unit test: after `clear(uuid)`, the debouncer no longer debounces that player (fresh feedback allowed)
-- [ ] Unit test: quit removes the player's boss bars
-- [ ] Manual smoke: joining/leaving repeatedly shows stable memory
+- [x] `./gradlew build && ./gradlew test` pass, including the new test
+- [x] Unit test: after `clear(uuid)`, the debouncer no longer debounces that player (fresh feedback allowed)
+- [x] Unit test: quit removes the player's boss bars
+- [x] Manual smoke: joining/leaving repeatedly shows stable memory

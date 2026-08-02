@@ -5,6 +5,7 @@ import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
+import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import io.github.chasehuegel.skilling.engine.feedback.LevelUpDispatcher;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
@@ -26,15 +27,17 @@ public final class PlayerListener implements Listener {
     private final RequirementEngine requirementEngine;
     private final SkillManager skillManager;
     private final BossBarPool bossBarPool;
+    private final FeedbackDebouncer feedbackDebouncer;
 
     public PlayerListener(ProfileManager profileManager, AsyncBatchWorker asyncBatchWorker,
                           RequirementEngine requirementEngine, SkillManager skillManager,
-                          BossBarPool bossBarPool) {
+                          BossBarPool bossBarPool, FeedbackDebouncer feedbackDebouncer) {
         this.profileManager = profileManager;
         this.asyncBatchWorker = asyncBatchWorker;
         this.requirementEngine = requirementEngine;
         this.skillManager = skillManager;
         this.bossBarPool = bossBarPool;
+        this.feedbackDebouncer = feedbackDebouncer;
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -61,6 +64,11 @@ public final class PlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         requirementEngine.clearCooldowns(player);
+        // Release per-player state so memory does not grow unboundedly with unique
+        // players; boss bars are hidden by removeAll. Runs on the main thread so it
+        // never races the dispatch path.
+        feedbackDebouncer.clear(player.getUniqueId());
+        bossBarPool.removeAll(player);
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clear(player.getUniqueId());
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
         if (profile != null && profile.isDirty()) {
