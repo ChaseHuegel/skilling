@@ -419,7 +419,7 @@ public final class SkillEventListener implements Listener {
         LevelUpDispatcher.showXpBossBar(player, skill, profile, bossBarPool, plugin);
     }
 
-    private void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
+    void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
         debug("fireAbilities for " + player.getName() + " on " + triggerKey);
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             for (SkillDefinition.Ability ability : skill.abilities()) {
@@ -436,6 +436,31 @@ public final class SkillEventListener implements Listener {
                     continue;
                 }
 
+                // Check requirements ONCE per ability, before iterating mechanics.
+                // A cooldown or missing cost gates the whole ability — checking per
+                // mechanic meant the first mechanic's consume applied the cooldown,
+                // blocking every later mechanic, and item costs were deducted per
+                // executing mechanic.
+                RequirementResult check = requirementEngine.check(player, ability.id(), ability.requirements(),
+                        skillLevel, ability.unlockLevel());
+                debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
+                if (!check.success()) {
+                    if (feedbackDebouncer.tryDebounce(player, ability.id())) {
+                        var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());
+                        if (failure != null && !failure.actionBar().isBlank()) {
+                            String msg = failure.actionBar();
+                            for (var ph : check.placeholders().entrySet()) {
+                                msg = msg.replace("{" + ph.getKey() + "}", ph.getValue());
+                            }
+                            player.sendActionBar(LegacyComponentSerializer.legacyAmpersand().deserialize(msg));
+                        }
+                    }
+                    continue;
+                }
+
+                // Execute each mechanic, preserving per-mechanic filter matching and
+                // per-mechanic parameter evaluation.
+                boolean anyExecuted = false;
                 for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
                     debug("    mechanic=" + entry.type() + " skill=" + skill.id());
                     Object raw = mechanicRegistry.create(entry.type());
@@ -449,70 +474,61 @@ public final class SkillEventListener implements Listener {
                         continue;
                     }
 
-                    RequirementResult check = requirementEngine.check(player, ability.id(), ability.requirements(),
-                            skillLevel, ability.unlockLevel());
-                    debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
-                    if (!check.success()) {
-                        if (feedbackDebouncer.tryDebounce(player, ability.id())) {
-                            var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());
-                            if (failure != null && !failure.actionBar().isBlank()) {
-                                String msg = failure.actionBar();
-                                for (var ph : check.placeholders().entrySet()) {
-                                    msg = msg.replace("{" + ph.getKey() + "}", ph.getValue());
-                                }
-                                player.sendActionBar(LegacyComponentSerializer.legacyAmpersand().deserialize(msg));
-                            }
-                        }
-                        continue;
-                    }
-
                     Map<String, Object> evaluatedParams = evaluateParams(entry, skillLevel, ability.unlockLevel());
                     debug("    executing mechanic with params=" + evaluatedParams);
                     boolean executed = mechanic.execute(player, evaluatedParams, event);
-                    if (!executed) {
-                        debug("    -> mechanic returned false (no-op), skipping consume and feedback");
-                        continue;
+                    if (executed) {
+                        anyExecuted = true;
+                    } else {
+                        debug("    -> mechanic returned false (no-op), skipping");
                     }
-                    requirementEngine.consume(player, ability.id(), ability.requirements(),
-                            skillLevel, ability.unlockLevel());
-
-                    String abilityMsg = ability.feedback().message();
-                    boolean hasMsg = !abilityMsg.isBlank();
-                    if (ability.feedback().actionBar() && hasMsg) {
-                        FanfareDispatcher.sendActionBar(player, abilityMsg);
-                        if (profile.getPreferences().logAbilities()) {
-                            player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                                    .deserialize(abilityMsg));
-                        }
-                    }
-                    if (ability.feedback().chat() && hasMsg && !ability.feedback().actionBar()) {
-                        if (profile.getPreferences().logAbilities()) {
-                            player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                                    .deserialize(abilityMsg));
-                        }
-                    }
-
-                    double cdSec = ability.requirements().cooldown().evaluate(skillLevel, ability.unlockLevel());
-                    if (cdSec > 0) {
-                        long delayTicks = (long) (cdSec * 20);
-                        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                            if (player.isOnline()) {
-                                String readyMsg = "<green>✦ " + ability.displayName() + " is ready!</green>";
-                                player.sendMessage(MiniMessage.miniMessage().deserialize(readyMsg));
-                                player.sendActionBar(net.kyori.adventure.text.Component.text(
-                                        "✦ " + ability.displayName() + " is ready!",
-                                        NamedTextColor.GREEN));
-                            }
-                        }, delayTicks);
-                    }
-                    if (!ability.feedback().particles().isEmpty()) {
-                        FanfareDispatcher.dispatchParticles(player, null, ability.feedback().particles());
-                    }
-                    if (!ability.feedback().sounds().isEmpty()) {
-                        FanfareDispatcher.dispatchSounds(player, null, ability.feedback().sounds());
-                    }
-                    debug("    -> done");
                 }
+
+                // Consume exactly once per activation, only when at least one mechanic
+                // performed an action; a no-op ability must not spend its cost.
+                if (!anyExecuted) {
+                    debug("    -> no mechanic executed, skipping consume and feedback");
+                    continue;
+                }
+                requirementEngine.consume(player, ability.id(), ability.requirements(),
+                        skillLevel, ability.unlockLevel());
+
+                String abilityMsg = ability.feedback().message();
+                boolean hasMsg = !abilityMsg.isBlank();
+                if (ability.feedback().actionBar() && hasMsg) {
+                    FanfareDispatcher.sendActionBar(player, abilityMsg);
+                    if (profile.getPreferences().logAbilities()) {
+                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize(abilityMsg));
+                    }
+                }
+                if (ability.feedback().chat() && hasMsg && !ability.feedback().actionBar()) {
+                    if (profile.getPreferences().logAbilities()) {
+                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize(abilityMsg));
+                    }
+                }
+
+                double cdSec = ability.requirements().cooldown().evaluate(skillLevel, ability.unlockLevel());
+                if (cdSec > 0) {
+                    long delayTicks = (long) (cdSec * 20);
+                    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                        if (player.isOnline()) {
+                            String readyMsg = "<green>✦ " + ability.displayName() + " is ready!</green>";
+                            player.sendMessage(MiniMessage.miniMessage().deserialize(readyMsg));
+                            player.sendActionBar(net.kyori.adventure.text.Component.text(
+                                    "✦ " + ability.displayName() + " is ready!",
+                                    NamedTextColor.GREEN));
+                        }
+                    }, delayTicks);
+                }
+                if (!ability.feedback().particles().isEmpty()) {
+                    FanfareDispatcher.dispatchParticles(player, null, ability.feedback().particles());
+                }
+                if (!ability.feedback().sounds().isEmpty()) {
+                    FanfareDispatcher.dispatchSounds(player, null, ability.feedback().sounds());
+                }
+                debug("    -> done");
             }
         }
     }

@@ -1,6 +1,6 @@
 # ISSUE-116: Move ability Check/Execute/Consume to per-ability in `fireAbilities`
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (cooldown blocks all but the first mechanic; item costs deducted multiple times)
 
@@ -13,12 +13,12 @@
 
 ## Implementation Requirements
 
-- [ ] Perform `requirementEngine.check(...)` once per **ability**, before iterating mechanics
-- [ ] Execute all mechanics for the ability when the check passes, and `consume(...)` exactly once after the mechanics succeed
-- [ ] Decide and implement how partial mechanic failure behaves (e.g. consume if any mechanic executed; document the chosen contract)
-- [ ] Preserve per-mechanic filter matching and per-mechanic param evaluation
-- [ ] Preserve cooldown/failure feedback (action bar) without spurious "on cooldown" after a successful cast
-- [ ] Add unit tests covering: multi-mechanic ability with cooldown runs all mechanics once; item-cost ability deducts items exactly once
+- [x] Perform `requirementEngine.check(...)` once per **ability**, before iterating mechanics
+- [x] Execute all mechanics for the ability when the check passes, and `consume(...)` exactly once after the mechanics succeed
+- [x] Decide and implement how partial mechanic failure behaves (e.g. consume if any mechanic executed; document the chosen contract)
+- [x] Preserve per-mechanic filter matching and per-mechanic param evaluation
+- [x] Preserve cooldown/failure feedback (action bar) without spurious "on cooldown" after a successful cast
+- [x] Add unit tests covering: multi-mechanic ability with cooldown runs all mechanics once; item-cost ability deducts items exactly once
 
 ## Technical Specifications & Context
 
@@ -36,7 +36,7 @@ Hoist the check above the mechanics loop. If it fails, show failure feedback and
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: two-mechanic ability with cooldown executes both mechanics and sets the cooldown once
-- [ ] Unit test: item-cost ability with two mechanics deducts the cost exactly once
-- [ ] Unit test: single-mechanic behavior is unchanged (existing tests still pass)
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: two-mechanic ability with cooldown executes both mechanics and sets the cooldown once
+- [x] Unit test: item-cost ability with two mechanics deducts the cost exactly once
+- [x] Unit test: single-mechanic behavior is unchanged (existing tests still pass)
