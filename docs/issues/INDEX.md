@@ -4,7 +4,7 @@
 
 ### Improvements
 - [x] [ISSUE-135](ISSUE-135.md) - Pre-flatten and cache tag/material resolution for O(1) event lookups
-- [ ] [ISSUE-136](ISSUE-136.md) - Optimize `getLevelForXp` and remove per-ability/per-event recomputation
+- [x] [ISSUE-136](ISSUE-136.md) - Optimize `getLevelForXp` and remove per-ability/per-event recomputation
 - [ ] [ISSUE-140](ISSUE-140.md) - Harden the registry API surface (typed generics, defensive copies, immutable views)
 - [ ] [ISSUE-164](ISSUE-164.md) - Improve E2E isolation and make screenshot assertions real
 - [ ] [ISSUE-165](ISSUE-165.md) - Replace index-keyed `v-for` in reorderable lists with stable IDs

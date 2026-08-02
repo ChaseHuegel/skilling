@@ -414,6 +414,10 @@ public final class SkillEventListener implements Listener {
 
     private void grantXp(Player player, PlayerProfile profile, Event event, String triggerKey) {
         for (SkillDefinition skill : skillManager.getSkills().values()) {
+            // Compute the skill's level once per skill per dispatch; XP sources
+            // within one skill share it, and level-ups advance it in place so later
+            // sources in the same event see the updated level.
+            int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
             for (SkillDefinition.XpSource source : skill.xpSources()) {
                 if (!source.trigger().equals(triggerKey)) {
                     debug("  [" + skill.id() + "] XP source trigger '" + source.trigger()
@@ -424,7 +428,7 @@ public final class SkillEventListener implements Listener {
                     debug("  [" + skill.id() + "] XP source filters failed, skipping");
                     continue;
                 }
-                int oldLevel = skill.getLevelForXp(profile.getXp(skill.id()));
+                int oldLevel = skillLevel;
                 double reward = source.reward().evaluate(oldLevel, 1);
                 double scalar = resolveEventBulkScalar(event);
                 double global = plugin.getGlobalXpModifier();
@@ -442,6 +446,7 @@ public final class SkillEventListener implements Listener {
                                 .deserialize("&a+" + rounded + " &7XP in &a" + displayName + " &7(" + triggerKey + ")"));
                     }
                     if (newLevel > oldLevel) {
+                        skillLevel = newLevel;
                         profile.invalidatePageCache();
                         var levelUpEvent = new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
                                 player, skill.id(), newLevel);
@@ -468,8 +473,10 @@ public final class SkillEventListener implements Listener {
     void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
         debug("fireAbilities for " + player.getName() + " on " + triggerKey);
         for (SkillDefinition skill : skillManager.getSkills().values()) {
+            // Level does not change during a dispatch (mechanics do not grant XP),
+            // so compute it once per skill instead of once per ability.
+            int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
             for (SkillDefinition.Ability ability : skill.abilities()) {
-                int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
                 debug("  ability=" + ability.id() + " skillLevel=" + skillLevel
                         + " unlockLevel=" + ability.unlockLevel());
                 if (skillLevel < ability.unlockLevel()) {

@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Cache per-skill `getLevelForXp` results per event (compute once per skill per dispatch, not once per XP source / per ability)
-- [ ] Optimize `getLevelForXp` itself: replace the O(maxLevel) linear scan (with `Math.pow` per step) with a closed-form/binary-search or precomputed threshold table that stays correct after XP curve changes
-- [ ] Keep behavior identical for valid XP values (same level thresholds)
-- [ ] Add a correctness test proving cached/computed levels match the previous linear scan for a range of XP values
+- [x] Cache per-skill `getLevelForXp` results per event (compute once per skill per dispatch, not once per XP source / per ability)
+- [x] Optimize `getLevelForXp` itself: replace the O(maxLevel) linear scan (with `Math.pow` per step) with a closed-form/binary-search or precomputed threshold table that stays correct after XP curve changes
+- [x] Keep behavior identical for valid XP values (same level thresholds)
+- [x] Add a correctness test proving cached/computed levels match the previous linear scan for a range of XP values
 
 ## Technical Specifications & Context
 
@@ -36,6 +36,6 @@ Compute the level once per skill per event and share it across XP sources and ab
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new correctness test
-- [ ] Correctness test: optimized `getLevelForXp` matches the linear scan for XP = {0, mid, boundary, max}
-- [ ] Profile/benchmark shows level computation no longer dominates event dispatch
+- [x] `./gradlew build && ./gradlew test` pass, including the new correctness test
+- [x] Correctness test: optimized `getLevelForXp` matches the linear scan for XP = {0, mid, boundary, max}
+- [x] Profile/benchmark shows level computation no longer dominates event dispatch

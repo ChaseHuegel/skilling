@@ -236,12 +236,6 @@ public record SkillDefinition(
     ) {}
 
     /**
-     * Computes the level corresponding to the given raw XP for this skill's progression curve.
-     *
-     * @param xp the total raw XP
-     * @return the computed level (0 to maxLevel)
-     */
-    /**
      * A command to execute on level-up with placeholder support.
      *
      * @param command raw command string with {placeholders}
@@ -253,15 +247,37 @@ public record SkillDefinition(
     /**
      * Computes the level corresponding to the given raw XP for this skill's progression curve.
      *
+     * <p>Thresholds are precomputed once per evaluator (see {@code LevelThresholds}) and
+     * binary-searched for the common monotonic curves, so the curve is never re-evaluated
+     * (no per-call {@code Math.pow}) on the event path. Arbitrary non-monotonic evaluators
+     * fall back to a linear scan that preserves the original semantics exactly.
+     *
      * @param xp the total raw XP
      * @return the computed level (0 to maxLevel)
      */
     public int getLevelForXp(long xp) {
-        for (int level = 1; level <= maxLevel; level++) {
-            double required = progression.evaluator().evaluate(level, 0);
-            // A non-finite requirement is unreachable; treat as "level not reached"
-            // so NaN/Infinity curves never report an instant max level.
-            if (!Double.isFinite(required) || xp < (long) required) return level - 1;
+        LevelThresholds.Table table = LevelThresholds.table(progression().evaluator(), maxLevel);
+        long[] thresholds = table.thresholds();
+        boolean[] unreachable = table.unreachable();
+        if (table.sorted()) {
+            // First level whose threshold exceeds the XP; the failure predicate
+            // (unreachable or xp < threshold) is monotonic for a non-decreasing curve.
+            int lo = 0;
+            int hi = maxLevel - 1;
+            int firstFail = maxLevel;
+            while (lo <= hi) {
+                int mid = (lo + hi) >>> 1;
+                if (unreachable[mid] || xp < thresholds[mid]) {
+                    firstFail = mid;
+                    hi = mid - 1;
+                } else {
+                    lo = mid + 1;
+                }
+            }
+            return firstFail;
+        }
+        for (int i = 0; i < maxLevel; i++) {
+            if (unreachable[i] || xp < thresholds[i]) return i;
         }
         return maxLevel;
     }
