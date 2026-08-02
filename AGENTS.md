@@ -11,6 +11,7 @@ Skilling is a high-performance, data-driven RPG skills engine for PaperMC (Minec
 * All mechanics, triggers, and evaluators are decoupled modules.
 * Content is constructed entirely via YAML configurations by the end-user.
 * The system is designed to maintain 20 TPS under heavy load.
+* **Greenfield / no backwards-compatibility concern:** Skilling has no production use. Breaking changes to YAML schemas, APIs, and behaviors are allowed and expected. Do not preserve or design around backwards compatibility, and do not accept compat costs in proposals or reviews.
 
 ## Ownership
 

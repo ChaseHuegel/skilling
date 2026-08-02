@@ -54,6 +54,11 @@ This file defines the commit convention for this repository. **All commits MUST 
 
 `BREAKING-CHANGE` is synonymous with `BREAKING CHANGE` in footers.
 
+> **Project note:** Skilling is greenfield with no production use; breaking changes are
+> allowed and expected (see root `AGENTS.md`). When a change is intentionally breaking,
+> signal it with the `!` marker or `BREAKING CHANGE` footer so the version bump is accurate —
+> never avoid a breaking change for compatibility reasons.
+
 ## Examples
 
 ```
