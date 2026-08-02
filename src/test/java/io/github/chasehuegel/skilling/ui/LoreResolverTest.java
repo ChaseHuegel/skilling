@@ -29,6 +29,15 @@ class LoreResolverTest {
     }
 
     @Test
+    void unknownPlaceholderKeepsTokenAndOtherPlaceholdersResolve() {
+        Map<String, ParameterEvaluator> evaluators = Map.of(
+                "known", new ConstantEvaluator(7.0)
+        );
+        String result = LoreResolver.resolve("Known: {known}, unknown: {bogus}.", evaluators, 50, 15);
+        assertEquals("Known: 7, unknown: {bogus}.", result);
+    }
+
+    @Test
     void linearEvaluatorOutput() {
         var linear = new LinearEvaluator(10.0, 2.0, 0.0, 100.0);
         Map<String, ParameterEvaluator> evaluators = Map.of("damage", linear);

@@ -71,7 +71,7 @@ abilities:
     display_name: "Endurance"
     unlock_level: 75
     trigger: "elytra_glide"          # P2-8 synergy: gliding
-    display: { lore: [ "&7Gliding grants &a{multiplier}x&7 speed & &a{jump}x&7 jump on landing for {duration}s." ] }
+    display: { lore: [ "&7Gliding grants &a{multiplier}x&7 speed & jump on landing for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
         parameters:
@@ -88,7 +88,7 @@ abilities:
     display_name: "Gravity Defier"
     unlock_level: 100
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Permanent &a{multiplier}x&7 speed & &a{jump}x&7 jump while airborne-landed." ] }
+    display: { lore: [ "&7Permanent &a{multiplier}x&7 speed & jump while airborne-landed." ] }
     mechanics:
       - type: "core:speed_bonus"
         parameters:

@@ -80,18 +80,18 @@ abilities:
     display_name: "Juggernaut"
     unlock_level: 100
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7In heavy armor: +&a{amount}&7 armor & +&a{kb}&7 KB resist on hit." ] }
+    display: { lore: [ "&7In heavy armor: +&a{amount}&7 armor & KB resist on hit." ] }
     mechanics:
-      - type: "core:armor_bonus"
-        filters: [ { state: "equipped:heavy" } ]
-        parameters:
-          amount: { linear: { base: 3.0, step: 0.05, max: 6.0 } }
-          uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
-          duration: { constant: 10.0 }
       - type: "core:knockback_resist"
         filters: [ { state: "equipped:heavy" } ]
         parameters:
           amount: { linear: { base: 0.5, step: 0.005, max: 0.9 } }
+          uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
+          duration: { constant: 10.0 }
+      - type: "core:armor_bonus"
+        filters: [ { state: "equipped:heavy" } ]
+        parameters:
+          amount: { linear: { base: 3.0, step: 0.05, max: 6.0 } }
           uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
           duration: { constant: 10.0 }
     feedback: { notify: { action_bar: false } }

@@ -2,7 +2,7 @@
 
 ### Bugs
 - [x] [ISSUE-179](ISSUE-179.md) - Web editor: skill-level lore lines not written to file on save
-- [ ] [ISSUE-180](ISSUE-180.md) - Unresolved lore placeholders spam warnings and render raw in tooltips
+- [x] [ISSUE-180](ISSUE-180.md) - Unresolved lore placeholders spam warnings and render raw in tooltips
 
 ### Improvements
 - [ ] [ISSUE-181](ISSUE-181.md) - Replace hard-coded equipped:* states with equipped_all / equipped_any + bundled armor tags

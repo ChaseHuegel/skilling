@@ -67,6 +67,20 @@ class SkillYamlValidationTest {
     }
 
     @Test
+    void everyAbilityLoreResolvesWithNoRawPlaceholders() {
+        for (File file : skillFiles()) {
+            SkillDefinition def = skillManager.parseSkill(file);
+            for (SkillDefinition.Ability ability : def.abilities()) {
+                for (String line : io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder
+                        .resolveAbilityLore(ability, 50)) {
+                    assertFalse(line.contains("{"),
+                            file.getName() + ": ability '" + ability.id() + "' lore still contains raw token: " + line);
+                }
+            }
+        }
+    }
+
+    @Test
     void playerInteractXpSourceIsFiltered() {
         for (File file : skillFiles()) {
             SkillDefinition def = skillManager.parseSkill(file);

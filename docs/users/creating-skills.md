@@ -347,6 +347,15 @@ A `&7Costs` line lists what the ability consumes (exhaustion hunger, `cost` item
 and an `&8Requires` line lists the activation conditions (states, held items,
 cooldown, minimum hunger) — keep both in sync with the YAML.
 
+**Placeholder resolution:** ability lore placeholders resolve against the
+union of that ability's mechanic parameter keys. For example, a
+`core:yield_multiplier` mechanic with a `yield_chance` parameter makes
+`{yield_chance}` available in that ability's lore, injecting the live evaluator
+output for the player's current level. Only skill-level lore supports
+`{level}`, `{max_level}`, `{skill_name}`, and `{xp}`. A placeholder that does
+not match any available key is rejected at load time (fail-fast), so a typo or
+stale token fails the skill file parse instead of rendering raw in the tooltip.
+
 ## Built-In Mechanics
 
 See [capabilities.md](capabilities.md) for a full catalog of available mechanics, triggers, and evaluators.

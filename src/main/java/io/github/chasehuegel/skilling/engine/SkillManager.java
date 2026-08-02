@@ -27,6 +27,9 @@ import java.util.*;
  */
 public final class SkillManager {
 
+    private static final java.util.regex.Pattern PLACEHOLDER_PATTERN =
+            java.util.regex.Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
+
     private final EvaluatorRegistry evaluatorRegistry;
     private final MechanicRegistry mechanicRegistry;
     private final TriggerRegistry triggerRegistry;
@@ -240,6 +243,7 @@ public final class SkillManager {
 
             // Mechanics
             List<SkillDefinition.MechanicEntry> mechanics = parseMechanics(abilityMap.get("mechanics"));
+            validateAbilityLorePlaceholders(id, abilityDisplay, mechanics);
 
             // Feedback
             SkillDefinition.Feedback feedback = parseFeedback(castMap(abilityMap.get("feedback")));
@@ -261,6 +265,38 @@ public final class SkillManager {
         @SuppressWarnings("unchecked")
         List<String> lore = (List<String>) map.getOrDefault("lore", List.of());
         return new SkillDefinition.AbilityDisplay(lore);
+    }
+
+    /**
+     * Fail-fast validation that every {@code {placeholder}} in an ability's lore
+     * resolves against that ability's mechanic parameter keys. The lore resolver
+     * would otherwise keep unknown tokens verbatim (and log a warning at GUI-open
+     * time), so a typo or stale placeholder is rejected at load instead.
+     *
+     * @param abilityId the ability id (for error messages)
+     * @param display   the ability's parsed display/lore
+     * @param mechanics the ability's parsed mechanic entries
+     * @throws IllegalArgumentException if any lore placeholder has no matching mechanic parameter
+     */
+    private static void validateAbilityLorePlaceholders(String abilityId,
+            SkillDefinition.AbilityDisplay display,
+            List<SkillDefinition.MechanicEntry> mechanics) {
+        if (display.lore() == null || display.lore().isEmpty()) return;
+        Set<String> paramKeys = new HashSet<>();
+        for (SkillDefinition.MechanicEntry me : mechanics) {
+            paramKeys.addAll(me.parameters().keySet());
+        }
+        for (String line : display.lore()) {
+            var matcher = PLACEHOLDER_PATTERN.matcher(line);
+            while (matcher.find()) {
+                String placeholder = matcher.group(1);
+                if (!paramKeys.contains(placeholder)) {
+                    throw new IllegalArgumentException("Ability '" + abilityId
+                            + "' lore references unknown placeholder {" + placeholder
+                            + "}; available mechanic parameters: " + paramKeys);
+                }
+            }
+        }
     }
 
     private SkillDefinition.Requirements parseRequirements(Map<String, Object> map) {

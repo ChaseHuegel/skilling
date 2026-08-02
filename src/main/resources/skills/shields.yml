@@ -95,7 +95,7 @@ abilities:
     display_name: "Indomitable"
     unlock_level: 100
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Blocking: &a{chance}%&7 block & &a{damage}&7 reflect, knockback resist +&a{kb}&7." ] }
+    display: { lore: [ "&7Blocking: &a{chance}%&7 block & &a{damage}&7 reflect, knockback resist +&a{amount}&7." ] }
     mechanics:
       - type: "core:block_damage"
         filters: [ { state: "is_blocking" } ]

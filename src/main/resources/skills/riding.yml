@@ -86,7 +86,7 @@ abilities:
     display_name: "Legendary Rider"
     unlock_level: 100
     trigger: "ride_horse"
-    display: { lore: [ "&7Mounting grants &a{multiplier}x&7 damage & &a{speed}x&7 speed for {duration}s." ] }
+    display: { lore: [ "&7Mounting grants &a{multiplier}x&7 speed & bonus damage for {duration}s." ] }
     mechanics:
       - type: "core:modify_damage"
         filters: [ { state: "is_riding" } ]

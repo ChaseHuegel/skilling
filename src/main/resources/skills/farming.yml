@@ -81,8 +81,7 @@ abilities:
     trigger: "block_break"
     display:
       lore:
-        - "&7Crops auto-replant &a{replant_chance}%&7 of the time."
-        - "&7Harvest Wave chain limit +{chain_bonus}."
+        - "&7Crops auto-replant; bonus seed return &a{yield_chance}%&7."
     mechanics:
       - type: "core:auto_replant"
       - type: "core:yield_multiplier"      # sub-scaling proxy: bonus seed return chance

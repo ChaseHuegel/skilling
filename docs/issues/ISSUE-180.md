@@ -22,10 +22,10 @@ Opening the skill GUI after a fresh reload logs several unresolved-placeholder w
 The unresolved placeholders also stay literally in the tooltip lines, so players see raw tokens instead of formatted values.
 
 ## Implementation Requirements
-- [ ] Identify every ability lore placeholder that fails to resolve and align it with the actual mechanic parameter key — fix either the YAML lore text or the parameter name.
-- [ ] After the fix, opening the GUI after a fresh reload produces zero unresolved-placeholder warnings.
-- [ ] Document the placeholder resolution convention: ability lore placeholders resolve against that ability's mechanic parameter keys; only `{level}`, `{max_level}`, `{skill_name}`, `{xp}` are available at the skill level.
-- [ ] Consider moving detection to config-load (fail-fast at parse) instead of warning lazily at GUI-open time.
+- [x] Identify every ability lore placeholder that fails to resolve and align it with the actual mechanic parameter key — fix either the YAML lore text or the parameter name.
+- [x] After the fix, opening the GUI after a fresh reload produces zero unresolved-placeholder warnings.
+- [x] Document the placeholder resolution convention: ability lore placeholders resolve against that ability's mechanic parameter keys; only `{level}`, `{max_level}`, `{skill_name}`, `{xp}` are available at the skill level.
+- [x] Consider moving detection to config-load (fail-fast at parse) instead of warning lazily at GUI-open time.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -45,7 +45,7 @@ The unresolved placeholders also stay literally in the tooltip lines, so players
   - Prefer fixing the YAML lore/params where a real value is intended; a "no such param" warning should be impossible in shipped configs.
 
 ## Verification & Definition of Done
-- [ ] `./gradlew build` and `./gradlew test` pass
-- [ ] Open the skill GUI after a fresh reload → zero `Unresolved lore placeholder` warnings
-- [ ] Every tooltip placeholder renders a formatted value (no raw `{...}` tokens)
-- [ ] Unit test coverage for `LoreResolver` behavior with unknown placeholders
+- [x] `./gradlew build` and `./gradlew test` pass
+- [x] Open the skill GUI after a fresh reload → zero `Unresolved lore placeholder` warnings
+- [x] Every tooltip placeholder renders a formatted value (no raw `{...}` tokens)
+- [x] Unit test coverage for `LoreResolver` behavior with unknown placeholders
