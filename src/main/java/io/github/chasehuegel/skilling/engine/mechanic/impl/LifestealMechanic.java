@@ -17,7 +17,7 @@ public record LifestealMechanic() implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof EntityDamageByEntityEvent de)) return false;
-        if (!de.getDamager().equals(player)) return false;
+        if (!player.equals(EntityDamageResolver.resolveDamagerPlayer(de))) return false;
         double percentage = ((Number) params.getOrDefault("percentage", 0)).doubleValue();
         if (percentage <= 0) return false;
         double healAmount = de.getFinalDamage() * (percentage / 100.0);

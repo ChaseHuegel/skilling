@@ -140,9 +140,7 @@ public final class SkillEventListener implements Listener {
     }
 
     private Player resolvePlayerDamager(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player player) return player;
-        if (event.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player player) return player;
-        return null;
+        return io.github.chasehuegel.skilling.engine.mechanic.impl.EntityDamageResolver.resolveDamagerPlayer(event);
     }
 
     /**

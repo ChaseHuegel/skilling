@@ -26,7 +26,7 @@
 - [x] [ISSUE-125](ISSUE-125.md) - Fix `ModifyCraftOutputMechanic` shift-click craft duplication
 - [x] [ISSUE-128](ISSUE-128.md) - Fix `ChainBreakMechanic` durability cost and pipeline re-dispatch
 - [x] [ISSUE-127](ISSUE-127.md) - Cap `AreaHarvestMechanic` scan bounds and gate per-block breaking
-- [ ] [ISSUE-129](ISSUE-129.md) - Resolve projectile damagers in damage mechanics
+- [x] [ISSUE-129](ISSUE-129.md) - Resolve projectile damagers in damage mechanics
 - [ ] [ISSUE-174](ISSUE-174.md) - Rework `ProjectileReturnMechanic` — preserve projectile metadata, prevent duplication, support arrows
 - [ ] [ISSUE-121](ISSUE-121.md) - Run damage-cancelling mechanics at an early priority instead of MONITOR
 - [ ] [ISSUE-123](ISSUE-123.md) - Wire the `level_up` trigger to `SkillingLevelUpEvent` instead of vanilla level changes

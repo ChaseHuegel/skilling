@@ -19,7 +19,7 @@ public record CrowdControlMechanic() implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof EntityDamageByEntityEvent de)) return false;
-        if (!de.getDamager().equals(player)) return false;
+        if (!player.equals(EntityDamageResolver.resolveDamagerPlayer(de))) return false;
         PotionEffectType type = PotionEffectResolver.resolve(params.get("effect"));
         if (type == null) return false;
         int duration = ((Number) params.getOrDefault("duration", 3)).intValue() * 20;

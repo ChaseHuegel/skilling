@@ -47,4 +47,19 @@ class ThornsDamageMechanicTest {
         assertTrue(mechanic.execute(player, Map.of("damage", 5.0), event));
         verify(attacker).damage(5.0, player);
     }
+
+    @Test
+    void projectileDamagerResolvesShooterAsAttacker() {
+        var mechanic = new ThornsDamageMechanic();
+        var player = BukkitMock.mockPlayer();
+        var zombie = mock(org.bukkit.entity.Zombie.class);
+        var arrow = mock(org.bukkit.entity.Arrow.class);
+        when(arrow.getShooter()).thenReturn(zombie);
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getEntity()).thenReturn(player);
+        when(event.getDamager()).thenReturn(arrow);
+
+        assertTrue(mechanic.execute(player, Map.of("damage", 5.0), event));
+        verify(zombie).damage(5.0, player);
+    }
 }

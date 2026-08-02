@@ -20,10 +20,9 @@ public record ThornsDamageMechanic() implements SkillMechanic {
         if (!de.getEntity().equals(player)) return false;
         double damage = ((Number) params.getOrDefault("damage", 0)).doubleValue();
         if (damage <= 0) return false;
-        if (de.getDamager() instanceof LivingEntity attacker) {
-            attacker.damage(damage, player);
-            return true;
-        }
-        return false;
+        LivingEntity attacker = EntityDamageResolver.resolveDamagerEntity(de);
+        if (attacker == null) return false;
+        attacker.damage(damage, player);
+        return true;
     }
 }

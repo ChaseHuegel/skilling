@@ -18,7 +18,7 @@ public record ExecuteMechanic() implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof EntityDamageByEntityEvent de)) return false;
-        if (!de.getDamager().equals(player)) return false;
+        if (!player.equals(EntityDamageResolver.resolveDamagerPlayer(de))) return false;
         double threshold = ((Number) params.getOrDefault("threshold", 0)).doubleValue();
         if (threshold <= 0) return false;
         if (de.getEntity() instanceof LivingEntity target) {

@@ -21,7 +21,8 @@ public final class ApplyStatusMechanic implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof EntityDamageByEntityEvent damageEvent)) return false;
-        if (!damageEvent.getDamager().equals(player)) return false;
+        // Resolve projectile shooters so bow/snowball hits apply the status too.
+        if (!player.equals(EntityDamageResolver.resolveDamagerPlayer(damageEvent))) return false;
         if (!(damageEvent.getEntity() instanceof LivingEntity target)) return false;
 
         PotionEffectType type = PotionEffectResolver.resolve(params.get("effect"));

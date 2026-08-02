@@ -1,6 +1,6 @@
 # ISSUE-129: Resolve projectile damagers in damage mechanics
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (damage abilities silently no-op for projectile attacks)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] In the mechanics that check `de.getDamager().equals(player)` (`ApplyStatusMechanic`, `CrowdControlMechanic`, `ExecuteMechanic`, `LifestealMechanic`, `ThornsDamageMechanic`), resolve the effective player from a projectile's shooter (mirroring `SkillEventListener.resolvePlayerDamager`)
-- [ ] Ensure `entity_damage` abilities fire consistently with how the dispatch resolves the player
-- [ ] Add unit tests covering: arrow/snowball damage resolves the shooter as the player; melee damage unchanged
+- [x] In the mechanics that check `de.getDamager().equals(player)` (`ApplyStatusMechanic`, `CrowdControlMechanic`, `ExecuteMechanic`, `LifestealMechanic`, `ThornsDamageMechanic`), resolve the effective player from a projectile's shooter (mirroring `SkillEventListener.resolvePlayerDamager`)
+- [x] Ensure `entity_damage` abilities fire consistently with how the dispatch resolves the player
+- [x] Add unit tests covering: arrow/snowball damage resolves the shooter as the player; melee damage unchanged
 
 ## Technical Specifications & Context
 
@@ -35,7 +35,7 @@ Add a shared resolution (e.g. static helper returning the owning player from the
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: arrow hit resolves shooter as the player for lifesteal/execute
-- [ ] Unit test: melee hit behavior is unchanged
-- [ ] Unit test: non-player damager (mob projectile) returns false
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: arrow hit resolves shooter as the player for lifesteal/execute
+- [x] Unit test: melee hit behavior is unchanged
+- [x] Unit test: non-player damager (mob projectile) returns false
