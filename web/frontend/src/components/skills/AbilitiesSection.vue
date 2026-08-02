@@ -8,6 +8,7 @@ import { useDragReorder } from '../../composables/useDragReorder'
 import { useRegistriesStore } from '../../stores/registries'
 import { STATE_SUGGESTIONS } from '../common/stateFilters'
 import { parseAmpersandCodes, renderFormattedText } from '../../utils/minecraftColors'
+import { stableKey } from '../../utils/stableKey'
 
 const registriesStore = useRegistriesStore()
 
@@ -160,6 +161,7 @@ interface OnFailure {
 }
 
 interface Ability {
+  _key?: string
   id: string
   displayName: string
   unlockLevel: number
@@ -200,20 +202,28 @@ const STATE_OPTIONS = computed(() =>
   registriesStore.stateFilters.length > 0 ? registriesStore.stateFilters : STATE_SUGGESTIONS
 )
 
-const expanded = ref<Record<number, boolean>>({})
+const expanded = ref<Record<string, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)
-const newFailureReason = ref<Record<number, string>>({})
+const newFailureReason = ref<Record<string, string>>({})
 const loreDragIndex = ref<string | null>(null)
-const pendingState = ref<Record<number, string>>({})
+const pendingState = ref<Record<string, string>>({})
 const sectionExpanded = ref<Record<string, boolean>>({})
 
+/** Stable per-row identity used for expanded-state and v-for keys. */
+function abilityKey(ability: Ability): string {
+  if (!ability._key) {
+    ability._key = stableKey()
+  }
+  return ability._key
+}
+
 function toggleSection(abilityIdx: number, sectionKey: string) {
-  const key = `${abilityIdx}-${sectionKey}`
+  const key = `${abilityKey(props.modelValue[abilityIdx])}-${sectionKey}`
   sectionExpanded.value[key] = !sectionExpanded.value[key]
 }
 
 function isSectionExpanded(abilityIdx: number, sectionKey: string): boolean {
-  const key = `${abilityIdx}-${sectionKey}`
+  const key = `${abilityKey(props.modelValue[abilityIdx])}-${sectionKey}`
   return sectionExpanded.value[key] !== false
 }
 
@@ -234,7 +244,8 @@ function sectionCount(ability: Ability, sectionKey: string): number | null {
 }
 
 function toggleExpand(idx: number) {
-  expanded.value[idx] = !expanded.value[idx]
+  const key = abilityKey(props.modelValue[idx])
+  expanded.value[key] = !expanded.value[key]
 }
 
 function isAbilityActive(ability: Ability): boolean {
@@ -244,6 +255,7 @@ function isAbilityActive(ability: Ability): boolean {
 
 function emptyAbility(): Ability {
   return {
+    _key: stableKey(),
     id: '',
     displayName: '',
     unlockLevel: 0,
@@ -308,6 +320,7 @@ function duplicateAbility(index: number) {
   const source = props.modelValue[index]
   const cloned: Ability = {
     ...JSON.parse(JSON.stringify(source)),
+    _key: stableKey(),
     id: source.id ? source.id + '_copy' : '',
   }
   const copy = [...props.modelValue]
@@ -619,7 +632,7 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
 
     <div
       v-for="(ability, idx) in modelValue"
-      :key="idx"
+      :key="abilityKey(ability)"
       :id="'ability-' + ability.id"
       class="ability-card"
       :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
@@ -640,7 +653,7 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
         <span class="editor-ability-type-badge" :class="isAbilityActive(ability) ? 'badge-active' : 'badge-passive'">
           {{ isAbilityActive(ability) ? 'Active' : 'Passive' }}
         </span>
-        <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
+        <span class="expand-toggle">{{ expanded[abilityKey(ability)] ? '▼' : '▶' }}</span>
         <button
           class="btn btn-ghost btn-sm"
           title="Duplicate"
@@ -661,7 +674,7 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
       </div>
 
       <div
-        v-if="expanded[idx]"
+        v-if="expanded[abilityKey(ability)]"
         class="ability-body"
       >
         <div class="field-row">

@@ -3,8 +3,10 @@ import { computed } from 'vue'
 import AppCombobox from './AppCombobox.vue'
 import { useRegistriesStore } from '../../stores/registries'
 import { STATE_SUGGESTIONS as FALLBACK_STATE_SUGGESTIONS } from './stateFilters'
+import { stableKey } from '../../utils/stableKey'
 
 interface FilterEntry {
+  _key?: string
   target?: string
   state?: string
   tool?: string
@@ -25,8 +27,16 @@ const stateSuggestions = computed(() =>
   registriesStore.stateFilters.length > 0 ? registriesStore.stateFilters : FALLBACK_STATE_SUGGESTIONS
 )
 
+/** Stable per-row identity; `_key` is assigned at creation and preserved by spreads. */
+function filterKey(entry: FilterEntry): string {
+  if (!entry._key) {
+    entry._key = stableKey()
+  }
+  return entry._key
+}
+
 function addFilter() {
-  emit('update:modelValue', [...props.modelValue, {}])
+  emit('update:modelValue', [...props.modelValue, { _key: stableKey() }])
 }
 
 function removeFilter(index: number) {
@@ -46,7 +56,7 @@ function updateFilter(index: number, key: keyof FilterEntry, value: string) {
   <div class="filter-builder">
     <div
       v-for="(entry, idx) in modelValue"
-      :key="idx"
+      :key="filterKey(entry)"
       class="filter-entry"
     >
       <div class="filter-fields">

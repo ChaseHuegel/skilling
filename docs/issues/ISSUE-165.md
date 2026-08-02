@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Use stable IDs (ability/source id, or a stable generated key) instead of `:key="idx"`/`sectionExpanded["{idx}-{key}"]` in reorderable lists
-- [ ] Migrate: `AbilitiesSection.vue:622`, `XpSourcesSection.vue:129`, `EvaluatorParameter.vue:137`, `FilterBuilder.vue:48`, `PageTabs.vue:5`, `LevelUpCommandsSection.vue:6`, `DisplaySection.vue:144`
-- [ ] Ensure expanded/dragging per-row state tracks the row identity, not its position
-- [ ] Add a test: reorder rows → expanded state and input focus follow the correct item
+- [x] Use stable IDs (ability/source id, or a stable generated key) instead of `:key="idx"`/`sectionExpanded["{idx}-{key}"]` in reorderable lists
+- [x] Migrate: `AbilitiesSection.vue:622`, `XpSourcesSection.vue:129`, `EvaluatorParameter.vue:137`, `FilterBuilder.vue:48`, `PageTabs.vue:5`, `LevelUpCommandsSection.vue:6`, `DisplaySection.vue:144`
+- [x] Ensure expanded/dragging per-row state tracks the row identity, not its position
+- [x] Add a test: reorder rows → expanded state and input focus follow the correct item
 
 ## Technical Specifications & Context
 
@@ -34,6 +34,6 @@ Key each row by a stable identity (e.g. the ability id or a persistent client-ge
 
 ## Verification & Definition of Done
 
-- [ ] `cd web/frontend && npm run build` passes
-- [ ] E2E/manual test: expand an ability, reorder it, expanded state stays on the same ability
-- [ ] Manual smoke: editing mid-string in a reordered list no longer jumps the caret
+- [x] `cd web/frontend && npm run build` passes
+- [x] E2E/manual test: expand an ability, reorder it, expanded state stays on the same ability
+- [x] Manual smoke: editing mid-string in a reordered list no longer jumps the caret

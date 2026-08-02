@@ -2,7 +2,7 @@
   <div class="page-tabs">
     <div
       v-for="(page, idx) in pages"
-      :key="idx"
+      :key="keyFor(page)"
       class="page-tab"
       :class="{ 'page-tab-active': idx === activeIndex, 'page-tab-drag-over': dragOverIndex === idx && dragOverIndex !== dragSourceIndex }"
       draggable="true"
@@ -137,6 +137,20 @@ const emit = defineEmits<{
   moveLeft: [index: number]
   moveRight: [index: number]
 }>()
+
+// Stable DOM key per page: keyed by object identity so a drag reorder (which
+// keeps the same page objects) moves the tab nodes instead of reusing them by
+// index, preserving rename-input focus across reorders.
+const pageKeys = new WeakMap<PageTabData, string>()
+let pageKeySeed = 0
+function keyFor(page: PageTabData): string {
+  let key = pageKeys.get(page)
+  if (!key) {
+    key = `page-${(pageKeySeed += 1)}`
+    pageKeys.set(page, key)
+  }
+  return key
+}
 
 const renamingIndex = ref<number | null>(null)
 const renameInput = ref<HTMLInputElement | null>(null)

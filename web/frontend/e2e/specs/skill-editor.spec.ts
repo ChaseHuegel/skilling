@@ -127,6 +127,49 @@ test.describe('Skill Editor', () => {
     await expect(colored).toHaveCSS('font-weight', '700');
   });
 
+  test('expanded state follows an ability through a drag reorder', async ({ page }) => {
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    await dashboard.clickSkill('Mining');
+
+    const editor = new SkillEditorPage(page);
+    await editor.waitForLoad();
+    await editor.assertNoError();
+
+    const geoCard = page.locator('#ability-geologist');
+    const prospectorCard = page.locator('#ability-prospector');
+    await geoCard.waitFor({ state: 'visible', timeout: 10000 });
+
+    const orderBefore = await page.locator('.ability-card').evaluateAll(cards =>
+      cards.map(c => c.id).filter(Boolean)
+    );
+
+    // Expand geologist and verify its body is open.
+    await geoCard.locator('.ability-header').click();
+    await expect(geoCard.locator('.ability-body')).toBeVisible();
+
+    // Reorder geologist over the next ability using the native drag handlers
+    // (the cards implement @dragstart/@dragover/@dragend directly).
+    await geoCard.dispatchEvent('dragstart');
+    await prospectorCard.dispatchEvent('dragover');
+    await geoCard.dispatchEvent('dragend');
+
+    // The reorder must have actually moved geologist.
+    const orderAfter = await page.locator('.ability-card').evaluateAll(cards =>
+      cards.map(c => c.id).filter(Boolean)
+    );
+    expect(orderAfter).not.toEqual(orderBefore);
+
+    // Expanded state is keyed by the ability's stable identity, so geologist
+    // stays expanded at its new position while the row that took its old slot
+    // does not inherit the expanded state.
+    await expect(geoCard.locator('.ability-body')).toBeVisible();
+    const firstCard = page.locator('.ability-card').first();
+    if ((await firstCard.getAttribute('id')) !== 'ability-geologist') {
+      await expect(firstCard.locator('.ability-body')).not.toBeVisible();
+    }
+  });
+
   test('a failed leave-save keeps the user on the page with edits intact', async ({ page }) => {
     // Force every skill PUT to fail so the save cannot succeed
     await page.route('**/api/skills/**', route => {

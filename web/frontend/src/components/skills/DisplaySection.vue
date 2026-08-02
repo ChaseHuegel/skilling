@@ -2,13 +2,19 @@
 import { ref } from 'vue'
 import MaterialPicker from '../common/MaterialPicker.vue'
 import { parseAmpersandCodes, type FormattedSegment } from '../../utils/minecraftColors'
+import { stableKey } from '../../utils/stableKey'
+
+interface LoreLine {
+  _key: string
+  text: string
+}
 
 interface DisplayConfig {
   icon: string
   customModelData: number
   color: string
   style: string
-  lore: string[]
+  lore: LoreLine[]
 }
 
 const props = defineProps<{
@@ -30,27 +36,31 @@ function setField<K extends keyof DisplayConfig>(key: K, val: DisplayConfig[K]) 
   emit('update:modelValue', { ...props.modelValue, [key]: val })
 }
 
+function loreLines(): LoreLine[] {
+  return (props.modelValue.lore || []).map(line => {
+    if (typeof line === 'string') return { _key: stableKey(), text: line }
+    return line
+  })
+}
+
 function addLoreLine() {
-  setField('lore', [...(props.modelValue.lore || []), ''])
+  setField('lore', [...loreLines(), { _key: stableKey(), text: '' }])
 }
 
 function removeLoreLine(index: number) {
-  const newLore = [...(props.modelValue.lore || [])]
+  const newLore = [...loreLines()]
   newLore.splice(index, 1)
   setField('lore', newLore)
 }
 
 function updateLoreLine(index: number, value: string) {
-  const newLore = [...(props.modelValue.lore || [])]
-  newLore[index] = value
+  const newLore = [...loreLines()]
+  newLore[index] = { ...newLore[index], text: value }
   setField('lore', newLore)
 }
 
 function insertPlaceholder(placeholder: string) {
-  addLoreLine()
-  const newLore = [...(props.modelValue.lore || [])]
-  newLore[newLore.length - 1] = placeholder
-  setField('lore', newLore)
+  setField('lore', [...loreLines(), { _key: stableKey(), text: placeholder }])
 }
 
 function onLoreDragStart(event: DragEvent, index: number) {
@@ -63,7 +73,7 @@ function onLoreDragStart(event: DragEvent, index: number) {
 function onLoreDragOver(event: DragEvent, index: number) {
   event.preventDefault()
   if (loreDragIndex.value === null || loreDragIndex.value === index) return
-  const lore = [...(props.modelValue.lore || [])]
+  const lore = [...loreLines()]
   const item = lore.splice(loreDragIndex.value, 1)[0]
   lore.splice(index, 0, item)
   loreDragIndex.value = index
@@ -141,7 +151,7 @@ function segmentStyle(seg: FormattedSegment): string {
         <div v-if="modelValue.lore && modelValue.lore.length > 0" class="lore-list">
           <div
             v-for="(line, i) in modelValue.lore"
-            :key="i"
+            :key="line._key"
             class="lore-row"
             draggable="true"
             @dragstart="onLoreDragStart($event, i)"
@@ -152,7 +162,7 @@ function segmentStyle(seg: FormattedSegment): string {
             <input
               class="lore-input"
               type="text"
-              :value="line"
+              :value="line.text"
               @input="updateLoreLine(i, ($event.target as HTMLInputElement).value)"
               placeholder="&7Enter lore text..."
             />
@@ -165,11 +175,11 @@ function segmentStyle(seg: FormattedSegment): string {
           <div class="preview-label">Preview:</div>
           <div
             v-for="(line, i) in modelValue.lore"
-            :key="'preview-' + i"
+            :key="'preview-' + line._key"
             class="preview-line"
           >
             <span
-              v-for="(seg, sIdx) in parseAmpersandCodes(line)"
+              v-for="(seg, sIdx) in parseAmpersandCodes(line.text)"
               :key="sIdx"
               :style="segmentStyle(seg)"
             >{{ seg.text }}</span>

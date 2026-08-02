@@ -41,6 +41,7 @@ All commits in this repository MUST follow `../docs/dev/CONVENTIONS-COMMITS.md`.
 - `v-model` is used for data flow (components emit `update:modelValue`)
 - No PrimeVue components are used directly; all inputs are plain HTML with scoped CSS styling. This keeps the bundle small and avoids framework lock-in.
 - Styles are scoped (`<style scoped>`) with CSS custom properties from PrimeVue's theme (`var(--p-*)`). Fallback values are provided for when the theme isn't loaded (e.g., `var(--p-primary-color, #3b82f6)`).
+- **Reorderable/editable row lists must key on a stable identity, never `:key="idx"`:** object rows carry a client-only `_key` (from `utils/stableKey.ts`, assigned at creation and preserved through spreads; stripped from the save payload via `stripRowKeys` in `SkillEditorPage.vue`) and per-row state (expanded, drag) is keyed by that identity. Plain-string lists use a component-local parallel key array. This keeps expanded state and input focus attached to the right row after a drag reorder.
 
 ### Backend REST API
 

@@ -3,7 +3,7 @@
         <div class="commands-list" v-if="localCommands.length > 0">
             <div
                 v-for="(cmd, i) in localCommands"
-                :key="i"
+                :key="keys[i]"
                 class="command-row"
                 draggable="true"
                 @dragstart="onDragStart($event, i)"
@@ -35,12 +35,13 @@
             >{{ ph }}</button>
         </div>
 
-        <button class="btn-add" @click="addCommand">+ Add Command</button>
+        <button class="btn-add" @click="addCommand()">+ Add Command</button>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { stableKey } from '../../utils/stableKey';
 
 const PLACEHOLDERS = ['{player}', '{level}', '{skill_id}', '{skill_name}'];
 
@@ -52,24 +53,38 @@ const emit = defineEmits<{
     'update:modelValue': [value: string[]];
 }>();
 
-const localCommands = ref<string[]>([...props.modelValue]);
+const localCommands = ref<string[]>([]);
+const keys = ref<string[]>([]);
 const dragIndex = ref<number | null>(null);
+let lastEmitted = '';
 
-watch(() => props.modelValue, (val) => {
+function seedFromProps(val: string[]) {
     localCommands.value = [...val];
-});
+    keys.value = val.map(() => stableKey());
+}
+
+// Only re-seed on genuine external changes (initial load, discard). Our own
+// emits round-trip through the parent and must keep their stable keys so a
+// drag reorder does not remount rows and drop input focus.
+watch(() => props.modelValue, (val) => {
+    if (JSON.stringify(val) === lastEmitted) return;
+    seedFromProps(val);
+}, { immediate: true });
 
 function emitUpdate() {
+    lastEmitted = JSON.stringify(localCommands.value);
     emit('update:modelValue', [...localCommands.value]);
 }
 
-function addCommand() {
-    localCommands.value.push('');
+function addCommand(value = '') {
+    localCommands.value.push(value);
+    keys.value.push(stableKey());
     emitUpdate();
 }
 
 function removeCommand(index: number) {
     localCommands.value.splice(index, 1);
+    keys.value.splice(index, 1);
     emitUpdate();
 }
 
@@ -79,8 +94,7 @@ function updateCommand(index: number, value: string) {
 }
 
 function insertPlaceholder(placeholder: string) {
-    localCommands.value.push(placeholder);
-    emitUpdate();
+    addCommand(placeholder);
 }
 
 function onDragStart(event: DragEvent, index: number) {
@@ -94,7 +108,9 @@ function onDragOver(event: DragEvent, index: number) {
     event.preventDefault();
     if (dragIndex.value === null || dragIndex.value === index) return;
     const item = localCommands.value.splice(dragIndex.value, 1)[0];
+    const key = keys.value.splice(dragIndex.value, 1)[0];
     localCommands.value.splice(index, 0, item);
+    keys.value.splice(index, 0, key);
     dragIndex.value = index;
     emitUpdate();
 }

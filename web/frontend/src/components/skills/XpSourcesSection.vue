@@ -6,6 +6,7 @@ import EvaluatorParameter from '../common/EvaluatorParameter.vue'
 import AppCombobox from '../common/AppCombobox.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 import { useRegistriesStore } from '../../stores/registries'
+import { stableKey } from '../../utils/stableKey'
 
 interface FilterEntry {
   target?: string
@@ -14,6 +15,7 @@ interface FilterEntry {
 }
 
 interface XpSource {
+  _key?: string
   trigger: string
   filters: FilterEntry[]
   reward: { type: string; params: Record<string, any> }
@@ -28,16 +30,26 @@ const emit = defineEmits<{
   'update:modelValue': [value: XpSource[]]
 }>()
 
-const expanded = ref<Record<number, boolean>>({})
+const expanded = ref<Record<string, boolean>>({})
 
-watch(() => props.modelValue.length, (len) => {
-  for (let i = 0; i < len; i++) {
-    if (expanded.value[i] === undefined) expanded.value[i] = false
+/** Stable per-row identity used for expanded-state and v-for keys. */
+function sourceKey(source: XpSource): string {
+  if (!source._key) {
+    source._key = stableKey()
+  }
+  return source._key
+}
+
+watch(() => props.modelValue.length, () => {
+  for (const source of props.modelValue) {
+    const key = sourceKey(source)
+    if (expanded.value[key] === undefined) expanded.value[key] = false
   }
 }, { immediate: true })
 
 function toggleExpand(idx: number) {
-  expanded.value[idx] = !expanded.value[idx]
+  const key = sourceKey(props.modelValue[idx])
+  expanded.value[key] = !expanded.value[key]
 }
 
 const sources = computed({
@@ -88,26 +100,28 @@ function removeSource(index: number) {
 }
 
 function addSource() {
-  const idx = props.modelValue.length
-  expanded.value[idx] = true
-  emit('update:modelValue', [
-    ...props.modelValue,
-    {
-      trigger: 'block_break',
-      filters: [],
-      reward: { type: 'constant', params: { value: 0 } },
-    },
-  ])
+  const key = stableKey()
+  const source: XpSource = {
+    _key: key,
+    trigger: 'block_break',
+    filters: [],
+    reward: { type: 'constant', params: { value: 0 } },
+  }
+  expanded.value[key] = true
+  emit('update:modelValue', [...props.modelValue, source])
 }
 
 function duplicateSource(index: number) {
   const source = props.modelValue[index]
-  const idx = props.modelValue.length
-  expanded.value[idx] = true
-  emit('update:modelValue', [
-    ...props.modelValue,
-    { ...source, filters: [...source.filters], reward: { ...source.reward, params: { ...source.reward.params } } },
-  ])
+  const key = stableKey()
+  const cloned: XpSource = {
+    _key: key,
+    ...source,
+    filters: [...source.filters],
+    reward: { ...source.reward, params: { ...source.reward.params } },
+  }
+  expanded.value[key] = true
+  emit('update:modelValue', [...props.modelValue, cloned])
 }
 </script>
 
@@ -126,7 +140,7 @@ function duplicateSource(index: number) {
 
     <div
       v-for="(source, idx) in modelValue"
-      :key="idx"
+      :key="sourceKey(source)"
       class="xp-source-card"
       :class="{ 'drag-over': dragIndex !== null && dragIndex !== idx }"
       draggable="true"
@@ -141,7 +155,7 @@ function duplicateSource(index: number) {
         <span class="drag-handle" title="Drag to reorder" @click.stop>&#8801;</span>
         <span class="source-title">Source #{{ idx + 1 }}</span>
         <span class="source-trigger">{{ source.trigger }}</span>
-        <span class="expand-toggle">{{ expanded[idx] ? '▼' : '▶' }}</span>
+        <span class="expand-toggle">{{ expanded[sourceKey(source)] ? '▼' : '▶' }}</span>
         <button
           class="btn btn-ghost btn-sm"
           title="Duplicate"
@@ -162,7 +176,7 @@ function duplicateSource(index: number) {
       </div>
 
       <div
-        v-if="expanded[idx]"
+        v-if="expanded[sourceKey(source)]"
         class="source-body"
       >
         <div class="field-row">

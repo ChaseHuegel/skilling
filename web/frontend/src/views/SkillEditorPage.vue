@@ -16,7 +16,7 @@
                                 v-for="(line, i) in form.lore"
                                 :key="i"
                                 class="banner-lore-line"
-                            >{{ line }}</div>
+                            >{{ typeof line === 'string' ? line : line.text }}</div>
                         </div>
                     </div>
                 </div>
@@ -98,6 +98,7 @@ import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
 import { cooldownToNumber } from '../utils/cooldown';
+import { stableKey } from '../utils/stableKey';
 import { useSkillsStore } from '../stores/skills';
 import MinecraftIcon from '../components/common/MinecraftIcon.vue';
 import SkillIdentitySection from '../components/skills/SkillIdentitySection.vue';
@@ -258,6 +259,60 @@ function revertParticleOffsets(particles: any[]): any[] {
     });
 }
 
+function ensureKey(row: any): string {
+    if (!row || typeof row !== 'object') return '';
+    if (!row._key) row._key = stableKey();
+    return row._key;
+}
+
+function ensureArrayKeys(arr: any[]): void {
+    for (const item of arr || []) ensureKey(item);
+}
+
+/**
+ * Assigns stable client-only `_key` identities to every reorderable row (and
+ * nested filter/milestone rows) so the editor's v-for keys and per-row state
+ * survive drag reorders. Runs before the clean snapshot so key assignment never
+ * flips the dirty flag on load.
+ */
+function enrichFormKeys(target: any): void {
+    for (const ab of target.abilities || []) {
+        ensureKey(ab);
+        ensureArrayKeys(ab.lore && ab.lore.filter((l: any) => typeof l === 'object'));
+        for (const mech of ab.mechanics || []) {
+            ensureArrayKeys(mech.filters);
+            for (const p of mech.params || []) {
+                ensureArrayKeys(p.evaluator?.params?.milestones);
+            }
+        }
+    }
+    for (const src of target.xpSources || []) {
+        ensureKey(src);
+        ensureArrayKeys(src.filters);
+        ensureArrayKeys(src.reward?.params?.milestones);
+    }
+    if (Array.isArray(target.lore)) {
+        target.lore = target.lore.map((t: string) => ({ _key: stableKey(), text: t }));
+    }
+}
+
+/**
+ * Recursively removes client-only `_key` fields so they never reach the backend
+ * (which rejects unknown JSON properties).
+ */
+function stripRowKeys(value: any): any {
+    if (Array.isArray(value)) return value.map(stripRowKeys);
+    if (value && typeof value === 'object') {
+        const out: Record<string, any> = {};
+        for (const [k, v] of Object.entries(value)) {
+            if (k === '_key') continue;
+            out[k] = stripRowKeys(v);
+        }
+        return out;
+    }
+    return value;
+}
+
 function apiAbilityToForm(ab: any): any {
     return {
         ...ab,
@@ -304,7 +359,9 @@ function formAbilityToApi(ab: any): any {
             return { ...m, params: undefined, parameters: params };
         }),
     };
-    return result;
+    // Drop client-only _key rows (abilities, filters, milestone params) before
+    // the payload is sent; the backend rejects unknown JSON properties.
+    return stripRowKeys(result);
 }
 
 onMounted(async () => {
@@ -320,6 +377,7 @@ onMounted(async () => {
                 data.abilities = data.abilities.map(apiAbilityToForm);
             }
             Object.assign(form, data);
+            enrichFormKeys(form);
             cleanForm.value = JSON.stringify(form);
             await nextTick();
             const hash = route.hash;
@@ -352,7 +410,7 @@ async function save() {
             color: form.color,
             style: form.style,
             progression: form.progression,
-            xpSources: form.xpSources,
+            xpSources: (form.xpSources || []).map(stripRowKeys),
             abilities: (form.abilities || []).map(formAbilityToApi),
             levelUpCommands: form.levelUpCommands || [],
         };
@@ -397,7 +455,7 @@ async function leaveSave() {
             color: form.color,
             style: form.style,
             progression: form.progression,
-            xpSources: form.xpSources,
+            xpSources: (form.xpSources || []).map(stripRowKeys),
             abilities: (form.abilities || []).map(formAbilityToApi),
             levelUpCommands: form.levelUpCommands || [],
         };

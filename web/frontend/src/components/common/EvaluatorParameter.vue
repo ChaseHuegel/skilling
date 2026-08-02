@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import DecimalInput from './DecimalInput.vue'
+import { stableKey } from '../../utils/stableKey'
 
 interface EvaluatorValue {
   type: string
   params: Record<string, any>
+}
+
+interface MilestoneEntry {
+  _key?: string
+  level: number
+  value: number
 }
 
 const props = defineProps<{
@@ -19,10 +26,18 @@ const emit = defineEmits<{
 
 const EVALUATOR_TYPES = ['constant', 'linear', 'milestones', 'polynomial'] as const
 
+/** Stable per-row identity; `_key` is assigned at creation and preserved by spreads. */
+function milestoneKey(entry: MilestoneEntry): string {
+  if (!entry._key) {
+    entry._key = stableKey()
+  }
+  return entry._key
+}
+
 const milestones = computed({
   get: () => {
     const entries = props.modelValue.params?.milestones
-    if (Array.isArray(entries)) return entries as { level: number; value: number }[]
+    if (Array.isArray(entries)) return entries as MilestoneEntry[]
     return []
   },
   set: (val) => {
@@ -54,7 +69,7 @@ function setParam(key: string, value: any) {
 }
 
 function addMilestone() {
-  milestones.value = [...milestones.value, { level: 0, value: 0 }]
+  milestones.value = [...milestones.value, { _key: stableKey(), level: 0, value: 0 }]
 }
 
 function removeMilestone(index: number) {
@@ -134,7 +149,7 @@ function updateMilestone(index: number, key: 'level' | 'value', val: number) {
         <div class="milestones-list">
           <div
             v-for="(entry, idx) in milestones"
-            :key="idx"
+            :key="milestoneKey(entry)"
             class="milestone-row"
           >
             <DecimalInput
