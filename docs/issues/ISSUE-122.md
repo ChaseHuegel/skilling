@@ -1,6 +1,6 @@
 # ISSUE-122: Fix inverted probability in `ModifyTameChanceMechanic`
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (higher multiplier makes taming worse)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Correct the probability math so the multiplier increases the chance of a successful tame
-- [ ] Add the required class-level Javadoc (currently missing) documenting the YAML key and parameter semantics (`src/AGENTS.md` §7)
-- [ ] Add unit tests: multiplier > 1 increases tame success frequency; multiplier = 1 leaves vanilla behavior
+- [x] Correct the probability math so the multiplier increases the chance of a successful tame
+- [x] Add the required class-level Javadoc (currently missing) documenting the YAML key and parameter semantics (`src/AGENTS.md` §7)
+- [x] Add unit tests: multiplier > 1 increases tame success frequency; multiplier = 1 leaves vanilla behavior
 
 ## Technical Specifications & Context
 
@@ -33,7 +33,7 @@ Re-roll the tame outcome: on a successful tame, cancel it with probability `1 - 
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new unit tests
-- [ ] Unit test: multiplier 2 no longer cancels roughly 50% of successful tames (stochastic test with a seeded deterministic check)
-- [ ] Unit test: multiplier 1 does not alter tame events
-- [ ] Class Javadoc documents the parameter and behavior
+- [x] `./gradlew build && ./gradlew test` pass, including new unit tests
+- [x] Unit test: multiplier 2 no longer cancels roughly 50% of successful tames (stochastic test with a seeded deterministic check)
+- [x] Unit test: multiplier 1 does not alter tame events
+- [x] Class Javadoc documents the parameter and behavior

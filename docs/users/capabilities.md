@@ -446,13 +446,16 @@ Reduces the experience level cost of anvil repairs.
 
 ### core:modify_tame_chance
 
-Multiplies the chance of successfully taming an animal.
+Scales the chance of successfully taming an animal. The tame event fires only
+after a successful vanilla roll, so a multiplier above `1.0` preserves the
+success and a multiplier below `1.0` cancels an otherwise-successful tame with
+probability `1 - multiplier` (e.g. `0.5` → half of tames are undone).
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `multiplier` | double | `1.0` | Taming chance multiplier |
+| `multiplier` | double | `1.0` | Taming chance multiplier (1.0 = vanilla) |
 
 **Event:** `EntityTameEvent`
 

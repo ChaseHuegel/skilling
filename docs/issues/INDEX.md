@@ -22,7 +22,7 @@
 - [x] [ISSUE-118](ISSUE-118.md) - Fix `ModifyFurnaceOutputMechanic` handing out furnace blocks instead of smelted product
 - [x] [ISSUE-113](ISSUE-113.md) - Persist off-hand durability in `OffhandStrikeMechanic` and filter interact actions
 - [x] [ISSUE-120](ISSUE-120.md) - Fix `XpBonusMechanic` permanent multiplier (static map never cleared)
-- [ ] [ISSUE-122](ISSUE-122.md) - Fix inverted probability in `ModifyTameChanceMechanic`
+- [x] [ISSUE-122](ISSUE-122.md) - Fix inverted probability in `ModifyTameChanceMechanic`
 - [ ] [ISSUE-125](ISSUE-125.md) - Fix `ModifyCraftOutputMechanic` shift-click craft duplication
 - [ ] [ISSUE-128](ISSUE-128.md) - Fix `ChainBreakMechanic` durability cost and pipeline re-dispatch
 - [ ] [ISSUE-127](ISSUE-127.md) - Cap `AreaHarvestMechanic` scan bounds and gate per-block breaking
