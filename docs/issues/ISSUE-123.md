@@ -1,6 +1,6 @@
 # ISSUE-123: Wire the `level_up` trigger to `SkillingLevelUpEvent` instead of vanilla level changes
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (documented trigger semantics are unreachable)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Dispatch Skilling's own `SkillingLevelUpEvent` through the trigger pipeline with key `level_up`
-- [ ] Stop (or make clearly separate) dispatching `level_up` from vanilla `PlayerLevelChangeEvent`
-- [ ] Ensure `LevelUpTrigger` (declared on `SkillingLevelUpEvent`) matches the actually-dispatched event
-- [ ] Add a unit test verifying a YAML `trigger: level_up` ability fires on a Skilling level-up
+- [x] Dispatch Skilling's own `SkillingLevelUpEvent` through the trigger pipeline with key `level_up`
+- [x] Stop (or make clearly separate) dispatching `level_up` from vanilla `PlayerLevelChangeEvent`
+- [x] Ensure `LevelUpTrigger` (declared on `SkillingLevelUpEvent`) matches the actually-dispatched event
+- [x] Add a unit test verifying a YAML `trigger: level_up` ability fires on a Skilling level-up
 
 ## Technical Specifications & Context
 
@@ -36,7 +36,7 @@ When `SkillingLevelUpEvent` is fired (after `profile.addXp` crosses a level thre
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: leveling a Skilling skill triggers `level_up` abilities/XP sources
-- [ ] Unit test: vanilla Minecraft level changes no longer fire `level_up`
-- [ ] `docs/users/capabilities.md` trigger list reflects the corrected behavior
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: leveling a Skilling skill triggers `level_up` abilities/XP sources
+- [x] Unit test: vanilla Minecraft level changes no longer fire `level_up`
+- [x] `docs/users/capabilities.md` trigger list reflects the corrected behavior

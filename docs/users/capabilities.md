@@ -605,7 +605,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `sneak` | `PlayerToggleSneakEvent` | Player starts/stops sneaking |
 | `ride_horse` | `VehicleEnterEvent` | Player mounts a vehicle |
 | `collect_xp` | `PlayerExpChangeEvent` | Collecting vanilla XP orbs |
-| `level_up` | `PlayerLevelChangeEvent` | Vanilla Minecraft level change |
+| `level_up` | `SkillingLevelUpEvent` | A Skilling skill levels up |
 | `enchant_item` | `EnchantItemEvent` | Enchanting an item at an enchanting table |
 | `shoot_bow` | `EntityShootBowEvent` | Shooting a bow or crossbow |
 | `item_damage` | `PlayerItemDamageEvent` | Item durability loss |

@@ -308,11 +308,6 @@ public final class SkillEventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onLevelUp(org.bukkit.event.player.PlayerLevelChangeEvent event) {
-        dispatch(event.getPlayer(), event, "level_up");
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEnchantItem(org.bukkit.event.enchantment.EnchantItemEvent event) {
         if (event.getEnchanter() instanceof Player player) {
             dispatch(player, event, "enchant_item");
@@ -420,9 +415,12 @@ public final class SkillEventListener implements Listener {
                     }
                     if (newLevel > oldLevel) {
                         profile.invalidatePageCache();
-                        Bukkit.getPluginManager().callEvent(
-                                new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
-                                        player, skill.id(), newLevel));
+                        var levelUpEvent = new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
+                                player, skill.id(), newLevel);
+                        Bukkit.getPluginManager().callEvent(levelUpEvent);
+                        // Route the Skilling level-up through the trigger pipeline so
+                        // trigger: level_up abilities and XP sources fire.
+                        dispatch(player, levelUpEvent, "level_up");
                         broadcastLevelUp(player, skill, newLevel);
                     }
                     debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey
