@@ -1,6 +1,6 @@
 # ISSUE-127: Cap `AreaHarvestMechanic` scan bounds and gate per-block breaking
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (unbounded chunk-loading scan + bypasses block protection)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Replace the `Integer.MAX_VALUE` default for `max_blocks` with a bounded default and clamp the radius
-- [ ] Stop the scan when `max_blocks` is reached
-- [ ] Gate each block break through the block-protection path (respect `BlockBreakEvent`/region plugins) or document and enforce a config opt-in for bypassing protections
-- [ ] Add unit tests covering: radius clamping, `max_blocks` cap enforcement, protection-gated breaks
+- [x] Replace the `Integer.MAX_VALUE` default for `max_blocks` with a bounded default and clamp the radius
+- [x] Stop the scan when `max_blocks` is reached
+- [x] Gate each block break through the block-protection path (respect `BlockBreakEvent`/region plugins) or document and enforce a config opt-in for bypassing protections
+- [x] Add unit tests covering: radius clamping, `max_blocks` cap enforcement, protection-gated breaks
 
 ## Technical Specifications & Context
 
@@ -34,7 +34,7 @@ Clamp radius to a bounded maximum (e.g. Bukkit's 32-block search cap), default `
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: radius is clamped to the configured max
-- [ ] Unit test: breaking stops at `max_blocks`
-- [ ] Unit test: protection-plugin cancellations are respected
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: radius is clamped to the configured max
+- [x] Unit test: breaking stops at `max_blocks`
+- [x] Unit test: protection-plugin cancellations are respected

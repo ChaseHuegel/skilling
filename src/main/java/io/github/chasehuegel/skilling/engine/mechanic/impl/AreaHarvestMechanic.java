@@ -1,24 +1,54 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Breaks blocks in a radius around the originally broken block on {@link BlockBreakEvent}.
  * Only breaks blocks matching the original block's type. The radius expands horizontally
- * (X/Z plane) from the origin, limited to a configurable number of total blocks.
+ * (X/Z plane) from the origin and is clamped to a bounded maximum; the scan stops once
+ * {@code max_blocks} is reached. Each harvested block goes through a synthetic
+ * {@link BlockBreakEvent} so region/protection plugins can cancel it.
  *
  * <p><b>YAML key:</b> {@code core:area_harvest}
- * <p><b>Required parameters:</b> {@code radius} (Manhattan radius, 0 = single block, 1 = 3x3, 2 = 5x5)
- * <p><b>Optional parameters:</b> {@code max_blocks} (max blocks to break, default unlimited)
+ * <p><b>Required parameters:</b> {@code radius} (Manhattan radius, 0 = single block, 1 = 3x3, 2 = 5x5; clamped to 32)
+ * <p><b>Optional parameters:</b> {@code max_blocks} (max blocks to break, default 64)
  */
 public final class AreaHarvestMechanic implements SkillMechanic {
+
+    static final int MAX_RADIUS = 32;
+    static final int DEFAULT_MAX_BLOCKS = 64;
+
+    private static final ThreadLocal<Set<Location>> PROCESSING =
+            ThreadLocal.withInitial(HashSet::new);
+
+    /**
+     * Whether a block is currently being area-harvested, so the event pipeline skips
+     * re-processing (XP/abilities) for harvested blocks.
+     *
+     * @param block the block being harvested
+     * @return true if the block is mid-harvest
+     */
+    public static boolean isChainProcessing(Block block) {
+        return PROCESSING.get().contains(block.getLocation());
+    }
+
+    static void markChainProcessingForTest(Block block) {
+        PROCESSING.get().add(block.getLocation());
+    }
+
+    static void clearChainProcessingForTest() {
+        PROCESSING.remove();
+    }
 
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
@@ -26,21 +56,40 @@ public final class AreaHarvestMechanic implements SkillMechanic {
 
         int radius = ((Number) params.getOrDefault("radius", 1.0)).intValue();
         if (radius <= 0) return false;
+        radius = Math.min(radius, MAX_RADIUS);
 
-        int maxBlocks = ((Number) params.getOrDefault("max_blocks", Integer.MAX_VALUE)).intValue();
+        int maxBlocks = ((Number) params.getOrDefault("max_blocks", DEFAULT_MAX_BLOCKS)).intValue();
+        if (maxBlocks <= 0) return false;
 
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();
-
-        int broken = 0;
-        for (int dx = -radius; dx <= radius && broken < maxBlocks; dx++) {
-            for (int dz = -radius; dz <= radius && broken < maxBlocks; dz++) {
-                if (dx == 0 && dz == 0) continue;
-                Block neighbor = origin.getRelative(dx, 0, dz);
-                if (neighbor.getType() != targetType) continue;
-                Location loc = neighbor.getLocation();
-                neighbor.breakNaturally(player.getInventory().getItemInMainHand());
-                broken++;
+        Set<Location> processing = PROCESSING.get();
+        try {
+            int broken = 0;
+            for (int dx = -radius; dx <= radius && broken < maxBlocks; dx++) {
+                for (int dz = -radius; dz <= radius && broken < maxBlocks; dz++) {
+                    if (dx == 0 && dz == 0) continue;
+                    Block neighbor = origin.getRelative(dx, 0, dz);
+                    if (neighbor.getType() != targetType) continue;
+                    Location loc = neighbor.getLocation();
+                    if (processing.contains(loc)) continue;
+                    processing.add(loc);
+                    try {
+                        // Respect region/protection plugins: a cancelled harvest
+                        // event leaves the block untouched.
+                        BlockBreakEvent harvestEvent = new BlockBreakEvent(neighbor, player);
+                        Bukkit.getPluginManager().callEvent(harvestEvent);
+                        if (harvestEvent.isCancelled()) continue;
+                        neighbor.breakNaturally(player.getInventory().getItemInMainHand());
+                        broken++;
+                    } finally {
+                        processing.remove(loc);
+                    }
+                }
+            }
+        } finally {
+            if (processing.isEmpty()) {
+                PROCESSING.remove();
             }
         }
         return true;

@@ -390,14 +390,16 @@ Multiplies the quality or quantity of loot from fishing treasure.
 
 ### core:area_harvest
 
-Breaks all matching blocks in a radius around the targeted block.
+Breaks all matching blocks in a radius around the targeted block. The radius is
+clamped to 32 and the scan stops at `max_blocks`. Each harvested block fires a
+synthetic `BlockBreakEvent`, so region/protection plugins can cancel it.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `radius` | double | `1` | Radius in blocks to harvest |
-| `max_blocks` | double | `8` | Maximum number of blocks to break |
+| `radius` | double | `1` | Radius in blocks to harvest (clamped to 32) |
+| `max_blocks` | double | `64` | Maximum number of blocks to break |
 
 **Event:** `BlockBreakEvent`
 

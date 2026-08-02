@@ -100,10 +100,12 @@ public final class SkillEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        // Chained blocks broken by ChainBreakMechanic are handled by the origin
-        // event; do not grant XP or fire abilities again per chained block.
-        if (io.github.chasehuegel.skilling.engine.mechanic.impl.ChainBreakMechanic.isChainProcessing(event.getBlock())) {
-            debug("block_break skipped: chained break from ChainBreakMechanic");
+        // Chained/harvested blocks broken by ChainBreakMechanic or
+        // AreaHarvestMechanic are handled by the origin event; do not grant XP or
+        // fire abilities again per block.
+        if (io.github.chasehuegel.skilling.engine.mechanic.impl.ChainBreakMechanic.isChainProcessing(event.getBlock())
+                || io.github.chasehuegel.skilling.engine.mechanic.impl.AreaHarvestMechanic.isChainProcessing(event.getBlock())) {
+            debug("block_break skipped: chained/harvested break");
             return;
         }
         debug("block_break fired for " + event.getPlayer().getName()

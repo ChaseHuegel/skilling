@@ -25,7 +25,7 @@
 - [x] [ISSUE-122](ISSUE-122.md) - Fix inverted probability in `ModifyTameChanceMechanic`
 - [x] [ISSUE-125](ISSUE-125.md) - Fix `ModifyCraftOutputMechanic` shift-click craft duplication
 - [x] [ISSUE-128](ISSUE-128.md) - Fix `ChainBreakMechanic` durability cost and pipeline re-dispatch
-- [ ] [ISSUE-127](ISSUE-127.md) - Cap `AreaHarvestMechanic` scan bounds and gate per-block breaking
+- [x] [ISSUE-127](ISSUE-127.md) - Cap `AreaHarvestMechanic` scan bounds and gate per-block breaking
 - [ ] [ISSUE-129](ISSUE-129.md) - Resolve projectile damagers in damage mechanics
 - [ ] [ISSUE-174](ISSUE-174.md) - Rework `ProjectileReturnMechanic` — preserve projectile metadata, prevent duplication, support arrows
 - [ ] [ISSUE-121](ISSUE-121.md) - Run damage-cancelling mechanics at an early priority instead of MONITOR
