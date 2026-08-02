@@ -1,6 +1,6 @@
 # ISSUE-153: Eliminate `ConcurrentModificationException`/torn reads on shared engine state during web reads
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (web threads crash/500 during reload)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Ensure web handlers iterate **snapshot copies** of `SkillManager.getSkills()` and registry keys instead of live mutable maps (coordinate with ISSUE-139)
-- [ ] Ensure `MechanicRegistry.getAllParameterNames()`/`keys()` and `TriggerRegistry.keys()` are safe under concurrent reload mutation
-- [ ] Add a concurrency test: `GET /api/skills`/`/api/mechanics`/`/api/triggers` during a reload never throws CME or returns a torn result
+- [x] Ensure web handlers iterate **snapshot copies** of `SkillManager.getSkills()` and registry keys instead of live mutable maps (coordinate with ISSUE-139)
+- [x] Ensure `MechanicRegistry.getAllParameterNames()`/`keys()` and `TriggerRegistry.keys()` are safe under concurrent reload mutation
+- [x] Add a concurrency test: `GET /api/skills`/`/api/mechanics`/`/api/triggers` during a reload never throws CME or returns a torn result
 
 ## Technical Specifications & Context
 
@@ -38,6 +38,6 @@ Iterate immutable snapshots (`Map.copyOf`/`List.copyOf` taken on the web thread,
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new concurrency test
-- [ ] Test: concurrent web reads during a reload produce no CME and no torn responses
-- [ ] Manual smoke: `GET /api/skills` in a loop while `/skills reload` runs stays clean
+- [x] `./gradlew build && ./gradlew test` pass, including the new concurrency test
+- [x] Test: concurrent web reads during a reload produce no CME and no torn responses
+- [x] Manual smoke: `GET /api/skills` in a loop while `/skills reload` runs stays clean

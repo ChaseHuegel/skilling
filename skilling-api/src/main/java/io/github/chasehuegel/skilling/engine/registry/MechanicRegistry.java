@@ -113,6 +113,6 @@ public final class MechanicRegistry {
      * @return set of registry keys
      */
     public java.util.Set<String> keys() {
-        return registry.keySet();
+        return java.util.Set.copyOf(registry.keySet());
     }
 }
