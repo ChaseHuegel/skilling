@@ -38,6 +38,41 @@ class TeleportMechanicTest {
         var loc = spy(new Location(world, 0, 0, 0));
         when(player.getLocation()).thenReturn(loc);
         when(player.getTargetBlockExact(10)).thenReturn(null);
+        when(player.teleport(any(Location.class))).thenReturn(true);
         assertTrue(mechanic.execute(player, Map.of("range", 10.0), BukkitMock.mockInteractEvent(player)));
+    }
+
+    @Test
+    void returnsFalseWhenNoSafeLocation() {
+        var mechanic = new TeleportMechanic();
+        var player = BukkitMock.mockPlayer();
+        var world = mock(World.class);
+        var block = mock(Block.class);
+        // Nothing is empty, so findSafeLocation finds no spot.
+        when(block.isEmpty()).thenReturn(false);
+        when(world.getBlockAt(any(Location.class))).thenReturn(block);
+        var loc = spy(new Location(world, 0, 0, 0));
+        when(player.getLocation()).thenReturn(loc);
+        when(player.getTargetBlockExact(10)).thenReturn(null);
+
+        assertFalse(mechanic.execute(player, Map.of("range", 10.0), BukkitMock.mockInteractEvent(player)));
+        verify(player, never()).teleport(any(Location.class));
+    }
+
+    @Test
+    void returnsFalseWhenTeleportIsCancelled() {
+        var mechanic = new TeleportMechanic();
+        var player = BukkitMock.mockPlayer();
+        var world = mock(World.class);
+        var block = mock(Block.class);
+        when(block.isEmpty()).thenReturn(true);
+        when(world.getBlockAt(any(Location.class))).thenReturn(block);
+        var loc = spy(new Location(world, 0, 0, 0));
+        when(player.getLocation()).thenReturn(loc);
+        when(player.getTargetBlockExact(10)).thenReturn(null);
+        // Another plugin cancels the teleport; the mechanic reports a no-op.
+        when(player.teleport(any(Location.class))).thenReturn(false);
+
+        assertFalse(mechanic.execute(player, Map.of("range", 10.0), BukkitMock.mockInteractEvent(player)));
     }
 }

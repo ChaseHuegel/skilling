@@ -33,10 +33,8 @@ public final class TeleportMechanic implements SkillMechanic {
             );
         }
         Location safeTarget = findSafeLocation(target);
-        if (safeTarget != null) {
-            player.teleport(safeTarget);
-        }
-        return true;
+        if (safeTarget == null) return false;
+        return player.teleport(safeTarget);
     }
 
     private Location findSafeLocation(Location loc) {

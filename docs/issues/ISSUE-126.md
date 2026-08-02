@@ -1,6 +1,6 @@
 # ISSUE-126: Fix `TeleportMechanic` consuming cooldown/items when the teleport fails
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (Check-Execute-Consume contract violated)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Return `false` (no-op, no consume) when `findSafeLocation` returns null or the player is not moved
-- [ ] Return `true` only when the teleport actually occurs
-- [ ] Add a unit test covering the no-safe-location path
+- [x] Return `false` (no-op, no consume) when `findSafeLocation` returns null or the player is not moved
+- [x] Return `true` only when the teleport actually occurs
+- [x] Add a unit test covering the no-safe-location path
 
 ## Technical Specifications & Context
 
@@ -33,6 +33,6 @@ Return `false` from the failed-location path so the engine skips consume and fee
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: no safe location → `execute` returns false
-- [ ] Unit test: successful teleport → `execute` returns true
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: no safe location → `execute` returns false
+- [x] Unit test: successful teleport → `execute` returns true
