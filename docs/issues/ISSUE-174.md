@@ -1,6 +1,6 @@
 # ISSUE-174: Rework `ProjectileReturnMechanic` — preserve projectile metadata, prevent duplication, support arrows
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (latent item-duplication + item-data loss + missing arrow support; the mechanic is currently unreachable until a `projectile_hit` trigger is wired)
 
@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Preserve the original item's metadata when returning a trident (derive the return item from the projectile's actual item, e.g. `Trident.getItem()`/`AbstractArrow` item accessors) instead of building a fresh `new ItemStack(material)` that drops all enchantments, durability, names, and lore
-- [ ] Prevent duplication: for projectiles that persist and can be picked up in vanilla (tridents, arrows), remove the projectile entity so the player receives the item exactly once; keep the fresh-drop behavior only for non-retrievable projectiles (snowballs, eggs)
-- [ ] Support arrows: handle `ARROW`, `SPECTRAL_ARROW`, and `TIPPED_ARROW` projectile types, preserving tipped-arrow potion effects via the arrow's item stack
-- [ ] Add the missing class-level Javadoc (YAML key `core:projectile_return`, params) per `src/AGENTS.md` §7
-- [ ] Add unit tests covering: trident metadata preserved, arrow types returned, projectile entity removed for pickable projectiles (no dupe), snowball/egg fresh-drop unchanged
+- [x] Preserve the original item's metadata when returning a trident (derive the return item from the projectile's actual item, e.g. `Trident.getItem()`/`AbstractArrow` item accessors) instead of building a fresh `new ItemStack(material)` that drops all enchantments, durability, names, and lore
+- [x] Prevent duplication: for projectiles that persist and can be picked up in vanilla (tridents, arrows), remove the projectile entity so the player receives the item exactly once; keep the fresh-drop behavior only for non-retrievable projectiles (snowballs, eggs)
+- [x] Support arrows: handle `ARROW`, `SPECTRAL_ARROW`, and `TIPPED_ARROW` projectile types, preserving tipped-arrow potion effects via the arrow's item stack
+- [x] Add the missing class-level Javadoc (YAML key `core:projectile_return`, params) per `src/AGENTS.md` §7
+- [x] Add unit tests covering: trident metadata preserved, arrow types returned, projectile entity removed for pickable projectiles (no dupe), snowball/egg fresh-drop unchanged
 
 ## Technical Specifications & Context
 
@@ -45,9 +45,9 @@ Three defects in `execute`:
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new unit tests
-- [ ] Unit test: throwing an enchanted trident returns an item with the same enchantments/metadata
-- [ ] Unit test: the returned trident/arrow projectile entity is removed (no pick-up duplication)
-- [ ] Unit test: `ARROW`, `SPECTRAL_ARROW`, and `TIPPED_ARROW` are returned; a tipped arrow preserves its potion effects
-- [ ] Unit test: snowball/egg still returns a fresh item
-- [ ] Class-level Javadoc documents the YAML key and `chance` parameter
+- [x] `./gradlew build && ./gradlew test` pass, including the new unit tests
+- [x] Unit test: throwing an enchanted trident returns an item with the same enchantments/metadata
+- [x] Unit test: the returned trident/arrow projectile entity is removed (no pick-up duplication)
+- [x] Unit test: `ARROW`, `SPECTRAL_ARROW`, and `TIPPED_ARROW` are returned; a tipped arrow preserves its potion effects
+- [x] Unit test: snowball/egg still returns a fresh item (fresh material resolution + non-pickable behavior covered by helper tests; the full execute path constructs a real `ItemStack` which plain JUnit cannot create)
+- [x] Class-level Javadoc documents the YAML key and `chance` parameter
