@@ -6,6 +6,7 @@ import io.github.chasehuegel.skilling.web.dto.SkillDetailDTO;
 import io.github.chasehuegel.skilling.web.dto.SkillSerializer;
 import io.github.chasehuegel.skilling.web.dto.SkillSummaryDTO;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.javalin.http.Context;
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -77,14 +77,13 @@ public final class SkillHandler {
             SkillDetailDTO dto = SkillSerializer.parseSkillFile(sourceFile);
             ctx.json(dto);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to parse skill file: " + id, e);
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to parse skill file: " + id, e);
         }
     }
 
     public void create(Context ctx) {
         try {
-            SkillDetailDTO dto = ctx.bodyAsClass(SkillDetailDTO.class);
+            SkillDetailDTO dto = WebError.parseBody(ctx, SkillDetailDTO.class);
             validateSkill(dto);
             String yaml = SkillSerializer.toYaml(dto);
             validateStagedSkill(yaml);
@@ -92,8 +91,10 @@ public final class SkillHandler {
             ctx.status(201).json(Map.of("status", "ok", "id", dto.id()));
         } catch (IllegalArgumentException e) {
             ctx.status(400).json(Map.of("status", "error", "message", e.getMessage()));
+        } catch (JsonProcessingException e) {
+            WebError.malformedJson(ctx);
         } catch (Exception e) {
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to create skill", e);
         }
     }
 
@@ -101,7 +102,7 @@ public final class SkillHandler {
         String oldId = ctx.pathParam("id");
         if (!isValidIdParam(ctx, oldId)) return;
         try {
-            SkillDetailDTO dto = ctx.bodyAsClass(SkillDetailDTO.class);
+            SkillDetailDTO dto = WebError.parseBody(ctx, SkillDetailDTO.class);
             validateSkill(dto);
             String newId = dto.id();
             String yaml = SkillSerializer.toYaml(dto);
@@ -115,8 +116,10 @@ public final class SkillHandler {
             ctx.json(Map.of("status", "ok", "id", newId));
         } catch (IllegalArgumentException e) {
             ctx.status(400).json(Map.of("status", "error", "message", e.getMessage()));
+        } catch (JsonProcessingException e) {
+            WebError.malformedJson(ctx);
         } catch (Exception e) {
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to update skill", e);
         }
     }
 

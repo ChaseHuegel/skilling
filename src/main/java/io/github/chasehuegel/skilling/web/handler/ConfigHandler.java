@@ -1,5 +1,6 @@
 package io.github.chasehuegel.skilling.web.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.http.Context;
 import java.io.File;
@@ -7,8 +8,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public final class ConfigHandler {
+
+    private static final Logger LOGGER = Logger.getLogger(ConfigHandler.class.getName());
 
     private static final String WEB_RESTART_REQUIRED =
             "Changing web.port, web.username, or web.password requires a server restart. "
@@ -68,14 +72,14 @@ public final class ConfigHandler {
 
             ctx.json(result);
         } catch (Exception e) {
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to read config.yml", e);
         }
     }
 
     @SuppressWarnings("unchecked")
     public void update(Context ctx) {
         try {
-            Map<String, Object> body = ctx.bodyAsClass(Map.class);
+            Map<String, Object> body = WebError.parseBody(ctx, Map.class);
 
             org.bukkit.configuration.file.YamlConfiguration liveConfig =
                     org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(configFile);
@@ -145,8 +149,12 @@ public final class ConfigHandler {
             ctx.json(Map.of("status", "ok"));
         } catch (IllegalArgumentException e) {
             ctx.status(400).json(Map.of("status", "error", "message", e.getMessage()));
+        } catch (JsonProcessingException e) {
+            WebError.malformedJson(ctx);
+        } catch (ClassCastException e) {
+            WebError.badRequest(ctx, "Invalid request body shape");
         } catch (Exception e) {
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to stage config.yml", e);
         }
     }
 }

@@ -49,7 +49,7 @@
 - [x] [ISSUE-144](ISSUE-144.md) - Fix the `%skilling_total_levels%` placeholder (always returns "0")
 - [x] [ISSUE-148](ISSUE-148.md) - Fix UI navigation slot collision and close poison-pill vaporization gaps
 - [x] [ISSUE-157](ISSUE-157.md) - Fix `GuiLayout` round-trip data loss and add server-side validation
-- [ ] [ISSUE-158](ISSUE-158.md) - Web error-handling hygiene (correct status codes, no internal message leakage)
+- [x] [ISSUE-158](ISSUE-158.md) - Web error-handling hygiene (correct status codes, no internal message leakage)
 - [ ] [ISSUE-163](ISSUE-163.md) - Implement the E2E "automatic mode" (server bootstrap + fixture seeding)
 - [ ] [ISSUE-160](ISSUE-160.md) - Fix `TagsPage` deleting non-matching tags when editing under a search filter
 - [ ] [ISSUE-161](ISSUE-161.md) - Never navigate away when a save fails (SkillEditor, Config, Tags, GuiLayout)

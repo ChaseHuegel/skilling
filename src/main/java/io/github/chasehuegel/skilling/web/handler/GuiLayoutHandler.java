@@ -1,5 +1,6 @@
 package io.github.chasehuegel.skilling.web.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.chasehuegel.skilling.web.dto.GuiLayoutDTO;
 import io.github.chasehuegel.skilling.web.dto.GuiLayoutSerializer;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
@@ -9,6 +10,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * REST handler for the gui.yml configuration file.
@@ -21,6 +23,8 @@ import java.util.Map;
  * via the standard reload workflow.
  */
 public final class GuiLayoutHandler {
+
+    private static final Logger LOGGER = Logger.getLogger(GuiLayoutHandler.class.getName());
 
     private final StagingManager stagingManager;
     private final File guiFile;
@@ -47,7 +51,7 @@ public final class GuiLayoutHandler {
             }
             ctx.json(layout);
         } catch (Exception e) {
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to read " + GUI_YML, e);
         }
     }
 
@@ -57,17 +61,19 @@ public final class GuiLayoutHandler {
      */
     public void update(Context ctx) {
         try {
-            GuiLayoutDTO body = ctx.bodyAsClass(GuiLayoutDTO.class);
+            GuiLayoutDTO body = WebError.parseBody(ctx, GuiLayoutDTO.class);
             String validationError = validate(body);
             if (validationError != null) {
-                ctx.status(400).json(Map.of("status", "error", "message", validationError));
+                WebError.badRequest(ctx, validationError);
                 return;
             }
             String yamlContent = GuiLayoutSerializer.serialize(body);
             stagingManager.stageGuiFile(yamlContent);
             ctx.json(Map.of("status", "ok"));
+        } catch (JsonProcessingException e) {
+            WebError.malformedJson(ctx);
         } catch (Exception e) {
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to stage " + GUI_YML, e);
         }
     }
 

@@ -8,8 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class ReloadHandler {
+
+    private static final Logger LOGGER = Logger.getLogger(ReloadHandler.class.getName());
 
     private final Skilling plugin;
     private final StagingManager stagingManager;
@@ -58,8 +62,10 @@ public final class ReloadHandler {
                     }
                 ).get();
             } catch (Exception e) {
-                Throwable cause = e.getCause() != null ? e.getCause() : e;
-                errors.add("Reload error: " + cause.getMessage());
+                // Log the full detail server-side; the response body only gets a
+                // generic marker so lock-down errors never leak internal text.
+                LOGGER.log(Level.WARNING, "Reload lockdown step failed", e);
+                errors.add("Reload lockdown failed");
             }
 
             if (errors.isEmpty()) {
@@ -79,11 +85,7 @@ public final class ReloadHandler {
                 ));
             }
         } catch (Exception e) {
-            ctx.status(500).json(Map.of(
-                "success", false,
-                "message", "Reload failed: " + e.getMessage(),
-                "errors", List.of(e.getMessage())
-            ));
+            WebError.internal(ctx, LOGGER, "Reload failed", e);
         }
     }
 }

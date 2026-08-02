@@ -1,15 +1,20 @@
 package io.github.chasehuegel.skilling.web.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.http.Context;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public final class TagHandler {
+
+    private static final Logger LOGGER = Logger.getLogger(TagHandler.class.getName());
 
     private final StagingManager stagingManager;
     private final File tagsFile;
@@ -37,21 +42,37 @@ public final class TagHandler {
             }
             ctx.json(Map.of("tags", tags));
         } catch (Exception e) {
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to read tags.yml", e);
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void update(Context ctx) {
         try {
-            Map<String, Object> body = ctx.bodyAsClass(Map.class);
-            Map<String, List<String>> incomingTags = (Map<String, List<String>>) body.get("tags");
+            Map<String, Object> body = WebError.parseBody(ctx, Map.class);
+            if (body == null) {
+                WebError.badRequest(ctx, "Request body is required");
+                return;
+            }
+            Object tagsObj = body.get("tags");
+            if (!(tagsObj instanceof Map<?, ?> tagsRaw)) {
+                WebError.badRequest(ctx, "body must contain a 'tags' object");
+                return;
+            }
 
             Map<String, List<String>> customTags = new LinkedHashMap<>();
-            for (var entry : incomingTags.entrySet()) {
-                String key = entry.getKey();
+            for (var entry : tagsRaw.entrySet()) {
+                String key = String.valueOf(entry.getKey());
+                Object value = entry.getValue();
+                if (!(value instanceof List<?> rawList)) {
+                    WebError.badRequest(ctx, "tag '" + key + "' must be a list of strings");
+                    return;
+                }
+                List<String> materials = new ArrayList<>();
+                for (Object item : rawList) {
+                    if (item != null) materials.add(item.toString());
+                }
                 if (key.startsWith("#c:")) {
-                    customTags.put(key.substring(3), entry.getValue());
+                    customTags.put(key.substring(3), materials);
                 }
             }
 
@@ -62,8 +83,10 @@ public final class TagHandler {
 
             stagingManager.stageTagsFile(yamlContent);
             ctx.json(Map.of("status", "ok"));
+        } catch (JsonProcessingException e) {
+            WebError.malformedJson(ctx);
         } catch (Exception e) {
-            ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
+            WebError.internal(ctx, LOGGER, "Failed to stage tags.yml", e);
         }
     }
 }
