@@ -48,7 +48,7 @@ io.github.chasehuegel.skilling
       ParameterEvaluator.java # Interface: evaluate(int currentLevel, int unlockLevel) → double
       impl/                   # LinearEvaluator, MilestoneEvaluator, ConstantEvaluator, PolynomialEvaluator
     tag/
-      TagResolver.java        # Resolves #minecraft: and #c: tags into EnumSet
+      TagResolver.java        # Resolves #minecraft: and #c: tags into EnumSet, cached and pre-warmed at load
       CustomTagLoader.java    # Reads tags.yml
     ui/
       SkillMenuBuilder.java   # Lazy-builds Inventory from SkillDefinition

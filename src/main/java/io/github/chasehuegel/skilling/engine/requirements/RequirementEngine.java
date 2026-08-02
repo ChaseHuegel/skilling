@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,10 +25,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * by XP/mechanic filters, so "must be sneaking" or "must be in the overworld"
  * behave identically whether they gate an ability requirement or an XP source.
  * Unknown states fail the check, matching the filter path and surfacing typos.
+ *
+ * <p>Item requirements resolve their material/tag reference once per requirement
+ * evaluation (not per inventory slot); tag references reuse the cached
+ * {@link TagResolver} sets pre-warmed at plugin load and plain material names use
+ * a local parse cache.
  */
 public final class RequirementEngine {
 
     private final Map<String, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
+    private final Map<String, Material> materialCache = new ConcurrentHashMap<>();
     private TagResolver tagResolver;
     private final StateFilterRegistry stateFilterRegistry;
 
@@ -157,18 +164,20 @@ public final class RequirementEngine {
     }
 
     private int countItems(Player player, String tag, String slot) {
+        Set<Material> resolved = resolveMaterialSet(tag);
         int count = 0;
         for (ItemStack item : slotItems(player, slot)) {
             if (item == null) continue;
-            if (matchesItem(item, tag)) count += item.getAmount();
+            if (resolved.contains(item.getType())) count += item.getAmount();
         }
         return count;
     }
 
     private void removeItems(Player player, String tag, int amount, String slot) {
+        Set<Material> resolved = resolveMaterialSet(tag);
         for (ItemStack item : slotItems(player, slot)) {
             if (item == null || amount <= 0) continue;
-            if (matchesItem(item, tag)) {
+            if (resolved.contains(item.getType())) {
                 int toRemove = Math.min(amount, item.getAmount());
                 item.setAmount(item.getAmount() - toRemove);
                 amount -= toRemove;
@@ -176,12 +185,18 @@ public final class RequirementEngine {
         }
     }
 
-    private boolean matchesItem(ItemStack item, String tag) {
+    /**
+     * Resolves an item-requirement reference once into a material set so the
+     * per-slot loop never re-resolves tags. Tag references route through the
+     * cached {@link TagResolver} (pre-warmed at load); plain material names use a
+     * cached name parse.
+     */
+    private Set<Material> resolveMaterialSet(String tag) {
         if (tag.startsWith("#")) {
-            return tagResolver.resolve(tag).contains(item.getType());
+            return tagResolver.resolve(tag);
         }
-        Material mat = Material.matchMaterial(tag);
-        return mat != null && item.getType() == mat;
+        Material mat = materialCache.computeIfAbsent(tag, Material::matchMaterial);
+        return mat == null ? Set.of() : Set.of(mat);
     }
 
     /**

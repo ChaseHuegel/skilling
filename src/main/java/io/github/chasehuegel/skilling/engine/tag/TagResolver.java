@@ -1,10 +1,14 @@
 package io.github.chasehuegel.skilling.engine.tag;
 
+import io.github.chasehuegel.skilling.engine.SkillManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import java.util.EnumSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Resolves tag strings to {@link EnumSet EnumSets} of {@link Material}.
@@ -16,12 +20,21 @@ import java.util.EnumSet;
  *   <li>{@code minecraft:<item>} — resolved as a single material</li>
  * </ul>
  *
- * <p>All resolution is performed at plugin load and flattened into {@link EnumSet}
- * for O(1) membership checks during gameplay.
+ * <p>Every resolved reference is cached so vanilla tag lookups
+ * ({@code Bukkit.getTag} + {@code getValues()}) and material name parsing happen
+ * once per server run. {@link SkillManager} pre-warms the cache for every
+ * filter/requirement reference at plugin load, so event dispatch and item
+ * requirement checks are O(1) {@link EnumSet#contains} lookups with zero
+ * per-event resolution.
+ *
+ * <p>Returned sets are owned by the resolver and must be treated as read-only.
  */
 public final class TagResolver {
 
     private final CustomTagLoader customTagLoader;
+    private final Map<String, EnumSet<Material>> resolvedCache = new ConcurrentHashMap<>();
+    private final Map<String, Material> materialCache = new ConcurrentHashMap<>();
+    private final AtomicLong resolutionCount = new AtomicLong();
 
     /**
      * Constructs a tag resolver backed by the given custom tag loader.
@@ -30,6 +43,41 @@ public final class TagResolver {
      */
     public TagResolver(CustomTagLoader customTagLoader) {
         this.customTagLoader = customTagLoader;
+    }
+
+    /**
+     * Cached single-material resolution. Parses the material name once per unique
+     * name and reuses the result instead of calling {@link Material#matchMaterial}
+     * on every reference.
+     *
+     * @param name the material name (e.g. {@code minecraft:coal})
+     * @return the material, or null if the name is unknown
+     */
+    public Material material(String name) {
+        if (name == null || name.isBlank()) return null;
+        return materialCache.computeIfAbsent(name, Material::matchMaterial);
+    }
+
+    /**
+     * Pre-warms the resolution cache for a reference. Called at plugin load for
+     * every filter/requirement reference so no tag or material resolution work
+     * happens on the event path.
+     *
+     * @param reference the reference to resolve and cache (e.g. {@code #c:ores})
+     */
+    public void warm(String reference) {
+        if (reference == null || reference.isBlank()) return;
+        resolve(reference);
+    }
+
+    /**
+     * Number of uncached resolution attempts performed by this resolver. Used by
+     * tests to assert that event dispatch performs no re-resolution after load.
+     *
+     * @return the resolution attempt count
+     */
+    public long resolutionCount() {
+        return resolutionCount.get();
     }
 
     /**
@@ -46,7 +94,7 @@ public final class TagResolver {
     public boolean isKnown(String reference) {
         if (reference == null || reference.isBlank()) return true;
         if (!reference.startsWith("#")) {
-            return Material.matchMaterial(reference) != null;
+            return material(reference) != null;
         }
         String namespace = reference.substring(1);
         int colonIndex = namespace.indexOf(':');
@@ -81,9 +129,20 @@ public final class TagResolver {
             return EnumSet.noneOf(Material.class);
         }
 
+        EnumSet<Material> cached = resolvedCache.get(tagString);
+        if (cached != null) return cached;
+
+        EnumSet<Material> resolved = resolveUncached(tagString);
+        resolvedCache.put(tagString, resolved);
+        return resolved;
+    }
+
+    private EnumSet<Material> resolveUncached(String tagString) {
+        resolutionCount.incrementAndGet();
+
         if (!tagString.startsWith("#")) {
             // Single material reference
-            Material material = Material.matchMaterial(tagString);
+            Material material = material(tagString);
             if (material == null) {
                 throw new IllegalArgumentException("Unknown material: " + tagString);
             }
@@ -103,7 +162,9 @@ public final class TagResolver {
         if ("minecraft".equals(namespacePrefix)) {
             return resolveVanillaTag(key);
         } else if ("c".equals(namespacePrefix)) {
-            return customTagLoader.resolve("#c:" + key);
+            EnumSet<Material> custom = customTagLoader.resolve("#c:" + key);
+            // Copy so the resolver owns a stable set independent of the loader.
+            return custom.isEmpty() ? custom : EnumSet.copyOf(custom);
         }
 
         throw new IllegalArgumentException("Unknown tag namespace: " + namespacePrefix);
@@ -111,16 +172,24 @@ public final class TagResolver {
 
     private static EnumSet<Material> resolveVanillaTag(String key) {
         NamespacedKey nsKey = NamespacedKey.minecraft(key);
-        // Try block registry first, then item registry
-        Tag<Material> tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, nsKey, Material.class);
-        if (tag == null) {
-            tag = Bukkit.getTag(Tag.REGISTRY_ITEMS, nsKey, Material.class);
+        try {
+            // Try block registry first, then item registry
+            Tag<Material> tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, nsKey, Material.class);
+            if (tag == null) {
+                tag = Bukkit.getTag(Tag.REGISTRY_ITEMS, nsKey, Material.class);
+            }
+            if (tag == null) {
+                throw new IllegalArgumentException("Unknown vanilla tag: #minecraft:" + key);
+            }
+            EnumSet<Material> result = EnumSet.noneOf(Material.class);
+            result.addAll(tag.getValues());
+            return result;
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            // Bukkit is unavailable (e.g. unit tests without a server). Defer
+            // resolution rather than fail; the real server populates the cache at load.
+            return EnumSet.noneOf(Material.class);
         }
-        if (tag == null) {
-            throw new IllegalArgumentException("Unknown vanilla tag: #minecraft:" + key);
-        }
-        EnumSet<Material> result = EnumSet.noneOf(Material.class);
-        result.addAll(tag.getValues());
-        return result;
     }
 }

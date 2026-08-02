@@ -9,17 +9,22 @@ import java.util.Map;
 import java.util.UUID;
 
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
+import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class RequirementEngineTest {
+
+    @TempDir
+    java.nio.file.Path tempDir;
 
     private RequirementEngine engine;
     private TagResolver tagResolver;
@@ -309,5 +314,37 @@ class RequirementEngineTest {
         assertFalse(engine.check(player, "a",
                 new SkillDefinition.Requirements(0, List.of("not_a_state"), List.of()), 10, 5).success());
         assertFalse(registry.evaluate("not_a_state", player, null, ""));
+    }
+
+    @Test
+    void tagRequirementReusesCachedResolutionAcrossChecks() throws Exception {
+        java.nio.file.Path tagsFile = tempDir.resolve("tags.yml");
+        java.nio.file.Files.writeString(tagsFile, "custom_tags:\n  ores:\n    - \"minecraft:coal\"\n");
+        var loader = new CustomTagLoader();
+        loader.load(tagsFile.toFile());
+        TagResolver realResolver = new TagResolver(loader);
+        // Load-time pre-flattening, mirroring SkillManager's eager warmup.
+        realResolver.warm("#c:ores");
+
+        var engine = new RequirementEngine(realResolver, newStateFilterRegistry());
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("possession", "#c:ores", "HAND", 1, 0.0))
+        );
+
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        var coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(1);
+        when(inventory.getContents()).thenReturn(new ItemStack[]{coal});
+
+        long before = realResolver.resolutionCount();
+        assertTrue(engine.check(player, "a", requirements, 10, 5).success());
+        assertTrue(engine.check(player, "a", requirements, 10, 5).success());
+        assertEquals(before, realResolver.resolutionCount(),
+                "the flattened tag set must be reused, not re-resolved per check or slot");
     }
 }

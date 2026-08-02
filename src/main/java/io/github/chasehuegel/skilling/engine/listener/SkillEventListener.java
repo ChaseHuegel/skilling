@@ -595,15 +595,11 @@ public final class SkillEventListener implements Listener {
             Material targetMaterial = resolveEventMaterial(event);
             if (targetMaterial == null) return false;
             boolean matched;
-            if (filter.target().startsWith("#")) {
+            try {
                 matched = tagResolver.resolve(filter.target()).contains(targetMaterial);
-            } else {
-                Material filterMat = Material.matchMaterial(filter.target());
-                if (filterMat == null) {
-                    plugin.getLogger().warning("Unknown material in filter target: " + filter.target());
-                    return false;
-                }
-                matched = targetMaterial == filterMat;
+            } catch (IllegalArgumentException ex) {
+                plugin.getLogger().warning("Unknown material in filter target: " + filter.target());
+                return false;
             }
             if (!matched) return false;
         }
@@ -621,15 +617,11 @@ public final class SkillEventListener implements Listener {
             Material handType = hand.getType();
             if (handType == Material.AIR) return false;
             boolean toolMatch;
-            if (filter.tool().startsWith("#")) {
+            try {
                 toolMatch = tagResolver.resolve(filter.tool()).contains(handType);
-            } else {
-                Material toolMat = Material.matchMaterial(filter.tool());
-                if (toolMat == null) {
-                    plugin.getLogger().warning("Unknown material in filter tool: " + filter.tool());
-                    return false;
-                }
-                toolMatch = handType == toolMat;
+            } catch (IllegalArgumentException ex) {
+                plugin.getLogger().warning("Unknown material in filter tool: " + filter.tool());
+                return false;
             }
             if (!toolMatch) return false;
         }

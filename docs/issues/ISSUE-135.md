@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Flatten every filter's tag/material references into `EnumSet<Material>`/`EnumSet<EntityType>` at plugin load (per `src/AGENTS.md` §5)
-- [ ] Cache vanilla-tag resolution (avoid `Bukkit.getTag` + `tag.getValues()` per call) and material name parsing
-- [ ] Cache resolved tag sets in the item-requirement path so `TagResolver.resolve` is not invoked per inventory slot
-- [ ] Keep custom `#c:` tag flattening consistent with vanilla tags
-- [ ] Add a benchmark or test asserting a single event dispatch does not re-resolve tags
+- [x] Flatten every filter's tag/material references into `EnumSet<Material>`/`EnumSet<EntityType>` at plugin load (per `src/AGENTS.md` §5)
+- [x] Cache vanilla-tag resolution (avoid `Bukkit.getTag` + `tag.getValues()` per call) and material name parsing
+- [x] Cache resolved tag sets in the item-requirement path so `TagResolver.resolve` is not invoked per inventory slot
+- [x] Keep custom `#c:` tag flattening consistent with vanilla tags
+- [x] Add a benchmark or test asserting a single event dispatch does not re-resolve tags
 
 ## Technical Specifications & Context
 
@@ -39,6 +39,6 @@ At load, compile each filter into a resolved `EnumSet` keyed by material/entity 
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass
-- [ ] Performance test: a `block_break` dispatch resolves no tags at runtime (verified by instrumentation or a captured-resolutions test)
-- [ ] Existing filter/tag tests still pass with the compiled representation
+- [x] `./gradlew build && ./gradlew test` pass
+- [x] Performance test: a `block_break` dispatch resolves no tags at runtime (verified by instrumentation or a captured-resolutions test)
+- [x] Existing filter/tag tests still pass with the compiled representation

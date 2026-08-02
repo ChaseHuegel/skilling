@@ -316,10 +316,15 @@ public final class SkillManager {
     /**
      * Fail-fast validation of a filter/requirement tag or material reference so a
      * typo is rejected at load instead of throwing inside an event handler at runtime.
+     * Known references are also pre-resolved into the tag resolver's cache so no
+     * tag or material resolution work happens on the event path.
      */
     private void validateTagReference(String reference) {
         if (reference != null && !tagResolver.isKnown(reference)) {
             throw new IllegalArgumentException("Unknown tag or material in filter/requirement: " + reference);
+        }
+        if (reference != null && !reference.isBlank()) {
+            tagResolver.warm(reference);
         }
     }
 
