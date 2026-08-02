@@ -1,6 +1,6 @@
 # ISSUE-149: Validate `{id}` path params in `/api/skills/{id}` against path traversal
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (arbitrary file read/delete primitive)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Apply the `[a-z_][a-z0-9_]*` regex to the **path param** `{id}` in `SkillHandler.get`, `update` (the `oldId`), and `delete` **before** any `File` construction
-- [ ] Return HTTP 400 for non-matching IDs instead of proceeding
-- [ ] Canonicalize/resolve and verify the final `File` stays within `skillsDir` (defense-in-depth against future param sources)
-- [ ] Add regression tests asserting `..%2F..%2Fconfig` and other traversal payloads are rejected with 400 on GET/PUT/DELETE
+- [x] Apply the `[a-z_][a-z0-9_]*` regex to the **path param** `{id}` in `SkillHandler.get`, `update` (the `oldId`), and `delete` **before** any `File` construction
+- [x] Return HTTP 400 for non-matching IDs instead of proceeding
+- [x] Canonicalize/resolve and verify the final `File` stays within `skillsDir` (defense-in-depth against future param sources)
+- [x] Add regression tests asserting `..%2F..%2Fconfig` and other traversal payloads are rejected with 400 on GET/PUT/DELETE
 
 ## Technical Specifications & Context
 
@@ -34,8 +34,8 @@ Validate every `{id}` path param with the same regex before constructing paths, 
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new security regression tests
-- [ ] Test: `GET /api/skills/..%2F..%2Fconfig` → 400 (no file read)
-- [ ] Test: `DELETE /api/skills/..%2F..%2Fconfig` → 400 (no file delete)
-- [ ] Test: legitimate IDs still work unchanged
-- [ ] Path is canonicalized and confined to `skillsDir` in all three handlers
+- [x] `./gradlew build && ./gradlew test` pass, including the new security regression tests
+- [x] Test: `GET /api/skills/..%2F..%2Fconfig` → 400 (no file read)
+- [x] Test: `DELETE /api/skills/..%2F..%2Fconfig` → 400 (no file delete)
+- [x] Test: legitimate IDs still work unchanged
+- [x] Path is canonicalized and confined to `skillsDir` in all three handlers

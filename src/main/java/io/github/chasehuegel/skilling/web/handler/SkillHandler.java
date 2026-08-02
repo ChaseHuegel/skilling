@@ -8,16 +8,22 @@ import io.github.chasehuegel.skilling.web.dto.SkillSummaryDTO;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.http.Context;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public final class SkillHandler {
 
     private static final Logger LOGGER = Logger.getLogger(SkillHandler.class.getName());
+
+    private static final Pattern VALID_SKILL_ID = Pattern.compile("[a-z_][a-z0-9_]*");
+    private static final String INVALID_ID_MESSAGE = "Invalid skill id: must match [a-z_][a-z0-9_]*";
 
     private final SkillManager skillManager;
     private final StagingManager stagingManager;
@@ -60,6 +66,7 @@ public final class SkillHandler {
 
     public void get(Context ctx) {
         String id = ctx.pathParam("id");
+        if (!isValidIdParam(ctx, id)) return;
         File sourceFile = resolveSkillFile(id);
         if (sourceFile == null) {
             ctx.status(404).json(Map.of("status", "error", "message", "Skill not found: " + id));
@@ -91,6 +98,7 @@ public final class SkillHandler {
 
     public void update(Context ctx) {
         String oldId = ctx.pathParam("id");
+        if (!isValidIdParam(ctx, oldId)) return;
         try {
             SkillDetailDTO dto = ctx.bodyAsClass(SkillDetailDTO.class);
             validateSkill(dto);
@@ -112,6 +120,7 @@ public final class SkillHandler {
 
     public void delete(Context ctx) {
         String id = ctx.pathParam("id");
+        if (!isValidIdParam(ctx, id)) return;
         File liveFile = resolveSkillFile(id);
         File stagedFile = stagingManager.stagedSkillFile(id);
 
@@ -126,10 +135,10 @@ public final class SkillHandler {
 
     private File resolveSkillFile(String id) {
         // Fast path: check for file named exactly {id}.yml
-        File namedFile = new File(skillsDir, id + ".yml");
+        File namedFile = confinedLiveFile(id);
+        if (namedFile != null && namedFile.exists()) return namedFile;
         File stagedFile = stagingManager.stagedSkillFile(id);
         if (stagedFile.exists()) return stagedFile;
-        if (namedFile.exists()) return namedFile;
 
         // Fallback: scan all .yml files and match by parsed ID
         // This handles cases where the filename differs from the skill ID
@@ -145,6 +154,38 @@ public final class SkillHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * Builds the live skill file for an id and verifies the resolved path stays
+     * within {@code skillsDir}. Defense-in-depth against any future param source
+     * that bypasses {@link #isValidIdParam}: an out-of-directory result is never
+     * handed to callers.
+     */
+    private File confinedLiveFile(String id) {
+        return confineTo(skillsDir.toPath(), new File(skillsDir, id + ".yml"));
+    }
+
+    static File confineTo(Path base, File file) {
+        try {
+            Path resolvedBase = base.toRealPath();
+            Path candidate = file.toPath().toAbsolutePath().normalize();
+            if (candidate.startsWith(resolvedBase)) {
+                return candidate.toFile();
+            }
+            LOGGER.warning("Rejected path outside base directory: " + candidate);
+            return null;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static boolean isValidIdParam(Context ctx, String id) {
+        if (id == null || !VALID_SKILL_ID.matcher(id).matches()) {
+            ctx.status(400).json(Map.of("status", "error", "message", INVALID_ID_MESSAGE));
+            return false;
+        }
+        return true;
     }
 
     private static void validateSkill(SkillDetailDTO dto) {
