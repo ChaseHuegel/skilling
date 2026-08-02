@@ -8,6 +8,13 @@ xp_sources:
   - trigger: "resurrect"            # P2-7 totem activation
     reward: { constant: 30.0 }
   # entity_damage_taken XP removed — too broad; replaced by totem synergy
+  # Bury bones: right-click dirt/grass/coarse dirt (vanilla #minecraft:dirt tag)
+  # while holding a bone grants piety XP; the bury_bones ability consumes the bone.
+  - trigger: "player_interact"
+    filters:
+      - target: "#minecraft:dirt"
+      - tool: "minecraft:bone"
+    reward: { constant: 6.0 }
 abilities:
   - id: "holy_light"
     display_name: "Holy Light"
@@ -102,3 +109,28 @@ abilities:
           duration: { linear: { base: 10.0, step: 0.1, max: 15.0 } }
           amplifier: { constant: 0.0 }
     feedback: { notify: { action_bar: false } }
+  - id: "bury_bones"
+    display_name: "Bury Bones"
+    unlock_level: 1
+    trigger: "player_interact"
+    display:
+      lore:
+        - "&7Right-click dirt, grass or coarse dirt with a &abone&7 to bury it."
+        - "&7Consumes 1 bone and blesses the earth."
+    requirements:
+      cooldown: 0
+      items:
+        - { action: "cost", tag: "minecraft:bone", amount: 1 }
+    mechanics:
+      - type: "core:block_particles"
+        filters:
+          - target: "#minecraft:dirt"
+          - tool: "minecraft:bone"
+        parameters:
+          particle: { constant: "HAPPY_VILLAGER" }
+          count: { constant: 8 }
+          speed: { constant: 0.1 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&6✦ You buried a bone. ✦" }
+      sounds:
+        - { type: "ITEM_BONE_MEAL_USE", volume: 1.0, pitch: 1.0, target: "target" }

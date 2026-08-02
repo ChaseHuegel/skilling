@@ -312,6 +312,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
         mechReg.register("core:ally_aura", AllyAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
         mechReg.register("core:modify_jump", ModifyJumpMechanic.class, List.of("multiplier", "duration"));
+        mechReg.register("core:block_particles", BlockParticlesMechanic.class, List.of("particle", "count", "speed"));
     }
 
     /** Registers the built-in triggers into the given registry. */

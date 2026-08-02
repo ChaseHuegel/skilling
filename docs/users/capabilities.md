@@ -545,6 +545,20 @@ Temporarily increases the player's jump strength.
 | `duration` | double | `300` | Duration in seconds |
 | `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
 
+### core:block_particles
+
+Spawns a configured particle burst at the event's clicked/broken/placed block. Use it as the executable action for block-interaction abilities (e.g. burying items) so the requirement `consume` step runs and item costs are deducted.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `particle` | string | — | Particle enum name (e.g. `HAPPY_VILLAGER`) |
+| `count` | double | `1` | Number of particles to spawn |
+| `speed` | double | `0` | Particle speed/extra |
+
+**Event:** `player_interact` (right-click on block), `block_break`, `block_place` — requires a block location; returns `false` (no-op) otherwise.
+
 ### core:modify_attack_speed
 
 Temporarily increases the player's attack speed for a configurable duration.
@@ -599,7 +613,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `furnace_extract` | `FurnaceExtractEvent` | Extracting from a furnace |
 | `brew_potion` | `BrewEvent` | A brewing stand finishes brewing a batch |
 | `brew_start` | `BrewingStartEvent` | A brewing stand begins a new brewing cycle |
-| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) |
+| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click). A `target` filter matches the clicked block on right-click; left-clicks and air interactions never match a block target |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
 | `fishing` | `PlayerFishEvent` | Fishing |
 | `crop_grow` | `BlockGrowEvent` | Natural crop growth |

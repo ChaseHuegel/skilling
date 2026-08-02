@@ -12,7 +12,7 @@
 - [x] [ISSUE-167](ISSUE-167.md) - Standardize all lore/description rendering on the escaping helper (no raw `v-html`)
 - [x] [ISSUE-168](ISSUE-168.md) - Add unit-test coverage for critical untested code paths
 - [x] [ISSUE-169](ISSUE-169.md) - Clean up test-quality issues (misnamed, no-op, duplicated, and guard-only tests)
-- [ ] [ISSUE-176](ISSUE-176.md) - Add "bury bones" as a `player_interact` XP source and ability for the `piety` skill
+- [x] [ISSUE-176](ISSUE-176.md) - Add "bury bones" as a `player_interact` XP source and ability for the `piety` skill
 
 ### Research
 - [ ] [ISSUE-175](ISSUE-175.md) - Research integrating the DualWield plugin API (ranull) for the `dual_wield` skill

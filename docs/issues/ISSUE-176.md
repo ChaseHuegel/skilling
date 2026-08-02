@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Add a `bury_bones` (or `burial`) ability to `src/main/resources/skills/piety.yml`: triggers from `player_interact`, fires only on right-click on dirt / grass block / coarse dirt while holding a bone, **costs 1 bone** (consumed on activation), and plays a bonemeal-like particle/sound effect at the clicked block
-- [ ] Add a `piety` XP source mirroring the same trigger: `player_interact` on dirt / grass block / coarse dirt while holding a bone, granting XP
-- [ ] Support block-target filtering on the `player_interact` trigger: extend `resolveEventMaterial` (`SkillEventListener.java:662-693`) to resolve `PlayerInteractEvent.getClickedBlock().getType()`, guarded to right-click-on-block (`event.getAction() == RIGHT_CLICK_BLOCK`), so `filters: [ { target: ... } ]` can match the buried block
-- [ ] Provide an executable action for the ability so the Check-Execute-Consume path runs (an ability with zero mechanics never reaches `consume`, so the bone cost would not be deducted): either a small new `core:` mechanic that spawns a configured particle set at the clicked block, or reuse the feedback system with the block as the particle/sound target
-- [ ] Add tests covering: the piety YAML parses (XP source + ability), the `player_interact` block-target filter resolves the clicked block (and does not match left-clicks/air), the bone cost is consumed exactly once per activation, and the particle mechanic/feedback fires at the block
+- [x] Add a `bury_bones` (or `burial`) ability to `src/main/resources/skills/piety.yml`: triggers from `player_interact`, fires only on right-click on dirt / grass block / coarse dirt while holding a bone, **costs 1 bone** (consumed on activation), and plays a bonemeal-like particle/sound effect at the clicked block
+- [x] Add a `piety` XP source mirroring the same trigger: `player_interact` on dirt / grass block / coarse dirt while holding a bone, granting XP
+- [x] Support block-target filtering on the `player_interact` trigger: extend `resolveEventMaterial` (`SkillEventListener.java:662-693`) to resolve `PlayerInteractEvent.getClickedBlock().getType()`, guarded to right-click-on-block (`event.getAction() == RIGHT_CLICK_BLOCK`), so `filters: [ { target: ... } ]` can match the buried block
+- [x] Provide an executable action for the ability so the Check-Execute-Consume path runs (an ability with zero mechanics never reaches `consume`, so the bone cost would not be deducted): either a small new `core:` mechanic that spawns a configured particle set at the clicked block, or reuse the feedback system with the block as the particle/sound target
+- [x] Add tests covering: the piety YAML parses (XP source + ability), the `player_interact` block-target filter resolves the clicked block (and does not match left-clicks/air), the bone cost is consumed exactly once per activation, and the particle mechanic/feedback fires at the block
 
 ## Technical Specifications & Context
 
@@ -44,9 +44,9 @@
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new tests
-- [ ] `SkillYamlValidationTest` passes with the updated `piety.yml` (new XP source + ability parse)
-- [ ] Unit test: `player_interact` on dirt/grass block/coarse dirt resolves the clicked block as the target material; left-click and right-click-air do not match
-- [ ] Unit test: activating the ability consumes exactly 1 bone
-- [ ] Unit test: the particle/sound effect targets the clicked block location
+- [x] `./gradlew build && ./gradlew test` pass, including the new tests
+- [x] `SkillYamlValidationTest` passes with the updated `piety.yml` (new XP source + ability parse)
+- [x] Unit test: `player_interact` on dirt/grass block/coarse dirt resolves the clicked block as the target material; left-click and right-click-air do not match
+- [x] Unit test: activating the ability consumes exactly 1 bone
+- [x] Unit test: the particle/sound effect targets the clicked block location
 - [ ] Manual smoke: right-click dirt with a bone → bone consumed, bonemeal-like particles at the block, `piety` XP granted

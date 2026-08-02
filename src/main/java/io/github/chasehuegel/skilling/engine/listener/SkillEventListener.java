@@ -576,10 +576,10 @@ public final class SkillEventListener implements Listener {
                     }, delayTicks);
                 }
                 if (!ability.feedback().particles().isEmpty()) {
-                    FanfareDispatcher.dispatchParticles(player, null, ability.feedback().particles());
+                    FanfareDispatcher.dispatchParticles(player, resolveEventTargetLocation(event), ability.feedback().particles());
                 }
                 if (!ability.feedback().sounds().isEmpty()) {
-                    FanfareDispatcher.dispatchSounds(player, null, ability.feedback().sounds());
+                    FanfareDispatcher.dispatchSounds(player, resolveEventTargetLocation(event), ability.feedback().sounds());
                 }
                 debug("    -> done");
             }
@@ -760,7 +760,27 @@ public final class SkillEventListener implements Listener {
         if (event instanceof org.bukkit.event.entity.ProjectileLaunchEvent ple) {
             return projectileToMaterial(ple.getEntity());
         }
+        if (event instanceof org.bukkit.event.player.PlayerInteractEvent ie) {
+            // Only a right-click on a block carries a target block to filter on;
+            // left-clicks and air interactions must not match a block target.
+            if (ie.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK
+                    && ie.getClickedBlock() != null) {
+                return ie.getClickedBlock().getType();
+            }
+            return null;
+        }
         return null;
+    }
+
+    /**
+     * Resolves the location for ability feedback targeting, so {@code target: "target"}
+     * particles and sounds fire at the interaction's block rather than the player.
+     *
+     * @param event the triggering event
+     * @return the target block location, or null for non-block events
+     */
+    static org.bukkit.Location resolveEventTargetLocation(Event event) {
+        return io.github.chasehuegel.skilling.engine.mechanic.impl.BlockParticlesMechanic.resolveBlockLocation(event);
     }
 
     private Material projectileToMaterial(org.bukkit.entity.Entity damager) {
