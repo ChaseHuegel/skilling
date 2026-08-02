@@ -1,6 +1,6 @@
 # ISSUE-125: Fix `ModifyCraftOutputMechanic` shift-click craft duplication
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (extra items beyond recipe-expected output)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Handle `isShiftClick()` explicitly: the current item amount already reflects the batch-scaled total, so the bonus must be computed against the underlying recipe count, not added on top of the batch total
-- [ ] Cap the final stack at the material's max stack size (respect `Material.getMaxStackSize()`)
-- [ ] Add unit tests covering: normal craft, shift-click batch craft, stack-size cap
+- [x] Handle `isShiftClick()` explicitly: the current item amount already reflects the batch-scaled total, so the bonus must be computed against the underlying recipe count, not added on top of the batch total
+- [x] Cap the final stack at the material's max stack size (respect `Material.getMaxStackSize()`)
+- [x] Add unit tests covering: normal craft, shift-click batch craft, stack-size cap
 
 ## Technical Specifications & Context
 
@@ -33,7 +33,7 @@ When `isShiftClick()`, base the bonus on the per-recipe result amount (e.g. `rec
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: shift-crafting 8 items with multiplier 2 yields the expected total, not 2× the batch total
-- [ ] Unit test: output never exceeds `Material.getMaxStackSize()`
-- [ ] Unit test: normal single craft behavior is unchanged
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: shift-crafting 8 items with multiplier 2 yields the expected total, not 2× the batch total
+- [x] Unit test: output never exceeds `Material.getMaxStackSize()`
+- [x] Unit test: normal single craft behavior is unchanged
