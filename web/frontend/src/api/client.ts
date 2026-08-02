@@ -1,3 +1,5 @@
+import { useAuthStore } from '../stores/auth';
+
 function getCredentials(): string | null {
     return sessionStorage.getItem('skilling_credentials');
 }
@@ -20,7 +22,10 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     const res = await fetch(path, { ...options, headers });
 
     if (res.status === 401) {
-        clearCredentials();
+        // Session expired: log the Pinia store out (clears user + credentials)
+        // so the router guard, topbar, and pending-changes banner all react,
+        // then force the redirect to the login page.
+        useAuthStore().logout();
         window.location.hash = '#/login';
         throw new Error('Session expired');
     }

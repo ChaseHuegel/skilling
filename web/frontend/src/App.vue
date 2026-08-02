@@ -30,7 +30,7 @@ watch(() => authStore.isAuthenticated, (auth) => {
     }
 }, { immediate: true });
 watch(() => route.path, () => {
-    stagingStore.fetchStatus();
+    if (authStore.isAuthenticated) stagingStore.fetchStatus();
 });
 
 const darkMode = ref(document.documentElement.classList.contains('app-dark'));

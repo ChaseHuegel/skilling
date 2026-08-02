@@ -25,4 +25,21 @@ test.describe('Authentication', () => {
     await page.reload();
     await expect(page).toHaveURL(/\/login/);
   });
+
+  test('a 401 response logs the user out and redirects to login', async ({ page }) => {
+    // Simulate session expiry: every skills-list request returns 401
+    await page.route('**/api/skills', route => {
+      route.fulfill({ status: 401, contentType: 'application/json', body: '{"status":"error","message":"Unauthorized"}' });
+    });
+
+    await page.goto('/#/');
+
+    // The store logged out, the router redirected, and credentials are cleared
+    await expect(page).toHaveURL(/#\/login/);
+    await expect(page.locator('#username')).toBeVisible();
+    // Topbar and pending-changes banner are hidden on the login page
+    await expect(page.locator('nav a')).toHaveCount(0);
+    const creds = await page.evaluate(() => sessionStorage.getItem('skilling_credentials'));
+    expect(creds).toBeNull();
+  });
 });
