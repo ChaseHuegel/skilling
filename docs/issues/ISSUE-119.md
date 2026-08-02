@@ -1,6 +1,6 @@
 # ISSUE-119: Fix `AutoSmeltMechanic` destroying Fortune/Silk-Touch drops and inflating nugget ores
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (item loss + ingot-inflation dupe for nugget ores)
 
@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Stop discarding the real drops: capture the actual event drops (tool- and enchantment-aware) before `setDropItems(false)` instead of using the empty-handed `block.getDrops()` simulation
-- [ ] Sum drop counts correctly across multiple stacks rather than `Math.max` over stacks (which collapses to the largest single stack and drops the rest)
-- [ ] Emit the correct smelted product per material (nugget-producing ores must not become ingots)
-- [ ] Respect Silk-Touch (no smelt when Silk-Touch is active, matching intended behavior) and document the chosen behavior
-- [ ] Add unit tests covering: Fortune count preservation, multi-stack sums, nether-gold-ore → nuggets, Silk-Touch no-op
+- [x] Stop discarding the real drops: capture the actual event drops (tool- and enchantment-aware) before `setDropItems(false)` instead of using the empty-handed `block.getDrops()` simulation
+- [x] Sum drop counts correctly across multiple stacks rather than `Math.max` over stacks (which collapses to the largest single stack and drops the rest)
+- [x] Emit the correct smelted product per material (nugget-producing ores must not become ingots)
+- [x] Respect Silk-Touch (no smelt when Silk-Touch is active, matching intended behavior) and document the chosen behavior
+- [x] Add unit tests covering: Fortune count preservation, multi-stack sums, nether-gold-ore → nuggets, Silk-Touch no-op
 
 ## Technical Specifications & Context
 
@@ -35,8 +35,8 @@ Capture `be.getDropItems()`/the event's drop collection, sum amounts across stac
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: Fortune III coal ore yields the expected multiplied smelted amount
-- [ ] Unit test: nether gold ore smelts to gold nuggets, not ingots
-- [ ] Unit test: Silk-Touch mining returns raw ore without smelting
-- [ ] Unit test: multi-stack drop sums are preserved
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: Fortune III coal ore yields the expected multiplied smelted amount
+- [x] Unit test: nether gold ore smelts to gold nuggets, not ingots
+- [x] Unit test: Silk-Touch mining returns raw ore without smelting
+- [x] Unit test: multi-stack drop sums are preserved
