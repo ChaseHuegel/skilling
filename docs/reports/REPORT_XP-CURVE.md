@@ -59,17 +59,16 @@ Rewards are the raw constants in each skill's `xp_sources` in
 `src/main/resources/skills/*.yml`. Per **ISSUE-105**, bulk triggers scale the reward by
 operation size (`SkillEventListener.resolveEventBulkScalar`):
 
-- `furnace_extract` multiplies the reward by `FurnaceExtractEvent.getExpToDrop()` —
-  the vanilla furnace XP stored (per-item values used here: iron ore 0.7, gold ore 1.0,
-  clay→terracotta 0.35, sand→glass 0.1, raw food→cooked 0.35).
+- `furnace_extract` multiplies the reward by `FurnaceExtractEvent.getItemAmount()` —
+  the number of items extracted in one pull (4 ingots → 4× the reward).
 - `collect_xp` multiplies by `PlayerExpChangeEvent.getAmount()` — so
   `enchanting`'s `collect_xp: 1.0` and `wizardry`'s `collect_xp: 2.0` pay **1/2 skill XP
   per vanilla XP point** collected.
-- `consume_item` multiplies by the consumed stack size (1 for food).
+- `consume_item` is not bulk-scaled (scalar 1 per item consumed).
 
 So the modelled "XP per action" below already reflects the live engine, not the nominal
-constant. Where a source's real per-action yield drops (e.g. cooking's `furnace_extract:
-4.0` really yields ~1.4 XP per item smelted), that is what is modelled.
+constant. Where a source's real per-action yield differs from its nominal constant
+(e.g. a `furnace_extract: 4.0` constant pays per extracted item), that is what is modelled.
 
 ### 2.3 Time-to-100 model
 
@@ -162,10 +161,12 @@ reasonable content-completion horizon.
    `medium_armor`, `light_armor`, `unarmored`) grant only **3–5 XP per hit taken**, and
    taking hits is both rarer and more dangerous than landing them. `acrobatics` (3 XP/hit)
    compounds this with a ground-only condition.
-3. **ISSUE-105 scaling silently devalued furnace skills.** `furnace_extract` rewards now
-   scale by stored furnace XP, so `cooking`'s nominal `4.0`/`masonry`'s `5.0`/`4.0` pay
-   **≈1.4 / 1.75 / 0.4** XP per item. The nominal constants now overstate reality for
-   low-XP smelting (glass 0.1, terracotta 0.35) while flattering ore smelting (iron 0.7).
+3. **ISSUE-105 scaling devalued furnace skills; corrected to item-count scaling.** The
+   initial ISSUE-105 scalar scaled `furnace_extract` by stored furnace XP, paying
+   `cooking`'s nominal `4.0`/`masonry`'s `5.0`/`4.0` as ≈1.4/1.75/0.4 XP per item. ISSUE-173
+   corrected the scalar to `getItemAmount()` (items extracted), so the nominal constants
+   now pay their full value per extracted item; the bundled furnace constants should be
+   re-tuned for the new effective yields (see P2 below).
 4. **Low-frequency triggers are over-rewarded on paper but irrelevant in practice.**
    `resurrect` (30 XP, totem activation) and `ride_horse` (25 XP) look generous but their
    events are so rare/sporadic that they still rank poorly or distort the source mix.

@@ -85,10 +85,11 @@ class SkillEventListenerBulkScalarTest {
     }
 
     @Test
-    void furnaceExtractScalarUsesExpToDrop() {
+    void furnaceExtractScalarUsesItemCount() {
         FurnaceExtractEvent event = mock(FurnaceExtractEvent.class);
-        when(event.getExpToDrop()).thenReturn(3);
-        assertEquals(3, SkillEventListener.resolveEventBulkScalar(event));
+        when(event.getItemAmount()).thenReturn(4);
+        assertEquals(4, SkillEventListener.resolveEventBulkScalar(event),
+                "4 extracted ingots must scale XP by 4, not by the XP orbs dropped");
     }
 
     @Test

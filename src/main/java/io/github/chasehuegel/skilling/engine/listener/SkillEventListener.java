@@ -682,9 +682,9 @@ public final class SkillEventListener implements Listener {
      * Resolves the bulk-operation scalar for an event. Bulk triggers
      * ({@code collect_xp}, {@code craft_item}, {@code furnace_extract}) scale XP
      * rewards by the magnitude of the operation (orbs collected, items crafted,
-     * furnace XP extracted); all other events return a scalar of {@code 1}.
-     * {@code consume_item} is intentionally not bulk-scaled: vanilla consumption
-     * removes exactly one item from the stack per event.
+     * items extracted from a furnace); all other events return a scalar of
+     * {@code 1}. {@code consume_item} is intentionally not bulk-scaled: vanilla
+     * consumption removes exactly one item from the stack per event.
      *
      * <p>The raw value is returned so a bulk of {@code 0} yields {@code 0} XP
      * rather than rounding up to a positive reward.
@@ -704,7 +704,8 @@ public final class SkillEventListener implements Listener {
             return 1;
         }
         if (event instanceof org.bukkit.event.inventory.FurnaceExtractEvent e) {
-            return e.getExpToDrop();
+            // Scale by the number of items extracted, not the vanilla XP orbs.
+            return e.getItemAmount();
         }
         return 1;
     }

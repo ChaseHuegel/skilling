@@ -1,6 +1,6 @@
 # ISSUE-173: Fix `resolveEventBulkScalar` — `furnace_extract` must scale by extracted item count, not dropped XP orbs
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (XP reward miscalculation for `furnace_extract` sources — yields do not match the documented bulk semantics)
 
@@ -13,12 +13,12 @@
 
 ## Implementation Requirements
 
-- [ ] Change the `FurnaceExtractEvent` branch of `resolveEventBulkScalar` to return `e.getItemAmount()` (the number of items extracted) instead of `e.getExpToDrop()` (the vanilla XP orbs dropped)
-- [ ] Update the method Javadoc (`SkillEventListener.java:618-621`) — "furnace XP extracted" becomes "items extracted from a furnace"
-- [ ] Update `SkillEventListenerBulkScalarTest.furnaceExtractScalarUsesExpToDrop` to mock `getItemAmount()` (e.g. amount 4 → scalar 4) and rename it accordingly
-- [ ] Update the bulk-scaling note in `docs/users/capabilities.md:572-577` ("the XP extracted from a furnace" → "the number of items extracted from a furnace")
-- [ ] Update the `furnace_extract` description in `docs/reports/REPORT_XP-CURVE.md` (§2.2) to reflect item-count scaling instead of stored-furnace-XP scaling
-- [ ] Add a regression test proving a `FurnaceExtractEvent` with item amount 4 yields scalar 4 (4 ingots = 4× XP)
+- [x] Change the `FurnaceExtractEvent` branch of `resolveEventBulkScalar` to return `e.getItemAmount()` (the number of items extracted) instead of `e.getExpToDrop()` (the vanilla XP orbs dropped)
+- [x] Update the method Javadoc (`SkillEventListener.java:618-621`) — "furnace XP extracted" becomes "items extracted from a furnace"
+- [x] Update `SkillEventListenerBulkScalarTest.furnaceExtractScalarUsesExpToDrop` to mock `getItemAmount()` (e.g. amount 4 → scalar 4) and rename it accordingly
+- [x] Update the bulk-scaling note in `docs/users/capabilities.md:572-577` ("the XP extracted from a furnace" → "the number of items extracted from a furnace")
+- [x] Update the `furnace_extract` description in `docs/reports/REPORT_XP-CURVE.md` (§2.2) to reflect item-count scaling instead of stored-furnace-XP scaling
+- [x] Add a regression test proving a `FurnaceExtractEvent` with item amount 4 yields scalar 4 (4 ingots = 4× XP)
 
 ## Technical Specifications & Context
 
@@ -40,8 +40,8 @@ Return `e.getItemAmount()` from the `FurnaceExtractEvent` branch and update the 
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the updated test
-- [ ] Unit test: `FurnaceExtractEvent` with `getItemAmount()` = 4 yields scalar 4 (4 ingots = 4× XP)
-- [ ] Unit test: `collect_xp` and non-bulk events are unchanged
-- [ ] `docs/users/capabilities.md` and `docs/reports/REPORT_XP-CURVE.md` describe item-count scaling
-- [ ] Bundled `furnace_extract` reward constants are reviewed for the new effective yields (adjust in a follow-up ticket if out of band)
+- [x] `./gradlew build && ./gradlew test` pass, including the updated test
+- [x] Unit test: `FurnaceExtractEvent` with `getItemAmount()` = 4 yields scalar 4 (4 ingots = 4× XP)
+- [x] Unit test: `collect_xp` and non-bulk events are unchanged
+- [x] `docs/users/capabilities.md` and `docs/reports/REPORT_XP-CURVE.md` describe item-count scaling
+- [x] Bundled `furnace_extract` reward constants are reviewed for the new effective yields (adjust in a follow-up ticket if out of band) — re-tuning is tracked as REPORT_XP-CURVE §7.2 P2 / backlog

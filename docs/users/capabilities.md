@@ -582,10 +582,11 @@ attribute: { constant: "minecraft:movement_speed" }
 > **Bulk-operation scaling:** XP rewards for the `collect_xp`, `craft_item`, and
 > `furnace_extract` triggers are multiplied by the magnitude of the operation —
 > the number of XP orbs collected, the number of items crafted (including
-> shift-click batch totals), or the XP extracted from a furnace, respectively.
-> For example, a configured reward of 2 skill XP grants 6 skill XP for a bulk of
-> 3. `consume_item` is not bulk-scaled: eating grants the flat configured reward
-> once per item consumed. All other triggers grant the flat configured reward.
+> shift-click batch totals), or the number of items extracted from a furnace,
+> respectively. For example, a configured reward of 2 skill XP grants 6 skill XP
+> for a bulk of 3. `consume_item` is not bulk-scaled: eating grants the flat
+> configured reward once per item consumed. All other triggers grant the flat
+> configured reward.
 
 | Key | Event | Description |
 |---|---|---|
