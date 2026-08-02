@@ -224,7 +224,7 @@ public final class Skilling extends JavaPlugin {
 
         // Event listeners
         Bukkit.getPluginManager().registerEvents(new UIProtectionListener(), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker, requirementEngine), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker, requirementEngine, skillManager, bossBarPool), this);
         this.skillEventListener = new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
                         registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool, stateFilterRegistry);
         Bukkit.getPluginManager().registerEvents(skillEventListener, this);

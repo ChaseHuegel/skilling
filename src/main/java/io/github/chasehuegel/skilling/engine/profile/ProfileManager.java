@@ -53,7 +53,7 @@ public final class ProfileManager {
                 return profile;
             }
 
-            String sql = "SELECT skill_id, xp FROM player_skills WHERE player_uuid = ?";
+            String sql = "SELECT skill_id, xp, fanfare_pending FROM player_skills WHERE player_uuid = ?";
             try (Connection conn = databaseManager.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, playerUuid.toString());
@@ -62,6 +62,9 @@ public final class ProfileManager {
                         String skillId = rs.getString("skill_id");
                         long xp = rs.getLong("xp");
                         profile.getXpMap().put(skillId, xp);
+                        if (rs.getInt("fanfare_pending") > 0) {
+                            profile.addPendingFanfare(skillId);
+                        }
                     }
                 }
             } catch (Exception ignored) {

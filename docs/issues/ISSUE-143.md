@@ -1,6 +1,6 @@
 # ISSUE-143: Consume `fanfare_pending` on profile load so offline admin XP/level changes get fanfare
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (documented feature is dead; flag never clears)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Read the `fanfare_pending` flag during profile load; when set, fire the configured level-up/fanfare on the player's first join and clear the flag
-- [ ] Ensure the batch worker's `ON CONFLICT DO UPDATE` also resets `fanfare_pending` to 0 after it is consumed (currently only `xp` is updated, so the flag persists forever)
-- [ ] Preserve offline admin changes against the login/flush race (coordinate with ISSUE-112)
-- [ ] Add a test covering: offline setlevel sets the flag, profile load reads and clears it, fanfare fires on next login
+- [x] Read the `fanfare_pending` flag during profile load; when set, fire the configured level-up/fanfare on the player's first join and clear the flag
+- [x] Ensure the batch worker's `ON CONFLICT DO UPDATE` also resets `fanfare_pending` to 0 after it is consumed (currently only `xp` is updated, so the flag persists forever)
+- [x] Preserve offline admin changes against the login/flush race (coordinate with ISSUE-112)
+- [x] Add a test covering: offline setlevel sets the flag, profile load reads and clears it, fanfare fires on next login
 
 ## Technical Specifications & Context
 
@@ -37,7 +37,7 @@ Hydrate the flag in `ProfileManager.loadProfile`; on first join, fire fanfare fo
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Unit test: offline setlevel flags the row; profile load reads and clears it
-- [ ] Unit test: fanfare fires once on the next login, not again on later logins
-- [ ] DB review: after a flush, `fanfare_pending` is cleared
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Unit test: offline setlevel flags the row; profile load reads and clears it
+- [x] Unit test: fanfare fires once on the next login, not again on later logins
+- [x] DB review: after a flush, `fanfare_pending` is cleared

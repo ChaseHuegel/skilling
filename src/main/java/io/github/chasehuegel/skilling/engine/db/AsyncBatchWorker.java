@@ -18,6 +18,16 @@ public final class AsyncBatchWorker implements Runnable {
 
     private static final long INTERVAL_TICKS = 20 * 60;
 
+    /**
+     * Player-skill UPSERT. Writing a profile row clears {@code fanfare_pending}
+     * so a consumed offline fanfare is never re-fired on a later login.
+     */
+    public static final String PLAYER_SKILLS_UPSERT = """
+            INSERT INTO player_skills (player_uuid, skill_id, xp)
+            VALUES (?, ?, ?)
+            ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = excluded.xp, fanfare_pending = 0
+            """;
+
     private final Skilling plugin;
     private final DatabaseManager databaseManager;
     private final ProfileManager profileManager;
@@ -65,14 +75,8 @@ public final class AsyncBatchWorker implements Runnable {
         Map<UUID, PlayerProfile> dirty = profileManager.getDirtyProfiles();
         if (dirty.isEmpty()) return;
 
-        String sql = """
-                INSERT INTO player_skills (player_uuid, skill_id, xp)
-                VALUES (?, ?, ?)
-                ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = excluded.xp
-                """;
-
         try (Connection conn = databaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(PLAYER_SKILLS_UPSERT)) {
 
             // Capture each profile's modCount *before* its XP snapshot so the
             // saved marker never counts mutations the DB write did not include.

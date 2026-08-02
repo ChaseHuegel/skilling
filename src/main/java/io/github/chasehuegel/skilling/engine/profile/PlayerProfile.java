@@ -3,6 +3,7 @@ package io.github.chasehuegel.skilling.engine.profile;
 import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,6 +29,7 @@ public final class PlayerProfile implements PlayerProfileView {
     private final UUID playerId;
     private volatile boolean initialized;
     private final ConcurrentHashMap<String, Long> xpMap;
+    private final Set<String> pendingFanfareSkills = ConcurrentHashMap.newKeySet();
     private final AtomicLong modCount;
     private volatile long savedModCount;
     private volatile PlayerPreferences preferences;
@@ -189,7 +191,7 @@ public final class PlayerProfile implements PlayerProfileView {
     }
 
     /**
-     * Records the modification counter captured at database snapshot time as
+     * Returns the modification counter captured at database snapshot time as
      * saved, making the profile appear clean only if no further modifications
      * occurred after that snapshot.
      *
@@ -203,6 +205,51 @@ public final class PlayerProfile implements PlayerProfileView {
      */
     public void markSaved(long snapshotModCount) {
         this.savedModCount = snapshotModCount;
+    }
+
+    /**
+     * Records that a skill has a level-up/XP fanfare pending, set when an offline
+     * admin command changed the skill while the player was away.
+     *
+     * @param skillId the skill identifier
+     */
+    public void addPendingFanfare(String skillId) {
+        if (skillId != null) pendingFanfareSkills.add(skillId);
+    }
+
+    /**
+     * Whether a fanfare is pending for the given skill.
+     *
+     * @param skillId the skill identifier
+     * @return true if a fanfare is pending
+     */
+    public boolean hasPendingFanfare(String skillId) {
+        return pendingFanfareSkills.contains(skillId);
+    }
+
+    /**
+     * Returns a copy of all skill IDs with pending fanfare.
+     *
+     * @return the pending fanfare skill IDs
+     */
+    public Set<String> pendingFanfareSkills() {
+        return Set.copyOf(pendingFanfareSkills);
+    }
+
+    /**
+     * Consumes the pending fanfare for a skill, marking the profile dirty so the
+     * next flush clears the {@code fanfare_pending} flag in the database. The
+     * flag is consumed exactly once per pending entry.
+     *
+     * @param skillId the skill identifier
+     * @return true if a fanfare was pending and was consumed
+     */
+    public boolean consumePendingFanfare(String skillId) {
+        boolean consumed = pendingFanfareSkills.remove(skillId);
+        if (consumed) {
+            modCount.incrementAndGet();
+        }
+        return consumed;
     }
 
     /**
