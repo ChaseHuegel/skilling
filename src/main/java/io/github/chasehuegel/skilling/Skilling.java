@@ -201,7 +201,7 @@ public final class Skilling extends JavaPlugin {
         this.bossBarPool = new BossBarPool(maxBars, fadeTicks);
 
         // Requirements engine
-        this.requirementEngine = new RequirementEngine(tagResolver);
+        this.requirementEngine = new RequirementEngine(tagResolver, stateFilterRegistry);
 
         // Lockdown / reload manager
         this.lockdownManager = new LockdownManager(this, profileManager, asyncBatchWorker, skillManager);

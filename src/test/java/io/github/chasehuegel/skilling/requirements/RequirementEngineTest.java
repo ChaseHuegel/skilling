@@ -27,7 +27,22 @@ class RequirementEngineTest {
     @BeforeEach
     void setUp() {
         tagResolver = mock(TagResolver.class);
-        engine = new RequirementEngine(tagResolver);
+        engine = new RequirementEngine(tagResolver, newStateFilterRegistry());
+    }
+
+    private static io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry newStateFilterRegistry() {
+        var registry = new io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry();
+        registry.register("is_sneaking", (p, e, v) -> p.isSneaking());
+        registry.register("dimension", (p, e, v) -> {
+            var env = p.getWorld().getEnvironment();
+            return switch (v) {
+                case "overworld" -> env == org.bukkit.World.Environment.NORMAL;
+                case "nether" -> env == org.bukkit.World.Environment.NETHER;
+                case "end" -> env == org.bukkit.World.Environment.THE_END;
+                default -> false;
+            };
+        });
+        return registry;
     }
 
 
@@ -242,5 +257,57 @@ class RequirementEngineTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> engine.check(player, "test_ability", requirements, 10, 5));
+    }
+
+    @Test
+    void sneakingRequirementAndFilterBehaveIdentically() {
+        var registry = newStateFilterRegistry();
+        var engine = new RequirementEngine(mock(TagResolver.class), registry);
+        var requirements = new SkillDefinition.Requirements(0, List.of("is_sneaking"), List.of());
+
+        var sneakingPlayer = mock(Player.class);
+        when(sneakingPlayer.isSneaking()).thenReturn(true);
+        when(sneakingPlayer.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        var standingPlayer = mock(Player.class);
+        when(standingPlayer.isSneaking()).thenReturn(false);
+        when(standingPlayer.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        for (Player p : List.of(sneakingPlayer, standingPlayer)) {
+            boolean requirementPasses = engine.check(p, "a", requirements, 10, 5).success();
+            boolean filterPasses = registry.evaluate("is_sneaking", p, null, "");
+            assertEquals(filterPasses, requirementPasses, "requirement and filter must agree");
+        }
+    }
+
+    @Test
+    void dimensionRequirementAndFilterBehaveIdentically() {
+        var registry = newStateFilterRegistry();
+        var engine = new RequirementEngine(mock(TagResolver.class), registry);
+
+        var world = mock(org.bukkit.World.class);
+        when(world.getEnvironment()).thenReturn(org.bukkit.World.Environment.NETHER);
+        var player = mock(Player.class);
+        when(player.getWorld()).thenReturn(world);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        assertTrue(engine.check(player, "a",
+                new SkillDefinition.Requirements(0, List.of("dimension:nether"), List.of()), 10, 5).success());
+        assertFalse(engine.check(player, "a",
+                new SkillDefinition.Requirements(0, List.of("dimension:overworld"), List.of()), 10, 5).success());
+        assertTrue(registry.evaluate("dimension", player, null, "nether"));
+        assertFalse(registry.evaluate("dimension", player, null, "overworld"));
+    }
+
+    @Test
+    void unknownStateFailsLikeFilterPath() {
+        var registry = newStateFilterRegistry();
+        var engine = new RequirementEngine(mock(TagResolver.class), registry);
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        assertFalse(engine.check(player, "a",
+                new SkillDefinition.Requirements(0, List.of("not_a_state"), List.of()), 10, 5).success());
+        assertFalse(registry.evaluate("not_a_state", player, null, ""));
     }
 }

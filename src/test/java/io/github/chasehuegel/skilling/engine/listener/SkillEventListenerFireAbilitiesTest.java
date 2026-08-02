@@ -112,7 +112,7 @@ class SkillEventListenerFireAbilitiesTest {
         mechReg.register("test:count", CountingMechanic.class, java.util.List.of());
 
         var tagResolver = new TagResolver(new CustomTagLoader());
-        RequirementEngine requirementEngine = new RequirementEngine(tagResolver);
+        RequirementEngine requirementEngine = new RequirementEngine(tagResolver, new StateFilterRegistry());
 
         Skilling plugin = mock(Skilling.class);
         Server server = mock(Server.class);

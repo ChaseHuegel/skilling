@@ -1,6 +1,6 @@
 # ISSUE-134: Unify state-filter logic between the requirements engine and XP filters
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Medium (divergent semantics for the same state conditions)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Route ability requirement state checks through the same `StateFilterRegistry` used by XP/mechanic filters
-- [ ] Resolve the format divergence (`dimension:overworld` inline vs. `dimension` + value) into one canonical form
-- [ ] Decide and document the default behavior for unknown states (requirements currently pass; filters currently fail) and make both consistent
-- [ ] Add unit tests covering: sneaking gating parity, dimension parity, unknown-state behavior parity
+- [x] Route ability requirement state checks through the same `StateFilterRegistry` used by XP/mechanic filters
+- [x] Resolve the format divergence (`dimension:overworld` inline vs. `dimension` + value) into one canonical form
+- [x] Decide and document the default behavior for unknown states (requirements currently pass; filters currently fail) and make both consistent
+- [x] Add unit tests covering: sneaking gating parity, dimension parity, unknown-state behavior parity
 
 ## Technical Specifications & Context
 
@@ -37,8 +37,8 @@ Replace the hardcoded `checkState` with `StateFilterRegistry` lookups, canonical
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: sneaking requirement and sneaking filter behave identically
-- [ ] Unit test: dimension requirement and dimension filter behave identically
-- [ ] Unit test: unknown state behavior is documented and consistent across both paths
-- [ ] Bundled skill YAML still parses and behaves as before
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: sneaking requirement and sneaking filter behave identically
+- [x] Unit test: dimension requirement and dimension filter behave identically
+- [x] Unit test: unknown state behavior is documented and consistent across both paths (both fail — matches the filter path's fail-fast and surfaces config typos)
+- [x] Bundled skill YAML still parses and behaves as before

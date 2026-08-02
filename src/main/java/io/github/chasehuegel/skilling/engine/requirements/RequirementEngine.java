@@ -1,6 +1,7 @@
 package io.github.chasehuegel.skilling.engine.requirements;
 
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
+import io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -18,19 +19,28 @@ import java.util.concurrent.ConcurrentHashMap;
  *   <li>Mechanic execution (external) — run the ability logic</li>
  *   <li>{@link #consume(Player, SkillDefinition.Requirements)} — deduct items and apply cooldowns</li>
  * </ol>
+ *
+ * <p>State conditions route through the shared {@link StateFilterRegistry} used
+ * by XP/mechanic filters, so "must be sneaking" or "must be in the overworld"
+ * behave identically whether they gate an ability requirement or an XP source.
+ * Unknown states fail the check, matching the filter path and surfacing typos.
  */
 public final class RequirementEngine {
 
     private final Map<String, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
     private TagResolver tagResolver;
+    private final StateFilterRegistry stateFilterRegistry;
 
     /**
-     * Constructs a new requirement engine with the given tag resolver for item matching.
+     * Constructs a new requirement engine with the given tag resolver and state
+     * filter registry for item matching and state gating.
      *
-     * @param tagResolver the tag resolver used to resolve namespace tags in item requirements
+     * @param tagResolver        the tag resolver used to resolve namespace tags in item requirements
+     * @param stateFilterRegistry the registry of player-state filters shared with XP/mechanic filters
      */
-    public RequirementEngine(TagResolver tagResolver) {
+    public RequirementEngine(TagResolver tagResolver, StateFilterRegistry stateFilterRegistry) {
         this.tagResolver = tagResolver;
+        this.stateFilterRegistry = stateFilterRegistry;
     }
 
     /**
@@ -70,7 +80,6 @@ public final class RequirementEngine {
                 ));
             }
         }
-
         // Check item possession and cost availability
         for (var itemReq : requirements.items()) {
             switch (itemReq.action()) {
@@ -134,23 +143,13 @@ public final class RequirementEngine {
     }
 
     private boolean checkState(Player player, String state) {
-        return switch (state) {
-            case "is_sneaking" -> player.isSneaking();
-            case "is_sprinting" -> player.isSprinting();
-            case "is_in_water" -> player.isInWater();
-            case "is_on_ground" -> player.isOnGround();
-            case "is_on_fire" -> player.getFireTicks() > 0;
-            case "is_riding" -> player.isInsideVehicle();
-            case "dimension:overworld" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.NORMAL;
-            case "dimension:nether" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER;
-            case "dimension:end" -> player.getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END;
-            case "weather:clear" -> player.getWorld().isClearWeather();
-            case "weather:rain" -> player.getWorld().hasStorm();
-            case "weather:thunder" -> player.getWorld().isThundering();
-            case "time:day" -> player.getWorld().getTime() < 12300 || player.getWorld().getTime() > 23900;
-            case "time:night" -> player.getWorld().getTime() >= 13000 && player.getWorld().getTime() <= 23900;
-            default -> true; // unknown states pass through gracefully
-        };
+        int colonIdx = state.indexOf(':');
+        String key = colonIdx > 0 ? state.substring(0, colonIdx) : state;
+        String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
+        // Route through the shared registry so requirement states and XP/mechanic
+        // filter states share one implementation and one unknown-state default
+        // (false). Requirement states are player conditions, so no event is used.
+        return stateFilterRegistry.evaluate(key, player, null, value);
     }
 
     private boolean hasItems(Player player, String tag, int required, String slot) {

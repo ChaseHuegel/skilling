@@ -22,7 +22,8 @@ class RequirementEngineCooldownTest {
 
     @BeforeEach
     void setUp() {
-        engine = new RequirementEngine(mock(TagResolver.class));
+        engine = new RequirementEngine(mock(TagResolver.class),
+                new io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry());
     }
 
     private Player mockPlayer() {
