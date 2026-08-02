@@ -3,7 +3,7 @@ package io.github.chasehuegel.skilling.api;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
 import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
-import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
+import io.github.chasehuegel.skilling.engine.profile.PlayerProfileView;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
@@ -99,7 +99,17 @@ public final class SkillingAPI {
         return bossBarPool;
     }
 
-    public PlayerProfile getProfile(UUID playerId) {
+    /**
+     * Returns a read-only view of a player's profile from the in-memory cache.
+     *
+     * <p>Addons receive the immutable {@link PlayerProfileView} contract and can
+     * query XP values without access to the engine's mutation methods. Engine
+     * internals that need to write use {@code ProfileManager.getProfile} directly.
+     *
+     * @param playerId the player's UUID
+     * @return the profile view, or null if the profile is not loaded
+     */
+    public PlayerProfileView getProfile(UUID playerId) {
         return profileManager.getProfile(playerId);
     }
 }

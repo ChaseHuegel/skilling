@@ -1,6 +1,6 @@
 # ISSUE-138: Return `PlayerProfileView` from the public API instead of the mutable `PlayerProfile`
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (shipped read-only contract is dead; API leaks mutation surface)
 
@@ -13,12 +13,12 @@
 
 ## Implementation Requirements
 
-- [ ] Change `SkillingAPI.getProfile(UUID)` to return `PlayerProfileView` (the shipped read-only contract)
-- [ ] Keep `PlayerProfile implements PlayerProfileView` so engine code is unaffected
-- [ ] If engine internals need the mutable profile, expose a separate non-public path or document it; addons only ever see the view
-- [ ] Ensure the view's `getXp`/`getXpSnapshot`/`isInitialized` methods have the required Javadoc (`skilling-api/AGENTS.md`)
-- [ ] Update `docs/users/api-integration.md` (`getProfile` → `PlayerProfile` reference) to the view type
-- [ ] Add a test asserting the API returns a type that cannot mutate XP
+- [x] Change `SkillingAPI.getProfile(UUID)` to return `PlayerProfileView` (the shipped read-only contract)
+- [x] Keep `PlayerProfile implements PlayerProfileView` so engine code is unaffected
+- [x] If engine internals need the mutable profile, expose a separate non-public path or document it; addons only ever see the view
+- [x] Ensure the view's `getXp`/`getXpSnapshot`/`isInitialized` methods have the required Javadoc (`skilling-api/AGENTS.md`)
+- [x] Update `docs/users/api-integration.md` (`getProfile` → `PlayerProfile` reference) to the view type
+- [x] Add a test asserting the API returns a type that cannot mutate XP
 
 ## Technical Specifications & Context
 
@@ -40,7 +40,7 @@ Change the return type to `PlayerProfileView` and keep the concrete class intern
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including a new API-contract test
-- [ ] Unit test: `SkillingAPI.getProfile` return type is `PlayerProfileView` (compile-time assertion)
-- [ ] `docs/users/api-integration.md` documents the view type and what it exposes
-- [ ] Engine/web code that needs mutation uses the internal accessor
+- [x] `./gradlew build && ./gradlew test` pass, including a new API-contract test
+- [x] Unit test: `SkillingAPI.getProfile` return type is `PlayerProfileView` (compile-time assertion)
+- [x] `docs/users/api-integration.md` documents the view type and what it exposes
+- [x] Engine/web code that needs mutation uses the internal accessor

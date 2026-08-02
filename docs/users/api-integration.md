@@ -314,7 +314,7 @@ Example: `%skilling_evaluator_mining_geologist_yield_chance%` returns the curren
 | `getRequirementEngine()` | `RequirementEngine` | Check/consume pipeline |
 | `getFeedbackDebouncer()` | `FeedbackDebouncer` | Spam throttle |
 | `getBossBarPool()` | `BossBarPool` | LRU Boss Bar cache |
-| `getProfile(UUID)` | `PlayerProfile` | Synchronous in-memory cache lookup (returns null if not loaded) |
+| `getProfile(UUID)` | `PlayerProfileView` | Read-only view of a player's profile (XP queries only); synchronous in-memory cache lookup, returns null if not loaded. The mutable engine profile is never exposed to addons. |
 
 ### Registries
 
