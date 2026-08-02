@@ -101,4 +101,37 @@ test.describe('Skill Editor', () => {
     await editor.assertNoError();
     expect(await editor.getCooldown('vein_miner')).toBe(String(target));
   });
+
+  test('lore preview escapes HTML payloads and still renders color codes', async ({ page }) => {
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    await dashboard.clickSkill('Mining');
+
+    const editor = new SkillEditorPage(page);
+    await editor.waitForLoad();
+    await editor.assertNoError();
+
+    // Add a lore line carrying an XSS payload plus color/format codes
+    const addBtn = page.locator('.lore-actions').getByRole('button', { name: '+ Add Line' });
+    await addBtn.click();
+    const loreInput = page.locator('.lore-input').last();
+    await loreInput.fill('<img src=x onerror="window.__xss=1"> &c&lCOLORED');
+
+    const preview = page.locator('.lore-preview .preview-line').last();
+    await expect(preview).toContainText('<img src=x onerror="window.__xss=1">');
+
+    // The injected markup must not create elements
+    await expect(preview.locator('img')).toHaveCount(0);
+    await expect(page.locator('img[src="x"]')).toHaveCount(0);
+
+    // The onerror handler never fired
+    const xssFired = await page.evaluate(() =>
+      (window as unknown as { __xss?: number }).__xss
+    );
+    expect(xssFired).toBeUndefined();
+
+    // Color (&c = red) and format (&l = bold) codes still render
+    await expect(preview.locator('span[style*="color:#FF5555"]')).toHaveCount(1);
+    await expect(preview.locator('span[style*="font-weight:bold"]')).toHaveCount(1);
+  });
 });

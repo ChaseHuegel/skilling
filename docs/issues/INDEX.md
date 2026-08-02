@@ -2,7 +2,7 @@
 
 ### Bugs
 - [x] [ISSUE-149](ISSUE-149.md) - Validate `{id}` path params in `/api/skills/{id}` against path traversal
-- [ ] [ISSUE-159](ISSUE-159.md) - Fix stored XSS via unescaped `v-html` in the skill lore preview
+- [x] [ISSUE-159](ISSUE-159.md) - Fix stored XSS via unescaped `v-html` in the skill lore preview
 - [ ] [ISSUE-154](ISSUE-154.md) - Redact the web password from API responses and make web credential/port changes take effect
 - [ ] [ISSUE-155](ISSUE-155.md) - Harden web authentication (defaults, rate limiting, constant-time compare)
 - [ ] [ISSUE-111](ISSUE-111.md) - Fix `markSaved()` lost-update race that silently drops player XP

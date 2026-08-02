@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import MaterialPicker from '../common/MaterialPicker.vue'
+import { parseAmpersandCodes, type FormattedSegment } from '../../utils/minecraftColors'
 
 interface DisplayConfig {
   icon: string
@@ -73,17 +74,15 @@ function onLoreDragEnd() {
   loreDragIndex.value = null
 }
 
-function renderedLore(line: string): string {
-  return line.replace(/&([0-9a-fk-or])/gi, (_, code) => {
-    const colorMap: Record<string, string> = {
-      '0': '#000000', '1': '#0000AA', '2': '#00AA00', '3': '#00AAAA',
-      '4': '#AA0000', '5': '#AA00AA', '6': '#FFAA00', '7': '#AAAAAA',
-      '8': '#555555', '9': '#5555FF', 'a': '#55FF55', 'b': '#55FFFF',
-      'c': '#FF5555', 'd': '#FF55FF', 'e': '#FFFF55', 'f': '#FFFFFF',
-    }
-    const color = colorMap[code.toLowerCase()]
-    return color ? `<span style="color:${color}">` : ''
-  }).replace(/&[0-9a-fk-or]/gi, '') + '</span>'.repeat((line.match(/&[0-9a-fk-or]/gi) || []).length)
+function segmentStyle(seg: FormattedSegment): string {
+  const styles: string[] = []
+  if (seg.color) styles.push(`color:${seg.color}`)
+  if (seg.bold) styles.push('font-weight:bold')
+  if (seg.italic) styles.push('font-style:italic')
+  if (seg.underline) styles.push('text-decoration:underline')
+  if (seg.strikethrough) styles.push('text-decoration:line-through')
+  if (seg.underline && seg.strikethrough) styles[styles.length - 1] = 'text-decoration:underline line-through'
+  return styles.join(';')
 }
 </script>
 
@@ -168,8 +167,13 @@ function renderedLore(line: string): string {
             v-for="(line, i) in modelValue.lore"
             :key="'preview-' + i"
             class="preview-line"
-            v-html="renderedLore(line)"
-          />
+          >
+            <span
+              v-for="(seg, sIdx) in parseAmpersandCodes(line)"
+              :key="sIdx"
+              :style="segmentStyle(seg)"
+            >{{ seg.text }}</span>
+          </div>
         </div>
 
         <div class="lore-actions">

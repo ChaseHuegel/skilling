@@ -1,6 +1,6 @@
 # ISSUE-159: Fix stored XSS via unescaped `v-html` in the skill lore preview
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (stored XSS in the authenticated admin console)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Make `DisplaySection.renderedLore()` HTML-escape all non-color-code text (the safe `renderFormattedText` helper in `utils/minecraftColors.ts:64-76` already does this — use it)
-- [ ] Remove the `v-html="renderedLore(line)"` binding (line 171) in favor of the escaping implementation, per the `web/AGENTS.md` "No `v-html`" convention
-- [ ] Add a test asserting a lore line containing `<img onerror=...>` or `<script>` renders as escaped text, not executable HTML
-- [ ] Audit remaining `v-html` usages (`AbilitiesSection.vue:760`, `SkillTooltip.vue:9,16,19`) to confirm they all route through the escaping helper
+- [x] Make `DisplaySection.renderedLore()` HTML-escape all non-color-code text (the safe `renderFormattedText` helper in `utils/minecraftColors.ts:64-76` already does this — use it)
+- [x] Remove the `v-html="renderedLore(line)"` binding (line 171) in favor of the escaping implementation, per the `web/AGENTS.md` "No `v-html`" convention
+- [x] Add a test asserting a lore line containing `<img onerror=...>` or `<script>` renders as escaped text, not executable HTML
+- [x] Audit remaining `v-html` usages (`AbilitiesSection.vue:760`, `SkillTooltip.vue:9,16,19`) to confirm they all route through the escaping helper
 
 ## Technical Specifications & Context
 
@@ -38,7 +38,7 @@ Replace `DisplaySection`'s lore rendering with `renderFormattedText` from `minec
 
 ## Verification & Definition of Done
 
-- [ ] `cd web/frontend && npm run build` passes
-- [ ] Test: lore with `<img onerror=...>`/`<script>` renders as text (no element created)
-- [ ] Test: `&c`/`&l` color and format codes still render
-- [ ] Audit: every remaining `v-html` routes through the escaping helper or is removed
+- [x] `cd web/frontend && npm run build` passes
+- [x] Test: lore with `<img onerror=...>`/`<script>` renders as text (no element created)
+- [x] Test: `&c`/`&l` color and format codes still render
+- [x] Audit: every remaining `v-html` routes through the escaping helper or is removed
