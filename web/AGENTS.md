@@ -110,6 +110,7 @@ https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/{VERSION}/
 - **CORS:** All origins/methods/headers allowed (admin tool, trusted network).
 - **XSS:** Vue's template compiler sanitizes all user input. No `v-html`.
 - **Path traversal:** Skill IDs are validated against `[a-z_][a-z0-9_]*`.
+- **Credential handling:** `GET /api/config` redacts `web.password` (returns `""`); the frontend treats blank as "keep current". Changing `web.port`/`web.username`/`web.password` is rejected with a 400 "requires server restart" message because the embedded server snapshot cannot be reconfigured live.
 - **Staging:** Edits go to a separate staging directory first; only explicit "Apply & Reload" touches live files.
 - **Backups:** Before applying, a timestamped backup is created in `.web_staging/backup/`.
 

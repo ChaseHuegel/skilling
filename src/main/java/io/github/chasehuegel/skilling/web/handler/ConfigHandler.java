@@ -10,6 +10,10 @@ import java.util.Map;
 
 public final class ConfigHandler {
 
+    private static final String WEB_RESTART_REQUIRED =
+            "Changing web.port, web.username, or web.password requires a server restart. "
+            + "Edit config.yml directly and restart the server; leave the password blank to keep the current value.";
+
     private final StagingManager stagingManager;
     private final File configFile;
 
@@ -57,7 +61,8 @@ public final class ConfigHandler {
             web.put("enabled", config.getBoolean("web.enabled", false));
             web.put("port", config.getInt("web.port", 8082));
             web.put("username", config.getString("web.username", "admin"));
-            web.put("password", config.getString("web.password", "skilling"));
+            // Never echo the stored credential back to any client.
+            web.put("password", "");
             result.put("web", web);
 
             ctx.json(result);
@@ -70,6 +75,9 @@ public final class ConfigHandler {
     public void update(Context ctx) {
         try {
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
+
+            org.bukkit.configuration.file.YamlConfiguration liveConfig =
+                    org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(configFile);
 
             var yamlConfig = new org.bukkit.configuration.file.YamlConfiguration();
 
@@ -99,13 +107,39 @@ public final class ConfigHandler {
 
             Map<String, Object> web = (Map<String, Object>) body.getOrDefault("web", Map.of());
             yamlConfig.set("web.enabled", web.getOrDefault("enabled", false));
-            yamlConfig.set("web.port", web.getOrDefault("port", 8082));
-            yamlConfig.set("web.username", web.getOrDefault("username", "admin"));
-            yamlConfig.set("web.password", web.getOrDefault("password", "skilling"));
+
+            // Port/credential changes cannot be applied to the running embedded
+            // server; reject them explicitly so admins are not misled into
+            // believing their change took effect.
+            int currentPort = liveConfig.getInt("web.port", 8082);
+            int requestedPort = ((Number) web.getOrDefault("port", currentPort)).intValue();
+            if (requestedPort != currentPort) {
+                throw new IllegalArgumentException(WEB_RESTART_REQUIRED);
+            }
+            yamlConfig.set("web.port", requestedPort);
+
+            String currentUsername = liveConfig.getString("web.username", "admin");
+            String requestedUsername = String.valueOf(web.getOrDefault("username", currentUsername));
+            if (!currentUsername.equals(requestedUsername)) {
+                throw new IllegalArgumentException(WEB_RESTART_REQUIRED);
+            }
+            yamlConfig.set("web.username", requestedUsername);
+
+            Object passwordValue = web.get("password");
+            String requestedPassword = passwordValue == null ? "" : String.valueOf(passwordValue);
+            String currentPassword = liveConfig.getString("web.password", "skilling");
+            if (!requestedPassword.isBlank()) {
+                throw new IllegalArgumentException(WEB_RESTART_REQUIRED);
+            }
+            // Blank password means "keep current"; preserve it so an apply
+            // round-trip never resets credentials to the default.
+            yamlConfig.set("web.password", currentPassword);
 
             String yamlContent = yamlConfig.saveToString();
             stagingManager.stageConfigFile(yamlContent);
             ctx.json(Map.of("status", "ok"));
+        } catch (IllegalArgumentException e) {
+            ctx.status(400).json(Map.of("status", "error", "message", e.getMessage()));
         } catch (Exception e) {
             ctx.status(500).json(Map.of("status", "error", "message", e.getMessage()));
         }

@@ -1,6 +1,6 @@
 # ISSUE-154: Redact the web password from API responses and make web credential/port changes take effect
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (credential exposure + stale-credential security hazard)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Redact `web.password` from `GET /api/config` (return a placeholder or omit the field) so the stored credential is not exposed to any authenticated client or reflected back
-- [ ] Make a staged `web.password`/`web.port` change actually restart/reconfigure the embedded server (or clearly reject such keys as apply-requires-restart)
-- [ ] Ensure the frontend still works when the password field is redacted (edit UX: blank = keep current)
-- [ ] Add a test covering: config response does not contain the plaintext password; password/port changes either take effect or are explicitly rejected
+- [x] Redact `web.password` from `GET /api/config` (return a placeholder or omit the field) so the stored credential is not exposed to any authenticated client or reflected back
+- [x] Make a staged `web.password`/`web.port` change actually restart/reconfigure the embedded server (or clearly reject such keys as apply-requires-restart)
+- [x] Ensure the frontend still works when the password field is redacted (edit UX: blank = keep current)
+- [x] Add a test covering: config response does not contain the plaintext password; password/port changes either take effect or are explicitly rejected
 
 ## Technical Specifications & Context
 
@@ -38,7 +38,7 @@ Omit the password from the config DTO (frontend treats blank as unchanged). On a
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Test: `GET /api/config` response contains no plaintext `web.password`
-- [ ] Test: changing the web password either takes effect on next request or is explicitly rejected with guidance
-- [ ] Frontend build (`cd web/frontend && npm run build`) passes with the redacted password field
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Test: `GET /api/config` response contains no plaintext `web.password`
+- [x] Test: changing the web password either takes effect on next request or is explicitly rejected with guidance
+- [x] Frontend build (`cd web/frontend && npm run build`) passes with the redacted password field

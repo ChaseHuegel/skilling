@@ -54,8 +54,11 @@
                 <AppInput v-model="config.web.enabled" type="checkbox" label="Enabled" />
                 <span class="field-note">Requires server restart to take effect</span>
                 <AppInput v-model.number="config.web.port" type="number" label="Port" :min="1025" :max="65535" />
+                <span class="field-note">Changing the port requires editing config.yml and restarting the server</span>
                 <AppInput v-model="config.web.username" type="text" label="Username" />
+                <span class="field-note">Changing the username requires editing config.yml and restarting the server</span>
                 <AppInput v-model="config.web.password" type="password" label="Password" />
+                <span class="field-note">Leave blank to keep the current password; changing it requires editing config.yml and restarting the server</span>
             </ConfigSection>
         </div>
 
@@ -178,6 +181,8 @@ async function fetchConfig() {
     try {
         const data = await api.config.get();
         Object.assign(config, data);
+        // The backend redacts the stored password; blank means "keep current".
+        config.web.password = '';
         cleanConfig.value = JSON.stringify(config);
     } catch (e: any) {
         error.value = e.message || 'Failed to load config';
