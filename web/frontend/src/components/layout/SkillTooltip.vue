@@ -6,23 +6,22 @@
     :style="positionStyle"
     v-if="visible && skill"
   >
-    <div class="tooltip-title" v-html="renderedName"></div>
+    <div class="tooltip-title"><FormattedText :text="nameText" /></div>
     <div class="tooltip-separator">&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</div>
-    <div class="tooltip-abilities" v-if="abilityLines.length > 0">
+    <div class="tooltip-abilities" v-if="abilityTexts.length > 0">
       <div
-        v-for="(line, i) in abilityLines"
+        v-for="(line, i) in abilityTexts"
         :key="'a' + i"
         class="tooltip-ability-line"
-        v-html="line"
-      ></div>
+      ><FormattedText :text="line" /></div>
     </div>
-    <div class="tooltip-footer" v-html="renderedId"></div>
+    <div class="tooltip-footer"><FormattedText :text="idText" /></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
-import { parseAmpersandCodes, renderFormattedText } from '../../utils/minecraftColors'
+import FormattedText from '../common/FormattedText.vue'
 
 interface SkillTooltipData {
   displayName: string
@@ -64,19 +63,13 @@ watch(() => props.visible, async (visible) => {
   }
 })
 
-const renderedName = computed(() =>
-  renderFormattedText(parseAmpersandCodes(props.skill?.displayName || ''))
-)
+const nameText = computed(() => props.skill?.displayName || '')
 
-const renderedId = computed(() =>
-  renderFormattedText(parseAmpersandCodes(`&8${props.skill?.id || ''}`))
-)
+const idText = computed(() => `&8${props.skill?.id || ''}`)
 
-const abilityLines = computed(() => {
+const abilityTexts = computed(() => {
   if (!props.skill?.abilities) return []
-  return props.skill.abilities.map(ab =>
-    renderFormattedText(parseAmpersandCodes(`&a${ab.name}`))
-  )
+  return props.skill.abilities.map(ab => `&a${ab.name}`)
 })
 </script>
 

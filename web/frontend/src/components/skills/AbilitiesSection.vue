@@ -5,10 +5,10 @@ import AppCombobox from '../common/AppCombobox.vue'
 import SoundConfigEditor, { type SoundConfig } from '../common/SoundConfigEditor.vue'
 import MechanicsEditor, { type MechanicEntry } from './MechanicsEditor.vue'
 import OnFailureEditor, { type OnFailure } from './OnFailureEditor.vue'
+import FormattedText from '../common/FormattedText.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 import { useRegistriesStore } from '../../stores/registries'
 import { STATE_SUGGESTIONS } from '../common/stateFilters'
-import { parseAmpersandCodes, renderFormattedText } from '../../utils/minecraftColors'
 import { stableKey } from '../../utils/stableKey'
 
 const registriesStore = useRegistriesStore()
@@ -239,10 +239,6 @@ function removeLoreLine(index: number, lineIdx: number) {
   const copy = [...ab.lore]
   copy.splice(lineIdx, 1)
   updateAbility(index, { lore: copy })
-}
-
-function renderedLore(text: string): string {
-  return renderFormattedText(parseAmpersandCodes(text))
 }
 
 function loreSuggestions(index: number): string[] {
@@ -487,8 +483,7 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
                 v-for="(line, lIdx) in ability.lore"
                 :key="'full-' + lIdx"
                 class="full-preview-line"
-                v-html="renderedLore(line)"
-              />
+              ><FormattedText :text="line" /></div>
             </div>
             <button
               class="btn btn-primary btn-sm"

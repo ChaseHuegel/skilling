@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Replace every `v-html` binding that renders user-authored text with a plain interpolation of the escaped output (or a component wrapper) — target `AbilitiesSection.vue:760` and `SkillTooltip.vue:9,16,19`
-- [ ] Keep `renderFormattedText` (`utils/minecraftColors.ts:64-76`) as the single source of truth for color-code rendering, with HTML escaping
-- [ ] Remove the now-unused raw-HTML variants in `DisplaySection.vue` (see ISSUE-159) so no divergent reimplementation remains
-- [ ] Add a lint rule or build check that forbids `v-html` in the source
-- [ ] Add tests asserting escaped rendering for the components above
+- [x] Replace every `v-html` binding that renders user-authored text with a plain interpolation of the escaped output (or a component wrapper) — target `AbilitiesSection.vue:760` and `SkillTooltip.vue:9,16,19`
+- [x] Keep `renderFormattedText` (`utils/minecraftColors.ts:64-76`) as the single source of truth for color-code rendering, with HTML escaping
+- [x] Remove the now-unused raw-HTML variants in `DisplaySection.vue` (see ISSUE-159) so no divergent reimplementation remains
+- [x] Add a lint rule or build check that forbids `v-html` in the source
+- [x] Add tests asserting escaped rendering for the components above
 
 ## Technical Specifications & Context
 
@@ -39,7 +39,7 @@ Consolidate all rendering on `renderFormattedText` output bound via text interpo
 
 ## Verification & Definition of Done
 
-- [ ] `cd web/frontend && npm run build` passes
-- [ ] Grep shows zero `v-html` occurrences in `web/frontend/src`
-- [ ] Tests assert escaped rendering for `AbilitiesSection` and `SkillTooltip`
-- [ ] CI includes a `v-html`-forbidding check
+- [x] `cd web/frontend && npm run build` passes
+- [x] Grep shows zero `v-html` occurrences in `web/frontend/src`
+- [x] Tests assert escaped rendering for `AbilitiesSection` and `SkillTooltip`
+- [x] CI includes a `v-html`-forbidding check

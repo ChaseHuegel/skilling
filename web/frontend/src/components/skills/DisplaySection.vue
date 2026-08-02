@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import MaterialPicker from '../common/MaterialPicker.vue'
-import { parseAmpersandCodes, type FormattedSegment } from '../../utils/minecraftColors'
+import { parseAmpersandCodes, segmentStyle } from '../../utils/minecraftColors'
 import { stableKey } from '../../utils/stableKey'
 
 interface LoreLine {
@@ -82,17 +82,6 @@ function onLoreDragOver(event: DragEvent, index: number) {
 
 function onLoreDragEnd() {
   loreDragIndex.value = null
-}
-
-function segmentStyle(seg: FormattedSegment): string {
-  const styles: string[] = []
-  if (seg.color) styles.push(`color:${seg.color}`)
-  if (seg.bold) styles.push('font-weight:bold')
-  if (seg.italic) styles.push('font-style:italic')
-  if (seg.underline) styles.push('text-decoration:underline')
-  if (seg.strikethrough) styles.push('text-decoration:line-through')
-  if (seg.underline && seg.strikethrough) styles[styles.length - 1] = 'text-decoration:underline line-through'
-  return styles.join(';')
 }
 </script>
 

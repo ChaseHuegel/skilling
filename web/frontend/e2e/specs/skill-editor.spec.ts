@@ -170,6 +170,41 @@ test.describe('Skill Editor', () => {
     }
   });
 
+  test('ability lore full preview escapes HTML payloads and renders color codes', async ({ page }) => {
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    await dashboard.clickSkill('Mining');
+
+    const editor = new SkillEditorPage(page);
+    await editor.waitForLoad();
+    await editor.assertNoError();
+
+    // Expand the geologist ability card, then its Lore Lines section.
+    const geoCard = page.locator('#ability-geologist');
+    await geoCard.locator('.ability-header').click();
+    await geoCard.locator('.section-block--lore .section-header').click();
+    await geoCard.getByRole('button', { name: '+ Add Lore Line' }).click();
+
+    const loreInput = geoCard.locator('.lore-line-block').last().locator('input');
+    await loreInput.fill('<img src=x onerror="window.__xss=1"> &c&lCOLORED');
+
+    // The full preview routes through FormattedText (the same component the
+    // tooltip uses): the payload stays literal text, never an element.
+    const preview = geoCard.locator('.full-preview-line').last();
+    await expect(preview).toContainText('<img src=x onerror="window.__xss=1">');
+    await expect(preview.locator('img')).toHaveCount(0);
+    await expect(geoCard.locator('img[src="x"]')).toHaveCount(0);
+
+    const xssFired = await page.evaluate(() =>
+      (window as unknown as { __xss?: number }).__xss
+    );
+    expect(xssFired).toBeUndefined();
+
+    const colored = preview.locator('span').filter({ hasText: 'COLORED' });
+    await expect(colored).toHaveCSS('color', 'rgb(255, 85, 85)');
+    await expect(colored).toHaveCSS('font-weight', '700');
+  });
+
   test('a failed leave-save keeps the user on the page with edits intact', async ({ page }) => {
     // Force every skill PUT to fail so the save cannot succeed
     await page.route('**/api/skills/**', route => {

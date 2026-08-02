@@ -63,6 +63,22 @@ export function renderFormattedText(segments: FormattedSegment[]): string {
     }).join('')
 }
 
+/**
+ * Returns the CSS style string for a formatted segment. Shared by the component
+ * renderers ({@code FormattedText}, {@code DisplaySection}) so color-code
+ * rendering has a single source of truth.
+ */
+export function segmentStyle(seg: FormattedSegment): string {
+    const styles: string[] = []
+    if (seg.color) styles.push(`color:${seg.color}`)
+    if (seg.bold) styles.push('font-weight:bold')
+    if (seg.italic) styles.push('font-style:italic')
+    if (seg.underline) styles.push('text-decoration:underline')
+    if (seg.strikethrough) styles.push('text-decoration:line-through')
+    if (seg.underline && seg.strikethrough) styles[styles.length - 1] = 'text-decoration:underline line-through'
+    return styles.join(';')
+}
+
 export function stripAmpersandCodes(text: string): string {
     return text.replace(/&[0-9a-fk-or]/gi, '')
 }

@@ -43,6 +43,7 @@ All commits in this repository MUST follow `../docs/dev/CONVENTIONS-COMMITS.md`.
 - Styles are scoped (`<style scoped>`) with CSS custom properties from PrimeVue's theme (`var(--p-*)`). Fallback values are provided for when the theme isn't loaded (e.g., `var(--p-primary-color, #3b82f6)`).
 - **Reorderable/editable row lists must key on a stable identity, never `:key="idx"`:** object rows carry a client-only `_key` (from `utils/stableKey.ts`, assigned at creation and preserved through spreads; stripped from the save payload via `stripRowKeys` in `SkillEditorPage.vue`) and per-row state (expanded, drag) is keyed by that identity. Plain-string lists use a component-local parallel key array. This keeps expanded state and input focus attached to the right row after a drag reorder.
 - **Dead code is rejected by the build:** `tsconfig.json` enables `noUnusedLocals`/`noUnusedParameters`, so unused imports, stores, and components fail `npm run build`. Do not re-introduce dead modules; the skills editor's ability sub-editors (mechanics, on-failure, sounds) live in reusable components under `components/skills/` and `components/common/`.
+- **Minecraft color-code text must be rendered with the shared `FormattedText` component** (which interpolates escaped segments) — never with `v-html`. The build runs `scripts/check-no-vhtml.mjs` and fails if any `v-html` binding appears in `src/`. The canonical segment→CSS mapping lives in `segmentStyle` (`utils/minecraftColors.ts`).
 
 ### Backend REST API
 
@@ -131,7 +132,7 @@ web/
       api/             # fetch wrapper + per-resource API functions
       stores/          # Pinia stores (auth, staging, skills, registries, gui-layout)
       components/      # Vue components organized by domain
-        common/        # Reusable: EvaluatorParameter, FilterBuilder, SectionToolbar, SoundConfigEditor
+        common/        # Reusable: EvaluatorParameter, FilterBuilder, SectionToolbar, SoundConfigEditor, FormattedText
         layout/        # AppTopbar, PendingChangesBanner
         skills/        # SkillCard, SkillIdentitySection, DisplaySection, AbilitiesSection,
                        # MechanicsEditor, OnFailureEditor, XpSourcesSection, etc.

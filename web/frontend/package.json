@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc -b && vite build && node scripts/check-no-vhtml.mjs",
     "preview": "vite preview",
     "e2e": "playwright test -c e2e/playwright.config.ts",
     "e2e:open": "playwright test --ui -c e2e/playwright.config.ts",
