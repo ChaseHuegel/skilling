@@ -139,7 +139,8 @@ web/
       main.ts          # Vue app bootstrap (PrimeVue, Pinia, Router)
     e2e/               # Playwright end-to-end tests
       pages/           # Page Object Models
-      specs/           # Test specifications
+      specs/           # Test specifications (import test/expect from fixtures/)
+      fixtures/        # Shared auto-fixtures (per-test staging reset for isolation)
       helpers/         # Debug utilities (inspectElement, tweakCSS, screenshots)
       test-data/       # Fixture YAML files for E2E testing
       playwright.config.ts
@@ -203,12 +204,18 @@ npm run e2e:headed
 # Interactive Playwright UI
 npm run e2e:open
 
-# Update screenshot baselines
-npm run e2e:update
-
 # Debug a specific test interactively
 npx playwright test --debug --grep "dashboard"
 ```
+
+The suite is **order-independent**: a shared auto-fixture in `e2e/fixtures/` calls
+`DELETE /api/staging` before every test, so a mid-suite failure cannot cascade pending
+changes or banners into later tests. Specs must import `test`/`expect` from `../fixtures`
+(rather than `@playwright/test`) to get the isolation. Tests run serially (`workers: 1`)
+because they share one dev server and one staging directory.
+
+There are no screenshot baseline assertions; `takeScreenshot()` in `helpers/debug.ts` is a
+manual visual-debugging utility only, not part of the test suite.
 
 #### Test Fixtures
 
@@ -223,9 +230,10 @@ The `globalSetup.ts` copies these into `run/plugins/Skilling/` before the server
 
 1. Create or reuse a Page Object Model in `pages/`
 2. Add a spec file in `specs/`
-3. Use the POM methods for assertions and actions
-4. Use `takeScreenshot()` from helpers for visual snapshots
-5. Run with `npm run e2e:headed` to watch the browser
+3. Import `test` and `expect` from `../fixtures` (never `@playwright/test`) so the per-test staging reset runs
+4. Use the POM methods for assertions and actions
+5. Use `expect.poll` / retrying assertions instead of fixed `waitForTimeout` sleeps
+6. Run with `npm run e2e:headed` to watch the browser
 
 Example:
 ```typescript

@@ -1,23 +1,26 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { WEB_USERNAME, WEB_PASSWORD } from '../helpers/credentials';
 
+/** Topbar navigation links are present on every authenticated view and absent on the login page. */
+const AUTHD_MARKER = 'nav a';
+
 /**
- * Ensures the page is logged in. If the login page is displayed,
- * fills in admin credentials and submits.
+ * Ensures the page is logged in without navigating or sleeping. If the auth
+ * guard redirected to the login page, fills in admin credentials and submits;
+ * otherwise returns immediately. Auto-retries until the app settles into either
+ * the login page or an authenticated view (replaces the former fixed 500ms sleep).
+ *
+ * @param page the Playwright page
  */
 export async function ensureLoggedIn(page: Page): Promise<void> {
-  // Navigate to root to trigger auth guard
-  await page.goto('/#/');
-  await page.waitForLoadState('domcontentloaded');
-  await page.waitForTimeout(500);
-
-  // Check if we're on the login page by looking for the login-title element
-  // (unique to the login page — avoids conflicting with .btn-primary on the dashboard)
   const loginTitle = page.locator('.login-title');
-  if (await loginTitle.isVisible({ timeout: 1000 }).catch(() => false)) {
+  const authed = page.locator(AUTHD_MARKER);
+  await expect(loginTitle.or(authed)).toBeVisible({ timeout: 15000 });
+
+  if (await loginTitle.isVisible().catch(() => false)) {
     await page.fill('#username', WEB_USERNAME);
     await page.fill('#password', WEB_PASSWORD);
     await page.locator('.btn-primary').click();
-    await page.waitForURL(/#\/$/);
+    await expect(authed).toBeVisible({ timeout: 10000 });
   }
 }

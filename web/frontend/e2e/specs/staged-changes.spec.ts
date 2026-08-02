@@ -1,7 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { DashboardPage } from '../pages/DashboardPage';
 import { SkillEditorPage } from '../pages/SkillEditorPage';
-import { takeScreenshot } from '../helpers/debug';
 
 test.describe('Staged Changes Workflow', () => {
   test.beforeEach(async ({ page }) => {

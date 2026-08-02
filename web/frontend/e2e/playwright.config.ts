@@ -4,15 +4,14 @@ const BASE_URL = process.env.SKILLING_SERVER_URL || 'http://localhost:8082';
 
 export default defineConfig({
   testDir: './specs',
+  // Tests share one dev server and one staging directory, so runs are serial by
+  // design; per-test staging resets (e2e/fixtures) make that ordering irrelevant.
   fullyParallel: false,
   retries: 1,
   workers: 1,
   timeout: 30000,
   expect: {
     timeout: 10000,
-    toHaveScreenshot: {
-      maxDiffPixels: 100,
-    },
   },
   use: {
     baseURL: BASE_URL,

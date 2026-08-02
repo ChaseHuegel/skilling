@@ -17,9 +17,9 @@ export class ConfigPage {
   }
 
   async goto() {
-    await ensureLoggedIn(this.page);
     await this.page.goto('/#/config');
     await this.page.waitForLoadState('load');
+    await ensureLoggedIn(this.page);
   }
 
   async getSectionCount(): Promise<number> {

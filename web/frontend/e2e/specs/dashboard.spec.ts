@@ -1,6 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { DashboardPage } from '../pages/DashboardPage';
-import { takeScreenshot } from '../helpers/debug';
 
 test.describe('Dashboard', () => {
   test('displays skill cards from loaded skills', async ({ page }) => {
@@ -39,11 +38,5 @@ test.describe('Dashboard', () => {
     await dashboard.clickCreateSkill();
     await expect(page).toHaveURL(/\/skills\/new/);
     await expect(page.locator('.editor-banner .banner-name')).toHaveText('New Skill');
-  });
-
-  test('dashboard screenshot matches baseline', async ({ page }) => {
-    const dashboard = new DashboardPage(page);
-    await dashboard.goto();
-    await takeScreenshot(page, 'dashboard-desktop');
   });
 });

@@ -1,6 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { TagsPage } from '../pages/TagsPage';
-import { takeScreenshot } from '../helpers/debug';
 
 test.describe('Tags Editor', () => {
   test('displays loaded custom tags', async ({ page }) => {
@@ -24,8 +23,7 @@ test.describe('Tags Editor', () => {
 
     // Filter down to a single tag ("coal" only matches the ores tag)
     await page.locator('.search-input').fill('coal');
-    await page.waitForTimeout(300);
-    expect(await cleanNames()).toHaveLength(1);
+    await expect.poll(async () => cleanNames()).toHaveLength(1);
 
     // Add a new tag while the filter is active, then save
     await page.getByRole('button', { name: '+ Add Tag' }).click();
@@ -44,11 +42,5 @@ test.describe('Tags Editor', () => {
       expect(savedKeys, `tag ${name} must survive an edit under a search filter`).toContain(name);
     }
     expect(savedKeys).toContain('#c:newtest');
-  });
-
-  test('tags page screenshot', async ({ page }) => {
-    const tagsPage = new TagsPage(page);
-    await tagsPage.goto();
-    await takeScreenshot(page, 'tags-editor');
   });
 });

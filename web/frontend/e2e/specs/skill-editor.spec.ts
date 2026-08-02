@@ -1,7 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { DashboardPage } from '../pages/DashboardPage';
 import { SkillEditorPage } from '../pages/SkillEditorPage';
-import { takeScreenshot } from '../helpers/debug';
 
 test.describe('Skill Editor', () => {
   test('loads existing skill fields correctly', async ({ page }) => {
@@ -67,16 +66,6 @@ test.describe('Skill Editor', () => {
 
     // The editor reloads in place and the pending changes banner appears
     await dashboard.assertBannerVisible();
-  });
-
-  test('skill editor screenshot', async ({ page }) => {
-    const dashboard = new DashboardPage(page);
-    await dashboard.goto();
-    await dashboard.clickSkill('Mining');
-
-    const editor = new SkillEditorPage(page);
-    await editor.waitForLoad();
-    await takeScreenshot(page, 'skill-editor-loaded');
   });
 
   test('edits cooldown and saves it as a numeric value', async ({ page }) => {

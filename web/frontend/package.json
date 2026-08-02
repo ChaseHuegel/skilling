@@ -10,7 +10,6 @@
     "e2e": "playwright test -c e2e/playwright.config.ts",
     "e2e:open": "playwright test --ui -c e2e/playwright.config.ts",
     "e2e:headed": "playwright test --headed -c e2e/playwright.config.ts",
-    "e2e:update": "playwright test --update-snapshots -c e2e/playwright.config.ts",
     "e2e:debug": "playwright test --debug -c e2e/playwright.config.ts"
   },
   "dependencies": {

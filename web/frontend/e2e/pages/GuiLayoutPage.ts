@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 import { ensureLoggedIn } from './shared-login';
 
 export class GuiLayoutPage {
@@ -25,9 +25,9 @@ export class GuiLayoutPage {
   }
 
   async goto() {
-    await ensureLoggedIn(this.page);
     await this.page.goto('/#/layout');
     await this.page.waitForLoadState('load');
+    await ensureLoggedIn(this.page);
   }
 
   async getTabCount(): Promise<number> {
@@ -46,7 +46,6 @@ export class GuiLayoutPage {
 
   async searchPalette(query: string) {
     await this.paletteSearch.fill(query);
-    await this.page.waitForTimeout(200);
   }
 
   async clickTab(index: number) {
@@ -69,18 +68,5 @@ export class GuiLayoutPage {
     const applied = this.page.waitForResponse(res => res.url().includes('/api/gui-layout'));
     await this.applyBtn.click();
     await applied;
-  }
-
-  async dragPaletteToSlot(skillIndex: number, slotIndex: number) {
-    const paletteItem = this.paletteItems.nth(skillIndex);
-    const targetSlot = this.chestSlots.nth(slotIndex);
-
-    await paletteItem.dragTo(targetSlot);
-    await this.page.waitForTimeout(200);
-  }
-
-  async rightClickSlot(slotIndex: number) {
-    await this.chestSlots.nth(slotIndex).click({ button: 'right' });
-    await this.page.waitForTimeout(100);
   }
 }

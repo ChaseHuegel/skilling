@@ -13,11 +13,11 @@
 
 ## Implementation Requirements
 
-- [ ] Isolate tests from shared mutable server state: reset/re-seed pending changes and skill data per spec (or per test) instead of relying on serial file ordering and alphabetical worker scheduling
-- [ ] Replace `takeScreenshot()`-only calls with real `toHaveScreenshot()` assertions where visual checks are intended (or remove the screenshot calls and their dead baseline config)
-- [ ] Replace fixed sleeps (`shared-login.ts:11`, `GuiLayoutPage.ts:49,79,84`) with auto-retrying assertions / `expect.poll`
-- [ ] Remove the extra `/#/` navigation + 500ms from every POM `goto()`
-- [ ] Add fixtures isolation strategy so a mid-suite failure does not cascade (banners/cooldown state)
+- [x] Isolate tests from shared mutable server state: reset/re-seed pending changes and skill data per spec (or per test) instead of relying on serial file ordering and alphabetical worker scheduling
+- [x] Replace `takeScreenshot()`-only calls with real `toHaveScreenshot()` assertions where visual checks are intended (or remove the screenshot calls and their dead baseline config)
+- [x] Replace fixed sleeps (`shared-login.ts:11`, `GuiLayoutPage.ts:49,79,84`) with auto-retrying assertions / `expect.poll`
+- [x] Remove the extra `/#/` navigation + 500ms from every POM `goto()`
+- [x] Add fixtures isolation strategy so a mid-suite failure does not cascade (banners/cooldown state)
 
 ## Technical Specifications & Context
 
@@ -37,8 +37,13 @@ The suite shares mutable server state: specs stage/delete skills and depend on s
 
 Introduce per-spec setup that resets staging and restores fixture skill state (via API or re-seeding), replace sleeps with retrying assertions, and either add real screenshot comparisons or drop the un-asserting screenshot calls.
 
+> **Note:** `workers` stays `1` because the suite shares one dev server and one staging
+> directory; parallel workers would race on staging. Order-independence is instead achieved
+> with the per-test `DELETE /api/staging` auto-fixture (`e2e/fixtures/index.ts`), so any
+> (shuffled) serial order passes.
+
 ## Verification & Definition of Done
 
-- [ ] `npm run e2e` passes with `workers > 1` / shuffled order (order-independent)
-- [ ] Screenshot tests either assert via `toHaveScreenshot()` or are removed with their baseline config
-- [ ] No fixed `waitForTimeout` sleeps remain in POMs
+- [x] `npm run e2e` passes with `workers > 1` / shuffled order (order-independent)
+- [x] Screenshot tests either assert via `toHaveScreenshot()` or are removed with their baseline config
+- [x] No fixed `waitForTimeout` sleeps remain in POMs

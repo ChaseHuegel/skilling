@@ -17,9 +17,9 @@ export class TagsPage {
   }
 
   async goto() {
-    await ensureLoggedIn(this.page);
     await this.page.goto('/#/tags');
     await this.page.waitForLoadState('load');
+    await ensureLoggedIn(this.page);
   }
 
   async getTagNames(): Promise<string[]> {

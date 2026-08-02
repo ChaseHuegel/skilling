@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { BASIC_AUTH } from '../helpers/credentials';
 import { DashboardPage } from '../pages/DashboardPage';
 import { SkillEditorPage } from '../pages/SkillEditorPage';
