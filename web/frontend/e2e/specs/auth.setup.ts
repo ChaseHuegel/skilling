@@ -2,15 +2,18 @@ import { test as setup, expect } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { WEB_USERNAME, WEB_PASSWORD } from '../helpers/credentials';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const AUTH_FILE = path.resolve(__dirname, '../.auth/admin.json');
+const SERVER_URL = process.env.SKILLING_SERVER_URL || 'http://localhost:8082';
+const CREDENTIALS = Buffer.from(`${WEB_USERNAME}:${WEB_PASSWORD}`).toString('base64');
 
 setup('authenticate via API and save storage state', async ({ request }) => {
-  const res = await request.get('/api/auth/check', {
+  const res = await request.get(`${SERVER_URL}/api/auth/check`, {
     headers: {
-      Authorization: 'Basic ' + Buffer.from('admin:skilling').toString('base64'),
+      Authorization: `Basic ${CREDENTIALS}`,
     },
   });
   expect(res.ok()).toBeTruthy();
@@ -25,10 +28,10 @@ setup('authenticate via API and save storage state', async ({ request }) => {
     cookies: [],
     origins: [
       {
-        origin: 'http://localhost:8082',
+        origin: SERVER_URL,
         localStorage: [],
         sessionStorage: [
-          { name: 'skilling_credentials', value: Buffer.from('admin:skilling').toString('base64') },
+          { name: 'skilling_credentials', value: CREDENTIALS },
         ],
       },
     ],

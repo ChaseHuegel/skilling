@@ -86,7 +86,6 @@ custom_tags:
 
   herbs:
     - "#minecraft:flowers"
-    - "#minecraft:tall_flowers"
     - "minecraft:sugar_cane"
     - "minecraft:cactus"
     - "minecraft:vine"

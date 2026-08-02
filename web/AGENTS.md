@@ -191,6 +191,8 @@ The E2E tests require the Skilling plugin running on a Paper server with `web.en
 
 **B) External server:** Set `SKILLING_SERVER_URL` env var to point to an already-running server. Tests connect to that URL instead.
 
+The plugin rotates its default `web.password` (`skilling`) on first enable, so the automatic-mode fixture uses a fixed non-default password (`e2e_secret`). External servers with a different password can override it via `SKILLING_WEB_PASSWORD`.
+
 ```bash
 # Full test suite (starts server, runs tests, stops server)
 cd web/frontend && npm run e2e

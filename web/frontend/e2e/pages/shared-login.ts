@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { WEB_USERNAME, WEB_PASSWORD } from '../helpers/credentials';
 
 /**
  * Ensures the page is logged in. If the login page is displayed,
@@ -14,8 +15,8 @@ export async function ensureLoggedIn(page: Page): Promise<void> {
   // (unique to the login page — avoids conflicting with .btn-primary on the dashboard)
   const loginTitle = page.locator('.login-title');
   if (await loginTitle.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await page.fill('#username', 'admin');
-    await page.fill('#password', 'skilling');
+    await page.fill('#username', WEB_USERNAME);
+    await page.fill('#password', WEB_PASSWORD);
     await page.locator('.btn-primary').click();
     await page.waitForURL(/#\/$/);
   }

@@ -14,4 +14,4 @@ web:
   enabled: true
   port: 8082
   username: "admin"
-  password: "skilling"
+  password: "e2e_secret"

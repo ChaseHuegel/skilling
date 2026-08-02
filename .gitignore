@@ -32,4 +32,6 @@ web/frontend/tsconfig.tsbuildinfo
 web/frontend/screenshots/
 web/frontend/test-results/
 web/frontend/e2e/.auth/
+web/frontend/e2e/.server.pid
+web/frontend/e2e/.server.log
 web/frontend/.env

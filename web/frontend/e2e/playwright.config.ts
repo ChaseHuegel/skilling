@@ -1,5 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
+const BASE_URL = process.env.SKILLING_SERVER_URL || 'http://localhost:8082';
+
 export default defineConfig({
   testDir: './specs',
   fullyParallel: false,
@@ -13,7 +15,7 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: 'http://localhost:8082',
+    baseURL: BASE_URL,
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     storageState: 'e2e/.auth/admin.json',

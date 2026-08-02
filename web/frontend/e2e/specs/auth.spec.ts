@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
+import { WEB_USERNAME, WEB_PASSWORD } from '../helpers/credentials';
 
 test.describe('Authentication', () => {
   test('login with valid credentials redirects to dashboard', async ({ page }) => {
     const login = new LoginPage(page);
     await login.goto();
-    await login.login('admin', 'skilling');
+    await login.login(WEB_USERNAME, WEB_PASSWORD);
     await expect(page).toHaveURL(/#\/$/);
     await expect(page.locator('.skill-grid')).toBeVisible({ timeout: 5000 });
   });

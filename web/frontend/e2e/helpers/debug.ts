@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { WEB_USERNAME, WEB_PASSWORD } from './credentials';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,8 +15,8 @@ const SCREENSHOT_DIR = path.resolve(__dirname, '../../screenshots');
 export async function launchDebugView(page: Page) {
   await page.goto('/login');
   await page.waitForSelector('#username', { timeout: 10000 });
-  await page.fill('#username', 'admin');
-  await page.fill('#password', 'skilling');
+  await page.fill('#username', WEB_USERNAME);
+  await page.fill('#password', WEB_PASSWORD);
   await page.click('.login-btn');
   await page.waitForURL('**/');
   await page.pause();

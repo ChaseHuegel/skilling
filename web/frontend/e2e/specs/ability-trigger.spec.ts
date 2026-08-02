@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { BASIC_AUTH } from '../helpers/credentials';
 import { DashboardPage } from '../pages/DashboardPage';
 import { SkillEditorPage } from '../pages/SkillEditorPage';
 
@@ -51,7 +52,7 @@ test.describe('Ability Trigger Field', () => {
     };
 
     const authHeaders = {
-      Authorization: 'Basic ' + Buffer.from('admin:skilling').toString('base64'),
+      Authorization: BASIC_AUTH,
     };
 
     const created = await request.post('/api/skills', { data: payload, headers: authHeaders });
