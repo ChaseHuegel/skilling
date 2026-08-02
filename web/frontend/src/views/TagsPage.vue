@@ -108,8 +108,11 @@ const filteredTags = computed({
         return result;
     },
     set: (val) => {
-        const keys = Object.keys(tags);
-        for (const k of keys) delete tags[k];
+        // The editor operates on the (possibly filtered) subset. Replace only
+        // the keys that were shown, merging the edited entries back into the
+        // full set so tags that did not match the search survive a save.
+        const shown = Object.keys(filteredTags.value);
+        for (const k of shown) delete tags[k];
         for (const [k, v] of Object.entries(val)) tags[k] = v;
     },
 });

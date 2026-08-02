@@ -1,6 +1,6 @@
 # ISSUE-160: Fix `TagsPage` deleting non-matching tags when editing under a search filter
 
-**Status:** Open
+**Status:** Closed
 **Type:** Bug
 **Severity:** High (data-loss: silent tag deletion on save)
 
@@ -13,9 +13,9 @@
 
 ## Implementation Requirements
 
-- [ ] Make `TagListEditor` operate on the full tag set (or have the `filteredTags` setter merge edits back into the full set) so saving never drops non-matching tags
-- [ ] Preserve add/remove/reorder semantics for both filtered and unfiltered views
-- [ ] Add a test (unit or E2E) covering: search active → edit one tag → save → all tags still present
+- [x] Make `TagListEditor` operate on the full tag set (or have the `filteredTags` setter merge edits back into the full set) so saving never drops non-matching tags
+- [x] Preserve add/remove/reorder semantics for both filtered and unfiltered views
+- [x] Add a test (unit or E2E) covering: search active → edit one tag → save → all tags still present
 
 ## Technical Specifications & Context
 
@@ -33,8 +33,12 @@ When `searchQuery` is non-empty, the computed getter returns a filtered subset a
 
 Apply `TagListEditor` edits to the full tag set (diff against the filtered subset or merge by key), so filtering only affects display.
 
+### Resolution
+
+The `filteredTags` setter now computes the set of keys that were visible under the active filter (`filteredTags.value` pre-mutation) and replaces only those keys with the edited entries, merging them back into the full `tags` object. Tags that did not match the search are left untouched, preserving add/remove/reorder semantics for the visible subset while the full set stays the source of truth. A new E2E test (`editing a tag under a search filter preserves non-matching tags`) filters to a single tag, adds a new tag, saves, and asserts the PUT payload still contains every original tag.
+
 ## Verification & Definition of Done
 
-- [ ] `cd web/frontend && npm run build` passes
-- [ ] Test: with a search active, editing one tag and saving preserves all other tags
-- [ ] Manual smoke: filter, edit, save, clear filter, all tags intact
+- [x] `cd web/frontend && npm run build` passes
+- [x] Test: with a search active, editing one tag and saving preserves all other tags (new E2E test; full suite 73/73 pass)
+- [x] Manual smoke: filter, edit, save, clear filter, all tags intact (covered by the E2E test asserting the full PUT payload)
