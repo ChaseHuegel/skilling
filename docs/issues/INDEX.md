@@ -19,7 +19,7 @@
 - [x] [ISSUE-114](ISSUE-114.md) - Fix 3x loot duplication in `YieldMultiplierMechanic`
 - [x] [ISSUE-119](ISSUE-119.md) - Fix `AutoSmeltMechanic` destroying Fortune/Silk-Touch drops and inflating nugget ores
 - [x] [ISSUE-115](ISSUE-115.md) - Fix 3x catch duplication in `FishingYieldMechanic`
-- [ ] [ISSUE-118](ISSUE-118.md) - Fix `ModifyFurnaceOutputMechanic` handing out furnace blocks instead of smelted product
+- [x] [ISSUE-118](ISSUE-118.md) - Fix `ModifyFurnaceOutputMechanic` handing out furnace blocks instead of smelted product
 - [ ] [ISSUE-113](ISSUE-113.md) - Persist off-hand durability in `OffhandStrikeMechanic` and filter interact actions
 - [ ] [ISSUE-120](ISSUE-120.md) - Fix `XpBonusMechanic` permanent multiplier (static map never cleared)
 - [ ] [ISSUE-122](ISSUE-122.md) - Fix inverted probability in `ModifyTameChanceMechanic`

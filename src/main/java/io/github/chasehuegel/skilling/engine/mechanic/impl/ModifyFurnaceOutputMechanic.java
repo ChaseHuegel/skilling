@@ -24,17 +24,27 @@ public final class ModifyFurnaceOutputMechanic implements SkillMechanic {
         if (multiplier <= 1.0) return false;
 
         int original = extractEvent.getItemAmount();
-        int bonus = (int) Math.round(original * (multiplier - 1));
+        int bonus = computeBonus(original, multiplier);
         if (bonus > 0) {
-            var drops = extractEvent.getBlock().getDrops();
-            if (!drops.isEmpty()) {
-                ItemStack bonusItem = drops.iterator().next().asQuantity(bonus);
-                Map<Integer, ItemStack> overflow = player.getInventory().addItem(bonusItem);
-                for (ItemStack leftover : overflow.values()) {
-                    player.getWorld().dropItemNaturally(player.getLocation(), leftover);
-                }
+            // The bonus must be the smelted product (getItemType), never the
+            // furnace block's drops.
+            ItemStack bonusItem = new ItemStack(extractEvent.getItemType(), bonus);
+            Map<Integer, ItemStack> overflow = player.getInventory().addItem(bonusItem);
+            for (ItemStack leftover : overflow.values()) {
+                player.getWorld().dropItemNaturally(player.getLocation(), leftover);
             }
         }
         return true;
+    }
+
+    /**
+     * Computes the bonus quantity for a furnace extraction.
+     *
+     * @param original   the number of items extracted
+     * @param multiplier the configured output multiplier
+     * @return the extra items to grant (original × (multiplier − 1))
+     */
+    public static int computeBonus(int original, double multiplier) {
+        return (int) Math.round(original * (multiplier - 1));
     }
 }
