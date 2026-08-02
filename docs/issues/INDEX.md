@@ -40,7 +40,7 @@
 - [x] [ISSUE-139](ISSUE-139.md) - Make registries and the skill map thread-safe for reload
 - [x] [ISSUE-153](ISSUE-153.md) - Eliminate `ConcurrentModificationException`/torn reads on shared engine state during web reads
 - [x] [ISSUE-156](ISSUE-156.md) - Make `StagingManager` thread-safe with atomic writes and conflict-detection fixes
-- [ ] [ISSUE-150](ISSUE-150.md) - Preserve backups after a reload instead of wiping them in `clear()`
+- [x] [ISSUE-150](ISSUE-150.md) - Preserve backups after a reload instead of wiping them in `clear()`
 - [ ] [ISSUE-151](ISSUE-151.md) - Make reload apply atomic and fail-safe (no permanent plugin freeze)
 - [ ] [ISSUE-152](ISSUE-152.md) - Fail loudly (not silently) when a reload drops skills due to malformed YAML
 - [ ] [ISSUE-142](ISSUE-142.md) - Fix `BossBarPool` LRU scope, locking, and non-applied config

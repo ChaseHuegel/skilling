@@ -69,8 +69,8 @@ All API routes are registered in `WebServer.java` using Javalin 7's `routes` API
 
 1. **Edit** → `PUT/POST` writes to `run/plugins/Skilling/.web_staging/`
 2. **Pending** → `GET /api/staging/status` shows changed files
-3. **Apply & Reload** → `POST /api/reload` copies staged → live, triggers `LockdownManager.reload()`, creates backup in `.web_staging/backup/{timestamp}/`
-4. **Discard** → `DELETE /api/staging` clears staging directory
+3. **Apply & Reload** → `POST /api/reload` copies staged → live, triggers `LockdownManager.reload()`, creates a unique backup under `.web_staging/backup/` (nanos+UUID) that survives the reload's staging clear
+4. **Discard** → `DELETE /api/staging` clears staged pending edits (the backup tree is preserved)
 
 #### Conflict Detection
 

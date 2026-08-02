@@ -133,9 +133,13 @@ public final class StagingManager {
         lock.lock();
         try {
             if (stagingDir.exists()) {
+                // Preserve the backup tree so a successful reload leaves rollback
+                // snapshots intact; only staged pending edits are discarded.
+                Path backupRoot = new File(stagingDir, "backup").toPath();
                 try (var stream = Files.walk(stagingDir.toPath())) {
                     stream.sorted(Comparator.reverseOrder())
                             .map(Path::toFile)
+                            .filter(f -> !f.toPath().startsWith(backupRoot))
                             .forEach(File::delete);
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Failed to clear staging directory", e);

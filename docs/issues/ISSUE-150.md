@@ -1,6 +1,6 @@
 # ISSUE-150: Preserve backups after a reload instead of wiping them in `clear()`
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (documented rollback feature never survives a reload)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Stop `ReloadHandler.reload()` from destroying the backup it just created on success
-- [ ] Make `StagingManager.clear()` (and `DELETE /api/staging`) preserve `.web_staging/backup/` (clear only staged pending edits)
-- [ ] Ensure backup directory naming cannot collide (two reloads in the same second) — coordinate with ISSUE-156
-- [ ] Add a test asserting a backup exists and is intact after a successful reload
+- [x] Stop `ReloadHandler.reload()` from destroying the backup it just created on success
+- [x] Make `StagingManager.clear()` (and `DELETE /api/staging`) preserve `.web_staging/backup/` (clear only staged pending edits)
+- [x] Ensure backup directory naming cannot collide (two reloads in the same second) — coordinate with ISSUE-156
+- [x] Add a test asserting a backup exists and is intact after a successful reload
 
 ## Technical Specifications & Context
 
@@ -36,7 +36,7 @@ Exclude `.web_staging/backup/` from `clear()`. Optionally add a `DELETE /api/sta
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including the new regression test
-- [ ] Test: after a successful reload, `backup/{timestamp}/` contains the pre-apply files
-- [ ] Test: `DELETE /api/staging` removes pending edits but not backups
-- [ ] Manual smoke: apply a change, verify backup, restore from it
+- [x] `./gradlew build && ./gradlew test` pass, including the new regression test
+- [x] Test: after a successful reload, `backup/{timestamp}/` contains the pre-apply files
+- [x] Test: `DELETE /api/staging` removes pending edits but not backups
+- [x] Manual smoke: apply a change, verify backup, restore from it

@@ -81,4 +81,24 @@ class StagingManagerConcurrencyTest {
         File stagedTags = new File(sm.getStagingDir(), "tags.yml");
         assertTrue(!stagedTags.exists());
     }
+
+    @Test
+    void backupSurvivesClearAfterSuccessfulReload() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        // A live file exists so apply creates a real backup.
+        File liveTags = new File(tempDir.toFile(), "tags.yml");
+        Files.writeString(liveTags.toPath(), "debug_logging: false\n");
+
+        sm.stageTagsFile("debug_logging: true\n");
+        sm.applyAndBackup();
+        File backupDir = new File(sm.getStagingDir(), "backup");
+        assertEquals(1, backupDir.listFiles().length, "one backup before clear");
+
+        // ReloadHandler calls clear() on success; the backup must survive.
+        sm.clear();
+
+        assertTrue(backupDir.exists(), "backup must survive a successful reload's clear()");
+        assertEquals(1, backupDir.listFiles().length);
+        assertTrue(!sm.hasPendingChanges(), "pending edits are discarded, backups are not");
+    }
 }
