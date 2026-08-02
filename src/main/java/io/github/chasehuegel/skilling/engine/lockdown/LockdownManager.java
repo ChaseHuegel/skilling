@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -61,7 +62,15 @@ public final class LockdownManager {
         plugin.debug("Phase 2/6: GUIs closed.");
 
         // Phase 3: Flush DB
-        asyncBatchWorker.flushDirtyProfiles();
+        boolean flushed = false;
+        try {
+            // Run the JDBC batch off the main thread; await completion with a
+            // bounded timeout so the reload rebuild can safely assume persistence.
+            asyncBatchWorker.flushDirtyProfilesAsync().get(5, TimeUnit.SECONDS);
+            flushed = true;
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Timed out flushing profiles during reload", e);
+        }
         plugin.debug("Phase 3/6: Database flushed.");
 
         // Phase 4: Rebuild
@@ -88,10 +97,13 @@ public final class LockdownManager {
         // Phase 5: Invalidate UI caches
         plugin.getSkillMenuBuilder().setGuiLayoutConfig(GuiLayoutConfig.load());
         for (PlayerProfile profile : profileManager.getAllProfiles().values()) {
-            // The synchronous Phase 3 flush already persisted everything up to
-            // its snapshot markers; interactions are frozen, so marking clean at
-            // the current counter is safe (matches the old markSaved() semantics).
-            profile.markSaved(profile.getModCount());
+            // The Phase 3 flush already persisted everything up to its snapshot
+            // markers; interactions are frozen, so marking clean at the current
+            // counter is safe. If the flush failed/timed out, leave profiles dirty
+            // so the periodic flush retries instead of losing data.
+            if (flushed) {
+                profile.markSaved(profile.getModCount());
+            }
             profile.invalidatePageCache();
         }
         plugin.debug("Phase 5/6: UI caches invalidated.");

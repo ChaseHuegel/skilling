@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
@@ -26,6 +27,11 @@ public final class AsyncBatchWorker implements Runnable {
             INSERT INTO player_skills (player_uuid, skill_id, xp)
             VALUES (?, ?, ?)
             ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = excluded.xp, fanfare_pending = 0
+            """;
+
+    private static final String PREFERENCES_UPSERT = """
+            INSERT INTO player_preferences (player_uuid, preferences) VALUES (?, ?)
+            ON CONFLICT(player_uuid) DO UPDATE SET preferences = excluded.preferences
             """;
 
     private final Skilling plugin;
@@ -71,12 +77,25 @@ public final class AsyncBatchWorker implements Runnable {
         }
     }
 
+    /**
+     * Runs a dirty-profile flush on a worker thread and returns a future that
+     * completes when the batch has been written. The JDBC work never executes on
+     * the calling (Bukkit main) thread; callers that must proceed only after the
+     * flush should await the returned future with a bounded timeout.
+     *
+     * @return a future completed when the flush finishes
+     */
+    public CompletableFuture<Void> flushDirtyProfilesAsync() {
+        return CompletableFuture.runAsync(this::flushDirtyProfiles);
+    }
+
     private void doFlush() {
         Map<UUID, PlayerProfile> dirty = profileManager.getDirtyProfiles();
         if (dirty.isEmpty()) return;
 
         try (Connection conn = databaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(PLAYER_SKILLS_UPSERT)) {
+             PreparedStatement skillsStmt = conn.prepareStatement(PLAYER_SKILLS_UPSERT);
+             PreparedStatement prefsStmt = conn.prepareStatement(PREFERENCES_UPSERT)) {
 
             // Capture each profile's modCount *before* its XP snapshot so the
             // saved marker never counts mutations the DB write did not include.
@@ -91,20 +110,36 @@ public final class AsyncBatchWorker implements Runnable {
                 Map<String, Long> xpSnapshot = profile.getXpSnapshot();
 
                 for (var xpEntry : xpSnapshot.entrySet()) {
-                    stmt.setString(1, uuid.toString());
-                    stmt.setString(2, xpEntry.getKey());
-                    stmt.setLong(3, xpEntry.getValue());
-                    stmt.addBatch();
+                    skillsStmt.setString(1, uuid.toString());
+                    skillsStmt.setString(2, xpEntry.getKey());
+                    skillsStmt.setLong(3, xpEntry.getValue());
+                    skillsStmt.addBatch();
                 }
             }
 
-            int[] results = stmt.executeBatch();
+            int[] results = skillsStmt.executeBatch();
             for (int i = 0; i < results.length; i++) {
                 if (results[i] == Statement.EXECUTE_FAILED) {
                     plugin.getLogger().warning("Batch entry " + i + " failed during flush");
                     return;
                 }
             }
+
+            // Persist preferences for every dirty profile so /skills log and
+            // other preference changes ride the async write-behind path.
+            for (var entry : dirty.entrySet()) {
+                prefsStmt.setString(1, entry.getKey().toString());
+                prefsStmt.setString(2, entry.getValue().getPreferencesJson());
+                prefsStmt.addBatch();
+            }
+            int[] prefResults = prefsStmt.executeBatch();
+            for (int result : prefResults) {
+                if (result == Statement.EXECUTE_FAILED) {
+                    plugin.getLogger().warning("Preference batch entry failed during flush");
+                    return;
+                }
+            }
+
             dirty.forEach((uuid, profile) -> profile.markSaved(snapshotModCounts.get(uuid)));
 
         } catch (BatchUpdateException e) {

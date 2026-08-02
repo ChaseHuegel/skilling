@@ -151,8 +151,10 @@ public final class SkillsCommand {
                         default -> prefs;
                     };
                     if (updated != prefs) {
+                        // setPreferences flags the profile dirty; the async batch
+                        // worker persists preferences on the next flush instead of
+                        // blocking the command thread with a synchronous INSERT.
                         profile.setPreferences(updated);
-                        profileManager.savePreferences(player.getUniqueId(), profile.getPreferencesJson());
                         player.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + type + " logging to " + value));
                     }
                 }));

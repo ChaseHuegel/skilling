@@ -8,7 +8,7 @@
 - [x] [ISSUE-111](ISSUE-111.md) - Fix `markSaved()` lost-update race that silently drops player XP
 - [x] [ISSUE-112](ISSUE-112.md) - Make profile load/unload atomic on player reconnect to prevent XP loss
 - [x] [ISSUE-143](ISSUE-143.md) - Consume `fanfare_pending` on profile load so offline admin XP/level changes get fanfare
-- [ ] [ISSUE-145](ISSUE-145.md) - Move all SQLite flushes/writes off the Bukkit main thread
+- [x] [ISSUE-145](ISSUE-145.md) - Move all SQLite flushes/writes off the Bukkit main thread
 - [ ] [ISSUE-146](ISSUE-146.md) - Invalidate the page-inventory cache on every XP/level mutation path
 - [ ] [ISSUE-138](ISSUE-138.md) - Return `PlayerProfileView` from the public API instead of the mutable `PlayerProfile`
 - [ ] [ISSUE-116](ISSUE-116.md) - Move ability Check/Execute/Consume to per-ability in `fireAbilities`
