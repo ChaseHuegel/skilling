@@ -4,18 +4,37 @@ import io.github.chasehuegel.skilling.BukkitMock;
 import io.github.chasehuegel.skilling.engine.mechanic.impl.OffhandStrikeMechanic;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.Event;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.Damageable;
 import org.junit.jupiter.api.Test;
+
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class OffhandStrikeMechanicTest {
 
     private final OffhandStrikeMechanic mechanic = new OffhandStrikeMechanic();
+
+    private PlayerInteractEvent interact(Action action) {
+        var event = mock(PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(action);
+        when(event.useItemInHand()).thenReturn(Event.Result.ALLOW);
+        return event;
+    }
+
+    private PlayerInteractEvent rightClick() {
+        return interact(Action.RIGHT_CLICK_AIR);
+    }
 
     @Test
     void baseDamageLookupForWeapons() {
@@ -41,17 +60,77 @@ class OffhandStrikeMechanicTest {
     void returnsFalseWithNoTargetInRange() {
         var player = BukkitMock.mockPlayer();
         when(player.getTargetEntity(4)).thenReturn(null);
-        assertFalse(mechanic.execute(player, Map.of("multiplier", 1.0), BukkitMock.mockInteractEvent(player)));
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 1.0), rightClick()));
     }
 
     @Test
-    void dealsDamageAndConsumesDurability() {
+    void leftClickDoesNotTrigger() {
+        var player = BukkitMock.mockPlayer();
+        var target = mock(LivingEntity.class);
+        when(player.getTargetEntity(4)).thenReturn(target);
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 1.0), interact(Action.LEFT_CLICK_AIR)));
+        verify(target, never()).damage(org.mockito.ArgumentMatchers.anyDouble(), org.mockito.ArgumentMatchers.any(org.bukkit.entity.Entity.class));
+    }
+
+    @Test
+    void blockClickDoesNotTrigger() {
+        var player = BukkitMock.mockPlayer();
+        var target = mock(LivingEntity.class);
+        when(player.getTargetEntity(4)).thenReturn(target);
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 1.0), interact(Action.LEFT_CLICK_BLOCK)));
+        verify(target, never()).damage(org.mockito.ArgumentMatchers.anyDouble(), org.mockito.ArgumentMatchers.any(org.bukkit.entity.Entity.class));
+    }
+
+    @Test
+    void emptyHandInteractDoesNotTrigger() {
+        var player = BukkitMock.mockPlayer();
+        var event = mock(PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(Action.RIGHT_CLICK_AIR);
+        when(event.useItemInHand()).thenReturn(Event.Result.DENY);
+        var target = mock(LivingEntity.class);
+        when(player.getTargetEntity(4)).thenReturn(target);
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 1.0), event));
+        verify(target, never()).damage(org.mockito.ArgumentMatchers.anyDouble(), org.mockito.ArgumentMatchers.any(org.bukkit.entity.Entity.class));
+    }
+
+    @Test
+    void airOffHandReturnsFalseAndDealsNoDamage() {
+        var player = BukkitMock.mockPlayer();
+        var offhand = mock(ItemStack.class);
+        when(offhand.getType()).thenReturn(Material.AIR);
+        when(player.getInventory().getItemInOffHand()).thenReturn(offhand);
+        var target = mock(LivingEntity.class);
+        when(player.getTargetEntity(4)).thenReturn(target);
+
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 1.0), rightClick()));
+        verify(target, never()).damage(org.mockito.ArgumentMatchers.anyDouble(), org.mockito.ArgumentMatchers.any(org.bukkit.entity.Entity.class));
+    }
+
+    @Test
+    void unbreakableOffHandReturnsFalseAndDealsNoDamage() {
+        var player = BukkitMock.mockPlayer();
+        var offhand = mock(ItemStack.class);
+        when(offhand.getType()).thenReturn(Material.IRON_SWORD);
+        var meta = mock(Damageable.class);
+        when(meta.isUnbreakable()).thenReturn(true);
+        when(offhand.getItemMeta()).thenReturn(meta);
+        when(player.getInventory().getItemInOffHand()).thenReturn(offhand);
+        var target = mock(LivingEntity.class);
+        when(player.getTargetEntity(4)).thenReturn(target);
+
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 1.0), rightClick()));
+        verify(target, never()).damage(org.mockito.ArgumentMatchers.anyDouble(), org.mockito.ArgumentMatchers.any(org.bukkit.entity.Entity.class));
+    }
+
+    @Test
+    void dealsDamageAndPersistsDurabilityToOffHandSlot() {
         var player = BukkitMock.mockPlayer();
         var inv = player.getInventory();
         var offhand = mock(ItemStack.class);
         when(offhand.getType()).thenReturn(Material.IRON_SWORD);
         var meta = mock(Damageable.class);
         when(meta.getDamage()).thenReturn(10);
+        when(meta.isUnbreakable()).thenReturn(false);
         when(offhand.getItemMeta()).thenReturn((org.bukkit.inventory.meta.ItemMeta) meta);
         when(offhand.getItemMeta()).thenReturn(meta);
         when(inv.getItemInOffHand()).thenReturn(offhand);
@@ -59,9 +138,11 @@ class OffhandStrikeMechanicTest {
         var target = mock(LivingEntity.class);
         when(player.getTargetEntity(4)).thenReturn(target);
 
-        assertTrue(mechanic.execute(player, Map.of("multiplier", 2.0), BukkitMock.mockInteractEvent(player)));
+        assertTrue(mechanic.execute(player, Map.of("multiplier", 2.0), rightClick()));
         verify(target).damage(12.0, player);
         verify(meta).setDamage(11);
         verify(offhand).setItemMeta(meta);
+        // The durability change must be written back to the inventory slot.
+        verify(inv).setItemInOffHand(offhand);
     }
 }

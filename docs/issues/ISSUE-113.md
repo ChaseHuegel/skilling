@@ -1,6 +1,6 @@
 # ISSUE-113: Persist off-hand durability in `OffhandStrikeMechanic` and filter interact actions
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** Critical (durability exploit + ability fires on unintended interactions)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Write the mutated off-hand `ItemStack` back to the inventory slot (`setItemInOffHand`) so the durability decrement is actually applied
-- [ ] Guard the interact action so the mechanic only fires on right-click-with-item (`event.getAction()` / `useItemInHand()`), not left-clicks, block clicks, or empty-hand interactions
-- [ ] Handle the off-hand being unbreakable/air/empty gracefully (no-op, return false, no durability mutation)
-- [ ] Add unit tests covering: durability decrement is persisted, non-right-click actions return false, air/unbreakable off-hand returns false
+- [x] Write the mutated off-hand `ItemStack` back to the inventory slot (`setItemInOffHand`) so the durability decrement is actually applied
+- [x] Guard the interact action so the mechanic only fires on right-click-with-item (`event.getAction()` / `useItemInHand()`), not left-clicks, block clicks, or empty-hand interactions
+- [x] Handle the off-hand being unbreakable/air/empty gracefully (no-op, return false, no durability mutation)
+- [x] Add unit tests covering: durability decrement is persisted, non-right-click actions return false, air/unbreakable off-hand returns false
 
 ## Technical Specifications & Context
 
@@ -34,7 +34,7 @@ After applying damage, write the stack back via `player.getInventory().setItemIn
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new unit tests
-- [ ] Unit test: after `execute`, the off-hand slot contains a stack with damage incremented by 1
-- [ ] Unit test: left-click and block-click interactions do not trigger the mechanic
-- [ ] Unit test: air/unbreakable off-hand returns false and deals no damage
+- [x] `./gradlew build && ./gradlew test` pass, including new unit tests
+- [x] Unit test: after `execute`, the off-hand slot contains a stack with damage incremented by 1
+- [x] Unit test: left-click and block-click interactions do not trigger the mechanic
+- [x] Unit test: air/unbreakable off-hand returns false and deals no damage
