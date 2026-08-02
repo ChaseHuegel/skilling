@@ -7,16 +7,16 @@
 Custom items vary greatly in how they are created. Skilling should **not** require per-solution integrations. Instead, admins integrate with Skilling by putting specific metadata on their items that Skilling looks for, and tag entries can become expressive enough to reason about without documentation. This ticket researches and proposes the standard. Do not lock in any single direction.
 
 ## Implementation Requirements
-- [ ] Map the current tag/filter/requirement resolution flow and pinpoint where material-only matching limits custom items:
+- [x] Map the current tag/filter/requirement resolution flow and pinpoint where material-only matching limits custom items:
   - `TagResolver` (flattened `EnumSet<Material>`, O(1) event lookups)
   - `CustomTagLoader` (`tags.yml` `#c:` definitions)
   - `SkillEventListener.matchFilter` (target/state/tool)
   - `RequirementEngine` item possession/cost checks (`countItems`/`removeItems`)
-- [ ] Propose a metadata standard (e.g., PersistentDataContainer/NBT keys under a `skilling:` namespace) that custom items must carry to be matched, with concrete examples for common creation methods (commands, datapacks) where feasible.
-- [ ] Propose tag-entry syntax extensions and justify them. Explore (do not lock in): NBT/PDC-based entries, name/regex-based entries (e.g., `name:*Greatsword`), and how they compose with existing material and vanilla-tag entries.
-- [ ] Evaluate the performance model: the current design pre-flattens tags to `EnumSet<Material>` at load for O(1) dispatch. Item-instance matching (NBT/name) cannot be flattened the same way — propose a pre-filter/caching strategy for the hot event path and inventory scans.
-- [ ] Address authoring ergonomics: a person must be able to read a tag definition and reason about how it behaves without referencing documentation. Consider what `tags.yml` entries should look like, validation/fail-fast on unknown entries, and the web editor UX (`TagListEditor.vue` / `MaterialMultiSelect.vue`).
-- [ ] Deliver the report to `docs/reports/REPORT_CUSTOM-ITEMS.md` following the `REPORT_<TOPIC>.md` pattern, with the owning ticket and date in the header and a cross-link back to this ticket.
+- [x] Propose a metadata standard (e.g., PersistentDataContainer/NBT keys under a `skilling:` namespace) that custom items must carry to be matched, with concrete examples for common creation methods (commands, datapacks) where feasible.
+- [x] Propose tag-entry syntax extensions and justify them. Explore (do not lock in): NBT/PDC-based entries, name/regex-based entries (e.g., `name:*Greatsword`), and how they compose with existing material and vanilla-tag entries.
+- [x] Evaluate the performance model: the current design pre-flattens tags to `EnumSet<Material>` at load for O(1) dispatch. Item-instance matching (NBT/name) cannot be flattened the same way — propose a pre-filter/caching strategy for the hot event path and inventory scans.
+- [x] Address authoring ergonomics: a person must be able to read a tag definition and reason about how it behaves without referencing documentation. Consider what `tags.yml` entries should look like, validation/fail-fast on unknown entries, and the web editor UX (`TagListEditor.vue` / `MaterialMultiSelect.vue`).
+- [x] Deliver the report to `docs/reports/REPORT_CUSTOM-ITEMS.md` following the `REPORT_<TOPIC>.md` pattern, with the owning ticket and date in the header and a cross-link back to this ticket.
 
 ## Technical Specifications & Context
 - **Target Files (read-only for research):**
@@ -34,6 +34,6 @@ Custom items vary greatly in how they are created. Skilling should **not** requi
   - Keep the readability goal front and center for any proposed syntax.
 
 ## Verification & Definition of Done
-- [ ] Report exists at `docs/reports/REPORT_CUSTOM-ITEMS.md` with owning ticket + date header and a cross-link back
-- [ ] Report covers every Implementation Requirement above (current flow map, metadata standard proposal, syntax options with rationale, performance strategy, authoring ergonomics)
-- [ ] No production code changes
+- [x] Report exists at `docs/reports/REPORT_CUSTOM-ITEMS.md` with owning ticket + date header and a cross-link back
+- [x] Report covers every Implementation Requirement above (current flow map, metadata standard proposal, syntax options with rationale, performance strategy, authoring ergonomics)
+- [x] No production code changes

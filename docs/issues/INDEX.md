@@ -11,7 +11,7 @@
 - [x] [ISSUE-185](ISSUE-185.md) - Add level_break chain-break variant (XZ plane only)
 
 ### Research
-- [ ] [ISSUE-183](ISSUE-183.md) - Research: supporting custom items in tags & filters
+- [x] [ISSUE-183](ISSUE-183.md) - Research: supporting custom items in tags & filters
 - [ ] [ISSUE-186](ISSUE-186.md) - Research: visual polish design plan
 
 ## Backlog
