@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
-import FilterBuilder from '../common/FilterBuilder.vue'
-import EvaluatorParameter from '../common/EvaluatorParameter.vue'
 import AppCombobox from '../common/AppCombobox.vue'
+import SoundConfigEditor, { type SoundConfig } from '../common/SoundConfigEditor.vue'
+import MechanicsEditor, { type MechanicEntry } from './MechanicsEditor.vue'
+import OnFailureEditor, { type OnFailure } from './OnFailureEditor.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 import { useRegistriesStore } from '../../stores/registries'
 import { STATE_SUGGESTIONS } from '../common/stateFilters'
@@ -28,43 +29,7 @@ const PARTICLE_SUGGESTIONS = [
   'minecraft:dust', 'minecraft:dust_color_transition', 'minecraft:vibration',
 ]
 
-const SOUND_SUGGESTIONS = [
-  'minecraft:entity_experience_orb_pickup', 'minecraft:entity_player_levelup',
-  'minecraft:entity_player_attack_crit', 'minecraft:entity_player_attack_strong',
-  'minecraft:entity_player_attack_sweep', 'minecraft:entity_player_attack_knockback',
-  'minecraft:entity_player_attack_weak', 'minecraft:entity_arrow_shoot',
-  'minecraft:entity_arrow_hit', 'minecraft:entity_firework_rocket_blast',
-  'minecraft:entity_firework_rocket_twinkle', 'minecraft:entity_firework_rocket_large_blast',
-  'minecraft:entity_firework_rocket_launch', 'minecraft:entity_generic_explode',
-  'minecraft:entity_lightning_bolt_thunder', 'minecraft:entity_lightning_bolt_impact',
-  'minecraft:entity_wither_spawn', 'minecraft:entity_wither_death',
-  'minecraft:entity_wither_shoot', 'minecraft:entity_ender_dragon_death',
-  'minecraft:entity_ender_dragon_growl', 'minecraft:entity_ender_dragon_fireball_explode',
-  'minecraft:item_trident_thunder', 'minecraft:item_trident_riptide_1',
-  'minecraft:item_trident_riptide_2', 'minecraft:item_trident_riptide_3',
-  'minecraft:block_anvil_land', 'minecraft:block_anvil_place',
-  'minecraft:block_anvil_break', 'minecraft:block_anvil_destroy',
-  'minecraft:block_anvil_fall', 'minecraft:block_anvil_hit',
-  'minecraft:block_anvil_step', 'minecraft:block_anvil_use',
-  'minecraft:block_brewing_stand_brew', 'minecraft:block_chest_open',
-  'minecraft:block_chest_close', 'minecraft:block_ender_chest_open',
-  'minecraft:block_ender_chest_close', 'minecraft:block_furnace_fire_crackle',
-  'minecraft:block_note_block_bell', 'minecraft:block_note_block_chime',
-  'minecraft:block_note_block_flute', 'minecraft:block_note_block_guitar',
-  'minecraft:block_note_block_harpsichord', 'minecraft:block_note_block_hat',
-  'minecraft:block_note_block_basedrum', 'minecraft:block_note_block_snare',
-  'minecraft:block_note_block_pling', 'minecraft:block_note_block_xylophone',
-  'minecraft:block_note_block_iron_xylophone', 'minecraft:block_note_block_cow_bell',
-  'minecraft:block_note_block_didgeridoo', 'minecraft:block_note_block_bit',
-  'minecraft:block_note_block_banjo', 'minecraft:ui_button_click',
-  'minecraft:ui_toast_in', 'minecraft:ui_toast_out', 'minecraft:ui_toast_challenge_complete',
-]
-
 const SLOT_SUGGESTIONS = ['HAND', 'OFF_HAND', 'FEET', 'LEGS', 'CHEST', 'HEAD']
-
-const MECHANIC_SUGGESTIONS = computed(() =>
-  registriesStore.mechanicKeys.length > 0 ? registriesStore.mechanicKeys : FALLBACK_MECHANICS
-)
 
 const FALLBACK_TRIGGERS = [
   'block_break', 'block_place', 'entity_damage', 'entity_damage_taken', 'entity_kill',
@@ -78,60 +43,12 @@ const TRIGGER_SUGGESTIONS = computed(() =>
   registriesStore.triggers.length > 0 ? registriesStore.triggers : FALLBACK_TRIGGERS
 )
 
-const FALLBACK_MECHANICS = [
-  'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
-  'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
-  'core:modify_attribute', 'core:knockback', 'core:shield_disable', 'core:offhand_strike',
-  'core:set_cooldown', 'core:modify_attack_speed', 'core:ally_aura',
-]
-
-const MECHANIC_PARAM_NAMES = computed(() =>
-  Object.keys(registriesStore.mechanicParams).length > 0
-    ? registriesStore.mechanicParams
-    : FALLBACK_PARAM_NAMES
-)
-
-const FALLBACK_PARAM_NAMES: Record<string, string[]> = {
-  'core:yield_multiplier': ['yield_chance'],
-  'core:chain_break': ['chain_limit', 'exhaustion'],
-  'core:apply_status': ['effect', 'duration', 'amplifier'],
-  'core:modify_attribute': ['attribute', 'amount', 'duration'],
-  'core:modify_damage': ['multiplier'],
-  'core:cancel_damage': ['chance'],
-  'core:modify_furnace_output': ['multiplier'],
-  'core:modify_brew_time': ['multiplier'],
-  'core:modify_potion_duration': ['multiplier'],
-  'core:modify_craft_output': ['multiplier'],
-  'core:saturation_inject': ['saturation'],
-  'core:aoe_effect': ['effect', 'radius', 'duration', 'amplifier'],
-  'core:projectile': ['speed', 'damage'],
-  'core:teleport': ['range'],
-  'core:knockback': ['force', 'radius', 'vertical'],
-  'core:shield_disable': ['ticks'],
-  'core:offhand_strike': ['multiplier', 'reach'],
-  'core:set_cooldown': ['material', 'ticks'],
-  'core:modify_attack_speed': ['multiplier', 'duration'],
-  'core:ally_aura': ['effect', 'radius', 'duration', 'amplifier'],
-}
-
-interface FilterEntry {
-  target?: string
-  state?: string
-  tool?: string
-}
-
 interface RequirementItem {
   action: string
   tag: string
   slot: string
   amount: number
   itemCooldown: number
-}
-
-interface MechanicEntry {
-  type: string
-  filters: FilterEntry[]
-  params: { name: string; evaluator: { type: string; params: Record<string, any> } }[]
 }
 
 interface ParticleConfig {
@@ -142,22 +59,6 @@ interface ParticleConfig {
   offsetY: number
   offsetZ: number
   speed: number
-}
-
-interface SoundConfig {
-  type: string
-  volume: number
-  pitch: number
-  target: string
-}
-
-interface FailureFeedback {
-  actionBar: string
-  sounds: SoundConfig[]
-}
-
-interface OnFailure {
-  reasons: Record<string, FailureFeedback>
 }
 
 interface Ability {
@@ -204,7 +105,6 @@ const STATE_OPTIONS = computed(() =>
 
 const expanded = ref<Record<string, boolean>>({})
 const pendingRemoveAbility = ref<number | null>(null)
-const newFailureReason = ref<Record<string, string>>({})
 const loreDragIndex = ref<string | null>(null)
 const pendingState = ref<Record<string, string>>({})
 const sectionExpanded = ref<Record<string, boolean>>({})
@@ -225,22 +125,6 @@ function toggleSection(abilityIdx: number, sectionKey: string) {
 function isSectionExpanded(abilityIdx: number, sectionKey: string): boolean {
   const key = `${abilityKey(props.modelValue[abilityIdx])}-${sectionKey}`
   return sectionExpanded.value[key] !== false
-}
-
-function sectionCount(ability: Ability, sectionKey: string): number | null {
-  switch (sectionKey) {
-    case 'lore': return ability.lore.length
-    case 'requirements': return null
-    case 'mechanics': return ability.mechanics.length
-    case 'feedback': return null
-    case 'particles': return ability.feedback.particles.length
-    case 'sounds': return ability.feedback.sounds.length
-    case 'on-failure': {
-      const of = ability.onFailure
-      return of ? Object.keys(of.reasons).length : 0
-    }
-    default: return null
-  }
 }
 
 function toggleExpand(idx: number) {
@@ -304,12 +188,6 @@ function executeRemoveAbility() {
   copy.splice(pendingRemoveAbility.value, 1)
   emit('update:modelValue', copy)
   pendingRemoveAbility.value = null
-}
-
-function removeAbility(index: number) {
-  const copy = [...props.modelValue]
-  copy.splice(index, 1)
-  emit('update:modelValue', copy)
 }
 
 function addAbility() {
@@ -425,71 +303,6 @@ function updateItem(index: number, itemIdx: number, patch: Partial<RequirementIt
   updateRequirement(index, { items: copy })
 }
 
-function addMechanic(index: number) {
-  const ab = props.modelValue[index]
-  updateAbility(index, {
-    mechanics: [
-      ...ab.mechanics,
-      { type: '', filters: [], params: [] },
-    ],
-  })
-}
-
-function removeMechanic(index: number, mechIdx: number) {
-  const ab = props.modelValue[index]
-  const copy = [...ab.mechanics]
-  copy.splice(mechIdx, 1)
-  updateAbility(index, { mechanics: copy })
-}
-
-function updateMechanic(index: number, mechIdx: number, patch: Partial<MechanicEntry>) {
-  const ab = props.modelValue[index]
-  const copy = [...ab.mechanics]
-  copy[mechIdx] = { ...copy[mechIdx], ...patch }
-  updateAbility(index, { mechanics: copy })
-}
-
-function addMechanicParam(index: number, mechIdx: number) {
-  const ab = props.modelValue[index]
-  const mech = ab.mechanics[mechIdx]
-  const copy = [...ab.mechanics]
-  copy[mechIdx] = {
-    ...mech,
-    params: [...mech.params, { name: '', evaluator: { type: 'constant', params: { value: 0 } } }],
-  }
-  updateAbility(index, { mechanics: copy })
-}
-
-function removeMechanicParam(index: number, mechIdx: number, paramIdx: number) {
-  const ab = props.modelValue[index]
-  const mech = ab.mechanics[mechIdx]
-  const copy = [...ab.mechanics]
-  const paramsCopy = [...mech.params]
-  paramsCopy.splice(paramIdx, 1)
-  copy[mechIdx] = { ...mech, params: paramsCopy }
-  updateAbility(index, { mechanics: copy })
-}
-
-function updateMechanicParamName(index: number, mechIdx: number, paramIdx: number, name: string) {
-  const ab = props.modelValue[index]
-  const mech = ab.mechanics[mechIdx]
-  const copy = [...ab.mechanics]
-  const paramsCopy = [...mech.params]
-  paramsCopy[paramIdx] = { ...paramsCopy[paramIdx], name }
-  copy[mechIdx] = { ...mech, params: paramsCopy }
-  updateAbility(index, { mechanics: copy })
-}
-
-function updateMechanicParamEvaluator(index: number, mechIdx: number, paramIdx: number, evaluator: MechanicEntry['params'][0]['evaluator']) {
-  const ab = props.modelValue[index]
-  const mech = ab.mechanics[mechIdx]
-  const copy = [...ab.mechanics]
-  const paramsCopy = [...mech.params]
-  paramsCopy[paramIdx] = { ...paramsCopy[paramIdx], evaluator }
-  copy[mechIdx] = { ...mech, params: paramsCopy }
-  updateAbility(index, { mechanics: copy })
-}
-
 function addParticle(index: number) {
   const ab = props.modelValue[index]
   updateFeedback(index, {
@@ -514,106 +327,12 @@ function updateParticle(index: number, pIdx: number, patch: Partial<ParticleConf
   updateFeedback(index, { particles: copy })
 }
 
-function addSound(index: number) {
-  const ab = props.modelValue[index]
-  updateFeedback(index, {
-    sounds: [
-      ...ab.feedback.sounds,
-      { type: '', volume: 1, pitch: 1, target: 'self' },
-    ],
-  })
-}
-
-function removeSound(index: number, sIdx: number) {
-  const ab = props.modelValue[index]
-  const copy = [...ab.feedback.sounds]
-  copy.splice(sIdx, 1)
-  updateFeedback(index, { sounds: copy })
-}
-
-function updateSound(index: number, sIdx: number, patch: Partial<SoundConfig>) {
-  const ab = props.modelValue[index]
-  const copy = [...ab.feedback.sounds]
-  copy[sIdx] = { ...copy[sIdx], ...patch }
-  updateFeedback(index, { sounds: copy })
-}
-
-const FAILURE_REASON_OPTIONS = ['cooldown', 'missing_item', 'missing_state']
-
 function getOnFailure(index: number): OnFailure {
   return props.modelValue[index].onFailure || { reasons: {} }
 }
 
 function updateOnFailure(index: number, patch: Partial<OnFailure>) {
-  const ab = props.modelValue[index]
   updateAbility(index, { onFailure: { ...getOnFailure(index), ...patch } })
-}
-
-function setFailureReason(index: number, reason: string, fb: FailureFeedback) {
-  const of = getOnFailure(index)
-  const reasons = { ...of.reasons, [reason]: fb }
-  updateOnFailure(index, { reasons })
-}
-
-function removeFailureReason(index: number, reason: string) {
-  const of = getOnFailure(index)
-  const reasons = { ...of.reasons }
-  delete reasons[reason]
-  updateOnFailure(index, { reasons })
-}
-
-function updateFailureActionBar(index: number, reason: string, val: string) {
-  const of = getOnFailure(index)
-  const fb = of.reasons[reason] || { actionBar: '', sounds: [] }
-  setFailureReason(index, reason, { ...fb, actionBar: val })
-}
-
-function addFailureSound(index: number, reason: string) {
-  const of = getOnFailure(index)
-  const fb = of.reasons[reason] || { actionBar: '', sounds: [] }
-  setFailureReason(index, reason, {
-    ...fb,
-    sounds: [...fb.sounds, { type: '', volume: 1, pitch: 1, target: 'self' }],
-  })
-}
-
-function removeFailureSound(index: number, reason: string, sIdx: number) {
-  const of = getOnFailure(index)
-  const fb = of.reasons[reason]
-  if (!fb) return
-  const copy = [...fb.sounds]
-  copy.splice(sIdx, 1)
-  setFailureReason(index, reason, { ...fb, sounds: copy })
-}
-
-function updateFailureSound(index: number, reason: string, sIdx: number, patch: Partial<SoundConfig>) {
-  const of = getOnFailure(index)
-  const fb = of.reasons[reason]
-  if (!fb) return
-  const copy = [...fb.sounds]
-  copy[sIdx] = { ...copy[sIdx], ...patch }
-  setFailureReason(index, reason, { ...fb, sounds: copy })
-}
-
-function addFailureReason(index: number) {
-  const reason = newFailureReason.value[index]
-  if (!reason) return
-  const of = getOnFailure(index)
-  if (of.reasons[reason]) return
-  setFailureReason(index, reason, { actionBar: '', sounds: [] })
-  newFailureReason.value[index] = ''
-}
-
-function failurePlaceholder(reason: string): string {
-  if (reason === 'cooldown') return "&cCooling down: {time}s";
-  if (reason === 'missing_item') return "&cRequires {amount}x {item}";
-  return '&c' + reason + ' message...';
-}
-
-const FAILURE_REASON_LABELS: Record<string, string> = {
-  cooldown: 'Cooldown',
-  missing_item: 'Missing Item',
-  missing_state: 'Missing State',
 }
 </script>
 
@@ -621,8 +340,6 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
   <div class="abilities-section">
     <SectionToolbar
       section-name="Ability"
-      :can-delete="false"
-      :can-duplicate="false"
       @add="addAbility"
     />
 
@@ -915,88 +632,11 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
             <span class="section-count">({{ ability.mechanics.length }})</span>
           </div>
           <template v-if="isSectionExpanded(idx, 'mechanics')">
-            <div
-              v-for="(mech, mIdx) in ability.mechanics"
-              :key="mIdx"
-              class="mechanic-card"
-            >
-              <div class="mechanic-header">
-                <span class="mechanic-title">Mechanic #{{ mIdx + 1 }}</span>
-                <button
-                  class="btn btn-ghost btn-sm"
-                  style="color: var(--p-red-500, #ef4444)"
-                  @click="removeMechanic(idx, mIdx)"
-                >
-                  &times;
-                </button>
-              </div>
-
-              <div class="mechanic-body">
-                <div class="field-row">
-                  <label class="field-label">Type</label>
-                  <AppCombobox
-                    :model-value="mech.type"
-                    :suggestions="MECHANIC_SUGGESTIONS"
-                    placeholder="core:yield_multiplier"
-                    :name="'mech-' + idx + '-' + mIdx"
-                    @update:model-value="updateMechanic(idx, mIdx, { type: $event })"
-                  />
-                </div>
-
-                <div class="sub-section">
-                  <label class="sub-label">Filters</label>
-                  <FilterBuilder
-                    :model-value="mech.filters"
-                    :tag-suggestions="tagSuggestions"
-                    @update:model-value="updateMechanic(idx, mIdx, { filters: $event })"
-                  />
-                </div>
-
-                <div class="sub-section">
-                  <label class="sub-label">Parameters</label>
-                  <div
-                    v-for="(param, pIdx) in mech.params"
-                    :key="pIdx"
-                    class="param-entry"
-                  >
-                    <div class="param-header">
-                      <AppCombobox
-                        :model-value="param.name"
-                        :suggestions="MECHANIC_PARAM_NAMES[mech.type] || []"
-                        placeholder="Parameter name"
-                        :name="'param-' + idx + '-' + mIdx + '-' + pIdx"
-                        @update:model-value="updateMechanicParamName(idx, mIdx, pIdx, $event)"
-                      />
-                      <button
-                        class="btn btn-ghost btn-sm"
-                        style="color: var(--p-red-500, #ef4444)"
-                        @click="removeMechanicParam(idx, mIdx, pIdx)"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                    <EvaluatorParameter
-                      :model-value="param.evaluator"
-                      :label="param.name || 'param'"
-                      :name="param.name || 'param'"
-                      @update:model-value="updateMechanicParamEvaluator(idx, mIdx, pIdx, $event)"
-                    />
-                  </div>
-                  <button
-                    class="btn btn-primary btn-sm"
-                    @click="addMechanicParam(idx, mIdx)"
-                  >
-                    + Add Parameter
-                  </button>
-                </div>
-              </div>
-            </div>
-            <button
-              class="btn btn-primary btn-sm"
-              @click="addMechanic(idx)"
-            >
-              + Add Mechanic
-            </button>
+            <MechanicsEditor
+              :model-value="ability.mechanics"
+              :tag-suggestions="tagSuggestions"
+              @update:model-value="updateAbility(idx, { mechanics: $event })"
+            />
           </template>
         </div>
 
@@ -1150,67 +790,11 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
                 <span class="section-count">({{ ability.feedback.sounds.length }})</span>
               </div>
               <template v-if="isSectionExpanded(idx, 'sounds')">
-                <div
-                  v-for="(sound, sIdx) in ability.feedback.sounds"
-                  :key="sIdx"
-                  class="sound-card"
-                >
-                  <div class="sound-type-row">
-                    <AppCombobox
-                      :model-value="sound.type"
-                      :suggestions="SOUND_SUGGESTIONS"
-                      placeholder="minecraft:entity_experience_orb_pickup"
-                      :name="'sound-' + idx + '-' + sIdx"
-                      @update:model-value="updateSound(idx, sIdx, { type: $event })"
-                    />
-                    <button
-                      class="btn btn-ghost btn-sm"
-                      style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
-                      @click="removeSound(idx, sIdx)"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                  <div class="sound-fields">
-                    <div class="sound-field">
-                      <label class="field-label-sm">Volume</label>
-                      <input
-                        class="field-input-sm"
-                        type="number"
-                        step="any"
-                        :value="sound.volume"
-                        @input="updateSound(idx, sIdx, { volume: Number(($event.target as HTMLInputElement).value) })"
-                      />
-                    </div>
-                    <div class="sound-field">
-                      <label class="field-label-sm">Pitch</label>
-                      <input
-                        class="field-input-sm"
-                        type="number"
-                        step="any"
-                        :value="sound.pitch"
-                        @input="updateSound(idx, sIdx, { pitch: Number(($event.target as HTMLInputElement).value) })"
-                      />
-                    </div>
-                    <div class="sound-field">
-                      <label class="field-label-sm">Target</label>
-                      <select
-                        class="field-input-sm"
-                        :value="sound.target"
-                        @change="updateSound(idx, sIdx, { target: ($event.target as HTMLSelectElement).value })"
-                      >
-                        <option value="self">self</option>
-                        <option value="target">target</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  class="btn btn-primary btn-sm"
-                  @click="addSound(idx)"
-                >
-                  + Add Sound
-                </button>
+                <SoundConfigEditor
+                  :model-value="ability.feedback.sounds"
+                  :name-prefix="'sound-' + idx"
+                  @update:model-value="updateFeedback(idx, { sounds: $event })"
+                />
               </template>
             </div>
           </template>
@@ -1228,86 +812,11 @@ const FAILURE_REASON_LABELS: Record<string, string> = {
             <span class="section-count">({{ Object.keys(getOnFailure(idx).reasons).length }})</span>
           </div>
           <template v-if="isSectionExpanded(idx, 'on-failure')">
-            <div v-for="(fb, reason) in getOnFailure(idx).reasons" :key="reason" class="failure-card">
-              <div class="failure-header">
-                <span class="failure-reason-label">{{ FAILURE_REASON_LABELS[reason] || reason }}</span>
-                <button
-                  class="btn btn-ghost btn-sm"
-                  style="color: var(--p-red-500, #ef4444)"
-                  @click="removeFailureReason(idx, reason)"
-                >
-                  &times;
-                </button>
-              </div>
-              <div class="failure-body">
-                <div class="field-row">
-                  <label class="field-label">Action Bar</label>
-                  <input
-                    class="field-input"
-                    type="text"
-                    :placeholder="failurePlaceholder(reason)"
-                    :value="fb.actionBar"
-                    @input="updateFailureActionBar(idx, reason, ($event.target as HTMLInputElement).value)"
-                  />
-                </div>
-                <div class="sub-section">
-                  <label class="sub-label">Sounds</label>
-                  <div v-for="(sound, sIdx) in fb.sounds" :key="sIdx" class="sound-card">
-                    <div class="sound-type-row">
-                      <AppCombobox
-                        :model-value="sound.type"
-                        :suggestions="SOUND_SUGGESTIONS"
-                        placeholder="minecraft:block_note_block_bass"
-                        :name="'of-sound-' + idx + '-' + reason + '-' + sIdx"
-                        @update:model-value="updateFailureSound(idx, reason, sIdx, { type: $event })"
-                      />
-                      <button class="btn btn-ghost btn-sm" style="color: var(--p-red-500, #ef4444); flex-shrink: 0"
-                        @click="removeFailureSound(idx, reason, sIdx)">&times;</button>
-                    </div>
-                    <div class="sound-fields">
-                      <div class="sound-field">
-                        <label class="field-label-sm">Volume</label>
-                        <input class="field-input-sm" type="number" step="any"
-                          :value="sound.volume"
-                          @input="updateFailureSound(idx, reason, sIdx, { volume: Number(($event.target as HTMLInputElement).value) })" />
-                      </div>
-                      <div class="sound-field">
-                        <label class="field-label-sm">Pitch</label>
-                        <input class="field-input-sm" type="number" step="any"
-                          :value="sound.pitch"
-                          @input="updateFailureSound(idx, reason, sIdx, { pitch: Number(($event.target as HTMLInputElement).value) })" />
-                      </div>
-                      <div class="sound-field">
-                        <label class="field-label-sm">Target</label>
-                        <select class="field-input-sm"
-                          :value="sound.target"
-                          @change="updateFailureSound(idx, reason, sIdx, { target: ($event.target as HTMLSelectElement).value })">
-                          <option value="self">self</option>
-                          <option value="target">target</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <button class="btn btn-primary btn-sm" @click="addFailureSound(idx, reason)">+ Add Sound</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="add-failure-row">
-              <select v-model="newFailureReason[idx]" class="field-input-sm">
-                <option value="" disabled>Select reason...</option>
-                <option v-for="opt in FAILURE_REASON_OPTIONS" :key="opt" :value="opt">
-                  {{ FAILURE_REASON_LABELS[opt] }}
-                </option>
-              </select>
-              <button
-                class="btn btn-primary btn-sm"
-                :disabled="!newFailureReason[idx]"
-                @click="addFailureReason(idx)"
-              >
-                + Add
-              </button>
-            </div>
+            <OnFailureEditor
+              :model-value="getOnFailure(idx)"
+              :name-prefix="'of-' + idx"
+              @update:model-value="updateOnFailure(idx, $event)"
+            />
           </template>
         </div>
       </div>

@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue';
+import { ref, reactive, onMounted, computed, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
 import { cooldownToNumber } from '../utils/cooldown';
@@ -127,7 +127,7 @@ const cleanForm = ref('');
 
 const isDirty = computed(() => JSON.stringify(form) !== cleanForm.value);
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave((_to, _from, next) => {
     if (!isDirty.value) {
         next();
         return;
@@ -135,10 +135,6 @@ onBeforeRouteLeave((to, from, next) => {
     showLeaveDialog.value = true;
     pendingNavigation = () => next();
 });
-
-function clearFieldError(field: string) {
-    delete fieldErrors[field];
-}
 
 function validate(): boolean {
     const errors: Record<string, string> = {};
@@ -368,6 +364,13 @@ onMounted(async () => {
     if (isNew) {
         await nextTick();
         cleanForm.value = JSON.stringify(form);
+    }
+    // Populate the skills list so the duplicate-ID check actually runs (the
+    // store is not filled by any other view).
+    try {
+        await skillsStore.fetchList();
+    } catch {
+        // A failed list fetch only disables duplicate detection, never blocks editing.
     }
     if (!isNew && skillId) {
         loading.value = true;

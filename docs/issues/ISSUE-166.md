@@ -13,13 +13,13 @@
 
 ## Implementation Requirements
 
-- [ ] Remove or wire up the dead modules: `stores/config.ts`, `stores/tags.ts`, `components/common/ToastNotification.vue`, `stores/skills.ts`'s unused methods (`fetch`, `save`, `remove`, `currentSkill`, `fetchList`), `stores/staging.ts`'s `hasFileChanges()`
-- [ ] Remove dead code in `AbilitiesSection.vue` (`sectionCount()`, `removeAbility()`, the always-false `canDelete`/`canDuplicate` toolbar props)
-- [ ] Extract the shared mechanic/param/sound/particle scaffolding duplicated with `XpSourcesSection.vue` into a reusable component
-- [ ] Split `AbilitiesSection.vue` (ability list, lore editor, requirements, mechanics, feedback, on-failure) into focused components
-- [ ] Make the duplicate-ID check in `SkillEditorPage.vue:147` actually work by populating the skills store (or route it through the API list)
-- [ ] Enforce `noUnusedLocals`/`noUnusedParameters` in `tsconfig.json` so dead code fails the build
-- [ ] Keep the built output (`npm run build`) passing throughout
+- [x] Remove or wire up the dead modules: `stores/config.ts`, `stores/tags.ts`, `components/common/ToastNotification.vue`, `stores/skills.ts`'s unused methods (`fetch`, `save`, `remove`, `currentSkill`, `fetchList`), `stores/staging.ts`'s `hasFileChanges()`
+- [x] Remove dead code in `AbilitiesSection.vue` (`sectionCount()`, `removeAbility()`, the always-false `canDelete`/`canDuplicate` toolbar props)
+- [x] Extract the shared mechanic/param/sound/particle scaffolding duplicated with `XpSourcesSection.vue` into a reusable component
+- [x] Split `AbilitiesSection.vue` (ability list, lore editor, requirements, mechanics, feedback, on-failure) into focused components
+- [x] Make the duplicate-ID check in `SkillEditorPage.vue:147` actually work by populating the skills store (or route it through the API list)
+- [x] Enforce `noUnusedLocals`/`noUnusedParameters` in `tsconfig.json` so dead code fails the build
+- [x] Keep the built output (`npm run build`) passing throughout
 
 ## Technical Specifications & Context
 
@@ -43,7 +43,7 @@ Delete dead modules, extract shared scaffolding into reusable components, split 
 
 ## Verification & Definition of Done
 
-- [ ] `cd web/frontend && npm run build` passes with `noUnusedLocals`/`noUnusedParameters` enabled
-- [ ] No unused imports/components remain (grep-clean)
-- [ ] `npm run e2e` still passes (no behavior regression)
-- [ ] Duplicate skill IDs are rejected in the UI
+- [x] `cd web/frontend && npm run build` passes with `noUnusedLocals`/`noUnusedParameters` enabled
+- [x] No unused imports/components remain (grep-clean)
+- [x] `npm run e2e` still passes (no behavior regression)
+- [x] Duplicate skill IDs are rejected in the UI

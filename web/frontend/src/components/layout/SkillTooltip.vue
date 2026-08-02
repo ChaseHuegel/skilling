@@ -41,7 +41,6 @@ const tooltipEl = ref<HTMLElement | null>(null)
 const flipped = ref(false)
 
 const TOOLTIP_MARGIN = 8
-const FLIP_THRESHOLD = 260
 
 const positionStyle = computed(() => {
   if (props.x === undefined || props.y === undefined) return {}

@@ -48,7 +48,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import MinecraftIcon from './MinecraftIcon.vue'
 import materials from '../../assets/materials.json'
 
-const props = defineProps<{
+defineProps<{
     modelValue: string
     label?: string
 }>()

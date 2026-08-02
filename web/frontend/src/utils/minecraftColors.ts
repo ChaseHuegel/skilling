@@ -18,10 +18,6 @@ export function parseAmpersandCodes(text: string): FormattedSegment[] {
     const segments: FormattedSegment[] = []
     let current: FormattedSegment = { text: '' }
     let color = ''
-    let bold = false
-    let italic = false
-    let underline = false
-    let strikethrough = false
 
     for (let i = 0; i < text.length; i++) {
         if (text[i] === '&' && i + 1 < text.length) {
@@ -31,25 +27,17 @@ export function parseAmpersandCodes(text: string): FormattedSegment[] {
                     segments.push({ ...current })
                 }
                 color = COLOR_MAP[code]
-                bold = false
-                italic = false
-                underline = false
-                strikethrough = false
                 current = { text: '', color }
                 i++
                 continue
             }
-            if (code === 'l') { bold = true; current.bold = true; i++; continue }
-            if (code === 'o') { italic = true; current.italic = true; i++; continue }
-            if (code === 'n') { underline = true; current.underline = true; i++; continue }
-            if (code === 'm') { strikethrough = true; current.strikethrough = true; i++; continue }
+            if (code === 'l') { current.bold = true; i++; continue }
+            if (code === 'o') { current.italic = true; i++; continue }
+            if (code === 'n') { current.underline = true; i++; continue }
+            if (code === 'm') { current.strikethrough = true; i++; continue }
             if (code === 'r') {
                 if (current.text) segments.push({ ...current })
                 color = ''
-                bold = false
-                italic = false
-                underline = false
-                strikethrough = false
                 current = { text: '' }
                 i++
                 continue

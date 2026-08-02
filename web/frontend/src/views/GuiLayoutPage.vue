@@ -142,7 +142,7 @@ function takeSnapshot() {
   cleanSnapshot.value = store.layout ? JSON.stringify(store.layout) : ''
 }
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave((_to, _from, next) => {
   if (!isDirty.value) {
     next()
     return

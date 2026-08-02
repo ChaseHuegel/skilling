@@ -174,7 +174,7 @@ function segmentStyle(seg: FormattedSegment): string {
         <div class="lore-preview" v-if="modelValue.lore && modelValue.lore.length > 0">
           <div class="preview-label">Preview:</div>
           <div
-            v-for="(line, i) in modelValue.lore"
+            v-for="line in modelValue.lore"
             :key="'preview-' + line._key"
             class="preview-line"
           >

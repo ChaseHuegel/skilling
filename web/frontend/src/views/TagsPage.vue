@@ -69,11 +69,9 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
-import { useStagingStore } from '../stores/staging';
 import TagListEditor from '../components/tags/TagListEditor.vue';
 import StickyActionBanner from '../components/common/StickyActionBanner.vue';
 
-const staging = useStagingStore();
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
@@ -86,7 +84,7 @@ let pendingNavigation: (() => void) | null = null;
 
 const isDirty = computed(() => JSON.stringify(tags) !== cleanTags.value);
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave((_to, _from, next) => {
     if (!isDirty.value) {
         next();
         return;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, type Ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import SectionToolbar from '../common/SectionToolbar.vue'
 import FilterBuilder from '../common/FilterBuilder.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
@@ -129,8 +129,6 @@ function duplicateSource(index: number) {
   <div class="xp-sources-section">
     <SectionToolbar
       section-name="XP Source"
-      :can-delete="false"
-      :can-duplicate="false"
       @add="addSource"
     />
 

@@ -42,6 +42,7 @@ All commits in this repository MUST follow `../docs/dev/CONVENTIONS-COMMITS.md`.
 - No PrimeVue components are used directly; all inputs are plain HTML with scoped CSS styling. This keeps the bundle small and avoids framework lock-in.
 - Styles are scoped (`<style scoped>`) with CSS custom properties from PrimeVue's theme (`var(--p-*)`). Fallback values are provided for when the theme isn't loaded (e.g., `var(--p-primary-color, #3b82f6)`).
 - **Reorderable/editable row lists must key on a stable identity, never `:key="idx"`:** object rows carry a client-only `_key` (from `utils/stableKey.ts`, assigned at creation and preserved through spreads; stripped from the save payload via `stripRowKeys` in `SkillEditorPage.vue`) and per-row state (expanded, drag) is keyed by that identity. Plain-string lists use a component-local parallel key array. This keeps expanded state and input focus attached to the right row after a drag reorder.
+- **Dead code is rejected by the build:** `tsconfig.json` enables `noUnusedLocals`/`noUnusedParameters`, so unused imports, stores, and components fail `npm run build`. Do not re-introduce dead modules; the skills editor's ability sub-editors (mechanics, on-failure, sounds) live in reusable components under `components/skills/` and `components/common/`.
 
 ### Backend REST API
 
@@ -128,11 +129,12 @@ web/
   frontend/            # Vue 3 + Vite project root
     src/
       api/             # fetch wrapper + per-resource API functions
-      stores/          # Pinia stores (auth, staging, skills, tags, config)
+      stores/          # Pinia stores (auth, staging, skills, registries, gui-layout)
       components/      # Vue components organized by domain
-        common/        # Reusable: EvaluatorParameter, FilterBuilder, SectionToolbar, ToastNotification
+        common/        # Reusable: EvaluatorParameter, FilterBuilder, SectionToolbar, SoundConfigEditor
         layout/        # AppTopbar, PendingChangesBanner
-        skills/        # SkillCard, SkillIdentitySection, DisplaySection, etc.
+        skills/        # SkillCard, SkillIdentitySection, DisplaySection, AbilitiesSection,
+                       # MechanicsEditor, OnFailureEditor, XpSourcesSection, etc.
         tags/          # TagListEditor, MaterialMultiSelect
         config/        # ConfigSection
       views/           # LoginPage, DashboardPage, SkillEditorPage, TagsPage, ConfigPage

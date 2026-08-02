@@ -53,9 +53,5 @@ export const useStagingStore = defineStore('staging', () => {
         } catch { /* ignore */ }
     }
 
-    function hasFileChanges(pattern: string): boolean {
-        return files.value.some(f => f.includes(pattern));
-    }
-
-    return { hasPending, fileCount, files, loading, applying, fetchStatus, applyAndReload, discard, hasFileChanges };
+    return { hasPending, fileCount, files, loading, applying, fetchStatus, applyAndReload, discard };
 });
