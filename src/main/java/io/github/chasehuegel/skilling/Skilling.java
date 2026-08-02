@@ -288,7 +288,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:execute", ExecuteMechanic.class, List.of("threshold"));
         mechReg.register("core:auto_smelt", AutoSmeltMechanic.class, List.of("chance"));
         mechReg.register("core:speed_bonus", SpeedBonusMechanic.class, List.of("multiplier"));
-        mechReg.register("core:xp_bonus", XpBonusMechanic.class, List.of("multiplier"));
+        mechReg.register("core:xp_bonus", XpBonusMechanic.class, List.of("multiplier", "duration"));
         mechReg.register("core:fishing_yield", FishingYieldMechanic.class, List.of("yield_chance"));
         mechReg.register("core:fishing_loot", FishingLootMechanic.class, List.of("multiplier"));
         mechReg.register("core:area_harvest", AreaHarvestMechanic.class, List.of("radius", "max_blocks"));
@@ -491,6 +491,7 @@ public final class Skilling extends JavaPlugin {
         if (webServer != null) {
             webServer.stop();
         }
+        io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clearAll();
         if (asyncBatchWorker != null) {
             asyncBatchWorker.stop();
             // Flush remaining dirty profiles on a worker thread and await with a

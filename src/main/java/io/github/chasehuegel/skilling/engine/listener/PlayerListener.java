@@ -61,6 +61,7 @@ public final class PlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         requirementEngine.clearCooldowns(player);
+        io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clear(player.getUniqueId());
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
         if (profile != null && profile.isDirty()) {
             CompletableFuture.runAsync(() -> {

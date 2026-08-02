@@ -1,6 +1,6 @@
 # ISSUE-120: Fix `XpBonusMechanic` permanent multiplier (static map never cleared)
 
-**Status:** Open
+**Status:** Resolved
 **Type:** Bug
 **Severity:** High (one activation applies to all future XP forever + memory leak)
 
@@ -13,10 +13,10 @@
 
 ## Implementation Requirements
 
-- [ ] Make the multiplier expire (TTL) after its configured duration instead of persisting for the whole session/server life
-- [ ] Clear the player's multiplier entry on quit, on profile unload, and on plugin reload
-- [ ] Guard against re-entrant/extended application (an activation refreshes the TTL, does not stack)
-- [ ] Add unit tests covering: expiry after duration, quit clears the entry, repeated activation refreshes rather than stacks
+- [x] Make the multiplier expire (TTL) after its configured duration instead of persisting for the whole session/server life
+- [x] Clear the player's multiplier entry on quit, on profile unload, and on plugin reload
+- [x] Guard against re-entrant/extended application (an activation refreshes the TTL, does not stack)
+- [x] Add unit tests covering: expiry after duration, quit clears the entry, repeated activation refreshes rather than stacks
 
 ## Technical Specifications & Context
 
@@ -37,7 +37,7 @@ Store `(multiplier, expiryNanos)` per UUID, check/evict expiry on read, and clea
 
 ## Verification & Definition of Done
 
-- [ ] `./gradlew build && ./gradlew test` pass, including new regression tests
-- [ ] Unit test: multiplier no longer applies after its duration elapses
-- [ ] Unit test: quit removes the player's entry
-- [ ] Unit test: re-activation refreshes the TTL without stacking
+- [x] `./gradlew build && ./gradlew test` pass, including new regression tests
+- [x] Unit test: multiplier no longer applies after its duration elapses
+- [x] Unit test: quit removes the player's entry
+- [x] Unit test: re-activation refreshes the TTL without stacking

@@ -349,13 +349,16 @@ Automatically smelts mined blocks.
 
 ### core:xp_bonus
 
-Applies a multiplicative XP bonus to all XP gains for the player's session.
+Applies a multiplicative XP bonus to all XP gains for a fixed duration. The bonus
+expires after `duration` seconds, refreshes (does not stack) on re-activation, and
+is cleared when the player quits or the plugin reloads.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Multiplicative XP multiplier applied to all gains (1.5 = +50%, 2.0 = double; not a percentage increase) |
+| `duration` | double | `30.0` | Seconds the bonus lasts before expiring |
 
 **Event:** Fires on the trigger declared by the ability.
 
