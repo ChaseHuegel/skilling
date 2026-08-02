@@ -13,13 +13,13 @@
 
 ## Implementation Requirements
 
-- [ ] Document the DualWield API surface relevant to Skilling: the `OffHandAttackEvent` and `OffHandBlockBreakEvent` signatures, their package/coordinates, the plugin's Paper API target and latest version, and how to detect its presence at runtime
-- [ ] Map both events to Skilling trigger semantics: propose trigger keys (e.g. `dualwield:offhand_attack`, `dualwield:offhand_block_break`) and how `dual_wield` XP sources/abilities would consume them
-- [ ] Analyze the **subclass-dispatch interaction**: `OffHandAttackEvent extends EntityDamageByEntityEvent` and `OffHandBlockBreakEvent extends BlockBreakEvent`, so Bukkit already routes them into Skilling's existing `entity_damage`/`block_break` handlers — determine whether the same off-hand action fires a base event too (double-grant risk) and propose a suppression/scoping strategy
-- [ ] Evaluate the integration mechanism: `softdepend` in `paper-plugin.yml` + `compileOnly` vs. pure reflection; where the listeners are registered (`IntegrationManager` pattern); handler priority and cancellation semantics (observe, do not cancel); thread-safety
-- [ ] Assess the current `dual_wield` skill design (`offhand:weapon` state filter, `entity_damage`/`entity_kill`/`player_interact`/`entity_damage_taken` triggers) and how the DualWield events would improve or replace it
-- [ ] Assess risk/performance (events fire on every off-hand attack/block break; interaction with ISSUE-121 damage-cancel priorities and ISSUE-116 per-ability consume)
-- [ ] Recommend an approach and list concrete follow-up implementation tickets
+- [x] Document the DualWield API surface relevant to Skilling: the `OffHandAttackEvent` and `OffHandBlockBreakEvent` signatures, their package/coordinates, the plugin's Paper API target and latest version, and how to detect its presence at runtime
+- [x] Map both events to Skilling trigger semantics: propose trigger keys (e.g. `dualwield:offhand_attack`, `dualwield:offhand_block_break`) and how `dual_wield` XP sources/abilities would consume them
+- [x] Analyze the **subclass-dispatch interaction**: `OffHandAttackEvent extends EntityDamageByEntityEvent` and `OffHandBlockBreakEvent extends BlockBreakEvent`, so Bukkit already routes them into Skilling's existing `entity_damage`/`block_break` handlers — determine whether the same off-hand action fires a base event too (double-grant risk) and propose a suppression/scoping strategy
+- [x] Evaluate the integration mechanism: `softdepend` in `paper-plugin.yml` + `compileOnly` vs. pure reflection; where the listeners are registered (`IntegrationManager` pattern); handler priority and cancellation semantics (observe, do not cancel); thread-safety
+- [x] Assess the current `dual_wield` skill design (`offhand:weapon` state filter, `entity_damage`/`entity_kill`/`player_interact`/`entity_damage_taken` triggers) and how the DualWield events would improve or replace it
+- [x] Assess risk/performance (events fire on every off-hand attack/block break; interaction with ISSUE-121 damage-cancel priorities and ISSUE-116 per-ability consume)
+- [x] Recommend an approach and list concrete follow-up implementation tickets
 
 ## Technical Specifications & Context
 
@@ -43,8 +43,8 @@
 
 ## Verification & Definition of Done
 
-- [ ] Report delivered at `docs/reports/REPORT_DUALWIELD-API.md` documenting all Implementation Requirements above
-- [ ] Report cross-references the real DualWield event source (signatures/constructors verified, not guessed)
-- [ ] Report includes the Double-grant analysis with a concrete recommendation (suppress vs. scope vs. separate keys)
-- [ ] Report includes a concrete recommended approach and a list of follow-up implementation tickets
-- [ ] Report renders as clean Markdown; no production code changed by this ticket
+- [x] Report delivered at `docs/reports/REPORT_DUALWIELD-API.md` documenting all Implementation Requirements above
+- [x] Report cross-references the real DualWield event source (signatures/constructors verified, not guessed)
+- [x] Report includes the Double-grant analysis with a concrete recommendation (suppress vs. scope vs. separate keys)
+- [x] Report includes a concrete recommended approach and a list of follow-up implementation tickets
+- [x] Report renders as clean Markdown; no production code changed by this ticket

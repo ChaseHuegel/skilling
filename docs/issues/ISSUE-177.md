@@ -13,14 +13,14 @@
 
 ## Implementation Requirements
 
-- [ ] Catalog the current XP-source state of all 32 bundled skills (`src/main/resources/skills/*.yml`): trigger, filters, reward, and how many sources each skill has; flag single-source and narrow-grindability skills
-- [ ] Define the 50h target math against the current progression curve and recommend one approach: (a) keep `base_xp: 50, exponent: 2.5` (5,000,000 XP to 100 → **~1,667 XP/min sustained**) and compute per-source reward constants from action rates; (b) re-tune the progression curve so the 50h target yields sane per-action rewards; or (c) a hybrid — with justification, given the existing REPORT_XP-CURVE.md recommended ~500 h focused
-- [ ] For every skill, propose an expanded XP-source set (primary + at least secondary + tertiary) using distinct triggers with `target`/`state`/`tool` filters, cross-referencing the trigger and state-filter catalogs in `docs/users/capabilities.md`
-- [ ] Specify tag expansion: new custom tags in `src/main/resources/tags.yml` and the vanilla tags to reference (e.g. `#minecraft:undead`, `#minecraft:soul_fire_base_blocks`, holy/decorative block tags) to widen item/block/entity matching
-- [ ] Work the **piety** example fully: bone burying (ISSUE-176), killing undead, curing villagers, totem activations (`resurrect`), and placing "holy" blocks/decorations (`block_place`) — each with a computed reward constant
-- [ ] Produce the reward formula and a per-skill source table: skill → sources → trigger/filters → reward constant → actions-per-minute → derived XP/min (target ≈ 1,667 XP/min for the shared curve)
-- [ ] Document engine capability gaps the plan depends on (e.g. block-target filters on `player_interact` from ISSUE-176, `target_type` filtering on `entity_kill`/`EntityDeathEvent`, a villager-cure trigger if none exists) and list follow-up implementation tickets
-- [ ] Sanity-check the plan against milestone pacing (levels 25/50/75/100 ≈ 3%/18%/49%/100% of the journey) and reconcile with REPORT_XP-CURVE.md
+- [x] Catalog the current XP-source state of all 32 bundled skills (`src/main/resources/skills/*.yml`): trigger, filters, reward, and how many sources each skill has; flag single-source and narrow-grindability skills
+- [x] Define the 50h target math against the current progression curve and recommend one approach: (a) keep `base_xp: 50, exponent: 2.5` (5,000,000 XP to 100 → **~1,667 XP/min sustained**) and compute per-source reward constants from action rates; (b) re-tune the progression curve so the 50h target yields sane per-action rewards; or (c) a hybrid — with justification, given the existing REPORT_XP-CURVE.md recommended ~500 h focused
+- [x] For every skill, propose an expanded XP-source set (primary + at least secondary + tertiary) using distinct triggers with `target`/`state`/`tool` filters, cross-referencing the trigger and state-filter catalogs in `docs/users/capabilities.md`
+- [x] Specify tag expansion: new custom tags in `src/main/resources/tags.yml` and the vanilla tags to reference (e.g. `#minecraft:undead`, `#minecraft:soul_fire_base_blocks`, holy/decorative block tags) to widen item/block/entity matching
+- [x] Work the **piety** example fully: bone burying (ISSUE-176), killing undead, curing villagers, totem activations (`resurrect`), and placing "holy" blocks/decorations (`block_place`) — each with a computed reward constant
+- [x] Produce the reward formula and a per-skill source table: skill → sources → trigger/filters → reward constant → actions-per-minute → derived XP/min (target ≈ 1,667 XP/min for the shared curve)
+- [x] Document engine capability gaps the plan depends on (e.g. block-target filters on `player_interact` from ISSUE-176, `target_type` filtering on `entity_kill`/`EntityDeathEvent`, a villager-cure trigger if none exists) and list follow-up implementation tickets
+- [x] Sanity-check the plan against milestone pacing (levels 25/50/75/100 ≈ 3%/18%/49%/100% of the journey) and reconcile with REPORT_XP-CURVE.md
 
 ## Technical Specifications & Context
 
@@ -42,10 +42,10 @@
 
 ## Verification & Definition of Done
 
-- [ ] Report delivered at `docs/reports/REPORT_XP-SOURCE-DESIGN.md`
-- [ ] Report covers **all 32 skills** with an expanded (primary + secondary + tertiary) source set
-- [ ] Report contains the 50h reward math and a per-source reward-constant table (skill → trigger → filter → reward → XP/min)
-- [ ] Report includes the fully-worked **piety** example (bone burying via ISSUE-176, undead kills, villager curing, totem activations, holy-block placement)
-- [ ] Report lists the `tags.yml` additions and the engine-capability gaps + follow-up tickets
-- [ ] Report reconciles with REPORT_XP-CURVE.md (milestone pacing, action-rate table) and renders as clean Markdown
-- [ ] No production code changed by this ticket
+- [x] Report delivered at `docs/reports/REPORT_XP-SOURCE-DESIGN.md`
+- [x] Report covers **all 32 skills** with an expanded (primary + secondary + tertiary) source set
+- [x] Report contains the 50h reward math and a per-source reward-constant table (skill → trigger → filter → reward → XP/min)
+- [x] Report includes the fully-worked **piety** example (bone burying via ISSUE-176, undead kills, villager curing, totem activations, holy-block placement)
+- [x] Report lists the `tags.yml` additions and the engine-capability gaps + follow-up tickets
+- [x] Report reconciles with REPORT_XP-CURVE.md (milestone pacing, action-rate table) and renders as clean Markdown
+- [x] No production code changed by this ticket

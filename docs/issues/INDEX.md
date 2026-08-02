@@ -15,8 +15,8 @@
 - [x] [ISSUE-176](ISSUE-176.md) - Add "bury bones" as a `player_interact` XP source and ability for the `piety` skill
 
 ### Research
-- [ ] [ISSUE-175](ISSUE-175.md) - Research integrating the DualWield plugin API (ranull) for the `dual_wield` skill
-- [ ] [ISSUE-177](ISSUE-177.md) - Research & design a plan to revise XP sources for all skills (multi-source, 50-hour-to-100 target)
+- [x] [ISSUE-175](ISSUE-175.md) - Research integrating the DualWield plugin API (ranull) for the `dual_wield` skill
+- [x] [ISSUE-177](ISSUE-177.md) - Research & design a plan to revise XP sources for all skills (multi-source, 50-hour-to-100 target)
 
 ## Backlog
 
