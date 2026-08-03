@@ -832,6 +832,7 @@ public final class SkillEventListener implements Listener {
                 case SNOWBALL -> Material.SNOWBALL;
                 case EGG -> Material.EGG;
                 case TRIDENT -> Material.TRIDENT;
+                case ENDER_PEARL -> Material.ENDER_PEARL;
                 case FIREBALL -> Material.FIRE_CHARGE;
                 case SMALL_FIREBALL -> Material.FIRE_CHARGE;
                 case SHULKER_BULLET -> Material.SHULKER_SHELL;

@@ -5,7 +5,14 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
     filters: [ { state: "equipped_all:#c:light_armor" } ]      # P2-6: light armor only
-    reward: { constant: 3.0 }
+    reward: { constant: 119.0 }
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "equipped_all:#c:light_armor" } ]      # ×2 source per REPORT §4 (tanking rate)
+    reward: { constant: 119.0 }
+  - trigger: "craft_item"
+    filters: [ { target: "#c:leather_armor" } ]
+    reward: { constant: 119.0 }
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
 abilities:
   - id: "featherweight"
     display_name: "Featherweight"

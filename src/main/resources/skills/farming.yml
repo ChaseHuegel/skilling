@@ -5,7 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "block_break"
     filters: [ { target: "#minecraft:crops" }, { state: "player_placed:false" } ]
-    reward: { constant: 4.0 }
+    reward: { constant: 24.5 }
+  - trigger: "block_break"
+    filters: [ { target: "#c:crops" }, { state: "player_placed:false" } ]
+    reward: { constant: 24.5 }
+  - trigger: "craft_item"
+    filters: [ { target: "minecraft:bread" } ]   # wheat is not a craft result; bread is the wheat product
+    reward: { constant: 24.5 }
   # crop_grow removed: unbounded free XP source — replaced by harvest XP only
 abilities:
   - id: "green_thumb"

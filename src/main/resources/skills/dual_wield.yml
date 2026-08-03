@@ -9,6 +9,10 @@ xp_sources:
   - trigger: "entity_kill"
     filters: [ { state: "offhand:weapon" } ]
     reward: { constant: 25.0 }
+  # Two-source by design: no DualWield plugin dependency and no tertiary source
+  # (product decision). Accepted outlier per REPORT_XP-SOURCE-DESIGN §2 — R≈81
+  # exceeds the ~60/action ceiling, so effective time stays ~490 h at these
+  # constants. Do not inflate per-action rewards to force the 50 h target.
 abilities:
   - id: "dual_strike"
     display_name: "Dual Strike"

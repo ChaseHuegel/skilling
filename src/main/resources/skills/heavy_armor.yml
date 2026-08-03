@@ -5,7 +5,14 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
     filters: [ { state: "equipped_all:#c:heavy_armor" } ]
-    reward: { constant: 3.0 }
+    reward: { constant: 104.2 }
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "is_blocking" } ]
+    reward: { constant: 104.2 }
+  - trigger: "craft_item"
+    filters: [ { target: "#c:heavy_armor" } ]
+    reward: { constant: 104.2 }
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
 abilities:
   - id: "steel_plating"
     display_name: "Steel Plating"

@@ -3,18 +3,25 @@ max_level: 100
 display: { name: "Piety", icon: "minecraft:golden_apple", color: "PURPLE", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  - trigger: "breed_animals"
-    reward: { constant: 8.0 }
-  - trigger: "resurrect"            # P2-7 totem activation
-    reward: { constant: 30.0 }
-  # entity_damage_taken XP removed — too broad; replaced by totem synergy
   # Bury bones: right-click dirt/grass/coarse dirt (vanilla #minecraft:dirt tag)
   # while holding a bone grants piety XP; the bury_bones ability consumes the bone.
   - trigger: "player_interact"
     filters:
       - target: "#minecraft:dirt"
       - tool: "minecraft:bone"
-    reward: { constant: 6.0 }
+    reward: { constant: 60.0 }
+  - trigger: "entity_kill"
+    filters: [ { state: "target_type:#c:undead" } ]
+    reward: { constant: 60.0 }
+  - trigger: "block_place"
+    filters: [ { target: "#c:holy_blocks" } ]
+    reward: { constant: 60.0 }
+  - trigger: "resurrect"            # totem activation
+    reward: { constant: 60.0 }
+  - trigger: "cure_villager"        # villager cure (dedicated trigger)
+    reward: { constant: 60.0 }
+  # Uniform R=60 from REPORT_XP-SOURCE-DESIGN §6 (Σ APM 27.8 -> 1,667 XP/min).
+  # entity_damage_taken XP removed — too broad; replaced by totem synergy.
 abilities:
   - id: "holy_light"
     display_name: "Holy Light"

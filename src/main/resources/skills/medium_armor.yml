@@ -5,7 +5,14 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
     filters: [ { state: "equipped_all:#c:medium_armor" } ]
-    reward: { constant: 3.0 }
+    reward: { constant: 104.2 }
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "is_blocking" } ]
+    reward: { constant: 104.2 }
+  - trigger: "craft_item"
+    filters: [ { target: "minecraft:iron_ingot" } ]   # nugget->ingot craft
+    reward: { constant: 104.2 }
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
 abilities:
   - id: "tempered_guard"
     display_name: "Tempered Guard"

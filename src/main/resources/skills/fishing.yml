@@ -15,7 +15,14 @@ progression:
 xp_sources:
   - trigger: "fishing"
     reward:
-      constant: 10.0
+      constant: 138.9
+  - trigger: "craft_item"
+    filters:
+      - target: "#c:fishing_rods"
+    reward:
+      constant: 138.9
+  # Treasure-catch source deferred (no fish-state filter yet); two sources used.
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=139 exceeds the ~60/action ceiling.
 
 abilities:
   - id: "angler"

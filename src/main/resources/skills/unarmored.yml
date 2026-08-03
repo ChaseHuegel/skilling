@@ -5,7 +5,14 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
     filters: [ { state: "equipped_all:#c:unarmored" } ]
-    reward: { constant: 5.0 }
+    reward: { constant: 92.6 }
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "equipped_all:#c:unarmored" } ]      # ×2 source per REPORT §4 (tanking rate)
+    reward: { constant: 92.6 }
+  - trigger: "entity_damage"
+    filters: [ { state: "hand:empty" } ]
+    reward: { constant: 92.6 }
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
 abilities:
   - id: "nimble_defense"
     display_name: "Nimble Defense"

@@ -4,7 +4,15 @@ display: { name: "Alchemy", icon: "minecraft:brewing_stand", color: "PURPLE", st
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "brew_potion"
-    reward: { constant: 10.0 }
+    reward: { constant: 666.7 }
+  - trigger: "entity_kill"
+    filters: [ { state: "target_type:#minecraft:zombies" } ]
+    reward: { constant: 666.7 }
+  - trigger: "consume_item"
+    filters: [ { target: "#c:potions" } ]
+    reward: { constant: 666.7 }
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=667 far exceeds the ~150/action rare
+  # ceiling; brewing cannot be made high-frequency, so this is the accepted residual gap.
 abilities:
   - id: "rapid_brewing"
     display_name: "Rapid Brewing"

@@ -5,7 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "block_break"
     filters: [ { target: "#minecraft:logs" }, { state: "player_placed:false" } ]
-    reward: { constant: 7.0 }
+    reward: { constant: 36.2 }
+  - trigger: "block_break"
+    filters: [ { target: "#minecraft:leaves" }, { state: "player_placed:false" } ]
+    reward: { constant: 36.2 }
+  - trigger: "craft_item"
+    filters: [ { target: "#minecraft:planks" } ]
+    reward: { constant: 36.2 }
 abilities:
   - id: "lumberjack"
     display_name: "Lumberjack"

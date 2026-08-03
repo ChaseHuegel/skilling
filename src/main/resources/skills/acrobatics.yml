@@ -5,7 +5,14 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
     filters: [ { state: "is_on_ground" } ]     # fall damage context (best available proxy)
-    reward: { constant: 3.0 }
+    reward: { constant: 111.1 }
+  - trigger: "entity_damage_taken"
+    reward: { constant: 111.1 }
+  - trigger: "launch_projectile"
+    filters: [ { target: "minecraft:ender_pearl" } ]
+    reward: { constant: 111.1 }
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=111 exceeds the ~60/action ceiling;
+  # accepted residual gap (tanking skills are inherently frequency-capped).
   # sprint/sneak XP removed — trivial toggle spam
 abilities:
   - id: "light_feet"
