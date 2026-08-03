@@ -25,8 +25,8 @@ public abstract class BaseDamageCancelMechanic implements SkillMechanic {
     private static volatile DoubleSupplier randomSource = () -> ThreadLocalRandom.current().nextDouble(100);
 
     /**
-     * Test-only seam to force a deterministic roll; production always uses
-     * {@link ThreadLocalRandom}.
+     * Test-only seam (marked {@code @VisibleForTesting}) to force a deterministic
+     * roll; production always uses {@link ThreadLocalRandom}.
      *
      * @param source the roll source returning a percentage in [0, 100)
      */

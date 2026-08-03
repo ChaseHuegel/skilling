@@ -46,7 +46,7 @@ class AreaHarvestMechanicTest {
 
     @AfterEach
     void tearDown() {
-        AreaHarvestMechanic.clearChainProcessingForTest();
+        AreaHarvestMechanic.processingSet().clear();
     }
 
     private int runHarvest(int radius, int maxBlocks, PluginManager pm, boolean cancel) {
@@ -214,7 +214,7 @@ class AreaHarvestMechanicTest {
     void harvestedBreakSkipsPipelineDispatch() {
         var block = mock(Block.class);
         when(block.getLocation()).thenReturn(new Location(mock(World.class), 1, 1, 1));
-        AreaHarvestMechanic.markChainProcessingForTest(block);
+        AreaHarvestMechanic.processingSet().add(block.getLocation());
 
         var profileManager = mock(ProfileManager.class);
         var listener = new SkillEventListener(

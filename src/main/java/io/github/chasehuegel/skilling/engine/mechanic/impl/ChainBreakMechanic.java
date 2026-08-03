@@ -10,6 +10,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Breaks connected blocks of the same material as the broken origin block,
@@ -24,7 +25,7 @@ import java.util.*;
  */
 public class ChainBreakMechanic implements SkillMechanic {
 
-    private static final Set<UUID> CHAINING_PLAYERS = new HashSet<>();
+    private static final Set<UUID> CHAINING_PLAYERS = ConcurrentHashMap.newKeySet();
     private static final ThreadLocal<Set<Location>> PROCESSING =
             ThreadLocal.withInitial(HashSet::new);
 
@@ -41,15 +42,19 @@ public class ChainBreakMechanic implements SkillMechanic {
      * @return true if the block is mid-chain-break
      */
     public static boolean isChainProcessing(Block block) {
-        return PROCESSING.get().contains(block.getLocation());
+        return processingSet().contains(block.getLocation());
     }
 
-    static void markChainProcessingForTest(Block block) {
-        PROCESSING.get().add(block.getLocation());
-    }
-
-    static void clearChainProcessingForTest() {
-        PROCESSING.remove();
+    /**
+     * The set of locations currently being chain-broken on this thread. Exposed
+     * package-private so tests can mark blocks as mid-chain without production
+     * test-only methods; the event pipeline reads it through
+     * {@link #isChainProcessing(Block)}.
+     *
+     * @return the live processing set for the current thread
+     */
+    static Set<Location> processingSet() {
+        return PROCESSING.get();
     }
 
     /**
@@ -79,7 +84,7 @@ public class ChainBreakMechanic implements SkillMechanic {
         queue.add(origin);
         visited.add(origin.getLocation());
 
-        Set<Location> processing = PROCESSING.get();
+        Set<Location> processing = processingSet();
         int[][] dirs = directions();
         try {
             int broken = 0;

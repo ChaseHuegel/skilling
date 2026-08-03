@@ -34,7 +34,8 @@ final class ToolDurability {
     private ToolDurability() {}
 
     /**
-     * Test-only seam to force a deterministic Unbreaking roll.
+     * Test-only seam (marked {@code @VisibleForTesting}) to force a deterministic
+     * Unbreaking roll.
      *
      * @param source the roll source returning a value in [0, 1)
      */
@@ -43,7 +44,8 @@ final class ToolDurability {
     }
 
     /**
-     * Test-only seam to supply a deterministic Unbreaking level.
+     * Test-only seam (marked {@code @VisibleForTesting}) to supply a
+     * deterministic Unbreaking level.
      *
      * @param reader reads the Unbreaking level from the tool
      */

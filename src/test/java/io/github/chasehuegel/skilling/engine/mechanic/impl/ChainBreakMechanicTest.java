@@ -41,7 +41,7 @@ class ChainBreakMechanicTest {
 
     @AfterEach
     void tearDown() {
-        ChainBreakMechanic.clearChainProcessingForTest();
+        ChainBreakMechanic.processingSet().clear();
     }
 
     private Block block(World world, int x, int y, int z, Material material) {
@@ -61,6 +61,7 @@ class ChainBreakMechanicTest {
     @Test
     void returnsFalseWithChainLimitZero() {
         var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         assertFalse(new ChainBreakMechanic().execute(player, Map.of(),
                 mock(BlockBreakEvent.class)));
     }
@@ -140,7 +141,7 @@ class ChainBreakMechanicTest {
 
         // Mark the block as mid-chain-break immediately before the listener call
         // so no intervening allocation can disturb the shared processing set.
-        ChainBreakMechanic.markChainProcessingForTest(block);
+        ChainBreakMechanic.processingSet().add(block.getLocation());
         listener.onBlockBreak(event);
 
         // dispatch() would look up the profile; a chained break must not reach it.

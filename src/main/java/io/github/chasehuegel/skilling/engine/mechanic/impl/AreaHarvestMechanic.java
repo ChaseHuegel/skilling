@@ -40,15 +40,19 @@ public final class AreaHarvestMechanic implements SkillMechanic {
      * @return true if the block is mid-harvest
      */
     public static boolean isChainProcessing(Block block) {
-        return PROCESSING.get().contains(block.getLocation());
+        return processingSet().contains(block.getLocation());
     }
 
-    static void markChainProcessingForTest(Block block) {
-        PROCESSING.get().add(block.getLocation());
-    }
-
-    static void clearChainProcessingForTest() {
-        PROCESSING.remove();
+    /**
+     * The set of locations currently being harvested on this thread. Exposed
+     * package-private so tests can mark blocks as mid-harvest without production
+     * test-only methods; the event pipeline reads it through
+     * {@link #isChainProcessing(Block)}.
+     *
+     * @return the live processing set for the current thread
+     */
+    static Set<Location> processingSet() {
+        return PROCESSING.get();
     }
 
     @Override
@@ -65,7 +69,7 @@ public final class AreaHarvestMechanic implements SkillMechanic {
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();
         ItemStack tool = player.getInventory().getItemInMainHand();
-        Set<Location> processing = PROCESSING.get();
+        Set<Location> processing = processingSet();
         try {
             int broken = 0;
             for (int dx = -radius; dx <= radius && broken < maxBlocks; dx++) {

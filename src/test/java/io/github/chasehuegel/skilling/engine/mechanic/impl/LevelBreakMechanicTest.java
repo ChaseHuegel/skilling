@@ -35,7 +35,7 @@ class LevelBreakMechanicTest {
 
     @AfterEach
     void tearDown() {
-        ChainBreakMechanic.clearChainProcessingForTest();
+        ChainBreakMechanic.processingSet().clear();
     }
 
     private Block block(World world, int x, int y, int z, Material material) {

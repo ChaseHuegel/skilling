@@ -33,6 +33,12 @@ public record XpBonusMechanic() implements SkillMechanic {
         return clockOverrideNanos == 0 ? System.nanoTime() : clockOverrideNanos;
     }
 
+    /**
+     * Test-only seam (marked {@code @VisibleForTesting}) to force a deterministic
+     * clock for bonus-expiry tests; a zero value uses the real system clock.
+     *
+     * @param nanos the overridden time in nanoseconds, or 0 to use the system clock
+     */
     static void setClockOverrideNanos(long nanos) {
         clockOverrideNanos = nanos;
     }

@@ -25,6 +25,12 @@ public final class ModifyTameChanceMechanic implements SkillMechanic {
 
     private static volatile DoubleSupplier randomSource = () -> ThreadLocalRandom.current().nextDouble();
 
+    /**
+     * Test-only seam (marked {@code @VisibleForTesting}) to force a deterministic
+     * tame roll; production always uses {@link ThreadLocalRandom}.
+     *
+     * @param source the roll source returning a value in [0, 1)
+     */
     static void setRandomSource(DoubleSupplier source) {
         randomSource = source;
     }
