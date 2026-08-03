@@ -1,14 +1,14 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.AbstractArrow;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
+
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -46,7 +46,11 @@ public final class ProjectileReturnMechanic implements SkillMechanic {
             projectile.remove();
         }
 
-        player.getWorld().dropItemNaturally(player.getLocation(), returnItem);
+        //  Drop slightly in front of the player and inherit velocity so it is visible to them
+        Location eyeLocation = player.getEyeLocation();
+        Item itemEntity = player.getWorld().dropItem(eyeLocation.add(eyeLocation.getDirection()).subtract(0, 0.65, 0), returnItem);
+        itemEntity.setPickupDelay(5);
+        itemEntity.setVelocity(player.getVelocity());
         return true;
     }
 
