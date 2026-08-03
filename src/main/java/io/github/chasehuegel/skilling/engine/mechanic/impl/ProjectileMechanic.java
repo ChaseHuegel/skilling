@@ -17,7 +17,7 @@ import java.util.Map;
  * <p>Only a right-click (air or block) launches the projectile; a left-click is a
  * no-op so it never consumes the ability cost.
  *
- * <p><b>YAML key:</b> {@code projectile}
+ * <p><b>YAML key:</b> {@code core:projectile}
  * <p><b>Optional parameters:</b> {@code speed} (default 1.5), {@code damage} (default 4.0)
  */
 public final class ProjectileMechanic implements SkillMechanic {

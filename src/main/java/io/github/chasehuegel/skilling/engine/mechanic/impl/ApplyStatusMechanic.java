@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Applies a potion effect to the entity damaged by the player on {@link EntityDamageByEntityEvent}.
  *
- * <p><b>YAML key:</b> {@code apply_status}
+ * <p><b>YAML key:</b> {@code core:apply_status}
  * <p><b>Required parameters:</b> {@code effect} (legacy numeric potion effect ID, e.g. {@code 1} for Speed)
  * <p><b>Optional parameters:</b> {@code duration} (default 3s), {@code amplifier} (default 0)
  */

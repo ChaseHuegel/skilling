@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Multiplies the duration of all custom potion effects in a brewing stand's contents on {@link BrewEvent}.
  *
- * <p><b>YAML key:</b> {@code modify_potion_duration}
+ * <p><b>YAML key:</b> {@code core:modify_potion_duration}
  * <p><b>Optional parameters:</b> {@code multiplier} (default 1.0; values &gt; 1 lengthen, &lt; 1 shorten, minimum 1 tick)
  */
 public final class ModifyPotionDurationMechanic implements SkillMechanic {

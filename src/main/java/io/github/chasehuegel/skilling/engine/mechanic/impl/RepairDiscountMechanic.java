@@ -8,6 +8,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.view.AnvilView;
 import java.util.Map;
 
+/**
+ * Reduces the experience level cost of anvil repairs on {@link PrepareAnvilEvent}
+ * by a percentage discount, floored at 1 level.
+ *
+ * <p>Only the repairing player's own anvil view is discounted; a discount of
+ * {@code 0} or less is a no-op.
+ *
+ * <p><b>YAML key:</b> {@code core:repair_discount}
+ * <br>Params: {@code discount} (0-100, percentage discount)
+ */
 public final class RepairDiscountMechanic implements SkillMechanic {
 
     @Override

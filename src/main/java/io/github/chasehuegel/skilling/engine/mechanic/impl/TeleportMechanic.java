@@ -15,7 +15,7 @@ import java.util.Map;
  * <p>Only a right-click (air or block) teleports; a left-click is a no-op so it
  * never consumes the ability cost.
  *
- * <p><b>YAML key:</b> {@code teleport}
+ * <p><b>YAML key:</b> {@code core:teleport}
  * <p><b>Optional parameters:</b> {@code range} (default 10.0, maximum teleport distance in blocks)
  */
 public final class TeleportMechanic implements SkillMechanic {

@@ -12,7 +12,7 @@ import java.util.Map;
  * Only activates when the multiplier is &gt; 1.0.
  * Overflow items that don't fit in the inventory are dropped at the player's feet.
  *
- * <p><b>YAML key:</b> {@code modify_furnace_output}
+ * <p><b>YAML key:</b> {@code core:modify_furnace_output}
  * <p><b>Optional parameters:</b> {@code multiplier} (default 1.0; bonus items = original &times; (multiplier - 1))
  */
 public final class ModifyFurnaceOutputMechanic implements SkillMechanic {

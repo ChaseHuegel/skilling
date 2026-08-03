@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * Temporarily modifies a player's attribute (e.g. {@code minecraft:max_health}, {@code minecraft:movement_speed})
  * for a specified duration using a transient {@link AttributeModifier}.
  *
- * <p><b>YAML key:</b> {@code modify_attribute}
+ * <p><b>YAML key:</b> {@code core:modify_attribute}
  * <p><b>Required parameters:</b> {@code attribute} (namespaced key, e.g. {@code minecraft:movement_speed},
  * or a legacy numeric attribute ID, e.g. {@code 4} for Movement Speed)
  * <p><b>Optional parameters:</b> {@code amount} (modifier value), {@code duration} (default 5s),

@@ -12,7 +12,7 @@ import java.util.Map;
  * brewing cycle — before the cycle starts, so the time multiplier affects the current batch
  * rather than the next one.
  *
- * <p><b>YAML key:</b> {@code modify_brew_time}
+ * <p><b>YAML key:</b> {@code core:modify_brew_time}
  * <p><b>Optional parameters:</b> {@code multiplier} (default 1.0; values &lt; 1 speed up, &gt; 1 slow down)
  */
 public final class ModifyBrewTimeMechanic implements SkillMechanic {

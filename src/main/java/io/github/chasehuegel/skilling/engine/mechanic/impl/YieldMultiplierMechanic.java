@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * block's natural drops are doubled and dropped once at the block location, replacing the vanilla
  * drops (the vanilla drop pipeline is suppressed so a break never yields original + doubled = 3x).
  *
- * <p><b>YAML key:</b> {@code yield_multiplier}
+ * <p><b>YAML key:</b> {@code core:yield_multiplier}
  * <p><b>Required parameters:</b> {@code yield_chance} (0-100, percentage chance to double drops)
  */
 public final class YieldMultiplierMechanic implements SkillMechanic {

@@ -6,6 +6,16 @@ import org.bukkit.event.Event;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import java.util.Map;
 
+/**
+ * Reduces the experience level cost of enchanting on {@link EnchantItemEvent}
+ * by a percentage discount, floored at 1 level.
+ *
+ * <p>Only the enchanting player's own table is discounted; a discount of
+ * {@code 0} or less is a no-op.
+ *
+ * <p><b>YAML key:</b> {@code core:modify_enchant_cost}
+ * <br>Params: {@code discount} (0-100, percentage discount)
+ */
 public final class ModifyEnchantCostMechanic implements SkillMechanic {
 
     @Override

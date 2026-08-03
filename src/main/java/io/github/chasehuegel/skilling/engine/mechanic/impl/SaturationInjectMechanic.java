@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Injects additional saturation to the player on {@link PlayerItemConsumeEvent}.
  *
- * <p><b>YAML key:</b> {@code saturation_inject}
+ * <p><b>YAML key:</b> {@code core:saturation_inject}
  * <p><b>Required parameters:</b> {@code saturation} (positive float value to add)
  */
 public final class SaturationInjectMechanic implements SkillMechanic {

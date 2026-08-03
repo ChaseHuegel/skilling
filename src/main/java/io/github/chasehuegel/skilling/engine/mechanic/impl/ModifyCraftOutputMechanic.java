@@ -22,7 +22,7 @@ import java.util.Map;
  * inventory (dropped on the ground if the inventory is full), so no bonus items
  * are ever lost.
  *
- * <p><b>YAML key:</b> {@code modify_craft_output}
+ * <p><b>YAML key:</b> {@code core:modify_craft_output}
  * <p><b>Optional parameters:</b> {@code multiplier} (default 1.0; extra output = amount &times; (multiplier - 1))
  */
 public final class ModifyCraftOutputMechanic implements SkillMechanic {
