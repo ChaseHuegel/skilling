@@ -144,19 +144,19 @@ single action to absurd levels.
 
 New custom tags referenced by the design (vanilla cross-refs are stable through 1.21):
 
-| New `c:` tag | Contents (vanilla refs) | Used by |
-|---|---|---|
+| New `c:` tag | Contents (vanilla refs)                                                                                                                                                                | Used by |
+|---|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|
 | `c:undead` | `#minecraft:zombies`, `#minecraft:skeletons`, `minecraft:wither_skeleton`, `minecraft:phantom`, `minecraft:zombified_piglin`, `minecraft:drowned`, `minecraft:stray`, `minecraft:husk` | `piety` undead kills, `alchemy` |
-| `c:holy_blocks` | `minecraft:beacon`, `minecraft:conduit`, `minecraft:lantern`, `minecraft:soul_lantern`, `minecraft:sea_lantern`, `minecraft:glowstone`, `minecraft:gold_block` | `piety` `block_place` |
-| `c:crops` | `#minecraft:crops`, `minecraft:sugar_cane`, `minecraft:melon`, `minecraft:pumpkin`, `minecraft:cocoa` | `farming` tertiary |
-| `c:foods` | `minecraft:cooked_beef`, `#minecraft:food` (1.21 has `#minecraft:food`), plus cooked variants | `cooking` |
-| `c:potions` | `minecraft:potion`, `minecraft:splash_potion`, `minecraft:lingering_potion`, `minecraft:honey_bottle` | `alchemy` consume |
-| `c:shields` | `minecraft:shield` | `shields` |
-| `c:heavy_armor` | `#minecraft:chest_armor`+`#minecraft:leg_armor` tiers (iron+), or explicit iron/diamond/netherite pieces | `heavy_armor` craft |
-| `c:wooden_products` | `#minecraft:planks`, `#minecraft:wooden_slabs`, `#minecraft:wooden_stairs`, `minecraft:crafting_table`, `minecraft:chest`, `minecraft:ladder` | `carpentry` tertiary |
-| `c:shovels` | `#minecraft:shovels` | `excavation` |
-| `c:bows` | (already exists) | `archery` shoot |
-| `c:fishing_rods` | (already exists) | `fishing` rod craft |
+| `c:holy_blocks` | `minecraft:beacon`, `minecraft:conduit`, `minecraft:lantern`, `minecraft:soul_lantern`, `minecraft:sea_lantern`, `minecraft:glowstone`, `minecraft:gold_block`, all candle variants    | `piety` `block_place` |
+| `c:crops` | `#minecraft:crops`, `minecraft:sugar_cane`, `minecraft:melon`, `minecraft:pumpkin`, `minecraft:cocoa`                                                                                  | `farming` tertiary |
+| `c:foods` | `minecraft:cooked_beef`, `#minecraft:food` (1.21 has `#minecraft:food`), plus cooked variants                                                                                          | `cooking` |
+| `c:potions` | `minecraft:potion`, `minecraft:splash_potion`, `minecraft:lingering_potion`, `minecraft:honey_bottle`                                                                                  | `alchemy` consume |
+| `c:shields` | `minecraft:shield`                                                                                                                                                                     | `shields` |
+| `c:heavy_armor` | `#minecraft:chest_armor`+`#minecraft:leg_armor` tiers (iron+), or explicit iron/diamond/netherite pieces                                                                               | `heavy_armor` craft |
+| `c:wooden_products` | `#minecraft:planks`, `#minecraft:wooden_slabs`, `#minecraft:wooden_stairs`, `minecraft:crafting_table`, `minecraft:chest`, `minecraft:ladder`                                          | `carpentry` tertiary |
+| `c:shovels` | `#minecraft:shovels`                                                                                                                                                                   | `excavation` |
+| `c:bows` | (already exists)                                                                                                                                                                       | `archery` shoot |
+| `c:fishing_rods` | (already exists)                                                                                                                                                                       | `fishing` rod craft |
 
 ## 6. Fully-worked example: `piety`
 
