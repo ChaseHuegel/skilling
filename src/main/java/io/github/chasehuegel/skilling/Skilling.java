@@ -293,7 +293,7 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");
                     MechanicParamValidators.nonNegative(ctx, p, "duration");
                 });
-        mechReg.register("core:cancel_damage", CancelDamageMechanic.class, List.of("chance"),
+        mechReg.register("core:cancel_damage", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class, List.of("attribute", "amount", "duration"),
                 (ctx, p) -> {
@@ -313,7 +313,7 @@ public final class Skilling extends JavaPlugin {
                 });
         mechReg.register("core:projectile", ProjectileMechanic.class, List.of("speed", "damage"));
         mechReg.register("core:teleport", TeleportMechanic.class, List.of("range"));
-        mechReg.register("core:block_damage", BlockDamageMechanic.class, List.of("chance"),
+        mechReg.register("core:block_damage", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:thorns_damage", ThornsDamageMechanic.class, List.of("damage"));
         mechReg.register("core:knockback", KnockbackMechanic.class, List.of("force", "radius", "vertical"),
@@ -328,7 +328,7 @@ public final class Skilling extends JavaPlugin {
                 });
         mechReg.register("core:modify_attack_speed", ModifyAttackSpeedMechanic.class, List.of("multiplier", "duration"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
-        mechReg.register("core:dodge", DodgeMechanic.class, List.of("chance"),
+        mechReg.register("core:dodge", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:lifesteal", LifestealMechanic.class, List.of("percentage"));
         mechReg.register("core:armor_bonus", ArmorBonusMechanic.class, List.of("amount"),

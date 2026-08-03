@@ -1,4 +1,4 @@
-package io.github.chasehuegel.skilling.engine.mechanic;
+package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -16,29 +16,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Verifies the shared chance-roll semantics of {@link BaseDamageCancelMechanic}
- * (used by {@code core:dodge}, {@code core:block_damage}, and
+ * Verifies the shared chance-roll semantics of {@link DamageCancelMechanic}
+ * (registered under {@code core:dodge}, {@code core:block_damage}, and
  * {@code core:cancel_damage}): reaching the roll counts as an activation attempt
  * so a failed roll cannot be retried for free.
  */
-class BaseDamageCancelMechanicTest {
+class DamageCancelMechanicTest {
 
     @AfterEach
     void tearDown() {
-        BaseDamageCancelMechanic.setRandomSource(() -> ThreadLocalRandom.current().nextDouble(100));
-    }
-
-    private static final class FixedChance extends BaseDamageCancelMechanic {
-        private final double chance;
-
-        FixedChance(double chance) {
-            this.chance = chance;
-        }
-
-        @Override
-        protected double getChance(Map<String, Object> params) {
-            return chance;
-        }
+        DamageCancelMechanic.setRandomSource(() -> ThreadLocalRandom.current().nextDouble(100));
     }
 
     private EntityDamageEvent damageOn(Player player) {
@@ -50,7 +37,7 @@ class BaseDamageCancelMechanicTest {
     @Test
     void returnsFalseForNonDamageEvent() {
         var player = mock(Player.class);
-        assertFalse(new FixedChance(100).execute(player, Map.of(),
+        assertFalse(new DamageCancelMechanic().execute(player, Map.of("chance", 100.0),
                 mock(org.bukkit.event.block.BlockBreakEvent.class)));
     }
 
@@ -58,32 +45,40 @@ class BaseDamageCancelMechanicTest {
     void returnsFalseWhenDamageNotOnPlayer() {
         var player = mock(Player.class);
         var other = mock(Player.class);
-        assertFalse(new FixedChance(100).execute(player, Map.of(), damageOn(other)));
+        assertFalse(new DamageCancelMechanic().execute(player, Map.of("chance", 100.0), damageOn(other)));
     }
 
     @Test
     void returnsFalseWithChanceZero() {
         var player = mock(Player.class);
-        assertFalse(new FixedChance(0).execute(player, Map.of(), damageOn(player)));
+        assertFalse(new DamageCancelMechanic().execute(player, Map.of(), damageOn(player)));
     }
 
     @Test
     void failedRollStillCountsAsActivationAttempt() {
-        BaseDamageCancelMechanic.setRandomSource(() -> 99.0);
+        DamageCancelMechanic.setRandomSource(() -> 99.0);
         var player = mock(Player.class);
         var event = damageOn(player);
 
-        assertTrue(new FixedChance(50).execute(player, Map.of(), event));
+        assertTrue(new DamageCancelMechanic().execute(player, Map.of("chance", 50.0), event));
         verify(event, never()).setCancelled(true);
     }
 
     @Test
     void successfulRollCancelsDamage() {
-        BaseDamageCancelMechanic.setRandomSource(() -> 10.0);
+        DamageCancelMechanic.setRandomSource(() -> 10.0);
         var player = mock(Player.class);
         var event = damageOn(player);
 
-        assertTrue(new FixedChance(50).execute(player, Map.of(), event));
+        assertTrue(new DamageCancelMechanic().execute(player, Map.of("chance", 50.0), event));
+        verify(event).setCancelled(true);
+    }
+
+    @Test
+    void chanceHundredAlwaysCancels() {
+        var player = mock(Player.class);
+        var event = damageOn(player);
+        assertTrue(new DamageCancelMechanic().execute(player, Map.of("chance", 100.0), event));
         verify(event).setCancelled(true);
     }
 }

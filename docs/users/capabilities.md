@@ -68,10 +68,11 @@ for chained blocks).
 
 Chance to fully negate incoming damage (shield/armor "block" flavor).
 
-> **Note:** `core:block_damage` and `core:cancel_damage` behave identically — both roll
-> a `chance` (0-100%) to cancel an incoming damage event. They are kept as separate keys
-> purely for flavor: `block_damage` reads as a shield/armor block (used by armor and
-> shield skills) while `cancel_damage` reads as a dodge/evade (used by evasion skills).
+> **Note:** `core:block_damage`, `core:cancel_damage`, and `core:dodge` are aliases
+> of the same implementation — all three roll a `chance` (0-100%) to cancel an
+> incoming damage event. They are registered as separate keys purely for flavor:
+> `block_damage` reads as a shield/armor block, `cancel_damage` as a dodge/evade,
+> and `dodge` as an evasion.
 
 **Parameters:**
 
@@ -111,10 +112,11 @@ Applies a potion effect to the damaged entity on hit.
 
 Chance to completely cancel incoming damage (dodge/evade flavor).
 
-> **Note:** `core:cancel_damage` and `core:block_damage` behave identically — both roll
-> a `chance` (0-100%) to cancel an incoming damage event. They are kept as separate keys
-> purely for flavor: `cancel_damage` reads as a dodge/evade (used by evasion skills)
-> while `block_damage` reads as a shield/armor block (used by armor and shield skills).
+> **Note:** `core:cancel_damage`, `core:block_damage`, and `core:dodge` are aliases
+> of the same implementation — all three roll a `chance` (0-100%) to cancel an
+> incoming damage event. They are registered as separate keys purely for flavor:
+> `cancel_damage` reads as a dodge/evade, `block_damage` as a shield/armor block,
+> and `dodge` as an evasion.
 
 **Parameters:**
 
@@ -336,6 +338,10 @@ Deals a melee hit using the base attack damage of the off-hand weapon to the ent
 ### core:dodge
 
 Chance to completely dodge incoming damage.
+
+> **Note:** `core:dodge`, `core:block_damage`, and `core:cancel_damage` are aliases
+> of the same implementation — all three roll a `chance` (0-100%) to cancel an
+> incoming damage event. They are registered as separate keys purely for flavor.
 
 **Parameters:**
 

@@ -20,7 +20,7 @@
 - [x] [ISSUE-191](ISSUE-191.md) - Apply §4 constants and source set to the remaining multi-source skills
 - [x] [ISSUE-198](ISSUE-198.md) - Complete mechanic Javadoc and fix registry-key documentation drift
 - [x] [ISSUE-204](ISSUE-204.md) - Reduce per-event overhead on the ability/XP hot path
-- [ ] [ISSUE-207](ISSUE-207.md) - Consolidate the three identical damage-cancel mechanics
+- [x] [ISSUE-207](ISSUE-207.md) - Consolidate the three identical damage-cancel mechanics
 
 ### Research
 
