@@ -403,6 +403,28 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
+     * Handles {@link EntityTransformEvent} and routes it as a {@code cure_villager}
+     * trigger when a zombie villager is cured (reason {@code CURED}).
+     *
+     * <p>The cure completes minutes after the player feeds the golden apple, so
+     * Paper records the initiating player on the {@code ZombieVillager} via
+     * {@code getConversionPlayer()}. The trigger only dispatches when that player
+     * is still online; a cure finished while the initiator is offline grants no XP.
+     *
+     * @param event the entity transform event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCureVillager(org.bukkit.event.entity.EntityTransformEvent event) {
+        if (event.getTransformReason() != org.bukkit.event.entity.EntityTransformEvent.TransformReason.CURED) return;
+        if (!(event.getEntity() instanceof org.bukkit.entity.ZombieVillager zombie)) return;
+        org.bukkit.OfflinePlayer conversionPlayer = zombie.getConversionPlayer();
+        if (conversionPlayer == null) return;
+        Player player = conversionPlayer.getPlayer();
+        if (player == null) return;
+        dispatch(player, event, "cure_villager");
+    }
+
+    /**
      * Handles {@link EntityToggleGlideEvent} and routes it as an {@code elytra_glide} trigger
      * when a player starts gliding.
      *

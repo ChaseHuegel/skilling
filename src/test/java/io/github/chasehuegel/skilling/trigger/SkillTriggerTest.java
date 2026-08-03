@@ -10,6 +10,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.CollectXpTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.ConsumeItemTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.CraftItemTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.CropGrowTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.CureVillagerTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.EnchantItemTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.EntityDamageTakenTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.EntityDamageTrigger;
@@ -36,6 +37,7 @@ import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.BrewEvent;
@@ -92,6 +94,7 @@ class SkillTriggerTest {
                     Arguments.of(new PlayerInteractTrigger(), "player_interact", PlayerInteractEvent.class),
                     Arguments.of(new ProjectileHitTrigger(), "projectile_hit", ProjectileHitEvent.class),
                     Arguments.of(new RideHorseTrigger(), "ride_horse", VehicleEnterEvent.class),
+                    Arguments.of(new CureVillagerTrigger(), "cure_villager", EntityTransformEvent.class),
                     Arguments.of(new SneakTrigger(), "sneak", PlayerToggleSneakEvent.class),
                     Arguments.of(new SprintTrigger(), "sprint", PlayerToggleSprintEvent.class)
             );
