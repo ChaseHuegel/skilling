@@ -10,11 +10,15 @@ xp_sources:
   - trigger: "block_place"
     filters:
       - target: "#c:stone_products"
-    reward: { constant: 2.0 }
+    reward: { constant: 43.9 }
   - trigger: "craft_item"
     filters:
       - target: "#minecraft:stone_bricks"      # decorative block crafts only
-    reward: { constant: 6.0 }
+    reward: { constant: 43.9 }
+  - trigger: "block_place"
+    filters:
+      - target: "#minecraft:planks"
+    reward: { constant: 43.9 }
 abilities:
   - id: "scaffolding"
     display_name: "Scaffolding"

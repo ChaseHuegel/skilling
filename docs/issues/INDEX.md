@@ -17,7 +17,7 @@
 - [x] [ISSUE-206](ISSUE-206.md) - Fix AutoSmeltMechanic collapsing multiple drop types into one stack
 
 ### Improvements
-- [ ] [ISSUE-191](ISSUE-191.md) - Apply §4 constants and source set to the remaining multi-source skills
+- [x] [ISSUE-191](ISSUE-191.md) - Apply §4 constants and source set to the remaining multi-source skills
 - [ ] [ISSUE-198](ISSUE-198.md) - Complete mechanic Javadoc and fix registry-key documentation drift
 - [ ] [ISSUE-204](ISSUE-204.md) - Reduce per-event overhead on the ability/XP hot path
 - [ ] [ISSUE-207](ISSUE-207.md) - Consolidate the three identical damage-cancel mechanics

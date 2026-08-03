@@ -4,9 +4,11 @@ display: { name: "Enchanting", icon: "minecraft:enchanting_table", color: "PURPL
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "enchant_item"
-    reward: { constant: 15.0 }
+    reward: { constant: 26.2 }
   - trigger: "collect_xp"
-    reward: { constant: 1.0 }
+    reward: { constant: 26.2 }
+  - trigger: "repair"
+    reward: { constant: 26.2 }
 abilities:
   - id: "arcane_knowledge"
     display_name: "Arcane Knowledge"

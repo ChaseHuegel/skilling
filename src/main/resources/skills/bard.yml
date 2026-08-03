@@ -5,10 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "player_interact"
     filters: [ { tool: "#c:instruments" } ]      # goat horn / instrument items only
-    reward: { constant: 2.0 }
+    reward: { constant: 54.6 }
   - trigger: "craft_item"
     filters: [ { target: "minecraft:jukebox" } ]
-    reward: { constant: 10.0 }
+    reward: { constant: 54.6 }
+  - trigger: "block_place"
+    filters: [ { target: "minecraft:jukebox" } ]
+    reward: { constant: 54.6 }
 abilities:
   - id: "melody_of_haste"
     display_name: "Melody of Haste"

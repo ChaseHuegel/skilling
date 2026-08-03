@@ -5,13 +5,15 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "craft_item"
     filters: [ { target: "#c:tools" } ]   # representative; tools/armor only
-    reward: { constant: 12.0 }
+    reward: { constant: 64.1 }
   - trigger: "furnace_extract"
     filters: [ { target: "#minecraft:iron_ores" } ]
-    reward: { constant: 6.0 }
+    reward: { constant: 64.1 }
   - trigger: "furnace_extract"
     filters: [ { target: "#minecraft:gold_ores" } ]
-    reward: { constant: 8.0 }
+    reward: { constant: 64.1 }
+  - trigger: "repair"
+    reward: { constant: 64.1 }
 abilities:
   - id: "efficient_smith"
     display_name: "Efficient Smith"

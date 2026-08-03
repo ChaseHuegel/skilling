@@ -4,10 +4,12 @@ display: { name: "Wizardry", icon: "minecraft:ender_pearl", color: "PURPLE", sty
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "collect_xp"
-    reward: { constant: 2.0 }
+    reward: { constant: 25.8 }
   - trigger: "launch_projectile"
     filters: [ { target: "minecraft:ender_pearl" } ]
-    reward: { constant: 3.0 }
+    reward: { constant: 25.8 }
+  - trigger: "enchant_item"
+    reward: { constant: 25.8 }
   # player_interact XP removed — was XP for existing
 abilities:
   - id: "arcane_missile"

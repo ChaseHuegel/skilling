@@ -4,11 +4,14 @@ display: { name: "Husbandry", icon: "minecraft:wheat", color: "GREEN", style: "S
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "breed_animals"
-    reward: { constant: 15.0 }
+    reward: { constant: 256.4 }
   - trigger: "player_shear"
-    reward: { constant: 5.0 }
+    reward: { constant: 256.4 }
   - trigger: "player_tame"
-    reward: { constant: 20.0 }
+    reward: { constant: 256.4 }
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=256 exceeds the ~60/action ceiling.
+  # breed/shear/tame are inherently frequency-capped; the honest residual is
+  # ~80-120 h rather than inflating a single action absurdly.
 abilities:
   - id: "animal_bond"
     display_name: "Animal Bond"

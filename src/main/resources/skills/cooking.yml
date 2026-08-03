@@ -3,12 +3,17 @@ max_level: 100
 display: { name: "Cooking", icon: "minecraft:furnace", color: "YELLOW", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # furnace_extract is bulk-scaled per extracted item: R is the per-item rate,
+  # so a batch of N cooked foods pays N × R (REPORT_XP-SOURCE-DESIGN §3).
   - trigger: "furnace_extract"
-    filters: [ { target: "minecraft:cooked_beef" } ]   # representative cooked-food filter
-    reward: { constant: 4.0 }
+    filters: [ { target: "#c:foods" } ]   # representative cooked-food filter
+    reward: { constant: 128.2 }
   - trigger: "consume_item"
+    filters: [ { target: "#c:foods" } ]
+    reward: { constant: 128.2 }
+  - trigger: "furnace_extract"
     filters: [ { target: "minecraft:cooked_beef" } ]
-    reward: { constant: 2.0 }
+    reward: { constant: 128.2 }
 abilities:
   - id: "seasoning"
     display_name: "Seasoning"

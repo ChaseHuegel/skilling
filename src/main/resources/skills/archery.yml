@@ -5,10 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
     filters: [ { target: "#minecraft:arrows" } ]
-    reward: { constant: 5.0 }
+    reward: { constant: 51.3 }
   - trigger: "entity_kill"
     filters: [ { target: "#minecraft:arrows" } ]
-    reward: { constant: 15.0 }
+    reward: { constant: 51.3 }
+  - trigger: "shoot_bow"
+    filters: [ { tool: "#c:bows" } ]
+    reward: { constant: 51.3 }
 abilities:
   - id: "steady_hand"
     display_name: "Steady Hand"

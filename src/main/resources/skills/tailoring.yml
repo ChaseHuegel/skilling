@@ -5,10 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "craft_item"
     filters: [ { target: "#minecraft:wool" } ]     # representative fabric crafts
-    reward: { constant: 10.0 }
+    reward: { constant: 87.7 }
+  - trigger: "craft_item"
+    filters: [ { target: "#c:leather_armor" } ]
+    reward: { constant: 87.7 }
   - trigger: "item_damage"
     filters: [ { target: "#c:leather_armor" } ]   # leather armor only
-    reward: { constant: 1.0 }
+    reward: { constant: 87.7 }
 abilities:
   - id: "spinner"
     display_name: "Spinner"

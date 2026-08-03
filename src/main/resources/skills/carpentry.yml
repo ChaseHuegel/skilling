@@ -5,10 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "craft_item"
     filters: [ { target: "#minecraft:planks" } ]
-    reward: { constant: 8.0 }
+    reward: { constant: 55.6 }
   - trigger: "block_break"
     filters: [ { target: "#minecraft:logs" }, { state: "player_placed:false" } ]
-    reward: { constant: 2.0 }
+    reward: { constant: 55.6 }
+  - trigger: "craft_item"
+    filters: [ { target: "#c:wooden_products" } ]
+    reward: { constant: 55.6 }
 abilities:
   - id: "efficient_crafting"
     display_name: "Efficient Crafting"

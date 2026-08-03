@@ -5,10 +5,15 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
     filters: [ { tool: "#c:heavy_weapons" } ]       # FIX: was target
-    reward: { constant: 5.0 }
+    reward: { constant: 62.9 }
   - trigger: "entity_kill"
     filters: [ { tool: "#c:heavy_weapons" } ]
-    reward: { constant: 20.0 }
+    reward: { constant: 62.9 }
+  # Sweep-hit filter not implemented (REPORT_XP-SOURCE-DESIGN §4); substituted
+  # being-hit while wielding a heavy weapon, the same ~6 APM class, so R stays 62.9.
+  - trigger: "entity_damage_taken"
+    filters: [ { tool: "#c:heavy_weapons" } ]
+    reward: { constant: 62.9 }
 abilities:
   - id: "heavy_strikes"
     display_name: "Heavy Strikes"

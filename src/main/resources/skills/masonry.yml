@@ -3,17 +3,18 @@ max_level: 100
 display: { name: "Masonry", icon: "minecraft:stone_bricks", color: "YELLOW", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # furnace_extract is bulk-scaled per extracted item: R is the per-item rate.
   - trigger: "furnace_extract"
     filters:
       - target: "minecraft:terracotta"
-    reward: { constant: 5.0 }
+    reward: { constant: 53.8 }
   - trigger: "furnace_extract"
     filters:
       - target: "minecraft:glass"
-    reward: { constant: 4.0 }
+    reward: { constant: 53.8 }
   - trigger: "block_place"
     filters: [ { target: "#c:stone_products" } ]
-    reward: { constant: 1.0 }
+    reward: { constant: 53.8 }
 abilities:
   - id: "stone_folding"
     display_name: "Stone Folding"

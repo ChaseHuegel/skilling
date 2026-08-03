@@ -5,10 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "launch_projectile"
     filters: [ { target: "minecraft:trident" } ]
-    reward: { constant: 8.0 }
+    reward: { constant: 62.9 }
   - trigger: "entity_damage"
     filters: [ { target: "minecraft:trident" } ]
-    reward: { constant: 5.0 }
+    reward: { constant: 62.9 }
+  - trigger: "entity_kill"
+    filters: [ { target: "minecraft:trident" } ]
+    reward: { constant: 62.9 }
 abilities:
   - id: "precise_throw"
     display_name: "Precise Throw"

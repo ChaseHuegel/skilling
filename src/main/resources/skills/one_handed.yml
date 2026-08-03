@@ -5,10 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
     filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
-    reward: { constant: 5.0 }
+    reward: { constant: 68.0 }
   - trigger: "entity_kill"
     filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
-    reward: { constant: 20.0 }
+    reward: { constant: 68.0 }
+  - trigger: "craft_item"
+    filters: [ { target: "#minecraft:swords" } ]
+    reward: { constant: 68.0 }
 abilities:
   - id: "precise_strikes"
     display_name: "Precise Strikes"

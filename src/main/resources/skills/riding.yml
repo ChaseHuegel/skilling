@@ -4,10 +4,12 @@ display: { name: "Riding", icon: "minecraft:saddle", color: "WHITE", style: "SOL
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "ride_horse"
-    reward: { constant: 25.0 }
+    reward: { constant: 69.4 }
   - trigger: "entity_damage"
     filters: [ { state: "is_riding" } ]
-    reward: { constant: 5.0 }
+    reward: { constant: 69.4 }
+  - trigger: "player_tame"
+    reward: { constant: 69.4 }
 abilities:
   - id: "mounted_combat_training"
     display_name: "Mounted Combat Training"
