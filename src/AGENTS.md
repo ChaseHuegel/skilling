@@ -43,7 +43,7 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 ### 5. Configs & Tags
 * **Plugin Config:** Global settings (`config.yml`) govern database pool size, boss bar pool capacity, and debounce intervals.
 * When writing block or item filters, support Vanilla namespaces (e.g., `#minecraft:logs`).
-* Always route tag checks through the custom `TagResolver` to support user-defined custom tags in `tags.yml`.
+* Always route tag checks through the custom `TagResolver` to support user-defined custom tags in `tags.yml`. Entity-type tags (`entity_tags:` in `tags.yml`, e.g. `#c:undead`) are resolved by the parallel `EntityTagResolver` for the `target_type` state filter.
 * Flatten tag resolution into `EnumSet<Material>` or `EnumSet<EntityType>` during plugin load to keep event listener lookups at O(1) complexity.
 
 ### 6. Command & Administration
