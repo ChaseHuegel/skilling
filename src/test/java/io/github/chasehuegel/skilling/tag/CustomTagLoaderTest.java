@@ -129,4 +129,75 @@ class CustomTagLoaderTest {
         var loader = new CustomTagLoader();
         assertThrows(IllegalArgumentException.class, () -> loader.load(tagsFile));
     }
+
+    @Test
+    void parsesEntityTagKeys() throws IOException {
+        File tagsFile = tempDir.resolve("tags.yml").toFile();
+        try (var w = new FileWriter(tagsFile)) {
+            w.write("entity_tags:\n  undead:\n    - \"minecraft:zombie\"\n    - \"minecraft:skeleton\"\n");
+        }
+
+        var loader = new CustomTagLoader();
+        loader.load(tagsFile);
+
+        assertTrue(loader.getEntityKeys().contains("#c:undead"));
+        var resolved = loader.resolveEntity("#c:undead");
+        assertTrue(resolved.contains(org.bukkit.entity.EntityType.ZOMBIE));
+        assertTrue(resolved.contains(org.bukkit.entity.EntityType.SKELETON));
+    }
+
+    @Test
+    void parsesVanillaEntityCrossReferences() throws IOException {
+        File tagsFile = tempDir.resolve("tags.yml").toFile();
+        try (var w = new FileWriter(tagsFile)) {
+            w.write("entity_tags:\n  undead:\n    - \"#minecraft:zombies\"\n");
+        }
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            @SuppressWarnings("unchecked")
+            Tag<org.bukkit.entity.EntityType> tag = mock(Tag.class);
+            when(tag.getValues()).thenReturn(Set.of(
+                    org.bukkit.entity.EntityType.ZOMBIE,
+                    org.bukkit.entity.EntityType.HUSK));
+            when(Bukkit.getTag(anyString(), any(NamespacedKey.class),
+                    eq(org.bukkit.entity.EntityType.class))).thenReturn(tag);
+
+            var loader = new CustomTagLoader();
+            loader.load(tagsFile);
+
+            var resolved = loader.resolveEntity("#c:undead");
+            assertTrue(resolved.contains(org.bukkit.entity.EntityType.ZOMBIE));
+            assertTrue(resolved.contains(org.bukkit.entity.EntityType.HUSK));
+        }
+    }
+
+    @Test
+    void malformedEntityTypeFailsFast() throws IOException {
+        File tagsFile = tempDir.resolve("tags.yml").toFile();
+        try (var w = new FileWriter(tagsFile)) {
+            w.write("entity_tags:\n  undead:\n    - \"minecraft:not_an_entity\"\n");
+        }
+
+        var loader = new CustomTagLoader();
+        assertThrows(IllegalArgumentException.class, () -> loader.load(tagsFile));
+    }
+
+    @Test
+    void materialAndEntitySectionsAreIndependent() throws IOException {
+        File tagsFile = tempDir.resolve("tags.yml").toFile();
+        try (var w = new FileWriter(tagsFile)) {
+            w.write("custom_tags:\n  ores:\n    - \"minecraft:coal_ore\"\n"
+                    + "entity_tags:\n  undead:\n    - \"minecraft:zombie\"\n");
+        }
+
+        var loader = new CustomTagLoader();
+        loader.load(tagsFile);
+
+        assertTrue(loader.getKeys().contains("#c:ores"));
+        assertTrue(loader.getEntityKeys().contains("#c:undead"));
+        assertTrue(loader.resolve("#c:undead").isEmpty(),
+                "a material lookup must not see entity tags");
+        assertTrue(loader.resolveEntity("#c:ores").isEmpty(),
+                "an entity lookup must not see material tags");
+    }
 }

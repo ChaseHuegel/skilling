@@ -10,6 +10,7 @@
 ## Backlog
 
 ### Bugs
+- [ ] [ISSUE-190](ISSUE-190.md) - Fix pre-existing Projectile test failures (mock eye location)
 
 ### Improvements
 - [ ] [ISSUE-186](ISSUE-186.md) - Extend target_type to entity_kill and add entity-type tag support

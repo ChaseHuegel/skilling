@@ -6,6 +6,7 @@ import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
+import io.github.chasehuegel.skilling.engine.tag.EntityTagResolver;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import io.github.chasehuegel.skilling.engine.ui.GuiLayoutConfig;
 import org.bukkit.Bukkit;
@@ -83,7 +84,9 @@ public final class LockdownManager {
                 var customTagLoader = new CustomTagLoader();
                 customTagLoader.load(new File(plugin.getDataFolder(), "tags.yml"));
                 var tagResolver = new TagResolver(customTagLoader);
+                var entityTagResolver = new EntityTagResolver(customTagLoader);
                 plugin.setTagResolver(tagResolver);
+                plugin.setEntityTagResolver(entityTagResolver);
                 plugin.registerBuiltins();
                 skillManager.setTagResolver(tagResolver);
                 plugin.getRequirementEngine().setTagResolver(tagResolver);

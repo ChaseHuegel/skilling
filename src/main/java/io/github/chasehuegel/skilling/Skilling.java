@@ -25,6 +25,7 @@ import io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry;
 import io.github.chasehuegel.skilling.engine.registry.TriggerRegistry;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
+import io.github.chasehuegel.skilling.engine.tag.EntityTagResolver;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import io.github.chasehuegel.skilling.engine.ui.GuiLayoutConfig;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
@@ -35,10 +36,12 @@ import io.github.chasehuegel.skilling.web.config.WebConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.sql.SQLException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -79,6 +82,7 @@ public final class Skilling extends JavaPlugin {
     private SkillsCommand skillsCommand;
     private CustomTagLoader customTagLoader;
     private volatile TagResolver tagResolver;
+    private volatile EntityTagResolver entityTagResolver;
     private SkillEventListener skillEventListener;
     private WebServer webServer;
     private IntegrationManager integrationManager;
@@ -163,6 +167,7 @@ public final class Skilling extends JavaPlugin {
         this.customTagLoader = new CustomTagLoader();
         customTagLoader.load(new File(getDataFolder(), "tags.yml"));
         this.tagResolver = new TagResolver(customTagLoader);
+        this.entityTagResolver = new EntityTagResolver(customTagLoader);
         registerBuiltins();
 
         // Initialize database
@@ -247,9 +252,10 @@ public final class Skilling extends JavaPlugin {
         var evalCount = registries.getEvaluatorRegistry().size();
         var skillCount = skillManager.getSkills().size();
         var tagCount = customTagLoader.getKeys().size();
+        var entityTagCount = customTagLoader.getEntityKeys().size();
         getLogger().info("Loaded " + skillCount + " skill(s) | " + mechCount + " mechanic(s) | "
                 + trigCount + " trigger(s) | " + evalCount + " evaluator(s) | "
-                + tagCount + " custom tag(s)");
+                + tagCount + " custom tag(s) | " + entityTagCount + " custom entity tag(s)");
         getLogger().info("Skilling v" + getPluginMeta().getVersion() + " enabled.");
     }
 
@@ -257,7 +263,7 @@ public final class Skilling extends JavaPlugin {
         registerBuiltinEvaluators(registries.getEvaluatorRegistry());
         registerBuiltinMechanics(registries.getMechanicRegistry());
         registerBuiltinTriggers(registries.getTriggerRegistry());
-        registerBuiltinStateFilters(stateFilterRegistry, tagResolver);
+        registerBuiltinStateFilters(stateFilterRegistry, tagResolver, entityTagResolver);
     }
 
     /** Registers the built-in parameter evaluators into the given registry. */
@@ -351,7 +357,8 @@ public final class Skilling extends JavaPlugin {
     }
 
     /** Registers the built-in state filters into the given registry. */
-    public static void registerBuiltinStateFilters(StateFilterRegistry sf, TagResolver tagResolver) {
+    public static void registerBuiltinStateFilters(StateFilterRegistry sf, TagResolver tagResolver,
+            EntityTagResolver entityTagResolver) {
         sf.register("is_sneaking", (p, e, v) -> p.isSneaking());
         sf.register("is_sprinting", (p, e, v) -> p.isSprinting());
         sf.register("is_in_water", (p, e, v) -> p.isInWater());
@@ -438,11 +445,19 @@ public final class Skilling extends JavaPlugin {
         });
 
         sf.register("target_type", (p, e, v) -> {
-            if (!(e instanceof org.bukkit.event.entity.EntityDamageByEntityEvent de)) return true;
-            var entityType = de.getEntity().getType();
-            var key = org.bukkit.NamespacedKey.fromString(v);
-            if (key == null) return true;
-            var target = org.bukkit.Registry.ENTITY_TYPE.get(key);
+            EntityType entityType = resolveFilteredEntityType(e);
+            if (entityType == null) return false;
+            if (v == null || v.isBlank()) return false;
+            if (v.startsWith("#")) {
+                EnumSet<EntityType> target;
+                try {
+                    target = entityTagResolver.resolve(v);
+                } catch (IllegalArgumentException ex) {
+                    return false;
+                }
+                return target.contains(entityType);
+            }
+            var target = entityTagResolver.entity(v);
             return target != null && entityType == target;
         });
 
@@ -473,6 +488,24 @@ public final class Skilling extends JavaPlugin {
         // match; `equipped_any` requires at least one. Empty slots are treated as AIR.
         sf.register("equipped_all", (p, e, v) -> matchesEquipped(p, v, true, tagResolver));
         sf.register("equipped_any", (p, e, v) -> matchesEquipped(p, v, false, tagResolver));
+    }
+
+    /**
+     * Resolves the entity whose type a {@code target_type} filter compares
+     * against, for the events that carry a target entity: entity damage (the
+     * damaged entity) and entity death (the killed entity).
+     *
+     * @param e the triggering event
+     * @return the target entity type, or null for events without a target entity
+     */
+    private static EntityType resolveFilteredEntityType(org.bukkit.event.Event e) {
+        if (e instanceof org.bukkit.event.entity.EntityDamageByEntityEvent de) {
+            return de.getEntity().getType();
+        }
+        if (e instanceof org.bukkit.event.entity.EntityDeathEvent ede) {
+            return ede.getEntity().getType();
+        }
+        return null;
     }
 
     /**
@@ -612,6 +645,26 @@ public final class Skilling extends JavaPlugin {
      */
     public void setTagResolver(TagResolver tagResolver) {
         this.tagResolver = tagResolver;
+    }
+
+    /**
+     * Returns the entity-type tag resolver used by the {@code target_type}
+     * state filter for {@code #...} entity tag references.
+     *
+     * @return the entity tag resolver
+     */
+    public EntityTagResolver getEntityTagResolver() {
+        return entityTagResolver;
+    }
+
+    /**
+     * Replaces the active entity-type tag resolver (used on reload when
+     * tags.yml changes).
+     *
+     * @param entityTagResolver the new entity tag resolver
+     */
+    public void setEntityTagResolver(EntityTagResolver entityTagResolver) {
+        this.entityTagResolver = entityTagResolver;
     }
 
     public boolean isReloading() {

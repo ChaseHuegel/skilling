@@ -8,6 +8,13 @@
 #
 # Usage in skill YAML: target: "#c:ores"
 # ==========================================
+#
+# Entity tags (for the `target_type` state filter) use the same "c:" prefix
+# under the `entity_tags:` key and hold entity type names (e.g.,
+# "minecraft:zombie") and/or vanilla entity tag cross-references (e.g.,
+# "#minecraft:zombies").
+#
+# Usage in skill YAML: state: "target_type:#c:undead"
 
 custom_tags:
   # The "c:" prefix is automatically added by the loader.
@@ -197,3 +204,16 @@ custom_tags:
 
   fishing_rods:
     - "minecraft:fishing_rod"
+
+# Entity-type tags, resolved via the `target_type` state filter. Values are
+# entity type names and/or vanilla entity tag cross-references.
+entity_tags:
+  undead:
+    - "#minecraft:zombies"
+    - "#minecraft:skeletons"
+    - "minecraft:wither_skeleton"
+    - "minecraft:phantom"
+    - "minecraft:zombified_piglin"
+    - "minecraft:drowned"
+    - "minecraft:stray"
+    - "minecraft:husk"

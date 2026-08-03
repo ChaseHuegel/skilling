@@ -3,6 +3,7 @@ package io.github.chasehuegel.skilling.engine;
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
+import io.github.chasehuegel.skilling.engine.tag.EntityTagResolver;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -53,8 +54,9 @@ class StateFilterEquippedTest {
         var loader = new CustomTagLoader();
         loader.load(tagsFile.toFile());
         var resolver = new TagResolver(loader);
+        var entityResolver = new EntityTagResolver(loader);
         registry = new StateFilterRegistry();
-        Skilling.registerBuiltinStateFilters(registry, resolver);
+        Skilling.registerBuiltinStateFilters(registry, resolver, entityResolver);
 
         player = mock(Player.class);
         var inventory = mock(PlayerInventory.class);
