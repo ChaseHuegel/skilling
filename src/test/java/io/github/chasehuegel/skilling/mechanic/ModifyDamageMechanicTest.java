@@ -34,4 +34,32 @@ class ModifyDamageMechanicTest {
         // The mechanic must actually scale the incoming damage, not just return true.
         verify(event).setDamage(20.0);
     }
+
+    @Test
+    void returnsFalseWhenPlayerIsDamagedNotDamager() {
+        var mechanic = new ModifyDamageMechanic();
+        var player = BukkitMock.mockPlayer();
+        var attacker = mock(org.bukkit.entity.Zombie.class);
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getDamager()).thenReturn(attacker);
+        when(event.getEntity()).thenReturn(player);
+
+        assertFalse(mechanic.execute(player, Map.of("multiplier", 2.0), event),
+                "a wrong trigger binding (player is the damaged entity) must not scale damage");
+        verify(event, never()).setDamage(anyDouble());
+    }
+
+    @Test
+    void projectileDamagerResolvesShooterAsThePlayer() {
+        var mechanic = new ModifyDamageMechanic();
+        var player = BukkitMock.mockPlayer();
+        var arrow = mock(org.bukkit.entity.Arrow.class);
+        when(arrow.getShooter()).thenReturn(player);
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getDamager()).thenReturn(arrow);
+        when(event.getDamage()).thenReturn(10.0);
+
+        assertTrue(mechanic.execute(player, Map.of("multiplier", 2.0), event));
+        verify(event).setDamage(20.0);
+    }
 }
