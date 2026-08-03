@@ -83,6 +83,20 @@ custom_tags:
     - "#minecraft:coal_ores"
 ```
 
+**Entity tags** live under a separate `entity_tags:` key and are used by the
+`target_type` state filter. They hold entity type names and/or vanilla entity
+tag cross-references:
+
+```yaml
+entity_tags:
+  undead:
+    - "#minecraft:zombies"
+    - "#minecraft:skeletons"
+    - "minecraft:wither_skeleton"
+```
+
+Usage in a skill: `state: "target_type:#c:undead"`.
+
 The shipped `tags.yml` defines these custom tags (used by the bundled skill YAMLs):
 
 | Tag | Members |
@@ -99,6 +113,21 @@ The shipped `tags.yml` defines these custom tags (used by the bundled skill YAML
 | `#c:light_weapons` | Wooden/stone/golden swords, trident |
 | `#c:tools` | `#minecraft:pickaxes/axes/shovels/hoes/swords`, bows, crossbows, trident, mace, armor pieces |
 | `#c:leather_armor` | Leather helmet/chestplate/leggings/boots |
+| `#c:light_armor` | `#c:leather_armor` (armor-gating tier) |
+| `#c:medium_armor` | Chainmail, iron, golden, and turtle armor (armor-gating tier) |
+| `#c:heavy_armor` | Diamond and netherite armor (armor-gating tier) |
+| `#c:unarmored` | Empty slots (`minecraft:air`), elytra, and helmet-slot headwear |
 | `#c:bows` | `minecraft:bow`, `minecraft:crossbow` |
 | `#c:instruments` | `minecraft:goat_horn` (Bard abilities) |
 | `#c:fishing_rods` | `minecraft:fishing_rod` |
+| `#c:holy_blocks` | Beacon, conduit, lanterns, glowstone, gold block, `#minecraft:candles` (Piety) |
+| `#c:crops` | `#minecraft:crops`, sugar cane, melon, pumpkin, cocoa |
+| `#c:foods` | Cooked meats, baked potato (cooking sources) |
+| `#c:potions` | Potion, splash/lingering potions, honey bottle |
+| `#c:shields` | `minecraft:shield` |
+| `#c:wooden_products` | `#minecraft:planks`, wooden slabs/stairs, crafting table, chest, ladder |
+| `#c:shovels` | `#minecraft:shovels` |
+
+| Entity tag | Members |
+|---|---|
+| `#c:undead` | `#minecraft:zombies`, `#minecraft:skeletons`, wither skeleton, phantom, zombified piglin, drowned, stray, husk |

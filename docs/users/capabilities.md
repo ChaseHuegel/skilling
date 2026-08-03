@@ -649,6 +649,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `launch_projectile` | `ProjectileLaunchEvent` | Launching a projectile (trident, snowball, etc.) |
 | `projectile_hit` | `ProjectileHitEvent` | A projectile lands on a block or entity (use for impact-time mechanics like `core:projectile_return`) |
 | `resurrect` | `EntityResurrectEvent` | Totem of Undying activation |
+| `cure_villager` | `EntityTransformEvent` | A zombie villager finishes converting into a villager (reason `CURED`). Attribution follows the player who initiated the cure (`ZombieVillager.getConversionPlayer()`); a cure that completes after that player logs off grants nothing |
 | `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
 
 ## Built-In State Filters
@@ -672,7 +673,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `health` | `below:N%`, `above:N%` | Player health percentage |
 | `hunger` | `below:N`, `above:N` | Player food level |
 | `biome` | `minecraft:biome_id` | Player's current biome |
-| `target_type` | `minecraft:entity_id` | Type of entity being damaged |
+| `target_type` | `minecraft:entity_id` or `<#entity_tag>` | Type of the target entity. Matches the damaged entity on `entity_damage`/`entity_damage_taken` and the killed entity on `entity_kill`. A `#...` value (e.g. `#c:undead`, `#minecraft:zombies`) resolves through the `entity_tags` store in `tags.yml`. Fails closed on events with no target entity |
 | `offhand` | `empty`, `weapon` | Offhand item state |
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
 | `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |
