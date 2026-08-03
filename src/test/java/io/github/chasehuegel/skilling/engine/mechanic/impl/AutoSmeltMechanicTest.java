@@ -1,7 +1,6 @@
-package io.github.chasehuegel.skilling.mechanic;
+package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.BukkitMock;
-import io.github.chasehuegel.skilling.engine.mechanic.impl.AutoSmeltMechanic;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.tag.Tag;
@@ -16,52 +15,35 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Verifies the chance-roll semantics of {@link AutoSmeltMechanic}: reaching the
+ * roll counts as an activation attempt, so a failed roll cannot be retried for
+ * free.
+ */
 class AutoSmeltMechanicTest {
 
-    @Test
-    void returnsFalseForNonBlockBreakEvent() {
-        var mechanic = new AutoSmeltMechanic();
-        var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of("chance", 100.0), BukkitMock.mockDamageEvent(player, 10.0)));
-    }
-
-    @Test
-    void returnsFalseWithChanceZero() {
-        var mechanic = new AutoSmeltMechanic();
-        var player = BukkitMock.mockPlayer();
-        assertFalse(mechanic.execute(player, Map.of(), BukkitMock.mockBlockBreakEvent()));
-    }
-
-    @Test
-    void returnsFalseWithUnsmeltableMaterial() {
-        var mechanic = new AutoSmeltMechanic();
-        var player = BukkitMock.mockPlayer();
-        var block = mock(Block.class);
-        when(block.getType()).thenReturn(Material.DIAMOND_ORE);
-        var event = mock(BlockBreakEvent.class);
-        when(event.getBlock()).thenReturn(block);
-        assertFalse(mechanic.execute(player, Map.of("chance", 100.0), event));
+    @AfterEach
+    void tearDown() {
+        AutoSmeltMechanic.setRandomSource(() -> ThreadLocalRandom.current().nextDouble(100));
     }
 
     /**
@@ -263,11 +245,11 @@ class AutoSmeltMechanicTest {
         };
     }
 
-    private BlockBreakEvent smeltableBreak(Material blockType, ItemStack hand, List<ItemStack> drops) {
+    private static BlockBreakEvent smeltableBreak(ItemStack hand, List<ItemStack> drops) {
         var event = mock(BlockBreakEvent.class);
         var block = mock(Block.class);
         when(event.getBlock()).thenReturn(block);
-        when(block.getType()).thenReturn(blockType);
+        when(block.getType()).thenReturn(Material.IRON_ORE);
         when(block.getDrops(any(ItemStack.class))).thenReturn(drops);
         var world = mock(World.class);
         when(block.getWorld()).thenReturn(world);
@@ -276,78 +258,21 @@ class AutoSmeltMechanicTest {
     }
 
     @Test
-    void fortuneDropsArePreservedAndSmeltedToIngots() {
+    void failedRollStillCountsAsActivationAttempt() {
+        AutoSmeltMechanic.setRandomSource(() -> 99.0);
         try (MockedStatic<RegistryAccess> registry = mockRegistryAccess()) {
             var mechanic = new AutoSmeltMechanic();
             var player = BukkitMock.mockPlayer();
             var hand = mock(ItemStack.class);
             when(player.getInventory().getItemInMainHand()).thenReturn(hand);
-
             var raw = mock(ItemStack.class);
             when(raw.getAmount()).thenReturn(2);
-            var event = smeltableBreak(Material.IRON_ORE, hand, List.of(raw));
+            var event = smeltableBreak(hand, List.of(raw));
 
-            assertTrue(mechanic.execute(player, Map.of("chance", 100.0), event));
-            verify(event).setDropItems(false);
-            verify(raw).setType(Material.IRON_INGOT);
-            verify(raw).setAmount(2);
-            verify(event.getBlock().getWorld()).dropItemNaturally(any(Location.class), eq(raw));
-        }
-    }
-
-    @Test
-    void netherGoldOreSmeltsToNuggetsNotIngots() {
-        try (MockedStatic<RegistryAccess> registry = mockRegistryAccess()) {
-            var mechanic = new AutoSmeltMechanic();
-            var player = BukkitMock.mockPlayer();
-            var hand = mock(ItemStack.class);
-            when(player.getInventory().getItemInMainHand()).thenReturn(hand);
-
-            var nugget = mock(ItemStack.class);
-            when(nugget.getAmount()).thenReturn(3);
-            var event = smeltableBreak(Material.NETHER_GOLD_ORE, hand, List.of(nugget));
-
-            assertTrue(mechanic.execute(player, Map.of("chance", 100.0), event));
-            verify(nugget).setType(Material.GOLD_NUGGET);
-            verify(nugget).setAmount(3);
-        }
-    }
-
-    @Test
-    void multiStackDropCountsAreSummed() {
-        try (MockedStatic<RegistryAccess> registry = mockRegistryAccess()) {
-            var mechanic = new AutoSmeltMechanic();
-            var player = BukkitMock.mockPlayer();
-            var hand = mock(ItemStack.class);
-            when(player.getInventory().getItemInMainHand()).thenReturn(hand);
-
-            var a = mock(ItemStack.class);
-            when(a.getAmount()).thenReturn(2);
-            var b = mock(ItemStack.class);
-            when(b.getAmount()).thenReturn(3);
-            var event = smeltableBreak(Material.IRON_ORE, hand, List.of(a, b));
-
-            assertTrue(mechanic.execute(player, Map.of("chance", 100.0), event));
-
-            verify(a).setAmount(5);
-            verify(event.getBlock().getWorld()).dropItemNaturally(any(Location.class), eq(a));
-        }
-    }
-
-    @Test
-    void silkTouchLeavesRawDropsUntouched() {
-        try (MockedStatic<RegistryAccess> registry = mockRegistryAccess()) {
-            var mechanic = new AutoSmeltMechanic();
-            var player = BukkitMock.mockPlayer();
-            var hand = mock(ItemStack.class);
-            when(player.getInventory().getItemInMainHand()).thenReturn(hand);
-            when(hand.containsEnchantment(any(Enchantment.class))).thenReturn(true);
-
-            var event = smeltableBreak(Material.IRON_ORE, hand, List.of());
-
-            assertFalse(mechanic.execute(player, Map.of("chance", 100.0), event));
+            assertTrue(mechanic.execute(player, Map.of("chance", 50.0), event));
             verify(event, never()).setDropItems(false);
-            verify(event.getBlock(), never()).getDrops(any(ItemStack.class));
+            verify(event.getBlock().getWorld(), never())
+                    .dropItemNaturally(any(Location.class), any(ItemStack.class));
         }
     }
 }

@@ -23,11 +23,21 @@ public interface SkillMechanic {
     /**
      * Executes the mechanic action.
      *
+     * <p><b>Return-value contract (consumption rule):</b> returning {@code true}
+     * signals an <em>activation attempt</em> — the mechanic reached its
+     * action/condition step — and the engine consumes the ability's cost and
+     * applies its cooldown exactly once per attempt. Chance-based mechanics
+     * therefore return {@code true} whether or not their RNG roll succeeds, so a
+     * failed roll cannot be retried for free. Return {@code false} only when the
+     * mechanic could not act at all (wrong event type, missing target,
+     * inapplicable state); such a no-op must not spend the ability's cost or
+     * cooldown. When an ability carries multiple mechanics, consumption happens
+     * once if <em>any</em> mechanic returns {@code true}.
+     *
      * @param player the player activating the ability
      * @param params pre-evaluated parameters
      * @param event the original triggering event
-     * @return true if the mechanic performed an action; false if it was a no-op
-     *         (e.g. wrong event type). Resources are only consumed on true.
+     * @return true if the mechanic performed an activation attempt; false if it was a no-op
      */
     boolean execute(Player player, Map<String, Object> params, Event event);
 }

@@ -37,7 +37,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,6 +57,17 @@ class SkillEventListenerFireAbilitiesTest {
         }
     }
 
+    /** Never-activating test mechanic: simulates a mechanic that could not act. */
+    public static class NoOpMechanic implements SkillMechanic {
+        public static final AtomicInteger EXECUTIONS = new AtomicInteger();
+
+        @Override
+        public boolean execute(Player player, Map<String, Object> params, Event event) {
+            EXECUTIONS.incrementAndGet();
+            return false;
+        }
+    }
+
     @TempDir
     Path tempDir;
 
@@ -66,11 +79,22 @@ class SkillEventListenerFireAbilitiesTest {
     @BeforeEach
     void setUp() {
         CountingMechanic.EXECUTIONS.set(0);
+        NoOpMechanic.EXECUTIONS.set(0);
     }
 
     private void buildSkillWithAbility(String abilityRequirementsBlock) throws IOException {
+        buildSkillWithMechanics(abilityRequirementsBlock, """
+                  - { type: "test:count" }
+                  - { type: "test:count" }
+            """);
+    }
+
+    private void buildSkillWithMechanics(String abilityRequirementsBlock, String mechanicsBlock) throws IOException {
         SkillManager skillManager = io.github.chasehuegel.skilling.TestSkillManager.newWith(
-                reg -> reg.register("test:count", CountingMechanic.class, java.util.List.of()));
+                reg -> {
+                    reg.register("test:count", CountingMechanic.class, java.util.List.of());
+                    reg.register("test:noop", NoOpMechanic.class, java.util.List.of());
+                });
 
         Path skillsDir = tempDir.resolve("skills");
         Files.createDirectories(skillsDir);
@@ -87,8 +111,7 @@ class SkillEventListenerFireAbilitiesTest {
                     trigger: "block_break"
                 """ + abilityRequirementsBlock + """
                     mechanics:
-                      - { type: "test:count" }
-                      - { type: "test:count" }
+                """ + mechanicsBlock + """
                     feedback: { notify: { action_bar: false } }
                 """);
         skillManager.loadSkills(skillsDir.toFile());
@@ -104,6 +127,7 @@ class SkillEventListenerFireAbilitiesTest {
 
         MechanicRegistry mechReg = new MechanicRegistry();
         mechReg.register("test:count", CountingMechanic.class, java.util.List.of());
+        mechReg.register("test:noop", NoOpMechanic.class, java.util.List.of());
 
         var tagResolver = new TagResolver(new CustomTagLoader());
         RequirementEngine requirementEngine = new RequirementEngine(tagResolver, new StateFilterRegistry());
@@ -160,5 +184,38 @@ class SkillEventListenerFireAbilitiesTest {
 
         assertEquals(2, CountingMechanic.EXECUTIONS.get(), "both mechanics must execute");
         verify(coal, times(1)).setAmount(4);
+    }
+
+    @Test
+    void noOpMechanicDoesNotConsumeCostOrCooldown() throws IOException {
+        buildSkillWithMechanics("""
+                    requirements:
+                      cooldown: 10.0
+                      items:
+                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                """, """
+                  - { type: "test:noop" }
+            """);
+
+        // Give the player 5 coal (mocked, matching RequirementEngineTest).
+        org.bukkit.inventory.PlayerInventory inventory = mock(org.bukkit.inventory.PlayerInventory.class);
+        ItemStack coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(5);
+        ItemStack[] contents = new ItemStack[36];
+        contents[0] = coal;
+        when(inventory.getContents()).thenReturn(contents);
+        when(player.getInventory()).thenReturn(inventory);
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+
+        // A mechanic that could not act (returns false) must not spend the
+        // cost or apply the cooldown, so the ability stays eligible to fire.
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+
+        assertEquals(2, NoOpMechanic.EXECUTIONS.get(),
+                "a no-op must not consume, so the ability fires again on the next event");
+        verify(coal, never()).setAmount(anyInt());
     }
 }

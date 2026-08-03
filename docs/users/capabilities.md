@@ -1,5 +1,23 @@
 # Capabilities Catalog
 
+## Ability Cost & Cooldown Consumption
+
+An ability's item costs are deducted and its cooldown is applied **exactly once
+per activation attempt** — after the ability's requirements pass and at least
+one mechanic performs an activation. This rule applies uniformly to every
+mechanic:
+
+- **A mechanic that can act on the triggering event counts as an activation,
+  even when its chance roll fails.** Chance-based mechanics (`core:dodge`,
+  `core:block_damage`, `core:cancel_damage`, `core:auto_smelt`,
+  `core:fishing_yield`, `core:durability_save`, `core:projectile_return`,
+  `core:yield_multiplier`) consume the ability's cost/cooldown whether the roll
+  succeeds or fails, so an ability cannot be spammed until the roll succeeds.
+- **A mechanic that cannot act at all is a no-op** (wrong event type, missing
+  target, inapplicable state) and does not spend the cost or cooldown.
+- When an ability lists several mechanics, consumption happens once if **any**
+  mechanic activates.
+
 ## Built-In Mechanics
 
 ### core:yield_multiplier

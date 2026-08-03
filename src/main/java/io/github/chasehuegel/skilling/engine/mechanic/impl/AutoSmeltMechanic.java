@@ -2,9 +2,9 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.DoubleSupplier;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -19,6 +19,13 @@ import org.bukkit.inventory.ItemStack;
  * first, their stack sizes are summed, and the matching smelted product is
  * dropped once. Silk-Touch mining is left untouched (raw ore preserved) and
  * nugget-producing ores stay nuggets.
+ *
+ * <p>Reaching the chance roll counts as an activation attempt: the mechanic
+ * returns {@code true} whether or not the roll succeeds, so the ability's cost
+ * and cooldown are consumed exactly once per attempt and a failed roll cannot
+ * be retried for free. {@code false} is only returned when the mechanic could
+ * not act at all (wrong event type, unsmeltable block, silk-touch tool, or no
+ * captured drops).
  *
  * <p>YAML key: {@code core:auto_smelt}
  * <br>Params: {@code chance} (0-100, percentage)
@@ -40,11 +47,23 @@ public record AutoSmeltMechanic() implements SkillMechanic {
         Map.entry(Material.CLAY, Material.TERRACOTTA)
     );
 
+    private static volatile DoubleSupplier randomSource = () -> ThreadLocalRandom.current().nextDouble(100);
+
+    /**
+     * Test-only seam to force a deterministic roll; production always uses
+     * {@link ThreadLocalRandom}.
+     *
+     * @param source the roll source returning a percentage in [0, 100)
+     */
+    static void setRandomSource(DoubleSupplier source) {
+        randomSource = source;
+    }
+
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof BlockBreakEvent be)) return false;
         double chance = ((Number) params.getOrDefault("chance", 0)).doubleValue();
-        if (chance <= 0 || ThreadLocalRandom.current().nextDouble(100) >= chance) return false;
+        if (chance <= 0) return false;
         Material source = be.getBlock().getType();
         Material result = SMELT_MAP.get(source);
         if (result == null) return false;
@@ -66,6 +85,10 @@ public record AutoSmeltMechanic() implements SkillMechanic {
             if (smelted == null) smelted = drop;
         }
         if (count <= 0 || smelted == null) return false;
+
+        // A smeltable, non-silk-touch block was broken: the ability attempted to
+        // act, so a failed roll still counts as an activation (consume once).
+        if (randomSource.getAsDouble() >= chance) return true;
 
         be.setDropItems(false);
         smelted.setType(result);

@@ -12,10 +12,12 @@ import org.bukkit.entity.SpectralArrow;
 import org.bukkit.entity.Trident;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,6 +51,11 @@ class ProjectileReturnMechanicTest {
         return player;
     }
 
+    @AfterEach
+    void tearDown() {
+        ProjectileReturnMechanic.setRandomSource(() -> ThreadLocalRandom.current().nextDouble(100));
+    }
+
     @Test
     void returnsFalseForNonProjectileHitEvent() {
         var player = throwingPlayer();
@@ -71,6 +78,22 @@ class ProjectileReturnMechanicTest {
         var other = mock(org.bukkit.entity.Zombie.class);
         assertFalse(new ProjectileReturnMechanic().execute(player, Map.of("chance", 100.0),
                 hitEvent(trident, other)));
+    }
+
+    @Test
+    void failedRollStillCountsAsActivationAttempt() {
+        ProjectileReturnMechanic.setRandomSource(() -> 99.0);
+        var mechanic = new ProjectileReturnMechanic();
+        var player = throwingPlayer();
+        var trident = mock(Trident.class);
+        var tridentItem = mock(ItemStack.class);
+        when(tridentItem.isEmpty()).thenReturn(false);
+        when(tridentItem.clone()).thenReturn(mock(ItemStack.class));
+        when(trident.getItemStack()).thenReturn(tridentItem);
+
+        assertTrue(mechanic.execute(player, Map.of("chance", 50.0), hitEvent(trident, player)));
+        verify(trident, never()).remove();
+        verify(player.getWorld(), never()).dropItem(any(Location.class), any(ItemStack.class));
     }
 
     @Test

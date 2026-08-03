@@ -575,8 +575,11 @@ public final class SkillEventListener implements Listener {
                     }
                 }
 
-                // Consume exactly once per activation, only when at least one mechanic
-                // performed an action; a no-op ability must not spend its cost.
+                // Consume exactly once per activation, only when at least one
+                // mechanic performed an activation attempt; a no-op ability
+                // (wrong event type, missing target) must not spend its cost.
+                // Chance-based mechanics return true on a failed roll, so the
+                // cost/cooldown is consumed once per attempt, never per retry.
                 if (!anyExecuted) {
                     debug("    -> no mechanic executed, skipping consume and feedback");
                     continue;

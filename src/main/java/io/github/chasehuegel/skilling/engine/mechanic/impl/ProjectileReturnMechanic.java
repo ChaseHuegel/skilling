@@ -11,6 +11,7 @@ import org.bukkit.util.Vector;
 
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.DoubleSupplier;
 
 /**
  * Returns a thrown projectile's item to the player on {@link ProjectileHitEvent},
@@ -23,22 +24,44 @@ import java.util.concurrent.ThreadLocalRandom;
  * (no duplication). Non-retrievable projectiles (snowballs, eggs) get a fresh
  * drop since they vanish on impact anyway.
  *
+ * <p>Reaching the chance roll counts as an activation attempt: the mechanic
+ * returns {@code true} whether or not the roll succeeds, so the ability's cost
+ * and cooldown are consumed exactly once per attempt and a failed roll cannot
+ * be retried for free. {@code false} is only returned when the mechanic could
+ * not act at all (wrong event type, projectile not thrown by the player, no
+ * returnable item, or no chance).
+ *
  * <p><b>YAML key:</b> {@code core:projectile_return}
  * <br>Params: {@code chance} (0-100, percentage chance to return the projectile)
  */
 public final class ProjectileReturnMechanic implements SkillMechanic {
+
+    private static volatile DoubleSupplier randomSource = () -> ThreadLocalRandom.current().nextDouble(100);
+
+    /**
+     * Test-only seam to force a deterministic roll; production always uses
+     * {@link ThreadLocalRandom}.
+     *
+     * @param source the roll source returning a percentage in [0, 100)
+     */
+    static void setRandomSource(DoubleSupplier source) {
+        randomSource = source;
+    }
 
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof ProjectileHitEvent hitEvent)) return false;
         double chance = ((Number) params.getOrDefault("chance", 0.0)).doubleValue();
         if (chance <= 0) return false;
-        if (ThreadLocalRandom.current().nextDouble(100) > chance) return false;
         Projectile projectile = hitEvent.getEntity();
         if (!(projectile.getShooter() instanceof Player shooter) || !shooter.equals(player)) return false;
 
         ItemStack returnItem = returnItemFor(projectile);
         if (returnItem == null) return false;
+
+        // A projectile thrown by the player landed: the ability attempted to act,
+        // so a failed roll still counts as an activation (consume once).
+        if (randomSource.getAsDouble() > chance) return true;
 
         // Tridents and arrows persist and are pickable in vanilla; remove the
         // entity so the returned item is received exactly once (no 2-for-1).
