@@ -35,6 +35,7 @@ import io.github.chasehuegel.skilling.web.WebServer;
 import io.github.chasehuegel.skilling.web.config.WebConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.ServicePriority;
@@ -264,6 +265,12 @@ public final class Skilling extends JavaPlugin {
         registerBuiltinMechanics(registries.getMechanicRegistry());
         registerBuiltinTriggers(registries.getTriggerRegistry());
         registerBuiltinStateFilters(stateFilterRegistry, tagResolver, entityTagResolver);
+        // Wire load-time mechanic validation to the live registries. Done here
+        // (after mechanics register their validators) so a YAML typo fails at
+        // load instead of inside an event handler.
+        MechanicParamValidators.configureLookups(
+                key -> Registry.POTION_EFFECT_TYPE.get(key) != null,
+                key -> Registry.ATTRIBUTE.get(key) != null);
     }
 
     /** Registers the built-in parameter evaluators into the given registry. */
@@ -280,15 +287,18 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit"));
         mechReg.register("core:level_break", LevelBreakMechanic.class, List.of("chain_limit"));
         mechReg.register("core:modify_damage", ModifyDamageMechanic.class, List.of("multiplier"));
-        mechReg.register("core:apply_status", ApplyStatusMechanic.class, List.of("effect", "duration", "amplifier"));
+        mechReg.register("core:apply_status", ApplyStatusMechanic.class, List.of("effect", "duration", "amplifier"),
+                (ctx, p) -> MechanicParamValidators.potionEffect(ctx, p, "effect"));
         mechReg.register("core:cancel_damage", CancelDamageMechanic.class, List.of("chance"));
-        mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class, List.of("attribute", "amount", "duration"));
+        mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class, List.of("attribute", "amount", "duration"),
+                (ctx, p) -> MechanicParamValidators.attribute(ctx, p, "attribute"));
         mechReg.register("core:modify_craft_output", ModifyCraftOutputMechanic.class, List.of("multiplier"));
         mechReg.register("core:modify_furnace_output", ModifyFurnaceOutputMechanic.class, List.of("multiplier"));
         mechReg.register("core:saturation_inject", SaturationInjectMechanic.class, List.of("saturation"));
         mechReg.register("core:modify_brew_time", ModifyBrewTimeMechanic.class, List.of("multiplier"));
         mechReg.register("core:modify_potion_duration", ModifyPotionDurationMechanic.class, List.of("multiplier"));
-        mechReg.register("core:aoe_effect", AoeEffectMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
+        mechReg.register("core:aoe_effect", AoeEffectMechanic.class, List.of("effect", "radius", "duration", "amplifier"),
+                (ctx, p) -> MechanicParamValidators.potionEffect(ctx, p, "effect"));
         mechReg.register("core:projectile", ProjectileMechanic.class, List.of("speed", "damage"));
         mechReg.register("core:teleport", TeleportMechanic.class, List.of("range"));
         mechReg.register("core:block_damage", BlockDamageMechanic.class, List.of("chance"));
@@ -296,13 +306,15 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:knockback", KnockbackMechanic.class, List.of("force", "radius", "vertical"));
         mechReg.register("core:shield_disable", ShieldDisableMechanic.class, List.of("ticks"));
         mechReg.register("core:offhand_strike", OffhandStrikeMechanic.class, List.of("multiplier", "reach"));
-        mechReg.register("core:set_cooldown", SetCooldownMechanic.class, List.of("material", "ticks"));
+        mechReg.register("core:set_cooldown", SetCooldownMechanic.class, List.of("material", "ticks"),
+                (ctx, p) -> MechanicParamValidators.material(ctx, p, "material"));
         mechReg.register("core:modify_attack_speed", ModifyAttackSpeedMechanic.class, List.of("multiplier", "duration"));
         mechReg.register("core:dodge", DodgeMechanic.class, List.of("chance"));
         mechReg.register("core:lifesteal", LifestealMechanic.class, List.of("percentage"));
         mechReg.register("core:armor_bonus", ArmorBonusMechanic.class, List.of("amount"));
         mechReg.register("core:knockback_resist", KnockbackResistMechanic.class, List.of("amount"));
-        mechReg.register("core:crowd_control", CrowdControlMechanic.class, List.of("effect", "duration", "amplifier", "radius"));
+        mechReg.register("core:crowd_control", CrowdControlMechanic.class, List.of("effect", "duration", "amplifier", "radius"),
+                (ctx, p) -> MechanicParamValidators.potionEffect(ctx, p, "effect"));
         mechReg.register("core:execute", ExecuteMechanic.class, List.of("threshold"));
         mechReg.register("core:auto_smelt", AutoSmeltMechanic.class, List.of("chance"));
         mechReg.register("core:speed_bonus", SpeedBonusMechanic.class, List.of("multiplier"));
@@ -317,10 +329,13 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:modify_tame_chance", ModifyTameChanceMechanic.class, List.of("multiplier"));
         mechReg.register("core:projectile_return", ProjectileReturnMechanic.class, List.of("chance"));
         mechReg.register("core:modify_enchant_cost", ModifyEnchantCostMechanic.class, List.of("discount"));
-        mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
-        mechReg.register("core:ally_aura", AllyAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"));
+        mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"),
+                (ctx, p) -> MechanicParamValidators.potionEffect(ctx, p, "effect"));
+        mechReg.register("core:ally_aura", AllyAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"),
+                (ctx, p) -> MechanicParamValidators.potionEffect(ctx, p, "effect"));
         mechReg.register("core:modify_jump", ModifyJumpMechanic.class, List.of("multiplier", "duration"));
-        mechReg.register("core:block_particles", BlockParticlesMechanic.class, List.of("particle", "count", "speed"));
+        mechReg.register("core:block_particles", BlockParticlesMechanic.class, List.of("particle", "count", "speed"),
+                (ctx, p) -> MechanicParamValidators.particle(ctx, p, "particle"));
     }
 
     /** Registers the built-in triggers into the given registry. */

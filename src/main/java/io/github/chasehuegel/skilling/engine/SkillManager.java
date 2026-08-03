@@ -124,7 +124,7 @@ public final class SkillManager {
         List<SkillDefinition.XpSource> xpSources = parseXpSources(config.getList("xp_sources"));
 
         // Abilities
-        List<SkillDefinition.Ability> abilities = parseAbilities(config.getList("abilities"));
+        List<SkillDefinition.Ability> abilities = parseAbilities(id, config.getList("abilities"));
 
         // Level-up commands
         List<SkillDefinition.LevelUpCommand> levelUpCommands = parseLevelUpCommands(config.getList("level_up_commands"));
@@ -208,7 +208,7 @@ public final class SkillManager {
         return sources;
     }
 
-    private List<SkillDefinition.Ability> parseAbilities(List<?> list) {
+    private List<SkillDefinition.Ability> parseAbilities(String skillId, List<?> list) {
         if (list == null) return List.of();
         List<SkillDefinition.Ability> abilities = new ArrayList<>();
         Set<String> seenIds = new HashSet<>();
@@ -243,7 +243,7 @@ public final class SkillManager {
             SkillDefinition.OnFailure onFailure = parseOnFailure(castMap(abilityMap.get("on_failure")));
 
             // Mechanics
-            List<SkillDefinition.MechanicEntry> mechanics = parseMechanics(abilityMap.get("mechanics"));
+            List<SkillDefinition.MechanicEntry> mechanics = parseMechanics(skillId, id, abilityMap.get("mechanics"));
             validateAbilityLorePlaceholders(id, abilityDisplay, mechanics);
 
             // Feedback
@@ -394,7 +394,7 @@ public final class SkillManager {
         return new SkillDefinition.OnFailure(failures);
     }
 
-    private List<SkillDefinition.MechanicEntry> parseMechanics(Object mechanicsRaw) {
+    private List<SkillDefinition.MechanicEntry> parseMechanics(String skillId, String abilityId, Object mechanicsRaw) {
         if (!(mechanicsRaw instanceof List<?> list)) return List.of();
         List<SkillDefinition.MechanicEntry> entries = new ArrayList<>();
         for (Object raw : list) {
@@ -411,10 +411,21 @@ public final class SkillManager {
             @SuppressWarnings("unchecked")
             Map<String, Object> rawParams = (Map<String, Object>) mechanicMap.getOrDefault("parameters", Map.of());
             Map<String, ParameterEvaluator> parameters = new HashMap<>();
+            // Constant-valued parameters (e.g. a namespaced effect key) are handed
+            // to the mechanic's load-time validator so a typo fails here, not in
+            // an event handler. Level-scaled evaluators cannot be resolved without
+            // a level context and are skipped.
+            Map<String, Object> constantParams = new HashMap<>();
             for (var paramEntry : rawParams.entrySet()) {
                 Map<String, Object> evaluatorMap = castMap(paramEntry.getValue());
-                parameters.put(paramEntry.getKey(), parseInlineEvaluator(evaluatorMap));
+                ParameterEvaluator evaluator = parseInlineEvaluator(evaluatorMap);
+                parameters.put(paramEntry.getKey(), evaluator);
+                Object constant = constantValueOf(evaluator);
+                if (constant != null) {
+                    constantParams.put(paramEntry.getKey(), constant);
+                }
             }
+            mechanicRegistry.validate(type, "ability '" + abilityId + "' in skill '" + skillId + "'", constantParams);
 
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> filtersRaw = (List<Map<String, Object>>) mechanicMap.getOrDefault("filters", List.of());
@@ -432,6 +443,19 @@ public final class SkillManager {
             entries.add(new SkillDefinition.MechanicEntry(type, filters, parameters));
         }
         return entries;
+    }
+
+    /**
+     * Returns the constant value carried by a parameter evaluator, or null when
+     * the evaluator is level-scaled (cannot be resolved at load time).
+     *
+     * @param evaluator the parsed parameter evaluator
+     * @return the constant string/number, or null
+     */
+    private static Object constantValueOf(ParameterEvaluator evaluator) {
+        if (evaluator instanceof ConstantValueEvaluator cve) return cve.value();
+        if (evaluator instanceof ConstantEvaluator ce) return ce.evaluate(0, 1);
+        return null;
     }
 
     private SkillDefinition.Feedback parseFeedback(Map<String, Object> map) {

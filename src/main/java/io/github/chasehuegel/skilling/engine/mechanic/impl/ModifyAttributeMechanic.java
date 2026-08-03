@@ -86,7 +86,16 @@ public final class ModifyAttributeMechanic implements SkillMechanic {
         return attribute;
     }
 
-    private static NamespacedKey parseAttributeKey(Object rawAttr) {
+    /**
+     * Parses a raw attribute parameter into its namespaced key. Namespaced
+     * strings are parsed directly; anything else is treated as a legacy numeric
+     * ID. Shared with load-time validation so the key grammar is defined once.
+     *
+     * @param rawAttr the raw parameter value
+     * @return the namespaced key
+     * @throws IllegalArgumentException if the parameter is null or malformed
+     */
+    static NamespacedKey parseAttributeKey(Object rawAttr) {
         if (rawAttr == null) {
             throw new IllegalArgumentException("Attribute parameter is required");
         }

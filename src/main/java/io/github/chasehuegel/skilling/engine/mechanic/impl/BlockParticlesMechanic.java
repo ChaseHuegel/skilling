@@ -19,7 +19,11 @@ import java.util.Map;
  *
  * <p>Returns true only when the event carries a block location (a right-click on a
  * block, a block break, or a block place), so it can serve as the executable action
- * that triggers the requirement {@code consume} step for item costs.
+ * that triggers the requirement {@code consume} step for item costs. An absent or
+ * blank {@code particle} makes the mechanic a no-op (used purely as a consume
+ * trigger); a present-but-unknown particle is rejected at skill load by the
+ * registry validator and throws here only if a real bug or an unvalidated addon
+ * mechanic passes one.
  */
 public final class BlockParticlesMechanic implements SkillMechanic {
 
@@ -33,14 +37,9 @@ public final class BlockParticlesMechanic implements SkillMechanic {
         double speed = ((Number) params.getOrDefault("speed", 0.0)).doubleValue();
         if (type.isBlank()) return false;
 
-        try {
-            Particle particle = Particle.valueOf(type.toUpperCase());
-            blockLocation.getWorld().spawnParticle(particle, blockLocation, count, 0, 0, 0, speed);
-            return true;
-        } catch (IllegalArgumentException ignored) {
-            // Unknown particle type - the ability is a no-op, so nothing is consumed.
-            return false;
-        }
+        Particle particle = Particle.valueOf(type.toUpperCase());
+        blockLocation.getWorld().spawnParticle(particle, blockLocation, count, 0, 0, 0, speed);
+        return true;
     }
 
     /**

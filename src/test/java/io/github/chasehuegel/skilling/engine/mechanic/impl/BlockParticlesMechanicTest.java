@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -54,7 +55,7 @@ class BlockParticlesMechanicTest {
     }
 
     @Test
-    void returnsFalseWithUnknownParticle() {
+    void unknownParticleFailsFastAsARealBug() {
         var mechanic = new BlockParticlesMechanic();
         var player = BukkitMock.mockPlayer();
         var world = mock(World.class);
@@ -65,7 +66,9 @@ class BlockParticlesMechanicTest {
         when(event.getAction()).thenReturn(Action.RIGHT_CLICK_BLOCK);
         when(event.getClickedBlock()).thenReturn(block);
 
-        assertFalse(mechanic.execute(player, Map.of("particle", "NOT_A_PARTICLE"), event),
-                "an unknown particle must make the burial a no-op (nothing consumed)");
+        // Unknown particles are rejected at skill load by the registry validator;
+        // reaching execute with one is a real bug and must fail fast.
+        assertThrows(IllegalArgumentException.class,
+                () -> mechanic.execute(player, Map.of("particle", "NOT_A_PARTICLE"), event));
     }
 }

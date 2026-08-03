@@ -25,6 +25,7 @@ public final class MechanicRegistry {
 
     private final Map<String, Supplier<? extends SkillMechanic>> registry = new ConcurrentHashMap<>();
     private final Map<String, List<String>> paramNames = new ConcurrentHashMap<>();
+    private final Map<String, MechanicValidator> validators = new ConcurrentHashMap<>();
 
     /**
      * Registers a mechanic class under the given key.
@@ -46,12 +47,44 @@ public final class MechanicRegistry {
      * @throws IllegalArgumentException if the key is taken or the class is invalid
      */
     public void register(String key, Class<? extends SkillMechanic> clazz, List<String> paramNames) {
+        register(key, clazz, paramNames, (context, params) -> {});
+    }
+
+    /**
+     * Registers a mechanic class under the given key with its parameter names
+     * and a load-time parameter validator.
+     *
+     * @param key        the registry key
+     * @param clazz      the mechanic class; must implement {@link SkillMechanic} and have a public no-arg constructor
+     * @param paramNames the supported parameter names (stored defensively)
+     * @param validator  validates the mechanic's constant-valued parameters at skill load time
+     * @throws IllegalArgumentException if the key is taken or the class is invalid
+     */
+    public void register(String key, Class<? extends SkillMechanic> clazz, List<String> paramNames,
+                         MechanicValidator validator) {
         if (registry.containsKey(key)) {
             throw new IllegalArgumentException("Mechanic already registered: " + key);
         }
         RegistrySupport.requirePublicNoArgConstructor(key, clazz);
         this.paramNames.put(key, List.copyOf(paramNames));
+        this.validators.put(key, validator);
         registry.put(key, () -> instantiate(key, clazz));
+    }
+
+    /**
+     * Validates a mechanic's constant-valued parameters at load time. Mechanics
+     * registered without a validator are no-ops.
+     *
+     * @param key               the registry key
+     * @param context           human-readable load context (skill/ability) for error messages
+     * @param constantParameters the constant-valued parameters parsed from YAML
+     * @throws IllegalArgumentException if a validator rejects a parameter
+     */
+    public void validate(String key, String context, Map<String, Object> constantParameters) {
+        MechanicValidator validator = validators.get(key);
+        if (validator != null) {
+            validator.validate(context, constantParameters);
+        }
     }
 
     private static SkillMechanic instantiate(String key, Class<? extends SkillMechanic> clazz) {
@@ -110,6 +143,7 @@ public final class MechanicRegistry {
     public void clear() {
         registry.clear();
         paramNames.clear();
+        validators.clear();
     }
 
     /**

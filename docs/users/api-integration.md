@@ -103,6 +103,22 @@ api.getRegistries().getMechanicRegistry().register(
 
 Server owners can now use `type: "myaddon:knockback"` in their YAML.
 
+If your mechanic consumes a string-valued parameter (e.g. an effect or material
+key), you can register an optional **load-time validator** so a YAML typo is
+rejected while the skill file is parsed instead of throwing inside an event
+handler. The validator receives the mechanic's constant-valued parameters and
+throws an `IllegalArgumentException` for an invalid value:
+
+```java
+registry.register("myaddon:knockback", KnockbackMechanic.class, List.of("force", "vertical"),
+        (context, params) -> {
+            if (params.get("material") != null
+                    && org.bukkit.Material.matchMaterial(String.valueOf(params.get("material"))) == null) {
+                throw new IllegalArgumentException(context + ": unknown material " + params.get("material"));
+            }
+        });
+```
+
 > **Namespaced effect/attribute keys:** Addon mechanics that resolve potion effects
 > through `PotionEffectResolver.resolve(...)` (or attributes through the same registry
 > pattern) automatically gain namespaced-key support (`minecraft:poison`) with legacy

@@ -69,7 +69,16 @@ final class PotionEffectResolver {
         return type;
     }
 
-    private static NamespacedKey parseKey(Object rawEffect) {
+    /**
+     * Parses a raw effect parameter into its namespaced key. Namespaced strings
+     * are parsed directly; anything else is treated as a legacy numeric ID.
+     * Shared with load-time validation so the key grammar is defined once.
+     *
+     * @param rawEffect the raw parameter value
+     * @return the namespaced key
+     * @throws IllegalArgumentException if the parameter is null or malformed
+     */
+    static NamespacedKey parseKey(Object rawEffect) {
         if (rawEffect == null) {
             throw new IllegalArgumentException("Effect parameter is required");
         }

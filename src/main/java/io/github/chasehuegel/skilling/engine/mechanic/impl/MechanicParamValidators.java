@@ -1,0 +1,123 @@
+package io.github.chasehuegel.skilling.engine.mechanic.impl;
+
+import java.util.Map;
+import java.util.function.Predicate;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+
+/**
+ * Load-time validators for string-valued mechanic parameters.
+ *
+ * <p>Each validator resolves its parameter when the skill YAML is parsed, so a
+ * typo (e.g. {@code effect: "minecraft:poisn"}) is rejected with a descriptive
+ * {@link IllegalArgumentException} at load time instead of throwing inside an
+ * event handler mid-game. Only constant-valued parameters can be validated at
+ * load; a missing parameter is skipped so mechanics with an intentionally
+ * optional string param keep their behavior.
+ *
+ * <p>The potion-effect and attribute key checks are injected by the plugin at
+ * startup ({@link #configureLookups}) because the live Bukkit registries cannot
+ * initialize in a plain-JUnit JVM. Until configured, those validators skip —
+ * unit tests stay green, and the dedicated load-validation tests inject
+ * deterministic predicates. Material and particle validation needs no registry
+ * and always runs.
+ */
+public final class MechanicParamValidators {
+
+    private static volatile Predicate<NamespacedKey> potionKeyKnown;
+    private static volatile Predicate<NamespacedKey> attributeKeyKnown;
+
+    private MechanicParamValidators() {}
+
+    /**
+     * Configures the live registry key checks used by load-time validation.
+     *
+     * @param potionKeyKnown    tests whether a namespaced potion effect key exists
+     * @param attributeKeyKnown tests whether a namespaced attribute key exists
+     */
+    public static void configureLookups(Predicate<NamespacedKey> potionKeyKnown,
+                                        Predicate<NamespacedKey> attributeKeyKnown) {
+        MechanicParamValidators.potionKeyKnown = potionKeyKnown;
+        MechanicParamValidators.attributeKeyKnown = attributeKeyKnown;
+    }
+
+    /**
+     * Validates a potion-effect parameter, skipping it when absent or when no
+     * registry key check has been configured.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the effect
+     * @throws IllegalArgumentException if the effect is present but unknown
+     */
+    public static void potionEffect(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key) || potionKeyKnown == null) return;
+        Object raw = params.get(key);
+        try {
+            if (!potionKeyKnown.test(PotionEffectResolver.parseKey(raw))) {
+                throw new IllegalArgumentException("Unknown potion effect key: " + raw);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(context + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validates an attribute parameter, skipping it when absent or when no
+     * registry key check has been configured.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the attribute
+     * @throws IllegalArgumentException if the attribute is present but unknown
+     */
+    public static void attribute(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key) || attributeKeyKnown == null) return;
+        Object raw = params.get(key);
+        try {
+            if (!attributeKeyKnown.test(ModifyAttributeMechanic.parseAttributeKey(raw))) {
+                throw new IllegalArgumentException("Unknown attribute key: " + raw);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(context + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validates a material parameter, skipping it when absent or blank.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the material
+     * @throws IllegalArgumentException if the material is present but unknown
+     */
+    public static void material(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key)) return;
+        Object raw = params.get(key);
+        String material = raw == null ? "" : String.valueOf(raw);
+        if (material.isBlank()) return;
+        if (Material.matchMaterial(material) == null) {
+            throw new IllegalArgumentException(context + ": unknown material '" + material + "'");
+        }
+    }
+
+    /**
+     * Validates a particle parameter, skipping it when absent or blank.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the particle
+     * @throws IllegalArgumentException if the particle is present but unknown
+     */
+    public static void particle(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key)) return;
+        String particle = String.valueOf(params.get(key));
+        if (particle.isBlank()) return;
+        try {
+            Particle.valueOf(particle.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(context + ": unknown particle '" + particle + "'", e);
+        }
+    }
+}

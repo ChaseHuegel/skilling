@@ -623,8 +623,10 @@ attribute: { constant: "minecraft:movement_speed" }
   resolved against the live Paper registry and are the recommended form.
 - **Legacy numeric IDs** (e.g., `19` for Poison, `4` for Movement Speed) remain
   supported for backward compatibility but are **deprecated** and log a warning on use.
-- **Unknown keys or IDs throw `IllegalArgumentException`** at runtime (fail-fast) so
-  misconfigurations surface immediately rather than silently failing.
+- **Unknown keys or IDs throw `IllegalArgumentException` at skill load time**
+  (fail-fast) so a typo is rejected while the skill file is parsed — never inside
+  an event handler mid-game. The same applies to the `material` parameter of
+  `core:set_cooldown` and the `particle` parameter of `core:block_particles`.
 
 ## Built-In Triggers
 
