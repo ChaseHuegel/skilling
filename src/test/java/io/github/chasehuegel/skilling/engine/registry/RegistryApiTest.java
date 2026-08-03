@@ -165,6 +165,16 @@ class RegistryApiTest {
     }
 
     @Test
+    void createReturnsAFreshInstancePerCall() {
+        var reg = new MechanicRegistry();
+        reg.register("a", ValidMechanic.class);
+        var first = reg.create("a");
+        var second = reg.create("a");
+        assertTrue(first != second,
+                "the cached constructor must still prototype-scope mechanics, not reuse an instance");
+    }
+
+    @Test
     void evaluatorRegistryTypedRegistrationAndCreate() {
         var reg = new EvaluatorRegistry();
         reg.register("valid_class", ValidEvaluator.class);

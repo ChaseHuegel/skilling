@@ -1,6 +1,7 @@
 package io.github.chasehuegel.skilling.engine.registry;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,21 @@ public final class MechanicRegistry {
         RegistrySupport.requirePublicNoArgConstructor(key, clazz);
         this.paramNames.put(key, List.copyOf(paramNames));
         this.validators.put(key, validator);
-        registry.put(key, () -> instantiate(key, clazz));
+        // Resolve the public no-arg constructor once here so per-execution
+        // instantiation never reflects; the fail-fast check above guarantees it.
+        try {
+            Constructor<? extends SkillMechanic> constructor = clazz.getConstructor();
+            registry.put(key, () -> {
+                try {
+                    return constructor.newInstance();
+                } catch (ReflectiveOperationException e) {
+                    throw new IllegalStateException("Failed to instantiate mechanic: " + key, e);
+                }
+            });
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(
+                    "Class for '" + key + "' must have a public no-arg constructor: " + clazz.getName(), e);
+        }
     }
 
     /**
@@ -84,14 +99,6 @@ public final class MechanicRegistry {
         MechanicValidator validator = validators.get(key);
         if (validator != null) {
             validator.validate(context, constantParameters);
-        }
-    }
-
-    private static SkillMechanic instantiate(String key, Class<? extends SkillMechanic> clazz) {
-        try {
-            return clazz.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to instantiate mechanic: " + key, e);
         }
     }
 

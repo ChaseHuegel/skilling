@@ -451,55 +451,52 @@ public final class SkillEventListener implements Listener {
     }
 
     private void grantXp(Player player, PlayerProfile profile, Event event, String triggerKey) {
-        for (SkillDefinition skill : skillManager.getSkills().values()) {
-            // Compute the skill's level once per skill per dispatch; XP sources
-            // within one skill share it, and level-ups advance it in place so later
-            // sources in the same event see the updated level.
-            int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
-            for (SkillDefinition.XpSource source : skill.xpSources()) {
-                if (!source.trigger().equals(triggerKey)) {
-                    debug("  [" + skill.id() + "] XP source trigger '" + source.trigger()
-                            + "' != '" + triggerKey + "', skipping");
-                    continue;
+        // A skill's level is computed once per dispatch and shared by its XP
+        // sources; level-ups advance it in place so later sources in the same
+        // event see the updated level.
+        Map<SkillDefinition, Integer> levelBySkill = new java.util.IdentityHashMap<>();
+        for (SkillManager.XpSourceRef ref : skillManager.xpSourcesFor(triggerKey)) {
+            SkillDefinition skill = ref.skill();
+            SkillDefinition.XpSource source = ref.source();
+            if (!matchesFilters(player, event, source.filters())) {
+                debug("  [" + skill.id() + "] XP source filters failed, skipping");
+                continue;
+            }
+            int skillLevel = levelBySkill.computeIfAbsent(skill, s -> s.getLevelForXp(profile.getXp(s.id())));
+            int oldLevel = skillLevel;
+            double reward = source.reward().evaluate(oldLevel, 1);
+            double scalar = resolveEventBulkScalar(event);
+            double global = plugin.getGlobalXpModifier();
+            double xpBonus = io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic
+                    .getMultiplier(player.getUniqueId());
+            long rounded = computeXpGain(reward, scalar, global, player.getUniqueId());
+            if (rounded > 0) {
+                profile.addXp(skill.id(), rounded);
+                int newLevel = skill.getLevelForXp(profile.getXp(skill.id()));
+                showXpBossBar(player, skill, profile);
+                if (profile.getPreferences().logXp()) {
+                    String displayName = skill.display() != null && skill.display().name() != null
+                            ? skill.display().name() : skill.id();
+                    player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize("&a+" + rounded + " &7XP in &a" + displayName + " &7(" + triggerKey + ")"));
                 }
-                if (!matchesFilters(player, event, source.filters())) {
-                    debug("  [" + skill.id() + "] XP source filters failed, skipping");
-                    continue;
+                if (newLevel > oldLevel) {
+                    skillLevel = newLevel;
+                    levelBySkill.put(skill, newLevel);
+                    profile.invalidatePageCache();
+                    var levelUpEvent = new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
+                            player, skill.id(), newLevel);
+                    Bukkit.getPluginManager().callEvent(levelUpEvent);
+                    // Route the Skilling level-up through the trigger pipeline so
+                    // trigger: level_up abilities and XP sources fire.
+                    dispatch(player, levelUpEvent, "level_up");
+                    broadcastLevelUp(player, skill, newLevel);
                 }
-                int oldLevel = skillLevel;
-                double reward = source.reward().evaluate(oldLevel, 1);
-                double scalar = resolveEventBulkScalar(event);
-                double global = plugin.getGlobalXpModifier();
-                double xpBonus = io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic
-                        .getMultiplier(player.getUniqueId());
-                long rounded = computeXpGain(reward, scalar, global, player.getUniqueId());
-                if (rounded > 0) {
-                    profile.addXp(skill.id(), rounded);
-                    int newLevel = skill.getLevelForXp(profile.getXp(skill.id()));
-                    showXpBossBar(player, skill, profile);
-                    if (profile.getPreferences().logXp()) {
-                        String displayName = skill.display() != null && skill.display().name() != null
-                                ? skill.display().name() : skill.id();
-                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize("&a+" + rounded + " &7XP in &a" + displayName + " &7(" + triggerKey + ")"));
-                    }
-                    if (newLevel > oldLevel) {
-                        skillLevel = newLevel;
-                        profile.invalidatePageCache();
-                        var levelUpEvent = new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
-                                player, skill.id(), newLevel);
-                        Bukkit.getPluginManager().callEvent(levelUpEvent);
-                        // Route the Skilling level-up through the trigger pipeline so
-                        // trigger: level_up abilities and XP sources fire.
-                        dispatch(player, levelUpEvent, "level_up");
-                        broadcastLevelUp(player, skill, newLevel);
-                    }
-                    debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey
-                            + ") base=" + reward + " scalar=" + scalar + " global=" + global
-                            + " xpBonus=" + xpBonus);
-                    plugin.getLogger().info(player.getName() + " earned " + rounded
-                            + " XP in " + skill.id() + " (" + triggerKey + ")");
-                }
+                debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey
+                        + ") base=" + reward + " scalar=" + scalar + " global=" + global
+                        + " xpBonus=" + xpBonus);
+                plugin.getLogger().info(player.getName() + " earned " + rounded
+                        + " XP in " + skill.id() + " (" + triggerKey + ")");
             }
         }
     }
@@ -510,120 +507,116 @@ public final class SkillEventListener implements Listener {
 
     void fireAbilities(Player player, PlayerProfile profile, Event event, String triggerKey) {
         debug("fireAbilities for " + player.getName() + " on " + triggerKey);
-        for (SkillDefinition skill : skillManager.getSkills().values()) {
-            // Level does not change during a dispatch (mechanics do not grant XP),
-            // so compute it once per skill instead of once per ability.
-            int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
-            for (SkillDefinition.Ability ability : skill.abilities()) {
-                debug("  ability=" + ability.id() + " skillLevel=" + skillLevel
-                        + " unlockLevel=" + ability.unlockLevel());
-                if (skillLevel < ability.unlockLevel()) {
-                    debug("    -> locked, skipping");
-                    continue;
-                }
-
-                if (!ability.trigger().equals(triggerKey)) {
-                    debug("    -> trigger '" + ability.trigger() + "' != '" + triggerKey + "', skipping");
-                    continue;
-                }
-
-                // Check requirements ONCE per ability, before iterating mechanics.
-                // A cooldown or missing cost gates the whole ability — checking per
-                // mechanic meant the first mechanic's consume applied the cooldown,
-                // blocking every later mechanic, and item costs were deducted per
-                // executing mechanic.
-                RequirementResult check = requirementEngine.check(player, ability.id(), ability.requirements(),
-                        skillLevel, ability.unlockLevel());
-                debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
-                if (!check.success()) {
-                    if (feedbackDebouncer.tryDebounce(player, ability.id())) {
-                        var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());
-                        if (failure != null && !failure.actionBar().isBlank()) {
-                            String msg = failure.actionBar();
-                            for (var ph : check.placeholders().entrySet()) {
-                                msg = msg.replace("{" + ph.getKey() + "}", ph.getValue());
-                            }
-                            player.sendActionBar(LegacyComponentSerializer.legacyAmpersand().deserialize(msg));
-                        }
-                    }
-                    continue;
-                }
-
-                // Execute each mechanic, preserving per-mechanic filter matching and
-                // per-mechanic parameter evaluation.
-                boolean anyExecuted = false;
-                for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
-                    debug("    mechanic=" + entry.type() + " skill=" + skill.id());
-                    SkillMechanic mechanic = mechanicRegistry.create(entry.type());
-                    if (mechanic == null) {
-                        debug("    -> mechanic not found in registry, skipping");
-                        continue;
-                    }
-
-                    if (!matchesFilters(player, event, entry.filters())) {
-                        debug("    -> filters failed, skipping");
-                        continue;
-                    }
-
-                    Map<String, Object> evaluatedParams = evaluateParams(entry, skillLevel, ability.unlockLevel());
-                    debug("    executing mechanic with params=" + evaluatedParams);
-                    boolean executed = mechanic.execute(player, evaluatedParams, event);
-                    if (executed) {
-                        anyExecuted = true;
-                    } else {
-                        debug("    -> mechanic returned false (no-op), skipping");
-                    }
-                }
-
-                // Consume exactly once per activation, only when at least one
-                // mechanic performed an activation attempt; a no-op ability
-                // (wrong event type, missing target) must not spend its cost.
-                // Chance-based mechanics return true on a failed roll, so the
-                // cost/cooldown is consumed once per attempt, never per retry.
-                if (!anyExecuted) {
-                    debug("    -> no mechanic executed, skipping consume and feedback");
-                    continue;
-                }
-                requirementEngine.consume(player, ability.id(), ability.requirements(),
-                        skillLevel, ability.unlockLevel());
-
-                String abilityMsg = ability.feedback().message();
-                boolean hasMsg = !abilityMsg.isBlank();
-                if (ability.feedback().actionBar() && hasMsg) {
-                    FanfareDispatcher.sendActionBar(player, abilityMsg);
-                    if (profile.getPreferences().logAbilities()) {
-                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize(abilityMsg));
-                    }
-                }
-                if (ability.feedback().chat() && hasMsg && !ability.feedback().actionBar()) {
-                    if (profile.getPreferences().logAbilities()) {
-                        player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize(abilityMsg));
-                    }
-                }
-
-                double cdSec = ability.requirements().cooldown().evaluate(skillLevel, ability.unlockLevel());
-                if (cdSec > 0) {
-                    long delayTicks = (long) (cdSec * 20);
-                    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                        if (player.isOnline()) {
-                            String readyMsg = "<green>✦ " + ability.displayName() + " is ready!</green>";
-                            player.sendMessage(MiniMessage.miniMessage().deserialize(readyMsg));
-                            player.sendActionBar(net.kyori.adventure.text.Component.text(
-                                    "✦ " + ability.displayName() + " is ready!",
-                                    NamedTextColor.GREEN));
-                        }
-                    }, delayTicks);
-                }
-                if (!ability.feedback().particles().isEmpty()) {
-                    FanfareDispatcher.dispatchParticles(player, resolveEventTargetLocation(event), ability.feedback().particles());
-                }
-                if (!ability.feedback().sounds().isEmpty()) {
-                    FanfareDispatcher.dispatchSounds(player, resolveEventTargetLocation(event), ability.feedback().sounds());
-                }
-                debug("    -> done");
+        // Level does not change during a dispatch (mechanics do not grant XP),
+        // so it is computed once per skill and shared by its abilities.
+        Map<SkillDefinition, Integer> levelBySkill = new java.util.IdentityHashMap<>();
+        for (SkillManager.AbilityRef ref : skillManager.abilitiesFor(triggerKey)) {
+            SkillDefinition skill = ref.skill();
+            SkillDefinition.Ability ability = ref.ability();
+            int skillLevel = levelBySkill.computeIfAbsent(skill, s -> s.getLevelForXp(profile.getXp(s.id())));
+            debug("  ability=" + ability.id() + " skillLevel=" + skillLevel
+                    + " unlockLevel=" + ability.unlockLevel());
+            if (skillLevel < ability.unlockLevel()) {
+                debug("    -> locked, skipping");
+                continue;
             }
+
+            // Check requirements ONCE per ability, before iterating mechanics.
+            // A cooldown or missing cost gates the whole ability — checking per
+            // mechanic meant the first mechanic's consume applied the cooldown,
+            // blocking every later mechanic, and item costs were deducted per
+            // executing mechanic.
+            RequirementResult check = requirementEngine.check(player, ability.id(), ability.requirements(),
+                    skillLevel, ability.unlockLevel());
+            debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
+            if (!check.success()) {
+                if (feedbackDebouncer.tryDebounce(player, ability.id())) {
+                    var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());
+                    if (failure != null && !failure.actionBar().isBlank()) {
+                        String msg = failure.actionBar();
+                        for (var ph : check.placeholders().entrySet()) {
+                            msg = msg.replace("{" + ph.getKey() + "}", ph.getValue());
+                        }
+                        player.sendActionBar(LegacyComponentSerializer.legacyAmpersand().deserialize(msg));
+                    }
+                }
+                continue;
+            }
+
+            // Execute each mechanic, preserving per-mechanic filter matching and
+            // per-mechanic parameter evaluation.
+            boolean anyExecuted = false;
+            for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
+                debug("    mechanic=" + entry.type() + " skill=" + skill.id());
+                SkillMechanic mechanic = mechanicRegistry.create(entry.type());
+                if (mechanic == null) {
+                    debug("    -> mechanic not found in registry, skipping");
+                    continue;
+                }
+
+                if (!matchesFilters(player, event, entry.filters())) {
+                    debug("    -> filters failed, skipping");
+                    continue;
+                }
+
+                Map<String, Object> evaluatedParams = evaluateParams(entry, skillLevel, ability.unlockLevel());
+                debug("    executing mechanic with params=" + evaluatedParams);
+                boolean executed = mechanic.execute(player, evaluatedParams, event);
+                if (executed) {
+                    anyExecuted = true;
+                } else {
+                    debug("    -> mechanic returned false (no-op), skipping");
+                }
+            }
+
+            // Consume exactly once per activation, only when at least one
+            // mechanic performed an activation attempt; a no-op ability
+            // (wrong event type, missing target) must not spend its cost.
+            // Chance-based mechanics return true on a failed roll, so the
+            // cost/cooldown is consumed once per attempt, never per retry.
+            if (!anyExecuted) {
+                debug("    -> no mechanic executed, skipping consume and feedback");
+                continue;
+            }
+            requirementEngine.consume(player, ability.id(), ability.requirements(),
+                    skillLevel, ability.unlockLevel());
+
+            String abilityMsg = ability.feedback().message();
+            boolean hasMsg = !abilityMsg.isBlank();
+            if (ability.feedback().actionBar() && hasMsg) {
+                FanfareDispatcher.sendActionBar(player, abilityMsg);
+                if (profile.getPreferences().logAbilities()) {
+                    player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize(abilityMsg));
+                }
+            }
+            if (ability.feedback().chat() && hasMsg && !ability.feedback().actionBar()) {
+                if (profile.getPreferences().logAbilities()) {
+                    player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize(abilityMsg));
+                }
+            }
+
+            double cdSec = ability.requirements().cooldown().evaluate(skillLevel, ability.unlockLevel());
+            if (cdSec > 0) {
+                long delayTicks = (long) (cdSec * 20);
+                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                    if (player.isOnline()) {
+                        String readyMsg = "<green>✦ " + ability.displayName() + " is ready!</green>";
+                        player.sendMessage(MiniMessage.miniMessage().deserialize(readyMsg));
+                        player.sendActionBar(net.kyori.adventure.text.Component.text(
+                                "✦ " + ability.displayName() + " is ready!",
+                                NamedTextColor.GREEN));
+                    }
+                }, delayTicks);
+            }
+            if (!ability.feedback().particles().isEmpty()) {
+                FanfareDispatcher.dispatchParticles(player, resolveEventTargetLocation(event), ability.feedback().particles());
+            }
+            if (!ability.feedback().sounds().isEmpty()) {
+                FanfareDispatcher.dispatchSounds(player, resolveEventTargetLocation(event), ability.feedback().sounds());
+            }
+            debug("    -> done");
         }
     }
 

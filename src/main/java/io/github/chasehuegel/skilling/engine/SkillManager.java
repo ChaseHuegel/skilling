@@ -35,6 +35,20 @@ public final class SkillManager {
     private final TriggerRegistry triggerRegistry;
     private TagResolver tagResolver;
     private volatile Map<String, SkillDefinition> skills = Map.of();
+    private volatile Map<String, List<XpSourceRef>> xpSourcesByTrigger = Map.of();
+    private volatile Map<String, List<AbilityRef>> abilitiesByTrigger = Map.of();
+
+    /**
+     * A skill XP source paired with its owning skill, indexed by trigger so event
+     * dispatch only visits the sources bound to the dispatched trigger.
+     */
+    public record XpSourceRef(SkillDefinition skill, SkillDefinition.XpSource source) {}
+
+    /**
+     * A skill ability paired with its owning skill, indexed by trigger so event
+     * dispatch only visits the abilities bound to the dispatched trigger.
+     */
+    public record AbilityRef(SkillDefinition skill, SkillDefinition.Ability ability) {}
 
     /**
      * Constructs a new skill manager.
@@ -82,6 +96,29 @@ public final class SkillManager {
             }
         }
         this.skills = Collections.unmodifiableMap(built);
+        // Build the trigger index over the same immutable snapshot so dispatch
+        // never scans every skill × source/ability per event. Swapped atomically
+        // with the skill map (rebuilt on every load, including reload).
+        Map<String, List<XpSourceRef>> xpIndex = new HashMap<>();
+        Map<String, List<AbilityRef>> abilityIndex = new HashMap<>();
+        for (SkillDefinition skill : built.values()) {
+            for (SkillDefinition.XpSource source : skill.xpSources()) {
+                xpIndex.computeIfAbsent(source.trigger(), k -> new ArrayList<>())
+                        .add(new XpSourceRef(skill, source));
+            }
+            for (SkillDefinition.Ability ability : skill.abilities()) {
+                abilityIndex.computeIfAbsent(ability.trigger(), k -> new ArrayList<>())
+                        .add(new AbilityRef(skill, ability));
+            }
+        }
+        this.xpSourcesByTrigger = freezeIndex(xpIndex);
+        this.abilitiesByTrigger = freezeIndex(abilityIndex);
+    }
+
+    private static <T> Map<String, List<T>> freezeIndex(Map<String, List<T>> index) {
+        Map<String, List<T>> frozen = new HashMap<>();
+        index.forEach((trigger, refs) -> frozen.put(trigger, List.copyOf(refs)));
+        return Collections.unmodifiableMap(frozen);
     }
 
     /**
@@ -587,6 +624,26 @@ public final class SkillManager {
     }
 
     /**
+     * Returns the XP sources bound to a trigger key, with their owning skills.
+     *
+     * @param triggerKey the trigger key (e.g. {@code block_break})
+     * @return the indexed sources for the trigger, in load order
+     */
+    public List<XpSourceRef> xpSourcesFor(String triggerKey) {
+        return xpSourcesByTrigger.getOrDefault(triggerKey, List.of());
+    }
+
+    /**
+     * Returns the abilities bound to a trigger key, with their owning skills.
+     *
+     * @param triggerKey the trigger key (e.g. {@code block_break})
+     * @return the indexed abilities for the trigger, in load order
+     */
+    public List<AbilityRef> abilitiesFor(String triggerKey) {
+        return abilitiesByTrigger.getOrDefault(triggerKey, List.of());
+    }
+
+    /**
      * Returns a skill definition by its ID.
      *
      * @param id the skill ID
@@ -621,5 +678,7 @@ public final class SkillManager {
      */
     public void clear() {
         this.skills = Map.of();
+        this.xpSourcesByTrigger = Map.of();
+        this.abilitiesByTrigger = Map.of();
     }
 }
