@@ -7,11 +7,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.junit.jupiter.api.Test;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class ThornsDamageMechanicTest {
+
+    private static EntityDamageByEntityEvent damageEvent(LivingEntity damaged, org.bukkit.entity.Entity damager) {
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getEntity()).thenReturn(damaged);
+        when(event.getDamager()).thenReturn(damager);
+        return event;
+    }
 
     @Test
     void returnsFalseForNonDamageEvent() {
@@ -61,5 +71,47 @@ class ThornsDamageMechanicTest {
 
         assertTrue(mechanic.execute(player, Map.of("damage", 5.0), event));
         verify(zombie).damage(5.0, player);
+    }
+
+    @Test
+    void twoReflectingEntitiesTerminateWithoutRecursion() {
+        var mechanic = new ThornsDamageMechanic();
+        var a = mock(Player.class);
+        var b = mock(Player.class);
+
+        // Simulate the re-entrant pipeline: damaging an entity synchronously
+        // fires its damage event, which re-runs the reflect mechanic for it.
+        // Without the re-entrancy guard this ping-pongs until StackOverflowError.
+        doAnswer(inv -> {
+            mechanic.execute(a, Map.of("damage", 5.0), damageEvent(a, b));
+            return null;
+        }).when(a).damage(anyDouble(), eq(b));
+        doAnswer(inv -> {
+            mechanic.execute(b, Map.of("damage", 5.0), damageEvent(b, a));
+            return null;
+        }).when(b).damage(anyDouble(), eq(a));
+
+        mechanic.execute(b, Map.of("damage", 5.0), damageEvent(b, a));
+
+        // B reflects onto A, A reflects back onto B once, and the cycle stops.
+        verify(a).damage(anyDouble(), eq(b));
+        verify(b).damage(anyDouble(), eq(a));
+    }
+
+    @Test
+    void selfReflectTerminatesAfterSingleHit() {
+        var mechanic = new ThornsDamageMechanic();
+        var a = mock(Player.class);
+        AtomicInteger damageCalls = new AtomicInteger();
+        doAnswer(inv -> {
+            mechanic.execute(a, Map.of("damage", 5.0), damageEvent(a, a));
+            damageCalls.incrementAndGet();
+            return null;
+        }).when(a).damage(anyDouble(), eq(a));
+
+        mechanic.execute(a, Map.of("damage", 5.0), damageEvent(a, a));
+
+        verify(a).damage(anyDouble(), eq(a));
+        assertEquals(1, damageCalls.get(), "the reflected self-hit must not reflect again");
     }
 }
