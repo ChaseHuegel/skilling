@@ -31,4 +31,15 @@ class ProjectileMechanicTest {
         when(loc.getDirection()).thenReturn(mock(org.bukkit.util.Vector.class));
         assertTrue(mechanic.execute(player, Map.of(), BukkitMock.mockInteractEvent(player)));
     }
+
+    @Test
+    void leftClickIsANoOpThatDoesNotLaunch() {
+        var mechanic = new ProjectileMechanic();
+        var player = BukkitMock.mockPlayer();
+        var event = mock(org.bukkit.event.player.PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(org.bukkit.event.block.Action.LEFT_CLICK_AIR);
+
+        assertFalse(mechanic.execute(player, Map.of("speed", 1.5, "damage", 4.0), event));
+        verify(player, never()).launchProjectile(any());
+    }
 }

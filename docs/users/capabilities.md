@@ -256,7 +256,8 @@ Applies a potion effect to all living entities within a radius of the player, ex
 
 ### core:projectile
 
-Launches a custom projectile from the player.
+Launches a custom projectile from the player. Fires only on a right-click
+(right-click air or right-click block); a left-click is a no-op.
 
 **Parameters:**
 
@@ -265,11 +266,12 @@ Launches a custom projectile from the player.
 | `speed` | double | `1.5` | Projectile velocity multiplier |
 | `damage` | double | `4` | Damage dealt on hit |
 
-**Event:** `PlayerInteractEvent`
+**Event:** `PlayerInteractEvent` (right-click only)
 
 ### core:teleport
 
-Short-range teleport in the player's looking direction.
+Short-range teleport in the player's looking direction. Fires only on a
+right-click (right-click air or right-click block); a left-click is a no-op.
 
 **Parameters:**
 
@@ -277,7 +279,7 @@ Short-range teleport in the player's looking direction.
 |---|---|---|---|
 | `range` | double | `10` | Teleport distance in blocks |
 
-**Event:** `PlayerInteractEvent`
+**Event:** `PlayerInteractEvent` (right-click only)
 
 ### core:thorns_damage
 

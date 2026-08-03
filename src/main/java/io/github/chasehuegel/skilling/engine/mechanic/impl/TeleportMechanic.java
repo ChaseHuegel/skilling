@@ -12,6 +12,9 @@ import java.util.Map;
  * Teleports the player to the targeted block or in the look direction up to a maximum range on {@link PlayerInteractEvent}.
  * Includes safe-location fallback and bounds checking.
  *
+ * <p>Only a right-click (air or block) teleports; a left-click is a no-op so it
+ * never consumes the ability cost.
+ *
  * <p><b>YAML key:</b> {@code teleport}
  * <p><b>Optional parameters:</b> {@code range} (default 10.0, maximum teleport distance in blocks)
  */
@@ -19,7 +22,10 @@ public final class TeleportMechanic implements SkillMechanic {
 
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof PlayerInteractEvent)) return false;
+        if (!(event instanceof PlayerInteractEvent interactEvent)) return false;
+        org.bukkit.event.block.Action action = interactEvent.getAction();
+        if (action != org.bukkit.event.block.Action.RIGHT_CLICK_AIR
+                && action != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return false;
         double range = ((Number) params.getOrDefault("range", 10.0)).doubleValue();
         if (range <= 0) return false;
 

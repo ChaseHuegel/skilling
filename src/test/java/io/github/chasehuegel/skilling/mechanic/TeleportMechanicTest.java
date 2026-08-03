@@ -75,4 +75,15 @@ class TeleportMechanicTest {
 
         assertFalse(mechanic.execute(player, Map.of("range", 10.0), BukkitMock.mockInteractEvent(player)));
     }
+
+    @Test
+    void leftClickIsANoOpThatDoesNotTeleport() {
+        var mechanic = new TeleportMechanic();
+        var player = BukkitMock.mockPlayer();
+        var event = mock(org.bukkit.event.player.PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(org.bukkit.event.block.Action.LEFT_CLICK_AIR);
+
+        assertFalse(mechanic.execute(player, Map.of("range", 10.0), event));
+        verify(player, never()).teleport(any(Location.class));
+    }
 }

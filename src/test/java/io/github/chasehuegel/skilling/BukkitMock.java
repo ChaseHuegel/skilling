@@ -56,7 +56,9 @@ public final class BukkitMock {
     }
 
     public static PlayerInteractEvent mockInteractEvent(Player player) {
-        return mock(PlayerInteractEvent.class);
+        var event = mock(PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK);
+        return event;
     }
 
     public static PlayerItemConsumeEvent mockConsumeEvent(Player player) {
