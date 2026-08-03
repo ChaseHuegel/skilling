@@ -10,7 +10,7 @@
 - [x] [ISSUE-197](ISSUE-197.md) - Remove static mutable state and test-only hooks from break mechanics
 - [x] [ISSUE-199](ISSUE-199.md) - Aura mechanics must not buff hostile mobs; fix AllyAuraMechanic radius-0 edge
 - [x] [ISSUE-200](ISSUE-200.md) - Make ShieldDisableMechanic target semantics independent of trigger binding
-- [ ] [ISSUE-201](ISSUE-201.md) - Fix ModifyCraftOutputMechanic shift-click overflow dropping bonus items
+- [x] [ISSUE-201](ISSUE-201.md) - Fix ModifyCraftOutputMechanic shift-click overflow dropping bonus items
 - [ ] [ISSUE-202](ISSUE-202.md) - Validate mechanic parameter bounds at parse time
 - [ ] [ISSUE-203](ISSUE-203.md) - Fix off-by-one in the exhaustion (hunger) requirement check
 - [ ] [ISSUE-205](ISSUE-205.md) - Gate ProjectileMechanic and TeleportMechanic on interact action

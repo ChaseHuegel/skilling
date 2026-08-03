@@ -177,7 +177,10 @@ Applies a temporary movement speed attribute modifier.
 
 ### core:modify_craft_output
 
-Multiplies the output of crafting recipes.
+Multiplies the output of crafting recipes. The result slot is capped at one
+stack; any bonus overflow beyond it is granted as an extra stack in the player's
+inventory (or dropped on the ground if the inventory is full), so no bonus items
+are lost on shift-click batches.
 
 **Parameters:**
 
