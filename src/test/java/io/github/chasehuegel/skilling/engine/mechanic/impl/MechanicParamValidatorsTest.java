@@ -89,4 +89,41 @@ class MechanicParamValidatorsTest {
         assertDoesNotThrow(() -> MechanicParamValidators.particle("ctx", Map.of(), "particle"));
         assertDoesNotThrow(() -> MechanicParamValidators.particle("ctx", Map.of("particle", ""), "particle"));
     }
+
+    @Test
+    void radiusRejectsNegativeAndAcceptsNonNegative() {
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.radius("ctx", Map.of("radius", -5.0), "radius"));
+        assertDoesNotThrow(() -> MechanicParamValidators.radius("ctx", Map.of("radius", 0.0), "radius"));
+        assertDoesNotThrow(() -> MechanicParamValidators.radius("ctx", Map.of("radius", 32.0), "radius"));
+        assertDoesNotThrow(() -> MechanicParamValidators.radius("ctx", Map.of(), "radius"));
+    }
+
+    @Test
+    void chanceRejectsOutOfBoundsAndAcceptsInRange() {
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.chance("ctx", Map.of("chance", -1.0), "chance", 100));
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.chance("ctx", Map.of("chance", 101.0), "chance", 100));
+        assertDoesNotThrow(() -> MechanicParamValidators.chance("ctx", Map.of("chance", 100.0), "chance", 100));
+        assertDoesNotThrow(() -> MechanicParamValidators.chance("ctx", Map.of("chance", 0.0), "chance", 100));
+        assertDoesNotThrow(() -> MechanicParamValidators.chance("ctx", Map.of(), "chance", 100));
+    }
+
+    @Test
+    void nonNegativeRejectsNegativeAndAcceptsZero() {
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.nonNegative("ctx", Map.of("duration", -1.0), "duration"));
+        assertDoesNotThrow(() -> MechanicParamValidators.nonNegative("ctx", Map.of("duration", 0.0), "duration"));
+        assertDoesNotThrow(() -> MechanicParamValidators.nonNegative("ctx", Map.of(), "duration"));
+    }
+
+    @Test
+    void positiveRejectsNonPositiveAndAcceptsPositive() {
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.positive("ctx", Map.of("multiplier", 0.0), "multiplier"));
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.positive("ctx", Map.of("multiplier", -1.0), "multiplier"));
+        assertDoesNotThrow(() -> MechanicParamValidators.positive("ctx", Map.of("multiplier", 0.5), "multiplier"));
+    }
 }

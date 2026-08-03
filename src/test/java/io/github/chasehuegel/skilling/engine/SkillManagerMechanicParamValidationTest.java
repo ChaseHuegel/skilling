@@ -110,6 +110,43 @@ class SkillManagerMechanicParamValidationTest {
     }
 
     @Test
+    void negativeRadiusFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:aoe_effect"
+                        parameters:
+                          effect: { constant: "minecraft:poison" }
+                          radius: { constant: -5 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("radius"), ex.getMessage());
+    }
+
+    @Test
+    void chanceOverOneHundredFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:dodge"
+                        parameters:
+                          chance: { constant: 150 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("chance"), ex.getMessage());
+    }
+
+    @Test
+    void negativeCooldownTicksFailToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:set_cooldown"
+                        parameters:
+                          material: { constant: "minecraft:shield" }
+                          ticks: { constant: -10 }
+                """);
+        assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+    }
+
+    @Test
     void validParamsLoadAndExecuteUnchanged() throws Exception {
         writeSkill("""
                       - type: "core:ally_aura"

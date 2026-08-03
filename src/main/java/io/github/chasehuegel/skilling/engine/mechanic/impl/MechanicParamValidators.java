@@ -120,4 +120,72 @@ public final class MechanicParamValidators {
             throw new IllegalArgumentException(context + ": unknown particle '" + particle + "'", e);
         }
     }
+
+    /**
+     * Validates a non-negative radius parameter, skipping it when absent.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the radius
+     * @throws IllegalArgumentException if the radius is present but negative
+     */
+    public static void radius(String context, Map<String, Object> params, String key) {
+        Number value = number(params.get(key));
+        if (value != null && value.doubleValue() < 0) {
+            throw new IllegalArgumentException(context + ": " + key + " must not be negative, got " + value);
+        }
+    }
+
+    /**
+     * Validates a bounded chance parameter in {@code [0, max]}, skipping it when
+     * absent.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the chance
+     * @param max     the inclusive upper bound (e.g. 100 for percentages, 1 for a ratio)
+     * @throws IllegalArgumentException if the chance is present and out of bounds
+     */
+    public static void chance(String context, Map<String, Object> params, String key, double max) {
+        Number value = number(params.get(key));
+        if (value != null && (value.doubleValue() < 0 || value.doubleValue() > max)) {
+            throw new IllegalArgumentException(context + ": " + key
+                    + " must be between 0 and " + max + ", got " + value);
+        }
+    }
+
+    /**
+     * Validates a non-negative numeric parameter (duration in seconds, cooldown
+     * in ticks, etc.), skipping it when absent.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key to validate
+     * @throws IllegalArgumentException if the parameter is present but negative
+     */
+    public static void nonNegative(String context, Map<String, Object> params, String key) {
+        Number value = number(params.get(key));
+        if (value != null && value.doubleValue() < 0) {
+            throw new IllegalArgumentException(context + ": " + key + " must not be negative, got " + value);
+        }
+    }
+
+    /**
+     * Validates a strictly positive numeric parameter, skipping it when absent.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key to validate
+     * @throws IllegalArgumentException if the parameter is present but not positive
+     */
+    public static void positive(String context, Map<String, Object> params, String key) {
+        Number value = number(params.get(key));
+        if (value != null && value.doubleValue() <= 0) {
+            throw new IllegalArgumentException(context + ": " + key + " must be positive, got " + value);
+        }
+    }
+
+    private static Number number(Object value) {
+        return value instanceof Number n ? n : null;
+    }
 }

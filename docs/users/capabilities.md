@@ -642,6 +642,14 @@ attribute: { constant: "minecraft:movement_speed" }
   an event handler mid-game. The same applies to the `material` parameter of
   `core:set_cooldown` and the `particle` parameter of `core:block_particles`.
 
+> **Parameter bounds are also validated at load:** negative radii
+> (`core:aoe_effect`, `core:field_aura`, `core:crowd_control`, `core:knockback`,
+> `core:ally_aura`), out-of-range chances (`chance`/`yield_chance` outside 0-100,
+> or a non-positive `modify_tame_chance` multiplier), and negative durations or
+> cooldown ticks are rejected when the skill file is parsed. Level-scaled
+> evaluator parameters cannot be checked without a level context and are only
+> validated at runtime.
+
 ## Built-In Triggers
 
 > **Bulk-operation scaling:** XP rewards for the `collect_xp`, `craft_item`, and
