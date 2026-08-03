@@ -266,6 +266,7 @@ class AutoSmeltMechanicTest {
             var hand = mock(ItemStack.class);
             when(player.getInventory().getItemInMainHand()).thenReturn(hand);
             var raw = mock(ItemStack.class);
+            when(raw.getType()).thenReturn(Material.RAW_IRON);
             when(raw.getAmount()).thenReturn(2);
             var event = smeltableBreak(hand, List.of(raw));
 

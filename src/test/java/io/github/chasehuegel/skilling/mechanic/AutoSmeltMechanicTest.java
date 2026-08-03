@@ -284,6 +284,7 @@ class AutoSmeltMechanicTest {
             when(player.getInventory().getItemInMainHand()).thenReturn(hand);
 
             var raw = mock(ItemStack.class);
+            when(raw.getType()).thenReturn(Material.RAW_IRON);
             when(raw.getAmount()).thenReturn(2);
             var event = smeltableBreak(Material.IRON_ORE, hand, List.of(raw));
 
@@ -296,20 +297,23 @@ class AutoSmeltMechanicTest {
     }
 
     @Test
-    void netherGoldOreSmeltsToNuggetsNotIngots() {
+    void netherGoldOreDropsPassThroughUnchanged() {
         try (MockedStatic<RegistryAccess> registry = mockRegistryAccess()) {
             var mechanic = new AutoSmeltMechanic();
             var player = BukkitMock.mockPlayer();
             var hand = mock(ItemStack.class);
             when(player.getInventory().getItemInMainHand()).thenReturn(hand);
 
+            // Nether gold ore already drops gold nuggets (its smelted product),
+            // so there is nothing to smelt: the vanilla drop pipeline is left on.
             var nugget = mock(ItemStack.class);
+            when(nugget.getType()).thenReturn(Material.GOLD_NUGGET);
             when(nugget.getAmount()).thenReturn(3);
             var event = smeltableBreak(Material.NETHER_GOLD_ORE, hand, List.of(nugget));
 
-            assertTrue(mechanic.execute(player, Map.of("chance", 100.0), event));
-            verify(nugget).setType(Material.GOLD_NUGGET);
-            verify(nugget).setAmount(3);
+            assertFalse(mechanic.execute(player, Map.of("chance", 100.0), event));
+            verify(event, never()).setDropItems(false);
+            verify(nugget, never()).setType(any(Material.class));
         }
     }
 
@@ -322,8 +326,10 @@ class AutoSmeltMechanicTest {
             when(player.getInventory().getItemInMainHand()).thenReturn(hand);
 
             var a = mock(ItemStack.class);
+            when(a.getType()).thenReturn(Material.RAW_IRON);
             when(a.getAmount()).thenReturn(2);
             var b = mock(ItemStack.class);
+            when(b.getType()).thenReturn(Material.RAW_IRON);
             when(b.getAmount()).thenReturn(3);
             var event = smeltableBreak(Material.IRON_ORE, hand, List.of(a, b));
 
@@ -331,6 +337,33 @@ class AutoSmeltMechanicTest {
 
             verify(a).setAmount(5);
             verify(event.getBlock().getWorld()).dropItemNaturally(any(Location.class), eq(a));
+        }
+    }
+
+    @Test
+    void multiTypeDropsProduceOneSmeltedStackPerMappedType() {
+        try (MockedStatic<RegistryAccess> registry = mockRegistryAccess()) {
+            var mechanic = new AutoSmeltMechanic();
+            var player = BukkitMock.mockPlayer();
+            var hand = mock(ItemStack.class);
+            when(player.getInventory().getItemInMainHand()).thenReturn(hand);
+
+            // A block yielding raw iron (smeltable) and a gem (no mapping):
+            // the iron smelts to ingots and the gem is re-dropped unchanged.
+            var rawIron = mock(ItemStack.class);
+            when(rawIron.getType()).thenReturn(Material.RAW_IRON);
+            when(rawIron.getAmount()).thenReturn(2);
+            var gem = mock(ItemStack.class);
+            when(gem.getType()).thenReturn(Material.DIAMOND);
+            when(gem.getAmount()).thenReturn(1);
+            var event = smeltableBreak(Material.IRON_ORE, hand, List.of(rawIron, gem));
+
+            assertTrue(mechanic.execute(player, Map.of("chance", 100.0), event));
+            verify(event).setDropItems(false);
+            verify(rawIron).setType(Material.IRON_INGOT);
+            verify(rawIron).setAmount(2);
+            verify(event.getBlock().getWorld()).dropItemNaturally(any(Location.class), eq(rawIron));
+            verify(event.getBlock().getWorld()).dropItemNaturally(any(Location.class), eq(gem));
         }
     }
 

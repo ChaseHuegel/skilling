@@ -14,7 +14,7 @@
 - [x] [ISSUE-202](ISSUE-202.md) - Validate mechanic parameter bounds at parse time
 - [x] [ISSUE-203](ISSUE-203.md) - Fix off-by-one in the exhaustion (hunger) requirement check
 - [x] [ISSUE-205](ISSUE-205.md) - Gate ProjectileMechanic and TeleportMechanic on interact action
-- [ ] [ISSUE-206](ISSUE-206.md) - Fix AutoSmeltMechanic collapsing multiple drop types into one stack
+- [x] [ISSUE-206](ISSUE-206.md) - Fix AutoSmeltMechanic collapsing multiple drop types into one stack
 
 ### Improvements
 - [ ] [ISSUE-191](ISSUE-191.md) - Apply §4 constants and source set to the remaining multi-source skills

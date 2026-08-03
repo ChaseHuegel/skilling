@@ -390,9 +390,17 @@ Instantly kills targets below a health threshold.
 
 ### core:auto_smelt
 
-Automatically smelts mined blocks.
+Automatically smelts mined blocks (e.g. iron ore -> iron ingot). Each distinct
+drop type with a smelt mapping is converted independently — one smelted stack
+per product, with unmapped drop types re-dropped unchanged, so multi-type blocks
+never merge or lose drops. Nugget/quartz drops (already the smelted product)
+pass through unchanged.
 
-**Parameters:** None
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) of smelting |
 
 **Event:** `BlockBreakEvent`
 
