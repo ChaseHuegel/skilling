@@ -14,6 +14,9 @@ import java.util.function.Function;
  * Applies a potion effect to the casting player and all nearby players (allies)
  * within a radius. Hostile mobs are never affected.
  *
+ * <p>The caster is buffed only when the aura radius is positive: a
+ * {@code radius: 0} config buffs nobody, since no ally is in range.
+ *
  * <p><b>YAML key:</b> {@code core:ally_aura}
  * <p><b>Required parameters:</b> {@code effect} (namespaced key, e.g. {@code minecraft:regeneration})
  * <p><b>Optional parameters:</b> {@code radius} (default 8.0, clamped to [0, 32]),
@@ -39,13 +42,29 @@ public final class AllyAuraMechanic implements SkillMechanic {
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         AuraParams aura = resolveParams(params);
-        player.addPotionEffect(aura.effect());
-        for (Player ally : player.getLocation().getNearbyPlayers(aura.radius())) {
+        apply(player, aura.effect(), aura.radius());
+        return true;
+    }
+
+    /**
+     * Applies the effect to the caster (when the radius is positive) and every
+     * other nearby player.
+     *
+     * @param player the casting player
+     * @param effect the resolved effect to apply
+     * @param radius the search radius in blocks
+     */
+    static void apply(Player player, PotionEffect effect, double radius) {
+        // A radius of 0 means no ally is in range; the caster is buffed only as
+        // part of the aura, so a self-only cast at radius 0 buffs nobody.
+        if (radius > 0) {
+            player.addPotionEffect(effect);
+        }
+        for (Player ally : player.getLocation().getNearbyPlayers(radius)) {
             if (!ally.getUniqueId().equals(player.getUniqueId())) {
-                ally.addPotionEffect(aura.effect());
+                ally.addPotionEffect(effect);
             }
         }
-        return true;
     }
 
     /**

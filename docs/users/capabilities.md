@@ -237,16 +237,17 @@ Modifies the duration of brewed potion effects.
 
 ### core:aoe_effect
 
-Applies a potion effect to all entities within a radius (excluding the player).
+Applies a potion effect to all living entities within a radius of the player, excluding the player themselves. By default (`targets: allies`) hostile mobs are never affected.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:regeneration`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:poison`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `radius` | double | `5` | Effect radius in blocks |
 | `duration` | double | `5` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
+| `targets` | string | `allies` | Who receives the effect: `allies` (default, excludes hostile mobs), `hostiles` (only monsters and angered neutrals), or `all` |
 
 **Event:** Fires on the trigger declared by the ability. Applies the effect to all living entities within `radius` (excluding the player).
 
@@ -352,7 +353,10 @@ Heals the player for a percentage of damage dealt.
 
 ### core:crowd_control
 
-Applies a potion effect to nearby enemies within a radius on damaging an entity.
+Applies an AoE status effect to nearby enemies when damaging a target. This is
+the offensive counterpart to the buff auras: it defaults to `targets: hostiles`
+so a debuff lands only on monsters and angered neutrals — never on your own
+allies.
 
 **Parameters:**
 
@@ -362,6 +366,7 @@ Applies a potion effect to nearby enemies within a radius on damaging an entity.
 | `duration` | double | `3` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
 | `radius` | double | `5` | Effect radius in blocks |
+| `targets` | string | `hostiles` | Who receives the effect: `hostiles` (default, monsters and angered neutrals), `allies`, or `all` |
 
 **Event:** `EntityDamageByEntityEvent`
 
@@ -527,7 +532,7 @@ Reduces the experience level cost of enchanting at an enchanting table.
 
 ### core:field_aura
 
-Applies a potion effect to the player and all nearby living entities within a radius.
+Applies a potion effect to the player and nearby living entities within a radius. By default (`targets: allies`) hostile mobs are never affected.
 
 **Parameters:**
 
@@ -537,15 +542,17 @@ Applies a potion effect to the player and all nearby living entities within a ra
 | `radius` | double | `8` | Aura radius in blocks |
 | `duration` | double | `5` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
+| `targets` | string | `allies` | Who receives the effect: `allies` (default, excludes hostile mobs), `hostiles` (only monsters and angered neutrals), or `all` |
 
 **Event:** Fires on the trigger declared by the ability.
 
-> **Caution:** `core:field_aura` applies the effect to ALL nearby `LivingEntity`,
-> including hostile mobs. For player-only buffs, use `core:ally_aura` instead.
+> **Caution:** set `targets: hostiles` or `targets: all` only if you deliberately
+> want a regen/strength aura to reach hostile mobs. For player-only buffs, use
+> `core:ally_aura` instead.
 
 ### core:ally_aura
 
-Applies a potion effect to the casting player and all nearby **players** (allies) within a radius. Hostile mobs are never affected.
+Applies a potion effect to the casting player and all nearby **players** (allies) within a radius. Hostile mobs are never affected. A `radius: 0` config buffs nobody — the caster is only buffed as part of the aura, not unconditionally.
 
 **Parameters:**
 

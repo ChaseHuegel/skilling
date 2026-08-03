@@ -1,19 +1,28 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
- * Verifies the parameter extraction and radius clamping of {@link AllyAuraMechanic}
- * in isolation. A recording lookup stands in for the live Bukkit registry, which
- * is unavailable in the JUnit JVM.
+ * Verifies the parameter extraction, radius clamping, and radius-0 behavior of
+ * {@link AllyAuraMechanic}. A recording lookup stands in for the live Bukkit
+ * registry, which is unavailable in the JUnit JVM.
  */
 class AllyAuraMechanicTest {
 
@@ -67,5 +76,35 @@ class AllyAuraMechanicTest {
     void unknownEffectKeyFailsFast() {
         assertThrows(IllegalArgumentException.class,
                 () -> AllyAuraMechanic.resolveParams(Map.of("effect", "minecraft:nonexistent"), key -> null));
+    }
+
+    @Test
+    void radiusZeroDoesNotSelfBuff() {
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var loc = mock(Location.class);
+        when(player.getLocation()).thenReturn(loc);
+        when(loc.getNearbyPlayers(0.0)).thenReturn(List.of());
+
+        AllyAuraMechanic.apply(player, mock(PotionEffect.class), 0.0);
+
+        verify(player, never()).addPotionEffect(any(PotionEffect.class));
+    }
+
+    @Test
+    void positiveRadiusBuffsCasterAndNearbyAllies() {
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var ally = mock(Player.class);
+        when(ally.getUniqueId()).thenReturn(UUID.randomUUID());
+        var loc = mock(Location.class);
+        when(player.getLocation()).thenReturn(loc);
+        when(loc.getNearbyPlayers(8.0)).thenReturn(List.of(player, ally));
+
+        var effect = mock(PotionEffect.class);
+        AllyAuraMechanic.apply(player, effect, 8.0);
+
+        verify(player).addPotionEffect(effect);
+        verify(ally).addPotionEffect(effect);
     }
 }

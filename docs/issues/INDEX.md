@@ -8,7 +8,7 @@
 - [x] [ISSUE-195](ISSUE-195.md) - Add a damager-role guard to ModifyDamageMechanic
 - [x] [ISSUE-196](ISSUE-196.md) - Correct tool durability handling in block-break mechanics
 - [x] [ISSUE-197](ISSUE-197.md) - Remove static mutable state and test-only hooks from break mechanics
-- [ ] [ISSUE-199](ISSUE-199.md) - Aura mechanics must not buff hostile mobs; fix AllyAuraMechanic radius-0 edge
+- [x] [ISSUE-199](ISSUE-199.md) - Aura mechanics must not buff hostile mobs; fix AllyAuraMechanic radius-0 edge
 - [ ] [ISSUE-200](ISSUE-200.md) - Make ShieldDisableMechanic target semantics independent of trigger binding
 - [ ] [ISSUE-201](ISSUE-201.md) - Fix ModifyCraftOutputMechanic shift-click overflow dropping bonus items
 - [ ] [ISSUE-202](ISSUE-202.md) - Validate mechanic parameter bounds at parse time
