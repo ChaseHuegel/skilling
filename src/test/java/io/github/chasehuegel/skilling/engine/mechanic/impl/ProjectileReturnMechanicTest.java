@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.entity.SpectralArrow;
@@ -12,6 +13,7 @@ import org.bukkit.entity.Trident;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Map;
 
@@ -40,6 +42,10 @@ class ProjectileReturnMechanicTest {
         var world = mock(World.class);
         when(player.getWorld()).thenReturn(world);
         when(player.getLocation()).thenReturn(mock(Location.class));
+        // Production players always have an eye location; use a real Location
+        // so the mechanic's drop-target math (forward + 0.65 down) is real.
+        when(player.getEyeLocation()).thenReturn(new Location(world, 10, 20, 30));
+        when(world.dropItem(any(Location.class), any(ItemStack.class))).thenReturn(mock(Item.class));
         return player;
     }
 
@@ -78,11 +84,21 @@ class ProjectileReturnMechanicTest {
         when(tridentItem.clone()).thenReturn(returned);
         when(trident.getItemStack()).thenReturn(tridentItem);
 
+        Location eye = player.getEyeLocation();
+        Location expected = eye.clone().add(eye.getDirection()).subtract(0, 0.65, 0);
+
         assertTrue(mechanic.execute(player, Map.of("chance", 100.0), hitEvent(trident, player)));
 
         verify(trident).getItemStack();
         verify(trident).remove();
-        verify(player.getWorld()).dropItemNaturally(any(Location.class), eq(returned));
+        ArgumentCaptor<Location> dropAt = ArgumentCaptor.forClass(Location.class);
+        verify(player.getWorld()).dropItem(dropAt.capture(), eq(returned));
+
+        // The drop lands one block in front of the player's eye, 0.65 down.
+        Location drop = dropAt.getValue();
+        assertEquals(expected.getX(), drop.getX(), 1e-6);
+        assertEquals(expected.getY(), drop.getY(), 1e-6);
+        assertEquals(expected.getZ(), drop.getZ(), 1e-6);
     }
 
     @Test
@@ -99,7 +115,7 @@ class ProjectileReturnMechanicTest {
 
         assertTrue(mechanic.execute(player, Map.of("chance", 100.0), hitEvent(arrow, player)));
         verify(arrow).remove();
-        verify(player.getWorld()).dropItemNaturally(any(Location.class), eq(returnedArrow));
+        verify(player.getWorld()).dropItem(any(Location.class), eq(returnedArrow));
 
         var spectral = mock(SpectralArrow.class);
         var spectralItem = mock(ItemStack.class);
@@ -110,7 +126,7 @@ class ProjectileReturnMechanicTest {
 
         assertTrue(mechanic.execute(player, Map.of("chance", 100.0), hitEvent(spectral, player)));
         verify(spectral).remove();
-        verify(player.getWorld()).dropItemNaturally(any(Location.class), eq(returnedSpectral));
+        verify(player.getWorld()).dropItem(any(Location.class), eq(returnedSpectral));
     }
 
     @Test
@@ -127,7 +143,7 @@ class ProjectileReturnMechanicTest {
         when(arrow.getItemStack()).thenReturn(tippedItem);
 
         assertTrue(mechanic.execute(player, Map.of("chance", 100.0), hitEvent(arrow, player)));
-        verify(player.getWorld()).dropItemNaturally(any(Location.class), eq(returned));
+        verify(player.getWorld()).dropItem(any(Location.class), eq(returned));
     }
 
     @Test

@@ -15,6 +15,7 @@ import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -86,6 +87,8 @@ class ProjectileHitTriggerTest {
         var world = mock(World.class);
         when(player.getWorld()).thenReturn(world);
         when(player.getLocation()).thenReturn(mock(Location.class));
+        when(player.getEyeLocation()).thenReturn(new Location(world, 10, 20, 30));
+        when(world.dropItem(any(Location.class), any(ItemStack.class))).thenReturn(mock(Item.class));
 
         var tagResolver = new TagResolver(new CustomTagLoader());
         RequirementEngine requirementEngine = new RequirementEngine(tagResolver, new StateFilterRegistry());
@@ -119,7 +122,7 @@ class ProjectileHitTriggerTest {
         listener.onProjectileHitTrigger(event);
 
         verify(trident).remove();
-        verify(player.getWorld()).dropItemNaturally(any(Location.class), eq(returned));
+        verify(player.getWorld()).dropItem(any(Location.class), eq(returned));
     }
 
     @Test

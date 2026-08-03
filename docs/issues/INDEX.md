@@ -1,7 +1,7 @@
 ## Active Sprint / Current Milestone
 
 ### Bugs
-- [ ] [ISSUE-190](ISSUE-190.md) - Fix pre-existing Projectile test failures (mock eye location)
+- [x] [ISSUE-190](ISSUE-190.md) - Fix pre-existing Projectile test failures (mock eye location)
 - [ ] [ISSUE-192](ISSUE-192.md) - Define and enforce consistent cost/cooldown consumption for chance-based mechanics
 - [ ] [ISSUE-193](ISSUE-193.md) - Guard ThornsDamageMechanic against synchronous reflect recursion
 - [ ] [ISSUE-194](ISSUE-194.md) - Fail-fast validation of string mechanic parameters at load, not on the event path
