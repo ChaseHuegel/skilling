@@ -168,7 +168,7 @@ player levels up.
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `amount` | double | — | Hunger points to consume on use (0-20) |
-| `minimum` | double | — | Minimum food level required to activate (0-20) |
+| `minimum` | double | — | Minimum food level required to activate, inclusive (0-20); a food level equal to `minimum` passes |
 
 ##### items
 

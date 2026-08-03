@@ -119,7 +119,8 @@ abilities:
           amount: 1                             # Example of consuming an item fuel source
       # Exhaustion (hunger) requirement — deducted on ability use
       # amount: hunger points to consume (0-20)
-      # minimum: minimum hunger level required to activate
+      # minimum: minimum hunger level required to activate (inclusive; food level
+      #           equal to minimum passes) (0-20)
       exhaustion:
         amount: 2.0
         minimum: 3.0

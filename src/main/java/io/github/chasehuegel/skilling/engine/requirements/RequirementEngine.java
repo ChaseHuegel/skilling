@@ -104,7 +104,8 @@ public final class RequirementEngine {
         // Check exhaustion (hunger) requirement
         var exhaustion = requirements.exhaustion();
         if (exhaustion != null) {
-            if (player.getFoodLevel() <= exhaustion.minimum()) {
+            // The minimum is inclusive (a food level equal to the minimum passes).
+            if (player.getFoodLevel() < exhaustion.minimum()) {
                 return RequirementResult.failed(FailureReason.EXHAUSTION, Map.of(
                         "hunger", String.valueOf(player.getFoodLevel()),
                         "required", String.valueOf((int) Math.ceil(exhaustion.minimum()))

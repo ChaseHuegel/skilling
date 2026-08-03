@@ -346,8 +346,8 @@ class RequirementEngineTest {
     }
 
     @Test
-    void exhaustionAtMinimumStillFails() {
-        // The engine requires food level strictly above the minimum.
+    void exhaustionAtMinimumPassesCheck() {
+        // The minimum is inclusive: a food level equal to the minimum activates.
         var requirements = new SkillDefinition.Requirements(
                 new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0),
                 List.of(), List.of(),
@@ -357,7 +357,7 @@ class RequirementEngineTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getFoodLevel()).thenReturn(5);
 
-        assertEquals(FailureReason.EXHAUSTION, engine.check(player, "a", requirements, 10, 5).failureReason());
+        assertTrue(engine.check(player, "a", requirements, 10, 5).success());
     }
 
     @Test
