@@ -304,15 +304,16 @@ Applies a directional velocity impulse (knockback) to the damaged entity, or to 
 
 ### core:shield_disable
 
-Triggers the vanilla shield raise-lockout cooldown on a target player, rendering them unable to block with a shield for the duration.
+Triggers the vanilla shield raise-lockout cooldown on a target player, rendering them unable to block with a shield for the duration. The target is explicit via the `target` parameter and independent of the trigger binding.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `ticks` | double | `0` | Shield disable duration in ticks |
+| `target` | string | `victim` | Who gets disabled: `victim` (the damaged player on `EntityDamageByEntityEvent`; falls back to the activating player elsewhere), `attacker` (the player attacker, projectile shooters count; falls back to the activating player elsewhere), or `self` (always the activating player). A non-player victim/attacker is a safe no-op |
 
-**Event:** `EntityDamageByEntityEvent` (applied to the damaged player) / `PlayerInteractEvent` (applied to the activating player)
+**Event:** `EntityDamageByEntityEvent` / `PlayerInteractEvent`
 
 ### core:offhand_strike
 

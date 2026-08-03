@@ -25,15 +25,7 @@ class ShieldDisableMechanicTest {
     }
 
     @Test
-    void returnsFalseWithNonPlayerTarget() {
-        var player = BukkitMock.mockPlayer();
-        var event = mock(EntityDamageByEntityEvent.class);
-        when(event.getEntity()).thenReturn(mock(Entity.class));
-        assertFalse(mechanic.execute(player, Map.of("ticks", 20.0), event));
-    }
-
-    @Test
-    void setsCooldownOnPlayerVictim() {
+    void defaultTargetsVictimOnDamageEvent() {
         var player = BukkitMock.mockPlayer();
         var victim = mock(Player.class);
         var event = mock(EntityDamageByEntityEvent.class);
@@ -43,7 +35,50 @@ class ShieldDisableMechanicTest {
     }
 
     @Test
-    void setsCooldownOnSelfForInteractEvent() {
+    void nonPlayerDamagedEntityIsASafeNoOp() {
+        var player = BukkitMock.mockPlayer();
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getEntity()).thenReturn(mock(Entity.class));
+        assertFalse(mechanic.execute(player, Map.of("ticks", 20.0), event));
+        verify(player, never()).setCooldown(any(Material.class), anyInt());
+    }
+
+    @Test
+    void attackerTargetDisablesTheDamagingPlayer() {
+        // entity_damage_taken binding: the activating player is the victim and a
+        // player attacker's shield is disabled.
+        var player = BukkitMock.mockPlayer();
+        var attacker = mock(Player.class);
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getDamager()).thenReturn(attacker);
+        when(event.getEntity()).thenReturn(player);
+        assertTrue(mechanic.execute(player, Map.of("ticks", 30.0, "target", "attacker"), event));
+        verify(attacker).setCooldown(Material.SHIELD, 30);
+        verify(player, never()).setCooldown(any(Material.class), anyInt());
+    }
+
+    @Test
+    void attackerTargetNoOpsWhenAttackerIsNotAPlayer() {
+        var player = BukkitMock.mockPlayer();
+        var zombie = mock(org.bukkit.entity.Zombie.class);
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getDamager()).thenReturn(zombie);
+        when(event.getEntity()).thenReturn(player);
+        assertFalse(mechanic.execute(player, Map.of("ticks", 30.0, "target", "attacker"), event));
+        verify(player, never()).setCooldown(any(Material.class), anyInt());
+    }
+
+    @Test
+    void selfTargetAlwaysDisablesTheActivatingPlayer() {
+        var player = BukkitMock.mockPlayer();
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getEntity()).thenReturn(mock(Player.class));
+        assertTrue(mechanic.execute(player, Map.of("ticks", 20.0, "target", "self"), event));
+        verify(player).setCooldown(Material.SHIELD, 20);
+    }
+
+    @Test
+    void interactEventFallsBackToSelf() {
         var player = BukkitMock.mockPlayer();
         assertTrue(mechanic.execute(player, Map.of("ticks", 20.0), BukkitMock.mockInteractEvent(player)));
         verify(player).setCooldown(Material.SHIELD, 20);
