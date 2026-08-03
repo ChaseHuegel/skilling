@@ -51,7 +51,9 @@ class LevelBreakMechanicTest {
         var inv = mock(org.bukkit.inventory.PlayerInventory.class);
         when(player.getInventory()).thenReturn(inv);
         var tool = mock(ItemStack.class);
-        when(tool.getType()).thenReturn(Material.IRON_PICKAXE);
+        var material = mock(Material.class);
+        when(material.getMaxDurability()).thenReturn((short) 100);
+        when(tool.getType()).thenReturn(material);
         var meta = mock(Damageable.class);
         when(meta.getDamage()).thenReturn(0);
         when(tool.getItemMeta()).thenReturn(meta);

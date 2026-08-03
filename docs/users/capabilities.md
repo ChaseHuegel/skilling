@@ -36,8 +36,9 @@ Multiplies block drops by a percentage chance on each break.
 
 Breaks connected blocks of the same type up to a limit (vein mining), expanding
 in all six directions (including up/down). Each chained block consumes 1 tool
-durability; chained blocks are broken without re-triggering XP or ability
-processing (only the originating break awards XP).
+durability (respecting Unbreaking, with the tool breaking at max durability);
+chained blocks are broken without re-triggering XP or ability processing (only
+the originating break awards XP).
 
 **Parameters:**
 
@@ -427,7 +428,9 @@ Multiplies the quality or quantity of loot from fishing treasure.
 
 Breaks all matching blocks in a radius around the targeted block. The radius is
 clamped to 32 and the scan stops at `max_blocks`. Each harvested block fires a
-synthetic `BlockBreakEvent`, so region/protection plugins can cancel it.
+synthetic `BlockBreakEvent`, so region/protection plugins can cancel it, and
+consumes 1 tool durability (respecting Unbreaking, with the tool breaking at
+max durability).
 
 **Parameters:**
 

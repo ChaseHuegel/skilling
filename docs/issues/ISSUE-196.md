@@ -6,10 +6,10 @@
 - **Inputs:** Code review of `ChainBreakMechanic` and `AreaHarvestMechanic`.
 
 ## Implementation Requirements
-- [ ] Fix `ChainBreakMechanic.damageTool`: the current `+1` per block ignores the `Unbreaking` enchantment, can push `Damage` past the item's max durability (item can break / desync), and should route through a durability-aware path.
-- [ ] Add tool-damage accounting to `AreaHarvestMechanic` (it currently breaks every harvested block with no durability cost at all — inconsistent with `ChainBreakMechanic`).
-- [ ] Ensure a tool reaching max durability breaks (or otherwise behaves like a vanilla break) rather than remaining in an invalid damage state.
-- [ ] Consider the interaction with the origin break already consumed by vanilla (each mechanic should cost for the *additional* blocks it breaks, mirroring vanilla semantics).
+- [x] Fix `ChainBreakMechanic.damageTool`: the current `+1` per block ignores the `Unbreaking` enchantment, can push `Damage` past the item's max durability (item can break / desync), and should route through a durability-aware path.
+- [x] Add tool-damage accounting to `AreaHarvestMechanic` (it currently breaks every harvested block with no durability cost at all — inconsistent with `ChainBreakMechanic`).
+- [x] Ensure a tool reaching max durability breaks (or otherwise behaves like a vanilla break) rather than remaining in an invalid damage state.
+- [x] Consider the interaction with the origin break already consumed by vanilla (each mechanic should cost for the *additional* blocks it breaks, mirroring vanilla semantics).
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,8 +17,9 @@
   - `src/main/java/io/github/chasehuegel/skilling/engine/mechanic/impl/AreaHarvestMechanic.java`
 - **Dependencies:** none.
 - **Constraints:** Keep the shared logic in one place (ChainBreak already exposes a shared BFS/damage hook to `LevelBreakMechanic`). Respect `ItemDamageEvent` semantics where practical (fire a cancellable damage event so other plugins can veto) instead of mutating `Damageable` directly.
+- **Note (resolution):** Shared cost moved to a new `ToolDurability` helper used by both mechanics. `damageOnce` fires a cancellable `PlayerItemDamageEvent` (plugin veto), rolls Unbreaking (1/(level+1) chance to consume per point, read from the enchantment map by key so no registry is needed), and breaks the tool via `setAmount(0)` at max durability instead of exceeding it. Random source and Unbreaking reader are injectable seams for deterministic tests.
 
 ## Verification & Definition of Done
-- [ ] `./gradlew build` passes (excluding the pre-existing ISSUE-190 failures).
-- [ ] `./gradlew test` passes.
-- [ ] New/updated tests assert durability cost per broken block, Unbreaking-chance interaction, and that a tool does not exceed max durability for `ChainBreakMechanic` and `AreaHarvestMechanic`.
+- [x] `./gradlew build` passes (excluding the pre-existing ISSUE-190 failures).
+- [x] `./gradlew test` passes.
+- [x] New/updated tests assert durability cost per broken block, Unbreaking-chance interaction, and that a tool does not exceed max durability for `ChainBreakMechanic` and `AreaHarvestMechanic`.

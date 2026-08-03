@@ -92,7 +92,9 @@ class ChainBreakMechanicTest {
         var inv = mock(org.bukkit.inventory.PlayerInventory.class);
         when(player.getInventory()).thenReturn(inv);
         var tool = mock(ItemStack.class);
-        when(tool.getType()).thenReturn(Material.IRON_PICKAXE);
+        var toolMaterial = mock(Material.class);
+        when(toolMaterial.getMaxDurability()).thenReturn((short) 100);
+        when(tool.getType()).thenReturn(toolMaterial);
         var meta = mock(Damageable.class);
         when(meta.getDamage()).thenReturn(5);
         when(tool.getItemMeta()).thenReturn(meta);

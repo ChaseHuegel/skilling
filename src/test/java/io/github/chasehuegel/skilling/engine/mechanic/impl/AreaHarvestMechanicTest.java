@@ -18,6 +18,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -154,6 +157,50 @@ class AreaHarvestMechanicTest {
             new AreaHarvestMechanic().execute(player, Map.of("radius", 5), event);
         }
         assertEquals(64, breakCount.get());
+    }
+
+    @Test
+    void durabilityConsumedPerHarvestedBlock() {
+        var world = mock(World.class);
+        var origin = mock(Block.class);
+        when(origin.getType()).thenReturn(Material.WHEAT);
+        when(origin.getLocation()).thenReturn(new Location(world, 0, 0, 0));
+
+        when(origin.getRelative(anyInt(), eq(0), anyInt())).thenAnswer(inv -> {
+            int dx = inv.getArgument(0);
+            int dz = inv.getArgument(2);
+            var block = mock(Block.class);
+            when(block.getType()).thenReturn(Material.WHEAT);
+            when(block.getLocation()).thenReturn(new Location(world, dx, 0, dz));
+            return block;
+        });
+
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(origin);
+
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inventory = mock(org.bukkit.inventory.PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+
+        var tool = mock(ItemStack.class);
+        var material = mock(Material.class);
+        when(material.getMaxDurability()).thenReturn((short) 100);
+        when(tool.getType()).thenReturn(material);
+        var meta = mock(Damageable.class);
+        when(meta.getDamage()).thenReturn(5);
+        when(tool.getItemMeta()).thenReturn(meta);
+        when(inventory.getItemInMainHand()).thenReturn(tool);
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getPluginManager()).thenReturn(mock(PluginManager.class));
+            new AreaHarvestMechanic().execute(player, Map.of("radius", 1), event);
+        }
+
+        // A 3x3 harvest minus the origin = 8 additional blocks, one durability
+        // point each (the vanilla break already covered the origin block).
+        verify(meta, times(8)).setDamage(6);
+        verify(inventory, times(8)).setItemInMainHand(tool);
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +64,7 @@ public final class AreaHarvestMechanic implements SkillMechanic {
 
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();
+        ItemStack tool = player.getInventory().getItemInMainHand();
         Set<Location> processing = PROCESSING.get();
         try {
             int broken = 0;
@@ -80,8 +82,11 @@ public final class AreaHarvestMechanic implements SkillMechanic {
                         BlockBreakEvent harvestEvent = new BlockBreakEvent(neighbor, player);
                         Bukkit.getPluginManager().callEvent(harvestEvent);
                         if (harvestEvent.isCancelled()) continue;
-                        neighbor.breakNaturally(player.getInventory().getItemInMainHand());
+                        neighbor.breakNaturally(tool);
                         broken++;
+                        // The vanilla break only deducted durability for the
+                        // origin block; each additional harvested block costs one.
+                        ToolDurability.damageOnce(player, tool);
                     } finally {
                         processing.remove(loc);
                     }

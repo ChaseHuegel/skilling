@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 import java.util.*;
 
 /**
@@ -100,7 +99,7 @@ public class ChainBreakMechanic implements SkillMechanic {
                             if (!chainEvent.isCancelled()) {
                                 neighbor.breakNaturally(player.getInventory().getItemInMainHand());
                                 broken++;
-                                damageTool(player);
+                                ToolDurability.damageOnce(player, player.getInventory().getItemInMainHand());
                                 if (broken < limit) {
                                     queue.add(neighbor);
                                 }
@@ -119,20 +118,5 @@ public class ChainBreakMechanic implements SkillMechanic {
         }
 
         return true;
-    }
-
-    /**
-     * Consumes 1 tool durability per chained block. The vanilla break only
-     * deducts durability for the originating block, so the mechanic restores the
-     * intended cost for every additional block it breaks.
-     */
-    private static void damageTool(Player player) {
-        ItemStack tool = player.getInventory().getItemInMainHand();
-        if (tool == null || tool.getType() == Material.AIR) return;
-        if (tool.getItemMeta() instanceof Damageable damageable) {
-            damageable.setDamage(damageable.getDamage() + 1);
-            tool.setItemMeta((org.bukkit.inventory.meta.ItemMeta) damageable);
-            player.getInventory().setItemInMainHand(tool);
-        }
     }
 }
