@@ -46,7 +46,7 @@ the originating break awards XP).
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `chain_limit` | double | `0` | Maximum connected blocks to break |
+| `chain_limit` | double | `0` | Maximum connected blocks to break (clamped to 128 so an oversized value cannot freeze the server) |
 
 **Event:** `BlockBreakEvent`
 
@@ -62,7 +62,7 @@ for chained blocks).
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `chain_limit` | double | `0` | Maximum connected blocks to break |
+| `chain_limit` | double | `0` | Maximum connected blocks to break (clamped to 128) |
 
 **Event:** `BlockBreakEvent`
 
@@ -456,17 +456,17 @@ Multiplies the quality or quantity of loot from fishing treasure.
 ### core:area_harvest
 
 Breaks all matching blocks in a radius around the targeted block. The radius is
-clamped to 32 and the scan stops at `max_blocks`. Each harvested block fires a
-synthetic `BlockBreakEvent`, so region/protection plugins can cancel it, and
-consumes 1 tool durability (respecting Unbreaking, with the tool breaking at
-max durability).
+clamped to 32 and the scan stops at `max_blocks` (itself clamped to 128). Each
+harvested block fires a synthetic `BlockBreakEvent`, so region/protection
+plugins can cancel it, and consumes 1 tool durability (respecting Unbreaking,
+with the tool breaking at max durability).
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `radius` | double | `1` | Radius in blocks to harvest (clamped to 32) |
-| `max_blocks` | double | `64` | Maximum number of blocks to break |
+| `max_blocks` | double | `64` | Maximum number of blocks to break (clamped to 128) |
 
 **Event:** `BlockBreakEvent`
 
