@@ -2,7 +2,7 @@
 # SKILL CONFIGURATION TEMPLATE
 # ==========================================
 id: "mining"
-max_level: 100
+max_level: 100                # Max level (1..10000; larger values are rejected at load)
 
 # ----------------------------------------
 # UI & VISUAL IDENTITY

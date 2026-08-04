@@ -27,6 +27,9 @@ import java.util.*;
  */
 public final class SkillManager {
 
+    /** Upper bound on {@code max_level}: keeps the per-skill threshold-table allocation sane. */
+    private static final int MAX_MAX_LEVEL = 10_000;
+
     private static final java.util.regex.Pattern PLACEHOLDER_PATTERN =
             java.util.regex.Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
 
@@ -154,6 +157,10 @@ public final class SkillManager {
         int maxLevel = config.getInt("max_level", 100);
         if (maxLevel < 1) {
             throw new IllegalArgumentException("Skill '" + id + "' has invalid max_level: " + maxLevel);
+        }
+        if (maxLevel > MAX_MAX_LEVEL) {
+            throw new IllegalArgumentException("Skill '" + id + "' has max_level too large: " + maxLevel
+                    + " (maximum " + MAX_MAX_LEVEL + ")");
         }
 
         // Display section

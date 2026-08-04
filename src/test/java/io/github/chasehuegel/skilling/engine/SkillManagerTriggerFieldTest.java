@@ -119,4 +119,16 @@ class SkillManagerTriggerFieldTest {
         assertEquals(1, def.xpSources().size());
         assertEquals("block_break", def.xpSources().get(0).trigger());
     }
+
+    @Test
+    void oversizedMaxLevelFailsFast() {
+        var config = new YamlConfiguration();
+        config.set("id", "test");
+        config.set("max_level", 100_000_000);
+        config.set("progression.curve", "constant");
+        config.set("progression.base_xp", 100);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("max_level"), ex.getMessage());
+    }
 }

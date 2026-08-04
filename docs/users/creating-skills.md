@@ -23,7 +23,7 @@ xp_sources:
 | Key | Required | Type | Description |
 |---|---|---|---|
 | `id` | Yes | string | Unique skill identifier (used in commands and DB) |
-| `max_level` | No | int | Maximum achievable level (default: 100) |
+| `max_level` | No | int | Maximum achievable level (default: 100, max 10000) |
 | `display` | No | section | UI appearance (see below) |
 | `progression` | Yes | section | XP curve configuration |
 | `xp_sources` | No | list | Actions that grant XP |
