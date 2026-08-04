@@ -77,7 +77,7 @@ class SkillManagerMechanicParamValidationTest {
                       - type: "core:modify_attribute"
                         parameters:
                           attribute: { constant: "minecraft:movement_speeed" }
-                          amount: 1.0
+                          amount: { constant: 1.0 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
@@ -90,7 +90,7 @@ class SkillManagerMechanicParamValidationTest {
                       - type: "core:set_cooldown"
                         parameters:
                           material: { constant: "minecraft:not_a_material" }
-                          ticks: 20
+                          ticks: { constant: 20 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
@@ -152,8 +152,8 @@ class SkillManagerMechanicParamValidationTest {
                       - type: "core:ally_aura"
                         parameters:
                           effect: { constant: "minecraft:poison" }
-                          radius: 5
-                          duration: 3
+                          radius: { constant: 5 }
+                          duration: { constant: 3 }
                       - type: "core:block_particles"
                         parameters:
                           particle: { constant: "HAPPY_VILLAGER" }

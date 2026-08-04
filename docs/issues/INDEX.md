@@ -2,7 +2,7 @@
 
 ### Bugs
 - [x] [ISSUE-208](ISSUE-208.md) - Gate the `fishing` trigger on the caught-fish event state
-- [ ] [ISSUE-209](ISSUE-209.md) - Fail-fast on scalar YAML values where an evaluator block is required
+- [x] [ISSUE-209](ISSUE-209.md) - Fail-fast on scalar YAML values where an evaluator block is required
 - [ ] [ISSUE-210](ISSUE-210.md) - Preserve the `entity_tags:` section when saving tags.yml via the web GUI
 - [ ] [ISSUE-211](ISSUE-211.md) - Quit/reconnect race can evict the live profile of an online player
 - [ ] [ISSUE-212](ISSUE-212.md) - DB hydration failure must not install an empty profile that overwrites persisted XP

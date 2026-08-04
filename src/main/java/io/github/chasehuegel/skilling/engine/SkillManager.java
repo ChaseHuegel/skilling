@@ -238,6 +238,10 @@ public final class SkillManager {
             if (rewardRaw == null) {
                 throw new IllegalArgumentException("XP source for trigger '" + trigger + "' missing 'reward'");
             }
+            if (!(rewardRaw instanceof Map<?, ?>)) {
+                throw new IllegalArgumentException("XP source for trigger '" + trigger
+                        + "' reward must be an evaluator block (e.g. 'reward: { constant: 50 }'), got: " + rewardRaw);
+            }
             ParameterEvaluator reward = parseInlineEvaluator(castMap(rewardRaw));
 
             sources.add(new SkillDefinition.XpSource(trigger, filters, reward));
@@ -445,8 +449,7 @@ public final class SkillManager {
                 throw new IllegalArgumentException("Unknown mechanic type: " + type);
             }
 
-            @SuppressWarnings("unchecked")
-            Map<String, Object> rawParams = (Map<String, Object>) mechanicMap.getOrDefault("parameters", Map.of());
+            Map<String, Object> rawParams = castMap(mechanicMap.getOrDefault("parameters", Map.of()));
             Map<String, ParameterEvaluator> parameters = new HashMap<>();
             // Constant-valued parameters (e.g. a namespaced effect key) are handed
             // to the mechanic's load-time validator so a typo fails here, not in
@@ -454,7 +457,13 @@ public final class SkillManager {
             // a level context and are skipped.
             Map<String, Object> constantParams = new HashMap<>();
             for (var paramEntry : rawParams.entrySet()) {
-                Map<String, Object> evaluatorMap = castMap(paramEntry.getValue());
+                Object rawValue = paramEntry.getValue();
+                if (!(rawValue instanceof Map<?, ?>)) {
+                    throw new IllegalArgumentException("Mechanic '" + type + "' parameter '"
+                            + paramEntry.getKey() + "' must be an evaluator block (e.g. '"
+                            + paramEntry.getKey() + ": { constant: 2 }'), got: " + rawValue);
+                }
+                Map<String, Object> evaluatorMap = castMap(rawValue);
                 ParameterEvaluator evaluator = parseInlineEvaluator(evaluatorMap);
                 parameters.put(paramEntry.getKey(), evaluator);
                 Object constant = constantValueOf(evaluator);
@@ -522,13 +531,22 @@ public final class SkillManager {
      *   <li>{@code milestones: { level: value, ... }}</li>
      * </ul>
      *
-     * @param map the evaluator configuration map
+     * <p>An empty map is a scalar-like value where an evaluator block was
+     * expected; callers that legitimately have no value must pass {@code null},
+     * which resolves to a zero constant.
+     *
+     * @param map the evaluator configuration map, or null when no value supplied
      * @return the parsed evaluator
      * @throws IllegalArgumentException if the evaluator type is unknown
      */
     public ParameterEvaluator parseInlineEvaluator(Map<String, Object> map) {
-        if (map == null || map.isEmpty()) {
+        if (map == null) {
             return new ConstantEvaluator(0.0);
+        }
+        if (map.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Evaluator block must be a non-empty map with a supported type key "
+                            + "(constant, linear, milestones, polynomial, or a registered evaluator type), got: " + map);
         }
 
         // Check for direct constant value
@@ -603,14 +621,25 @@ public final class SkillManager {
         throw new IllegalArgumentException("Unknown evaluator type in: " + map);
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Normalizes a raw YAML value to a string-keyed map, or the empty map when
+     * no value was supplied ({@code null}). Any other non-map value — a scalar
+     * supplied where a map was expected — fails fast so a typo (e.g. a numeric
+     * reward or parameter) is rejected at load instead of silently evaluating
+     * to zero at runtime.
+     *
+     * @param raw the raw YAML value
+     * @return the normalized map
+     * @throws IllegalArgumentException if the value is a non-map non-null scalar
+     */
     private Map<String, Object> castMap(Object raw) {
+        if (raw == null) return Map.of();
         if (raw instanceof Map<?, ?> map) {
             Map<String, Object> result = new LinkedHashMap<>();
             map.forEach((k, v) -> result.put(String.valueOf(k), v));
             return result;
         }
-        return Map.of();
+        throw new IllegalArgumentException("Expected a YAML map, got: " + raw);
     }
 
     /**

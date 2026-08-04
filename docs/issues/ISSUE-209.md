@@ -5,11 +5,11 @@
 - **Agent Role:** You are an expert backend engineer executing this task.
 
 ## Implementation Requirements
-- [ ] `parseInlineEvaluator` must not silently return `ConstantEvaluator(0.0)` when handed an empty map. Instead, distinguish "no value supplied" (callers that legitimately default) from "scalar value supplied where a map was expected" (reject with `IllegalArgumentException`).
-- [ ] `parseXpSources` reward parsing rejects a scalar `reward:` (and any non-map non-evaluator value) with a descriptive error naming the skill file and trigger.
-- [ ] Mechanic `parameters:` entries reject scalar values (e.g. `parameters: { multiplier: 2 }`) with a descriptive error instead of evaluating to 0.0.
-- [ ] Confirm `castMap` (SkillManager.java:606-614) is not the silent-failure point; either reject non-map input at the call sites above or make the fallback loud.
-- [ ] Add load-time validation tests covering: scalar `reward`, scalar mechanic parameter, and the valid `constant:`/`linear:`/`milestones:` block forms still parse unchanged.
+- [x] `parseInlineEvaluator` must not silently return `ConstantEvaluator(0.0)` when handed an empty map. Instead, distinguish "no value supplied" (callers that legitimately default) from "scalar value supplied where a map was expected" (reject with `IllegalArgumentException`).
+- [x] `parseXpSources` reward parsing rejects a scalar `reward:` (and any non-map non-evaluator value) with a descriptive error naming the skill file and trigger.
+- [x] Mechanic `parameters:` entries reject scalar values (e.g. `parameters: { multiplier: 2 }`) with a descriptive error instead of evaluating to 0.0.
+- [x] Confirm `castMap` (SkillManager.java:606-614) is not the silent-failure point; either reject non-map input at the call sites above or make the fallback loud.
+- [x] Add load-time validation tests covering: scalar `reward`, scalar mechanic parameter, and the valid `constant:`/`linear:`/`milestones:` block forms still parse unchanged.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -19,6 +19,6 @@
 - **Constraints:** Greenfield — rejecting previously-"accepted" scalar input is allowed. Bundled skill YAML all uses the block form, so no bundled config should break. The `parseCooldown` scalar path is intentionally supported and must keep working.
 
 ## Verification & Definition of Done
-- [ ] A skill with `reward: 50` fails to load with a descriptive `IllegalArgumentException`; the same for a scalar mechanic parameter.
-- [ ] Bundled skills still load (`./gradlew build`).
-- [ ] New unit tests for the scalar-rejection paths pass (`./gradlew test`).
+- [x] A skill with `reward: 50` fails to load with a descriptive `IllegalArgumentException`; the same for a scalar mechanic parameter.
+- [x] Bundled skills still load (`./gradlew build`).
+- [x] New unit tests for the scalar-rejection paths pass (`./gradlew test`).

@@ -200,6 +200,61 @@ class SkillManagerTest {
     }
 
     @Test
+    void scalarRewardThrows() {
+        var config = minimalSkill();
+        config.set("xp_sources", java.util.List.of(java.util.Map.of(
+                "trigger", "block_break", "reward", 50)));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("reward"));
+        assertTrue(ex.getMessage().contains("block_break"));
+    }
+
+    @Test
+    void scalarMechanicParameterThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "mechanics", java.util.List.of(java.util.Map.of(
+                        "type", "core:yield_multiplier",
+                        "parameters", java.util.Map.of("yield_chance", 2))))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("yield_chance"));
+    }
+
+    @Test
+    void scalarParametersMapThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "mechanics", java.util.List.of(java.util.Map.of(
+                        "type", "core:yield_multiplier",
+                        "parameters", 5)))));
+        assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+    }
+
+    @Test
+    void emptyEvaluatorBlockThrows() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseInlineEvaluator(Map.of()));
+        assertTrue(ex.getMessage().contains("Evaluator block"));
+    }
+
+    @Test
+    void evaluatorBlockFormsStillParse() {
+        assertInstanceOf(ConstantEvaluator.class,
+                skillManager.parseInlineEvaluator(Map.of("constant", 15.0)));
+        assertInstanceOf(LinearEvaluator.class,
+                skillManager.parseInlineEvaluator(Map.of("linear", Map.of("base", 0.5, "step", 0.5))));
+        assertInstanceOf(MilestoneEvaluator.class,
+                skillManager.parseInlineEvaluator(Map.of("milestones", Map.of("15", 3.0))));
+        assertInstanceOf(PolynomialEvaluator.class,
+                skillManager.parseInlineEvaluator(Map.of("polynomial", Map.of("base_xp", 50.0, "exponent", 2.5))));
+    }
+
+    @Test
     void nonMapXpSourceThrows() {
         var config = minimalSkill();
         config.set("xp_sources", java.util.List.of("not-a-map"));

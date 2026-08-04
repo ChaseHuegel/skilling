@@ -112,7 +112,9 @@ holds such an item.
 
 #### reward
 
-Uses evaluator syntax (see Evaluators below).
+Uses evaluator syntax (see Evaluators below). A scalar value (e.g. `reward: 50`)
+is rejected at load with an `IllegalArgumentException`; it must be an evaluator
+block such as `reward: { constant: 50 }`.
 
 ### abilities
 
@@ -186,7 +188,7 @@ player levels up.
 |---|---|---|
 | `type` | string | Mechanic registry key (e.g., `core:yield_multiplier`) |
 | `filters` | list | Material/state filters |
-| `parameters` | section | Evaluator parameters for the mechanic |
+| `parameters` | section | Evaluator parameters for the mechanic. Every parameter must be an evaluator block (e.g. `yield_chance: { constant: 2 }`); a scalar value (e.g. `yield_chance: 2`) is rejected at load |
 
 #### feedback
 
