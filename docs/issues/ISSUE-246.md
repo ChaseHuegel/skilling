@@ -6,8 +6,8 @@
 - **Severity:** Medium — the reset handler zeroes XP and invalidates the page cache but never calls `bossBarPool.remove(player, skillId)` (`SkillsCommand.java:459`), so the bar keeps showing the old progress/level.
 
 ## Implementation Requirements
-- [ ] Remove/hide the skill's boss bar in the reset path (`SkillsCommand.java`, reset handler) so it disappears immediately.
-- [ ] Add a unit test asserting the bar is removed on reset.
+- [x] Remove/hide the skill's boss bar in the reset path (`SkillsCommand.java`, reset handler) so it disappears immediately.
+- [x] Add a unit test asserting the bar is removed on reset.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,5 +17,5 @@
 - **Constraints:** Keep the write-behind cache flush for the reset (offline/online) unchanged.
 
 ## Verification & Definition of Done
-- [ ] Resetting a skill hides its XP boss bar immediately.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Resetting a skill hides its XP boss bar immediately.
+- [x] `./gradlew build` and `./gradlew test` pass.

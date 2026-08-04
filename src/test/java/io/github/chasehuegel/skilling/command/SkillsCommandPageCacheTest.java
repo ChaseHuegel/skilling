@@ -35,8 +35,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -51,6 +54,7 @@ class SkillsCommandPageCacheTest {
     private Player player;
     private final UUID uuid = UUID.randomUUID();
     private SkillsCommand command;
+    private BossBarPool bossBarPool;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -84,7 +88,8 @@ class SkillsCommandPageCacheTest {
         when(player.getUniqueId()).thenReturn(uuid);
 
         command = new SkillsCommand(mock(Skilling.class), skillManager, profileManager,
-                mock(SkillMenuBuilder.class), mock(LockdownManager.class), new BossBarPool(2, 40));
+                mock(SkillMenuBuilder.class), mock(LockdownManager.class),
+                bossBarPool = new BossBarPool(2, 40));
     }
 
     private void setCachedPages() {
@@ -123,5 +128,24 @@ class SkillsCommandPageCacheTest {
         }
 
         assertNull(profile.getCachedPageInventories(), "reset must invalidate the page cache");
+    }
+
+    @Test
+    void resetRemovesTheSkillsBossBar() throws Exception {
+        profile.setXp("mining", 5000);
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getPlayer("chase")).thenReturn(player);
+            when(Bukkit.createBossBar(anyString(), any(), any())).thenReturn(mock(org.bukkit.boss.BossBar.class));
+            bossBarPool.getOrCreate(player, "mining");
+            assertEquals(1, bossBarPool.size(), "seed a bar so the reset can be observed");
+
+            Method m = SkillsCommand.class.getDeclaredMethod(
+                    "reset", CommandSender.class, String.class, String.class);
+            m.setAccessible(true);
+            m.invoke(command, mock(CommandSender.class), "chase", "mining");
+        }
+
+        assertEquals(0, bossBarPool.size(), "reset must remove the skill's XP boss bar immediately");
     }
 }

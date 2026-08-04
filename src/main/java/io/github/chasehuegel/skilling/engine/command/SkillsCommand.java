@@ -445,12 +445,14 @@ public final class SkillsCommand {
             if (skillId != null) {
                 profile.setXp(skillId, 0);
                 profile.invalidatePageCache();
+                bossBarPool.remove(target, skillId);
                 sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset " + playerName + "'s " + skillId + "."));
             } else {
                 for (String id : new HashSet<>(profile.getXpMap().keySet())) {
                     profile.setXp(id, 0);
                 }
                 profile.invalidatePageCache();
+                bossBarPool.removeAll(target);
                 sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset all skills for " + playerName + "."));
             }
         } else {
