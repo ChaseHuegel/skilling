@@ -165,8 +165,16 @@ public final class SkillsCommand {
                 .permission("skilling.admin")
                 .handler(ctx -> {
                     ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize("<yellow>Reloading Skilling..."));
-                    lockdownManager.reload();
-                    ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize("<green>Skilling reloaded."));
+                    // The reload completes asynchronously (DB flush on a worker,
+                    // then the rebuild back on the main thread); report completion
+                    // on the main thread so the admin is told when it actually
+                    // finished instead of when the command returned.
+                    CommandSender source = ctx.sender().source();
+                    lockdownManager.reloadAsync().whenComplete((v, ex) ->
+                            Bukkit.getScheduler().runTask(plugin, () ->
+                                    source.sendMessage(MINI_MESSAGE.deserialize(ex == null
+                                            ? "<green>Skilling reloaded."
+                                            : "<red>Skilling reload failed. Check the console."))));
                 }));
 
         commandManager.command(commandManager.commandBuilder("skills")

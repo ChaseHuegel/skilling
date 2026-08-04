@@ -12,15 +12,21 @@ import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -32,8 +38,26 @@ class LockdownManagerReloadTest {
     @TempDir
     Path tempDir;
 
+    /** A scheduler that runs main-thread tasks synchronously so the async reload is deterministic. */
+    private static BukkitScheduler syncScheduler() {
+        var scheduler = mock(BukkitScheduler.class);
+        doAnswer(inv -> {
+            ((Runnable) inv.getArgument(1)).run();
+            return mock(BukkitTask.class);
+        }).when(scheduler).runTask(any(Plugin.class), any(Runnable.class));
+        return scheduler;
+    }
+
+    private static MockedStatic<Bukkit> mockBukkit() {
+        MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class);
+        when(Bukkit.getOnlinePlayers()).thenReturn(java.util.List.of());
+        var scheduler = syncScheduler();
+        when(Bukkit.getScheduler()).thenReturn(scheduler);
+        return bukkit;
+    }
+
     @Test
-    void reloadThatThrowsNeverLeavesPluginReloading() {
+    void reloadThatThrowsNeverLeavesPluginReloading() throws Exception {
         Skilling plugin = mock(Skilling.class);
         when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("test"));
         when(plugin.getDataFolder()).thenReturn(tempDir.toFile());
@@ -51,20 +75,20 @@ class LockdownManagerReloadTest {
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         LockdownManager lockdown = new LockdownManager(plugin,
-                mock(ProfileManager.class), worker, mock(SkillManager.class));
+                mock(ProfileManager.class), worker, mock(SkillManager.class), Runnable::run);
 
-        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
-            when(Bukkit.getOnlinePlayers()).thenReturn(java.util.List.of());
-
-            // Phase 5 throws; the finally must still unlock.
-            assertThrows(RuntimeException.class, lockdown::reload);
+        try (MockedStatic<Bukkit> bukkit = mockBukkit()) {
+            // Phase 5 throws; the future fails but the finally must still unlock.
+            CompletableFuture<Void> reload = lockdown.reloadAsync();
+            assertThrows(ExecutionException.class,
+                    () -> reload.get(5, TimeUnit.SECONDS));
         }
 
         verify(plugin).setReloading(false);
     }
 
     @Test
-    void reloadThatFailsSkillParseRestoresPreviousResolvers() {
+    void reloadThatFailsSkillParseRestoresPreviousResolvers() throws Exception {
         Skilling plugin = mock(Skilling.class);
         when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("test"));
         when(plugin.getDataFolder()).thenReturn(tempDir.toFile());
@@ -96,15 +120,16 @@ class LockdownManagerReloadTest {
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         LockdownManager lockdown = new LockdownManager(plugin,
-                mock(ProfileManager.class), worker, skillManager);
+                mock(ProfileManager.class), worker, skillManager, Runnable::run);
 
-        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
-            when(Bukkit.getOnlinePlayers()).thenReturn(java.util.List.of());
-            assertThrows(RuntimeException.class, lockdown::reload);
+        try (MockedStatic<Bukkit> bukkit = mockBukkit()) {
+            CompletableFuture<Void> reload = lockdown.reloadAsync();
+            assertThrows(ExecutionException.class,
+                    () -> reload.get(5, TimeUnit.SECONDS));
         }
 
         // The surviving (previous) skills must keep running against the previous
-        // resolvers, so the swap made during Phase 4 is rolled back.
+        // resolvers, so the swap made during the rebuild is rolled back.
         verify(plugin).setTagResolver(oldResolver);
         verify(plugin).setEntityTagResolver(oldEntityResolver);
         verify(plugin).setCustomTagLoader(oldLoader);
