@@ -78,8 +78,30 @@ public record XpBonusMechanic() implements SkillMechanic {
         double mult = ((Number) params.getOrDefault("multiplier", 1.0)).doubleValue();
         if (mult <= 0) return false;
         double durationSec = ((Number) params.getOrDefault("duration", DEFAULT_DURATION_SECONDS)).doubleValue();
+        // A zero, negative, or NaN duration is a no-op: never create an
+        // already-expired buff that consumes the activation's cost/cooldown.
+        if (!(durationSec > 0)) return false;
+        long durationNanos = (long) (durationSec * 1_000_000_000L);
         // Re-activation refreshes the TTL rather than stacking multiple bonuses.
-        multipliers.put(player.getUniqueId(), new Bonus(mult, now() + (long) (durationSec * 1_000_000_000L)));
+        multipliers.put(player.getUniqueId(), new Bonus(mult, saturatingAdd(now(), durationNanos)));
         return true;
+    }
+
+    /**
+     * Adds two nanosecond timestamps without wraparound: a huge duration (or a
+     * clock near the long ceiling) saturates at {@link Long#MAX_VALUE} so the
+     * buff becomes practically permanent instead of wrapping negative and
+     * expiring instantly.
+     *
+     * @param now           the current time in nanoseconds
+     * @param durationNanos the bonus duration in nanoseconds
+     * @return the expiry time, saturated at {@link Long#MAX_VALUE}
+     */
+    private static long saturatingAdd(long now, long durationNanos) {
+        try {
+            return Math.addExact(now, durationNanos);
+        } catch (ArithmeticException e) {
+            return Long.MAX_VALUE;
+        }
     }
 }

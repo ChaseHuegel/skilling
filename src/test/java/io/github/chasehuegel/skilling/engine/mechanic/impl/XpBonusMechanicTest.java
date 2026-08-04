@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class XpBonusMechanicTest {
@@ -80,6 +81,40 @@ class XpBonusMechanicTest {
         new XpBonusMechanic().execute(player, Map.of("multiplier", 1.5, "duration", 5.0),
                 BukkitMock.mockInteractEvent(player));
         XpBonusMechanic.clearAll();
+        assertEquals(1.0, XpBonusMechanic.getMultiplier(player.getUniqueId()), 1e-9);
+    }
+
+    @Test
+    void hugeDurationDoesNotOverflowToInstantExpiry() {
+        XpBonusMechanic.setClockOverrideNanos(T0);
+        var player = BukkitMock.mockPlayer();
+        // 1e12 seconds is far past the long nano ceiling; the old arithmetic
+        // wrapped negative so the buff expired immediately.
+        assertTrue(new XpBonusMechanic().execute(player, Map.of("multiplier", 1.5, "duration", 1e12),
+                BukkitMock.mockInteractEvent(player)));
+        // Bonus is still active well after any realistic expiry window.
+        XpBonusMechanic.setClockOverrideNanos(Long.MAX_VALUE / 2);
+        assertEquals(1.5, XpBonusMechanic.getMultiplier(player.getUniqueId()), 1e-9);
+    }
+
+    @Test
+    void zeroDurationIsANoOpWithoutConsumingActivation() {
+        XpBonusMechanic.setClockOverrideNanos(T0);
+        var player = BukkitMock.mockPlayer();
+        // Returns false so the dispatch does not spend the ability's cost/cooldown.
+        assertFalse(new XpBonusMechanic().execute(player, Map.of("multiplier", 1.5, "duration", 0.0),
+                BukkitMock.mockInteractEvent(player)));
+        assertEquals(1.0, XpBonusMechanic.getMultiplier(player.getUniqueId()), 1e-9);
+    }
+
+    @Test
+    void negativeAndNaNdurationAreAlsoNoOps() {
+        XpBonusMechanic.setClockOverrideNanos(T0);
+        var player = BukkitMock.mockPlayer();
+        assertFalse(new XpBonusMechanic().execute(player, Map.of("multiplier", 1.5, "duration", -5.0),
+                BukkitMock.mockInteractEvent(player)));
+        assertFalse(new XpBonusMechanic().execute(player, Map.of("multiplier", 1.5, "duration", Double.NaN),
+                BukkitMock.mockInteractEvent(player)));
         assertEquals(1.0, XpBonusMechanic.getMultiplier(player.getUniqueId()), 1e-9);
     }
 }
