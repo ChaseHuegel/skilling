@@ -51,6 +51,19 @@ class SkillManagerTagValidationTest {
         return config;
     }
 
+    private YamlConfiguration skillWithFilterState(String state) {
+        var config = new YamlConfiguration();
+        config.set("id", "test");
+        config.set("max_level", 100);
+        config.set("progression.curve", "constant");
+        config.set("progression.base_xp", 100);
+        config.set("xp_sources", java.util.List.of(Map.of(
+                "trigger", "block_break",
+                "filters", java.util.List.of(Map.of("state", state)),
+                "reward", Map.of("constant", 1.0))));
+        return config;
+    }
+
     @Test
     void unknownMaterialInFilterFailsLoad() {
         var manager = skillManager(new TagResolver(new CustomTagLoader()));
@@ -95,6 +108,47 @@ class SkillManagerTagValidationTest {
 
         // Parsing a skill filtering on the defined custom tag must succeed.
         var def = manager.parseSkill(skillWithFilterTarget("#c:ores"));
+        org.junit.jupiter.api.Assertions.assertEquals(1, def.xpSources().size());
+    }
+
+    @Test
+    void unknownStateKeyFailsLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> manager.parseSkill(skillWithFilterState("is_sneakingg")));
+        assertTrue(ex.getMessage().contains("unknown state 'is_sneakingg'"),
+                "the typo must be named: " + ex.getMessage());
+    }
+
+    @Test
+    void knownStateKeyPassesLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        var def = manager.parseSkill(skillWithFilterState("is_sneaking"));
+        org.junit.jupiter.api.Assertions.assertEquals(1, def.xpSources().size());
+    }
+
+    @Test
+    void invalidPlayerPlacedValueFailsLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> manager.parseSkill(skillWithFilterState("player_placed:maybe")));
+        assertTrue(ex.getMessage().contains("player_placed"),
+                "the player_placed rule must be named: " + ex.getMessage());
+    }
+
+    @Test
+    void invalidBiomeValueFailsLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> manager.parseSkill(skillWithFilterState("biome:not!a!valid!key")));
+        assertTrue(ex.getMessage().contains("biome"),
+                "the biome rule must be named: " + ex.getMessage());
+    }
+
+    @Test
+    void validPlayerPlacedStatePassesLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        var def = manager.parseSkill(skillWithFilterState("player_placed:false"));
         org.junit.jupiter.api.Assertions.assertEquals(1, def.xpSources().size());
     }
 }

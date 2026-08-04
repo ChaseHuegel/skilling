@@ -62,4 +62,53 @@ class LockdownManagerReloadTest {
 
         verify(plugin).setReloading(false);
     }
+
+    @Test
+    void reloadThatFailsSkillParseRestoresPreviousResolvers() {
+        Skilling plugin = mock(Skilling.class);
+        when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("test"));
+        when(plugin.getDataFolder()).thenReturn(tempDir.toFile());
+        when(plugin.getRegistries()).thenReturn(new Registries(
+                new MechanicRegistry(), new TriggerRegistry(), new EvaluatorRegistry()));
+        when(plugin.getRequirementEngine()).thenReturn(mock(RequirementEngine.class));
+        when(plugin.getSkillEventListener()).thenReturn(mock(io.github.chasehuegel.skilling.engine.listener.SkillEventListener.class));
+        when(plugin.getStateFilterRegistry()).thenReturn(
+                mock(io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry.class));
+
+        // The previously active resolver set.
+        var oldResolver = mock(io.github.chasehuegel.skilling.engine.tag.TagResolver.class);
+        var oldEntityResolver = mock(io.github.chasehuegel.skilling.engine.tag.EntityTagResolver.class);
+        var oldLoader = mock(io.github.chasehuegel.skilling.engine.tag.CustomTagLoader.class);
+        when(plugin.getTagResolver()).thenReturn(oldResolver);
+        when(plugin.getEntityTagResolver()).thenReturn(oldEntityResolver);
+        when(plugin.getCustomTagLoader()).thenReturn(oldLoader);
+
+        SkillMenuBuilder builder = mock(SkillMenuBuilder.class);
+        when(plugin.getSkillMenuBuilder()).thenReturn(builder);
+
+        // loadSkills is the operation that can reject bad YAML after the resolver
+        // swap; simulate a malformed skill.
+        SkillManager skillManager = mock(SkillManager.class);
+        doThrow(new RuntimeException("bad skill")).when(skillManager).loadSkills(any(java.io.File.class));
+
+        AsyncBatchWorker worker = mock(AsyncBatchWorker.class);
+        when(worker.flushDirtyProfilesAsync())
+                .thenReturn(CompletableFuture.completedFuture(null));
+
+        LockdownManager lockdown = new LockdownManager(plugin,
+                mock(ProfileManager.class), worker, skillManager);
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getOnlinePlayers()).thenReturn(java.util.List.of());
+            assertThrows(RuntimeException.class, lockdown::reload);
+        }
+
+        // The surviving (previous) skills must keep running against the previous
+        // resolvers, so the swap made during Phase 4 is rolled back.
+        verify(plugin).setTagResolver(oldResolver);
+        verify(plugin).setEntityTagResolver(oldEntityResolver);
+        verify(plugin).setCustomTagLoader(oldLoader);
+        verify(skillManager).setTagResolver(oldResolver);
+        verify(plugin).setReloading(false);
+    }
 }

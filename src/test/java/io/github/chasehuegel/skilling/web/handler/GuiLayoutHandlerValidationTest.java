@@ -66,11 +66,28 @@ class GuiLayoutHandlerValidationTest {
     }
 
     @Test
+    void updateRejectsReservedNavigationSlot() {
+        StagingManager staging = mock(StagingManager.class);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        // The last row (slots 27/31/35 in a 4-row layout) is reserved for the
+        // page arrows and indicator; the engine silently drops skills placed there.
+        GuiLayoutDTO dto = new GuiLayoutDTO("Test", 4, List.of(
+            new GuiLayoutDTO.GuiPageDTO("Combat", Map.of(31, "swords"), "minecraft:book", 0)
+        ), 1);
+        when(ctx.bodyAsClass(GuiLayoutDTO.class)).thenReturn(dto);
+
+        handlerWith(staging).update(ctx);
+
+        verify(ctx).status(400);
+        verify(staging, never()).stageGuiFile(anyString());
+    }
+
+    @Test
     void updateStagesValidLayout() {
         StagingManager staging = mock(StagingManager.class);
         Context ctx = mock(Context.class, RETURNS_SELF);
         GuiLayoutDTO dto = new GuiLayoutDTO("Test", 4, List.of(
-            new GuiLayoutDTO.GuiPageDTO("Combat", Map.of(0, "swords", 35, "archery"), "minecraft:book", 0)
+            new GuiLayoutDTO.GuiPageDTO("Combat", Map.of(0, "swords", 34, "archery"), "minecraft:book", 0)
         ), 2);
         when(ctx.bodyAsClass(GuiLayoutDTO.class)).thenReturn(dto);
 

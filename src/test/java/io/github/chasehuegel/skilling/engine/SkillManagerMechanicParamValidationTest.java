@@ -179,7 +179,8 @@ class SkillManagerMechanicParamValidationTest {
         io.github.chasehuegel.skilling.Skilling.registerBuiltinTriggers(trigReg);
         var manager = new SkillManager(evalReg, registry, trigReg,
                 new io.github.chasehuegel.skilling.engine.tag.TagResolver(
-                        new io.github.chasehuegel.skilling.engine.tag.CustomTagLoader()));
+                        new io.github.chasehuegel.skilling.engine.tag.CustomTagLoader()),
+                new io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry());
 
         writeSkill("""
                       - type: "test:custom"

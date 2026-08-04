@@ -37,7 +37,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -155,6 +157,26 @@ class SkillEventListenerFireAbilitiesTest {
         listener = new SkillEventListener(plugin, skillManager, profileManager, tagResolver,
                 requirementEngine, mechReg, new FeedbackDebouncer(500), mock(BossBarPool.class),
                 new StateFilterRegistry());
+    }
+
+    @Test
+    void onBlockBreakClearsStalePlayerPlacedMetadata() throws IOException {
+        buildSkillWithAbility("""
+                    requirements:
+                      cooldown: 10.0
+                """);
+
+        var block = mock(org.bukkit.block.Block.class);
+        when(block.hasMetadata("player_placed")).thenReturn(true);
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(block);
+        when(event.getPlayer()).thenReturn(player);
+
+        listener.onBlockBreak(event);
+
+        // The marker is dropped with the destroyed block so a block regenerating
+        // in this spot is not still treated as player-placed.
+        verify(block).removeMetadata(eq("player_placed"), any(org.bukkit.plugin.Plugin.class));
     }
 
     @Test

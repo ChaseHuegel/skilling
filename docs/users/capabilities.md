@@ -725,14 +725,14 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `is_on_fire` | *(none)* | Player is on fire |
 | `is_riding` | *(none)* | Player is riding a vehicle/mount |
 | `is_blocking` | *(none)* | Player is blocking with a shield |
-| `player_placed` | `false` | Block was not placed by a player |
+| `player_placed` | `true`, `false` | `false` matches blocks not placed by a player (natural blocks); `true` matches blocks a player placed. Values are validated at load |
 | `dimension` | `overworld`, `nether`, `end` | Player's current dimension |
 | `weather` | `clear`, `rain`, `thunder` | Current weather in player's world |
 | `time` | `day`, `night` | Time of day in player's world |
 | `light_level` | `below:N`, `above:N`, `exactly:N` | Block light level comparison |
 | `health` | `below:N%`, `above:N%` | Player health percentage |
 | `hunger` | `below:N`, `above:N` | Player food level |
-| `biome` | `minecraft:biome_id` | Player's current biome |
+| `biome` | `minecraft:biome_id` | Player's current biome. Values are validated at load |
 | `target_type` | `minecraft:entity_id` or `<#entity_tag>` | Type of the target entity. Matches the damaged entity on `entity_damage`/`entity_damage_taken` and the killed entity on `entity_kill`. A `#...` value (e.g. `#c:undead`, `#minecraft:zombies`) resolves through the `entity_tags` store in `tags.yml`. Fails closed on events with no target entity |
 | `offhand` | `empty`, `weapon` | Offhand item state |
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
@@ -743,6 +743,11 @@ The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`
 custom tags (in `tags.yml`) reproduce the historical armor tiers as data; no
 tier knowledge is hard-coded in Java. `#c:unarmored` includes empty slots
 (`minecraft:air`), the elytra, and headwear.
+
+State keys and value-restricted filters (`player_placed`, `biome`) are validated
+when the skill YAML loads: an unknown state key or an invalid value fails the
+reload with a descriptive error instead of silently never matching on the event
+path.
 
 ## Built-In Evaluators
 

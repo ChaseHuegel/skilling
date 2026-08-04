@@ -9,7 +9,7 @@
 - [x] [ISSUE-213](ISSUE-213.md) - Isolate mechanic execution failures so a throwing mechanic cannot skip ability cost/consume
 - [x] [ISSUE-215](ISSUE-215.md) - Engine data-integrity hardening (cooldowns, offline grants, negative XP, DB init, flush interval)
 - [x] [ISSUE-216](ISSUE-216.md) - Mechanic safety (teleport, tool-break chains, radius bounds, kill attribution, durability, NPE)
-- [ ] [ISSUE-217](ISSUE-217.md) - Reload atomicity and state-filter load validation
+- [x] [ISSUE-217](ISSUE-217.md) - Reload atomicity and state-filter load validation
 - [ ] [ISSUE-218](ISSUE-218.md) - Web GUI config/data-loss and auth hardening
 - [ ] [ISSUE-220](ISSUE-220.md) - Fix milestone evaluator round-trip between the web GUI and the engine
 - [ ] [ISSUE-221](ISSUE-221.md) - Align web progression serialization with the engine's base_xp/exponent schema

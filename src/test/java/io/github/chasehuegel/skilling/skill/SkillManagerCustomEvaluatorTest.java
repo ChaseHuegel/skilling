@@ -43,7 +43,8 @@ class SkillManagerCustomEvaluatorTest {
         var mechReg = new MechanicRegistry();
         Skilling.registerBuiltinMechanics(mechReg);
         return new SkillManager(evalReg, mechReg, builtinTriggers(),
-                new TagResolver(new CustomTagLoader()));
+                new TagResolver(new CustomTagLoader()),
+                new io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry());
     }
 
     private SkillManager skillManagerWithoutLogistic() {
@@ -52,7 +53,8 @@ class SkillManagerCustomEvaluatorTest {
         var mechReg = new MechanicRegistry();
         Skilling.registerBuiltinMechanics(mechReg);
         return new SkillManager(evalReg, mechReg, builtinTriggers(),
-                new TagResolver(new CustomTagLoader()));
+                new TagResolver(new CustomTagLoader()),
+                new io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry());
     }
 
     @Test

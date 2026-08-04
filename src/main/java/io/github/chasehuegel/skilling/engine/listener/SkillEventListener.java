@@ -114,6 +114,11 @@ public final class SkillEventListener implements Listener {
         debug("block_break fired for " + event.getPlayer().getName()
                 + " breaking " + event.getBlock().getType());
         dispatch(event.getPlayer(), event, "block_break");
+        // Drop the player_placed marker with the destroyed block so a block that
+        // regenerates in this spot is not still treated as player-placed.
+        if (event.getBlock().hasMetadata("player_placed")) {
+            event.getBlock().removeMetadata("player_placed", plugin);
+        }
     }
 
     /**

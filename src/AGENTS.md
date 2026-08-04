@@ -35,6 +35,8 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 2. `mechanic.execute(...)`: Run the logic if the check passes.
 3. `requirements.consume(player)`: Deduct items and apply cooldowns only after successful execution.
 
+* **State-key validation:** `state:` references in XP-source filters, mechanic filters, and requirement states are validated against the `StateFilterRegistry` at load (fail-fast) — unknown keys, malformed `player_placed` values, and unresolvable `biome` values are rejected during YAML parsing. `SkillManager` takes the registry in its constructor; `TestSkillManager` registers the built-in filters so bundled-skill parsing passes.
+
 ### 4. UI & Inventory Security
 * **Lazy Instantiation:** Build Bukkit `Inventory` objects on-demand and cache them in the `PlayerProfile`. Invalidate the cache entirely when a player's level changes.
 * **Dynamic Lore:** Use `LoreResolver` to inject live math from `ParameterEvaluator` outputs into strings. Never hardcode `{placeholder}` values.

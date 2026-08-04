@@ -78,23 +78,52 @@ public final class LockdownManager {
             // Phase 4: Rebuild
             try {
                 plugin.reloadConfigSettings();
-                plugin.getRegistries().getEvaluatorRegistry().clear();
-                plugin.getRegistries().getMechanicRegistry().clear();
-                plugin.getRegistries().getTriggerRegistry().clear();
+
+                // Load the new tags before clearing anything, so a malformed
+                // tags.yml aborts with all prior state intact.
                 var customTagLoader = new CustomTagLoader();
                 customTagLoader.load(new File(plugin.getDataFolder(), "tags.yml"));
                 var tagResolver = new TagResolver(customTagLoader);
                 var entityTagResolver = new EntityTagResolver(customTagLoader);
+
+                var oldTagResolver = plugin.getTagResolver();
+                var oldEntityTagResolver = plugin.getEntityTagResolver();
+                var oldCustomTagLoader = plugin.getCustomTagLoader();
+
+                plugin.getRegistries().getEvaluatorRegistry().clear();
+                plugin.getRegistries().getMechanicRegistry().clear();
+                plugin.getRegistries().getTriggerRegistry().clear();
+
+                // Rebuild the registries around the new resolvers, then parse the
+                // new skills. loadSkills() swaps the skill set atomically only
+                // after every file parses, so a malformed skill throws here with
+                // the previous skills preserved — but if the resolvers were already
+                // committed, those surviving skills would silently stop matching
+                // against the new tags. Roll the resolver swap back on failure so
+                // the previous set keeps running against the previous tags.
                 plugin.setTagResolver(tagResolver);
                 plugin.setEntityTagResolver(entityTagResolver);
+                plugin.setCustomTagLoader(customTagLoader);
                 plugin.registerBuiltins();
                 skillManager.setTagResolver(tagResolver);
                 plugin.getRequirementEngine().setTagResolver(tagResolver);
                 plugin.getSkillEventListener().setTagResolver(tagResolver);
-                plugin.setCustomTagLoader(customTagLoader);
-                // loadSkills parses every file first and swaps atomically, so a
-                // malformed skill is rejected here with the previous set preserved.
-                skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
+                try {
+                    skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
+                } catch (Exception e) {
+                    plugin.setTagResolver(oldTagResolver);
+                    plugin.setEntityTagResolver(oldEntityTagResolver);
+                    plugin.setCustomTagLoader(oldCustomTagLoader);
+                    skillManager.setTagResolver(oldTagResolver);
+                    plugin.getRequirementEngine().setTagResolver(oldTagResolver);
+                    plugin.getSkillEventListener().setTagResolver(oldTagResolver);
+                    // State filters capture the resolver at registration; re-register
+                    // them with the old resolver so gating stays consistent.
+                    plugin.getStateFilterRegistry().clear();
+                    plugin.registerBuiltinStateFilters(
+                            plugin.getStateFilterRegistry(), oldTagResolver, oldEntityTagResolver);
+                    throw e;
+                }
                 plugin.debug("Phase 4/6: Registries rebuilt.");
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to rebuild registries during reload", e);

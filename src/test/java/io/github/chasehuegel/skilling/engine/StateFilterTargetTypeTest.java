@@ -116,4 +116,34 @@ class StateFilterTargetTypeTest {
         assertFalse(registry.evaluate("target_type", player,
                 deathEvent(EntityType.ZOMBIE), ""));
     }
+
+    @Test
+    void playerPlacedFalseMatchesNaturalBlocksOnly() {
+        var placed = mock(org.bukkit.event.block.BlockBreakEvent.class);
+        var natural = mock(org.bukkit.event.block.BlockBreakEvent.class);
+        var placedBlock = mock(org.bukkit.block.Block.class);
+        var naturalBlock = mock(org.bukkit.block.Block.class);
+        when(placedBlock.hasMetadata("player_placed")).thenReturn(true);
+        when(naturalBlock.hasMetadata("player_placed")).thenReturn(false);
+        when(placed.getBlock()).thenReturn(placedBlock);
+        when(natural.getBlock()).thenReturn(naturalBlock);
+
+        assertTrue(registry.evaluate("player_placed", player, natural, "false"));
+        assertFalse(registry.evaluate("player_placed", player, placed, "false"));
+    }
+
+    @Test
+    void playerPlacedTrueMatchesPlayerPlacedBlocksOnly() {
+        var placed = mock(org.bukkit.event.block.BlockBreakEvent.class);
+        var natural = mock(org.bukkit.event.block.BlockBreakEvent.class);
+        var placedBlock = mock(org.bukkit.block.Block.class);
+        var naturalBlock = mock(org.bukkit.block.Block.class);
+        when(placedBlock.hasMetadata("player_placed")).thenReturn(true);
+        when(naturalBlock.hasMetadata("player_placed")).thenReturn(false);
+        when(placed.getBlock()).thenReturn(placedBlock);
+        when(natural.getBlock()).thenReturn(naturalBlock);
+
+        assertTrue(registry.evaluate("player_placed", player, placed, "true"));
+        assertFalse(registry.evaluate("player_placed", player, natural, "true"));
+    }
 }

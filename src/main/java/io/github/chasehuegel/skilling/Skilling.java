@@ -194,7 +194,8 @@ public final class Skilling extends JavaPlugin {
                 registries.getEvaluatorRegistry(),
                 registries.getMechanicRegistry(),
                 registries.getTriggerRegistry(),
-                tagResolver
+                tagResolver,
+                stateFilterRegistry
         );
         loadSkills();
 
@@ -429,8 +430,11 @@ public final class Skilling extends JavaPlugin {
         sf.register("is_blocking", (p, e, v) -> p.isBlocking());
 
         sf.register("player_placed", (p, e, v) -> {
+            // Value-aware: player_placed:true matches player-placed blocks,
+            // player_placed:false (the bundled default) matches natural blocks.
+            boolean expectPlaced = !"false".equalsIgnoreCase(v == null ? "" : v);
             if (e instanceof org.bukkit.event.block.BlockBreakEvent be) {
-                return !be.getBlock().hasMetadata("player_placed");
+                return be.getBlock().hasMetadata("player_placed") == expectPlaced;
             }
             return true;
         });
@@ -501,7 +505,9 @@ public final class Skilling extends JavaPlugin {
 
         sf.register("biome", (p, e, v) -> {
             var biome = p.getLocation().getBlock().getBiome();
-            var targetBiome = org.bukkit.Registry.BIOME.get(org.bukkit.NamespacedKey.fromString(v));
+            var biomeKey = safeNamespacedKey(v);
+            if (biomeKey == null) return false;
+            var targetBiome = org.bukkit.Registry.BIOME.get(biomeKey);
             return targetBiome != null && biome == targetBiome;
         });
 
@@ -549,6 +555,21 @@ public final class Skilling extends JavaPlugin {
         // match; `equipped_any` requires at least one. Empty slots are treated as AIR.
         sf.register("equipped_all", (p, e, v) -> matchesEquipped(p, v, true, tagResolver));
         sf.register("equipped_any", (p, e, v) -> matchesEquipped(p, v, false, tagResolver));
+    }
+
+    /**
+     * Parses a state value into a {@link NamespacedKey}, returning null for a
+     * malformed value instead of throwing on the event path.
+     *
+     * @param value the raw namespaced key string (e.g. {@code minecraft:plains})
+     * @return the parsed key, or null if malformed
+     */
+    private static org.bukkit.NamespacedKey safeNamespacedKey(String value) {
+        try {
+            return org.bukkit.NamespacedKey.fromString(value);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**
@@ -697,6 +718,15 @@ public final class Skilling extends JavaPlugin {
 
     public void setCustomTagLoader(CustomTagLoader customTagLoader) {
         this.customTagLoader = customTagLoader;
+    }
+
+    /**
+     * Returns the active tag resolver used on the event path.
+     *
+     * @return the current tag resolver
+     */
+    public TagResolver getTagResolver() {
+        return tagResolver;
     }
 
     /**

@@ -34,6 +34,9 @@ public final class TestSkillManager {
         extraMechanics.accept(mechReg);
         var trigReg = new TriggerRegistry();
         Skilling.registerBuiltinTriggers(trigReg);
-        return new SkillManager(evalReg, mechReg, trigReg, tagResolver);
+        var stateFilters = new io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry();
+        Skilling.registerBuiltinStateFilters(stateFilters, tagResolver,
+                new io.github.chasehuegel.skilling.engine.tag.EntityTagResolver(new CustomTagLoader()));
+        return new SkillManager(evalReg, mechReg, trigReg, tagResolver, stateFilters);
     }
 }

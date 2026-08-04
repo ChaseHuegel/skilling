@@ -33,6 +33,7 @@ public final class SkillManager {
     private final EvaluatorRegistry evaluatorRegistry;
     private final MechanicRegistry mechanicRegistry;
     private final TriggerRegistry triggerRegistry;
+    private final io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry stateFilterRegistry;
     private TagResolver tagResolver;
     private volatile Map<String, SkillDefinition> skills = Map.of();
     private volatile Map<String, List<XpSourceRef>> xpSourcesByTrigger = Map.of();
@@ -53,17 +54,21 @@ public final class SkillManager {
     /**
      * Constructs a new skill manager.
      *
-     * @param evaluatorRegistry the evaluator registry for instantiating parameter evaluators
-     * @param mechanicRegistry  the mechanic registry for instantiating mechanics
-     * @param triggerRegistry   the trigger registry for instantiating triggers
-     * @param tagResolver       the tag resolver for filter resolution
+     * @param evaluatorRegistry   the evaluator registry for instantiating parameter evaluators
+     * @param mechanicRegistry    the mechanic registry for instantiating mechanics
+     * @param triggerRegistry     the trigger registry for instantiating triggers
+     * @param tagResolver         the tag resolver for filter resolution
+     * @param stateFilterRegistry the registry of known player-state filter keys, used to validate
+     *                            {@code state:} references at load instead of failing on the event path
      */
     public SkillManager(EvaluatorRegistry evaluatorRegistry, MechanicRegistry mechanicRegistry,
-                        TriggerRegistry triggerRegistry, TagResolver tagResolver) {
+                        TriggerRegistry triggerRegistry, TagResolver tagResolver,
+                        io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry stateFilterRegistry) {
         this.evaluatorRegistry = evaluatorRegistry;
         this.mechanicRegistry = mechanicRegistry;
         this.triggerRegistry = triggerRegistry;
         this.tagResolver = tagResolver;
+        this.stateFilterRegistry = stateFilterRegistry;
     }
 
     /**
@@ -228,7 +233,7 @@ public final class SkillManager {
                         String tool = (String) filterMap.get("tool");
                         validateTagReference(target);
                         validateTagReference(tool);
-                        warmStateTarget(state);
+                        validateAndWarmState(state, "XP source for trigger '" + trigger + "'");
                         filters.add(new SkillDefinition.Filter(target, state, tool));
                     }
                 }
@@ -280,7 +285,7 @@ public final class SkillManager {
             SkillDefinition.AbilityDisplay abilityDisplay = parseAbilityDisplay(castMap(abilityMap.get("display")));
 
             // Requirements
-            SkillDefinition.Requirements requirements = parseRequirements(castMap(abilityMap.get("requirements")));
+            SkillDefinition.Requirements requirements = parseRequirements(castMap(abilityMap.get("requirements")), id);
             SkillDefinition.OnFailure onFailure = parseOnFailure(castMap(abilityMap.get("on_failure")));
 
             // Mechanics
@@ -341,12 +346,12 @@ public final class SkillManager {
         }
     }
 
-    private SkillDefinition.Requirements parseRequirements(Map<String, Object> map) {
+    private SkillDefinition.Requirements parseRequirements(Map<String, Object> map, String abilityId) {
         if (map == null) return new SkillDefinition.Requirements(0, List.of(), List.of());
         ParameterEvaluator cooldown = parseCooldown(map.get("cooldown"));
         @SuppressWarnings("unchecked")
         List<String> state = (List<String>) map.getOrDefault("state", List.of());
-        state.forEach(this::warmStateTarget);
+        state.forEach(s -> validateAndWarmState(s, "Ability '" + abilityId + "' requirements"));
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> itemsRaw = (List<Map<String, Object>>) map.getOrDefault("items", List.of());
         List<SkillDefinition.ItemRequirement> items = itemsRaw.stream().map(this::parseItemRequirement).toList();
@@ -413,18 +418,46 @@ public final class SkillManager {
     }
 
     /**
-     * Pre-warms the target reference of an {@code equipped_all}/{@code equipped_any}
-     * state value (the part after the colon) so armor gating performs no tag
-     * resolution on the event path. Other state values have no tag reference.
+     * Fail-fast validation of a {@code state:} reference. The state key (before
+     * the first colon) must be a registered {@code StateFilterRegistry} filter,
+     * a {@code player_placed} value must be {@code true} or {@code false}, and a
+     * {@code biome} value must resolve to a known biome, so a typo is rejected
+     * at load instead of silently never matching (or throwing) on the event
+     * path. The {@code equipped_*} target tag is also pre-warmed.
      *
-     * @param state the state string (e.g. {@code equipped_all:#c:heavy_armor})
+     * @param state   the raw state string (e.g. {@code equipped_all:#c:heavy_armor})
+     * @param context human-readable load context for error messages
      */
-    private void warmStateTarget(String state) {
-        if (state == null || !state.startsWith("equipped_all:") && !state.startsWith("equipped_any:")) {
-            return;
+    private void validateAndWarmState(String state, String context) {
+        if (state == null || state.isBlank()) return;
+        int colonIdx = state.indexOf(':');
+        String key = colonIdx > 0 ? state.substring(0, colonIdx) : state;
+        if (stateFilterRegistry.get(key) == null) {
+            throw new IllegalArgumentException(context + " references unknown state '" + key + "'");
         }
-        String target = state.substring(state.indexOf(':') + 1);
-        validateTagReference(target);
+        if ("player_placed".equals(key)) {
+            String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
+            if (!value.equals("true") && !value.equals("false")) {
+                throw new IllegalArgumentException(context
+                        + " state 'player_placed' value must be true or false, got '" + value + "'");
+            }
+        }
+        if ("biome".equals(key)) {
+            String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
+            try {
+                var biomeKey = org.bukkit.NamespacedKey.fromString(value);
+                if (biomeKey == null || org.bukkit.Registry.BIOME.get(biomeKey) == null) {
+                    throw new IllegalArgumentException(context
+                            + " state 'biome' value '" + value + "' is not a known biome");
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(context
+                        + " state 'biome' value '" + value + "' is not a valid namespaced key", e);
+            }
+        }
+        if (colonIdx > 0 && (state.startsWith("equipped_all:") || state.startsWith("equipped_any:"))) {
+            validateTagReference(state.substring(colonIdx + 1));
+        }
     }
 
     private SkillDefinition.OnFailure parseOnFailure(Map<String, Object> map) {
@@ -487,6 +520,7 @@ public final class SkillManager {
                         String tool = fm.get("tool") != null ? String.valueOf(fm.get("tool")) : null;
                         validateTagReference(target);
                         validateTagReference(tool);
+                        validateAndWarmState(state, "Mechanic '" + type + "' of ability '" + abilityId + "'");
                         return new SkillDefinition.Filter(target, state, tool);
                     })
                     .toList();

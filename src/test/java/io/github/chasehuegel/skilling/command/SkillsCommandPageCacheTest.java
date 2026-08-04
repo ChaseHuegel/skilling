@@ -62,7 +62,8 @@ class SkillsCommandPageCacheTest {
 
         SkillManager skillManager = new SkillManager(
                 evaluatorRegistry, new MechanicRegistry(), new TriggerRegistry(),
-                new TagResolver(new CustomTagLoader()));
+                new TagResolver(new CustomTagLoader()),
+                new io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry());
 
         Path skillsDir = tempDir.resolve("skills");
         Files.createDirectories(skillsDir);

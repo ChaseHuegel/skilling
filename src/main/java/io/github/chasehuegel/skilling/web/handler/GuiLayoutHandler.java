@@ -10,6 +10,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -82,11 +83,23 @@ public final class GuiLayoutHandler {
             return "rows must be between 1 and 6, got " + dto.rows();
         }
         int maxSlot = dto.rows() * 9;
+        // The navigation row (last row) is auto-reserved for the arrows and page
+        // indicator; the engine drops any skill assigned there, so reject it here.
+        int lastRowStart = (dto.rows() - 1) * 9;
+        var reserved = java.util.Set.of(lastRowStart, lastRowStart + 4, lastRowStart + 8);
         for (var page : dto.pages()) {
+            Set<Integer> used = new java.util.HashSet<>();
             for (int slot : page.slots().keySet()) {
                 if (slot < 0 || slot >= maxSlot) {
                     return "page '" + page.label() + "' has invalid slot " + slot
                             + " (must be 0-" + (maxSlot - 1) + " for " + dto.rows() + " rows)";
+                }
+                if (reserved.contains(slot)) {
+                    return "page '" + page.label() + "' assigns a skill to reserved navigation slot "
+                            + slot + " (the last row holds the page controls)";
+                }
+                if (!used.add(slot)) {
+                    return "page '" + page.label() + "' has duplicate slot " + slot;
                 }
             }
         }
