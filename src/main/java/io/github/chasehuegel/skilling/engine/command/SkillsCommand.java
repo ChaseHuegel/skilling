@@ -26,6 +26,7 @@ import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.parser.standard.StringParser;
 import org.incendo.cloud.parser.standard.BooleanParser;
 import java.util.HashSet;
+import java.util.UUID;
 
 public final class SkillsCommand {
 
@@ -256,6 +257,11 @@ public final class SkillsCommand {
     private static final String USAGE_RESET = "<yellow>Usage: /skills reset <player> [<skill>]</yellow>";
 
     private void setLevel(CommandSender sender, String playerName, String skillId, int level) {
+        if (level < 0) {
+            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_SETLEVEL));
+            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Level must be a non-negative integer."));
+            return;
+        }
         Player target = Bukkit.getPlayer(playerName);
         if (target != null) {
             PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
@@ -299,16 +305,39 @@ public final class SkillsCommand {
             sender.sendMessage(MINI_MESSAGE.deserialize("<red>Player not found: " + playerName));
             return;
         }
-        String uuid = offlinePlayer.getUniqueId().toString();
+        UUID uuid = offlinePlayer.getUniqueId();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // Coordinate with the write-behind cache: if the target joined while
+            // the command ran, mutate the live cached profile instead of the DB.
+            // A direct DB write could otherwise be overwritten (and its pending
+            // fanfare cleared) by the profile's next flush.
+            PlayerProfile live = profileManager.getProfile(uuid);
+            if (live != null) {
+                live.setXp(skillId, xp);
+                live.invalidatePageCache();
+                live.addPendingFanfare(skillId);
+                Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + level + " (live profile, fanfare pending).")));
+                return;
+            }
+            String uuidStr = uuid.toString();
             String sql = "INSERT INTO player_skills (player_uuid, skill_id, xp, fanfare_pending) VALUES (?, ?, ?, 1) ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = ?, fanfare_pending = 1";
             try (var conn = plugin.getDatabaseManager().getConnection();
                  var stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, uuid);
+                stmt.setString(1, uuidStr);
                 stmt.setString(2, skillId);
                 stmt.setLong(3, xp);
                 stmt.setLong(4, xp);
                 stmt.executeUpdate();
+                // The target may have joined while the write was in flight; fold
+                // the grant into the now-live profile so a stale flush cannot
+                // overwrite it. Its baseline matches the pre-write DB value.
+                PlayerProfile joined = profileManager.getProfile(uuid);
+                if (joined != null) {
+                    joined.setXp(skillId, xp);
+                    joined.invalidatePageCache();
+                    joined.addPendingFanfare(skillId);
+                }
                 Bukkit.getScheduler().runTask(plugin, () ->
                     sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + level + " (offline, fanfare pending).")));
             } catch (Exception e) {
@@ -319,6 +348,11 @@ public final class SkillsCommand {
     }
 
     private void addXp(CommandSender sender, String playerName, String skillId, int amount) {
+        if (amount < 0) {
+            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_ADDXP));
+            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Amount must be a non-negative integer."));
+            return;
+        }
         Player target = Bukkit.getPlayer(playerName);
         if (target != null) {
             PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
@@ -360,16 +394,37 @@ public final class SkillsCommand {
             sender.sendMessage(MINI_MESSAGE.deserialize("<red>Player not found: " + playerName));
             return;
         }
-        String uuid = offlinePlayer.getUniqueId().toString();
+        UUID uuid = offlinePlayer.getUniqueId();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // Coordinate with the write-behind cache (see handleOfflineSetLevel):
+            // apply to a live cached profile when the target joined mid-command.
+            PlayerProfile live = profileManager.getProfile(uuid);
+            if (live != null) {
+                live.addXp(skillId, amount);
+                live.invalidatePageCache();
+                live.addPendingFanfare(skillId);
+                Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + " (live profile, fanfare pending).")));
+                return;
+            }
+            String uuidStr = uuid.toString();
             String sql = "INSERT INTO player_skills (player_uuid, skill_id, xp, fanfare_pending) VALUES (?, ?, ?, 1) ON CONFLICT(player_uuid, skill_id) DO UPDATE SET xp = xp + ?, fanfare_pending = 1";
             try (var conn = plugin.getDatabaseManager().getConnection();
                  var stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, uuid);
+                stmt.setString(1, uuidStr);
                 stmt.setString(2, skillId);
                 stmt.setLong(3, amount);
                 stmt.setLong(4, amount);
                 stmt.executeUpdate();
+                // Fold the grant into a profile that joined during the write; its
+                // baseline matches the pre-write DB value, so adding the amount
+                // again reproduces the DB result.
+                PlayerProfile joined = profileManager.getProfile(uuid);
+                if (joined != null) {
+                    joined.addXp(skillId, amount);
+                    joined.invalidatePageCache();
+                    joined.addPendingFanfare(skillId);
+                }
                 Bukkit.getScheduler().runTask(plugin, () ->
                     sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + " (offline, fanfare pending).")));
             } catch (Exception e) {

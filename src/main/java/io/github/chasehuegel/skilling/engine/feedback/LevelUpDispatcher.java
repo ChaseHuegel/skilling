@@ -57,7 +57,10 @@ public final class LevelUpDispatcher {
         long xpForNext = (long) skill.progression().evaluator().evaluate(level + 1, 0);
         long intoLevel = totalXp - xpForCurrent;
         long needed = xpForNext - xpForCurrent;
-        double progress = needed > 0 ? Math.min((double) intoLevel / needed, 1.0) : 0;
+        // Clamp to [0,1]: negative total XP (from a stale/corrupt row) or a total
+        // below the level threshold would otherwise compute a negative progress,
+        // which Bukkit rejects with IllegalArgumentException.
+        double progress = needed > 0 ? Math.min(Math.max((double) intoLevel / needed, 0.0), 1.0) : 0;
         bar.setProgress(progress);
 
         Component nameComp = Component.text(displayName,

@@ -5,7 +5,6 @@ import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.feedback.BossBarPool;
 import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
-import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,7 @@ class PlayerListenerQuitTest {
         BossBarPool bossBarPool = mock(BossBarPool.class);
         PlayerListener listener = new PlayerListener(
                 mock(ProfileManager.class), mock(AsyncBatchWorker.class),
-                mock(RequirementEngine.class), mock(SkillManager.class),
+                mock(SkillManager.class),
                 bossBarPool, debouncer);
 
         PlayerQuitEvent event = mock(PlayerQuitEvent.class);

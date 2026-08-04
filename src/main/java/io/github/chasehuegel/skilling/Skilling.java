@@ -171,16 +171,21 @@ public final class Skilling extends JavaPlugin {
         this.entityTagResolver = new EntityTagResolver(customTagLoader);
         registerBuiltins();
 
+        // Requirements engine
+        this.requirementEngine = new RequirementEngine(tagResolver, stateFilterRegistry);
+
         // Initialize database
         this.databaseManager = new DatabaseManager(getDataFolder());
         try {
             databaseManager.initialize(config);
         } catch (SQLException e) {
-            getLogger().log(Level.SEVERE, "Failed to initialize database", e);
+            getLogger().log(Level.SEVERE, "Failed to initialize database; disabling Skilling", e);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         this.profileManager = new ProfileManager(databaseManager);
-        this.asyncBatchWorker = new AsyncBatchWorker(this, databaseManager, profileManager);
+        this.asyncBatchWorker = new AsyncBatchWorker(this, databaseManager, profileManager, requirementEngine);
         this.asyncBatchWorker.start();
 
         // Load skill definitions from YAML
@@ -208,9 +213,6 @@ public final class Skilling extends JavaPlugin {
         int fadeTicks = config.getInt(CONFIG_BOSSBAR_FADE_TICKS, 40);
         this.bossBarPool = new BossBarPool(maxBars, fadeTicks);
 
-        // Requirements engine
-        this.requirementEngine = new RequirementEngine(tagResolver, stateFilterRegistry);
-
         // Lockdown / reload manager
         this.lockdownManager = new LockdownManager(this, profileManager, asyncBatchWorker, skillManager);
 
@@ -232,7 +234,7 @@ public final class Skilling extends JavaPlugin {
 
         // Event listeners
         Bukkit.getPluginManager().registerEvents(new UIProtectionListener(), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker, requirementEngine, skillManager, bossBarPool, feedbackDebouncer), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker, skillManager, bossBarPool, feedbackDebouncer), this);
         this.skillEventListener = new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
                         registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool, stateFilterRegistry);
         Bukkit.getPluginManager().registerEvents(skillEventListener, this);

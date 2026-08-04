@@ -3,6 +3,7 @@ package io.github.chasehuegel.skilling.engine.db;
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
+import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import org.bukkit.Bukkit;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
@@ -17,7 +18,9 @@ import java.util.logging.Level;
 
 public final class AsyncBatchWorker implements Runnable {
 
-    private static final long INTERVAL_TICKS = 20 * 60;
+    // Periodic flush interval: 30 seconds (30s * 20 ticks/s). This bounds the
+    // crash-loss window for XP written only to the in-memory write-behind cache.
+    private static final long INTERVAL_TICKS = 20 * 30;
 
     /**
      * Player-skill UPSERT. Writing a profile row clears {@code fanfare_pending}
@@ -37,17 +40,26 @@ public final class AsyncBatchWorker implements Runnable {
     private final Skilling plugin;
     private final DatabaseManager databaseManager;
     private final ProfileManager profileManager;
+    private final RequirementEngine requirementEngine;
     private final ReentrantLock lock = new ReentrantLock();
     private int taskId = -1;
 
     public AsyncBatchWorker(Skilling plugin, DatabaseManager databaseManager, ProfileManager profileManager) {
+        this(plugin, databaseManager, profileManager, null);
+    }
+
+    public AsyncBatchWorker(Skilling plugin, DatabaseManager databaseManager, ProfileManager profileManager,
+                            RequirementEngine requirementEngine) {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         this.profileManager = profileManager;
+        this.requirementEngine = requirementEngine;
     }
 
     public void start() {
-        this.taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this, INTERVAL_TICKS, INTERVAL_TICKS).getTaskId();
+        // Run the first flush promptly (1s after enable) rather than waiting a
+        // full interval, so freshly-earned XP is persisted quickly after startup.
+        this.taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this, 20L, INTERVAL_TICKS).getTaskId();
     }
 
     public void stop() {
@@ -90,6 +102,12 @@ public final class AsyncBatchWorker implements Runnable {
     }
 
     private void doFlush() {
+        // Cooldowns survive a quit/relog, so prune expired entries periodically
+        // on the worker thread to keep per-player state bounded.
+        if (requirementEngine != null) {
+            requirementEngine.pruneExpiredCooldowns();
+        }
+
         Map<UUID, PlayerProfile> dirty = profileManager.getDirtyProfiles();
         if (dirty.isEmpty()) return;
 

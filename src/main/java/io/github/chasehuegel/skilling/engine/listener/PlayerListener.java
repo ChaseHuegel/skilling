@@ -9,7 +9,6 @@ import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import io.github.chasehuegel.skilling.engine.feedback.LevelUpDispatcher;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
-import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,17 +23,15 @@ public final class PlayerListener implements Listener {
 
     private final ProfileManager profileManager;
     private final AsyncBatchWorker asyncBatchWorker;
-    private final RequirementEngine requirementEngine;
     private final SkillManager skillManager;
     private final BossBarPool bossBarPool;
     private final FeedbackDebouncer feedbackDebouncer;
 
     public PlayerListener(ProfileManager profileManager, AsyncBatchWorker asyncBatchWorker,
-                          RequirementEngine requirementEngine, SkillManager skillManager,
+                          SkillManager skillManager,
                           BossBarPool bossBarPool, FeedbackDebouncer feedbackDebouncer) {
         this.profileManager = profileManager;
         this.asyncBatchWorker = asyncBatchWorker;
-        this.requirementEngine = requirementEngine;
         this.skillManager = skillManager;
         this.bossBarPool = bossBarPool;
         this.feedbackDebouncer = feedbackDebouncer;
@@ -63,7 +60,9 @@ public final class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        requirementEngine.clearCooldowns(player);
+        // Cooldowns intentionally survive a quit/relog: clearing them here let a
+        // player log out to reset an active ability cooldown. Expired entries are
+        // pruned periodically by the write-behind worker.
         // Release per-player state so memory does not grow unboundedly with unique
         // players; boss bars are hidden by removeAll. Runs on the main thread so it
         // never races the dispatch path.

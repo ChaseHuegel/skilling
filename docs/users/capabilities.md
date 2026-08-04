@@ -17,6 +17,8 @@ mechanic:
   target, inapplicable state) and does not spend the cost or cooldown.
 - When an ability lists several mechanics, consumption happens once if **any**
   mechanic activates.
+- **Cooldowns persist across a quit/relog** — logging out does not reset an
+  active cooldown; it expires on its own timer. Only time lifts a cooldown.
 
 ## Built-In Mechanics
 

@@ -259,4 +259,21 @@ public final class RequirementEngine {
     public void clearCooldowns(Player player) {
         cooldowns.remove(player.getUniqueId().toString());
     }
+
+    /**
+     * Removes cooldown entries that have already expired, plus empty per-player
+     * maps, so cooldown state does not grow unboundedly across players who quit
+     * and never return. Called periodically on the write-behind worker thread.
+     */
+    public void pruneExpiredCooldowns() {
+        long now = System.currentTimeMillis();
+        for (var playerEntry : cooldowns.entrySet()) {
+            Map<String, Long> abilityCooldowns = playerEntry.getValue();
+            if (abilityCooldowns == null) continue;
+            abilityCooldowns.entrySet().removeIf(e -> e.getValue() <= now);
+            if (abilityCooldowns.isEmpty()) {
+                cooldowns.remove(playerEntry.getKey(), abilityCooldowns);
+            }
+        }
+    }
 }
