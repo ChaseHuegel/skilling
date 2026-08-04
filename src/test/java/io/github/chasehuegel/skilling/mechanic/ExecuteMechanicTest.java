@@ -43,6 +43,8 @@ class ExecuteMechanicTest {
         var player = BukkitMock.mockPlayer();
         var target = mock(LivingEntity.class);
         when(target.getHealth()).thenReturn(5.0);
+        // Alive before the blow (guard), dead after it (verification).
+        when(target.isDead()).thenReturn(false, true);
         var event = mock(EntityDamageByEntityEvent.class);
         when(event.getDamager()).thenReturn(player);
         when(event.getEntity()).thenReturn(target);
@@ -50,7 +52,7 @@ class ExecuteMechanicTest {
         assertTrue(mechanic.execute(player, Map.of("threshold", 50.0), event));
         // 5/20 (default max health) = 25% <= 50%, so the target is killed
         // through the damage pipeline (attributed to the player, vanilla XP).
-        verify(target).damage(5.0, player);
+        verify(target).damage(Double.MAX_VALUE, player);
         verify(target, never()).setHealth(0);
     }
 
@@ -66,5 +68,65 @@ class ExecuteMechanicTest {
 
         assertFalse(mechanic.execute(player, Map.of("threshold", 50.0), event));
         verify(target, never()).setHealth(0);
+    }
+
+    @Test
+    void survivingArmoredTargetDoesNotConsume() {
+        var mechanic = new ExecuteMechanic();
+        var player = BukkitMock.mockPlayer();
+        var target = mock(LivingEntity.class);
+        when(target.getHealth()).thenReturn(5.0);
+        when(target.isDead()).thenReturn(false); // armor/absorption reduced the blow
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getDamager()).thenReturn(player);
+        when(event.getEntity()).thenReturn(target);
+
+        assertFalse(mechanic.execute(player, Map.of("threshold", 50.0), event),
+                "a target that survives must not consume cost/cooldown");
+        verify(target).damage(Double.MAX_VALUE, player);
+    }
+
+    @Test
+    void deadTargetIsNoOp() {
+        var mechanic = new ExecuteMechanic();
+        var player = BukkitMock.mockPlayer();
+        var target = mock(LivingEntity.class);
+        when(target.isDead()).thenReturn(true);
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getDamager()).thenReturn(player);
+        when(event.getEntity()).thenReturn(target);
+
+        assertFalse(mechanic.execute(player, Map.of("threshold", 50.0), event));
+        verify(target, never()).damage(anyDouble(), any(org.bukkit.entity.Entity.class));
+    }
+
+    @Test
+    void creativePlayerTargetIsNoOp() {
+        var mechanic = new ExecuteMechanic();
+        var player = BukkitMock.mockPlayer();
+        var target = mock(org.bukkit.entity.Player.class);
+        when(target.getGameMode()).thenReturn(org.bukkit.GameMode.CREATIVE);
+        when(target.getHealth()).thenReturn(2.0);
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getDamager()).thenReturn(player);
+        when(event.getEntity()).thenReturn(target);
+
+        assertFalse(mechanic.execute(player, Map.of("threshold", 50.0), event));
+        verify(target, never()).damage(anyDouble(), any(org.bukkit.entity.Entity.class));
+    }
+
+    @Test
+    void spectatorPlayerTargetIsNoOp() {
+        var mechanic = new ExecuteMechanic();
+        var player = BukkitMock.mockPlayer();
+        var target = mock(org.bukkit.entity.Player.class);
+        when(target.getGameMode()).thenReturn(org.bukkit.GameMode.SPECTATOR);
+        when(target.getHealth()).thenReturn(2.0);
+        var event = mock(EntityDamageByEntityEvent.class);
+        when(event.getDamager()).thenReturn(player);
+        when(event.getEntity()).thenReturn(target);
+
+        assertFalse(mechanic.execute(player, Map.of("threshold", 50.0), event));
+        verify(target, never()).damage(anyDouble(), any(org.bukkit.entity.Entity.class));
     }
 }

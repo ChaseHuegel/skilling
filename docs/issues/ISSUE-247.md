@@ -6,9 +6,9 @@
 - **Severity:** Low — `ExecuteMechanic` damages the target with `target.getHealth()` via `target.damage(...)` (`ExecuteMechanic.java:30`), which is armor/absorption-reduced; a heavily armored target at the threshold can survive, yet the mechanic already returned `true` (cost/cooldown consumed). There is also no guard for already-dead, creative, or spectator targets.
 
 ## Implementation Requirements
-- [ ] Make the execute path deterministic: either apply true execution (e.g. `target.setHealth(0)` path that respects the game's death handling) or verify the target actually died and return `false` (no consume) when it survives.
-- [ ] Guard against already-dead/creative/spectator targets.
-- [ ] Add unit tests: armored target at threshold, dead target, creative target.
+- [x] Make the execute path deterministic: either apply true execution (e.g. `target.setHealth(0)` path that respects the game's death handling) or verify the target actually died and return `false` (no consume) when it survives.
+- [x] Guard against already-dead/creative/spectator targets.
+- [x] Add unit tests: armored target at threshold, dead target, creative target.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -18,6 +18,6 @@
 - **Constraints:** Keep the `threshold` parameter semantics.
 
 ## Verification & Definition of Done
-- [ ] A surviving (armored) target does not consume cost/cooldown.
-- [ ] Dead/creative/spectator targets no-op safely.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] A surviving (armored) target does not consume cost/cooldown.
+- [x] Dead/creative/spectator targets no-op safely.
+- [x] `./gradlew build` and `./gradlew test` pass.
