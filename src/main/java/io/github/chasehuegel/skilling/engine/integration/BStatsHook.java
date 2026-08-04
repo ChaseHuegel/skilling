@@ -4,11 +4,11 @@ import io.github.chasehuegel.skilling.Skilling;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 
-public class bStatsHook {
+public class BStatsHook {
     private final Skilling plugin;
     private Metrics metrics;
 
-    public bStatsHook(Skilling plugin) {
+    public BStatsHook(Skilling plugin) {
         this.plugin = plugin;
     }
 

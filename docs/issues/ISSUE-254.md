@@ -6,7 +6,7 @@
 - **Severity:** Nit — `bStatsHook` (`src/main/java/io/github/chasehuegel/skilling/engine/integration/bStatsHook.java`) starts lowercase, and the field/getter in `IntegrationManager` mirror it (`IntegrationManager.java:9`, `:37`).
 
 ## Implementation Requirements
-- [ ] Rename the class to `BStatsHook` (or `BStatsMetrics`), update the field name and `hasbStats()` getter, and update any references.
+- [x] Rename the class to `BStatsHook` (or `BStatsMetrics`), update the field name and `hasbStats()` getter, and update any references.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -16,5 +16,5 @@
 - **Constraints:** None.
 
 ## Verification & Definition of Done
-- [ ] No `bStatsHook` identifiers remain.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] No `bStatsHook` identifiers remain.
+- [x] `./gradlew build` and `./gradlew test` pass.

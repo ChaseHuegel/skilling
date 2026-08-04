@@ -6,7 +6,7 @@ public class IntegrationManager {
     private final Skilling plugin;
     private PlaceholderAPIHook papiHook;
     private VaultHook vaultHook;
-    private bStatsHook bStatsHook;
+    private BStatsHook bStats;
 
     public IntegrationManager(Skilling plugin) {
         this.plugin = plugin;
@@ -26,8 +26,8 @@ public class IntegrationManager {
             vaultHook.initialize();
             plugin.getLogger().info("Vault economy integration enabled");
         }
-        bStatsHook = new bStatsHook(plugin);
-        bStatsHook.initialize();
+        bStats = new BStatsHook(plugin);
+        bStats.initialize();
     }
 
     public void shutdown() {
@@ -37,7 +37,7 @@ public class IntegrationManager {
 
     public boolean hasPlaceholderAPI() { return papiHook != null; }
     public boolean hasVault() { return vaultHook != null; }
-    public boolean hasbStats() { return bStatsHook != null; }
+    public boolean hasBStats() { return bStats != null; }
 
     public PlaceholderAPIHook getPapiHook() { return papiHook; }
     public VaultHook getVaultHook() { return vaultHook; }
