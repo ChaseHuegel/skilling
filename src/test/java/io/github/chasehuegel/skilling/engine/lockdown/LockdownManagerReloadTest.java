@@ -136,4 +136,33 @@ class LockdownManagerReloadTest {
         verify(skillManager).setTagResolver(oldResolver);
         verify(plugin).setReloading(false);
     }
+
+    @Test
+    void reloadClearsTransientAttributeModifiers() throws Exception {
+        Skilling plugin = mock(Skilling.class);
+        when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("test"));
+        when(plugin.getDataFolder()).thenReturn(tempDir.toFile());
+        when(plugin.getRegistries()).thenReturn(new Registries(
+                new MechanicRegistry(), new TriggerRegistry(), new EvaluatorRegistry()));
+        when(plugin.getRequirementEngine()).thenReturn(mock(RequirementEngine.class));
+        when(plugin.getSkillEventListener()).thenReturn(mock(io.github.chasehuegel.skilling.engine.listener.SkillEventListener.class));
+
+        SkillMenuBuilder builder = mock(SkillMenuBuilder.class);
+        when(plugin.getSkillMenuBuilder()).thenReturn(builder);
+
+        AsyncBatchWorker worker = mock(AsyncBatchWorker.class);
+        when(worker.flushDirtyProfilesAsync())
+                .thenReturn(CompletableFuture.completedFuture(null));
+
+        LockdownManager lockdown = new LockdownManager(plugin,
+                mock(ProfileManager.class), worker, mock(SkillManager.class), Runnable::run);
+
+        try (MockedStatic<Bukkit> bukkit = mockBukkit();
+             MockedStatic<io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper> helper =
+                     mockStatic(io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper.class)) {
+            lockdown.reloadAsync().get(5, TimeUnit.SECONDS);
+            // Phase 5 invalidation must strip transient attribute modifiers on reload.
+            helper.verify(() -> io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper.clearAll());
+        }
+    }
 }

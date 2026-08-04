@@ -667,6 +667,7 @@ public final class Skilling extends JavaPlugin {
             webServer.stop();
         }
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clearAll();
+        io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper.clearAll();
         if (asyncBatchWorker != null) {
             asyncBatchWorker.stop();
             // Flush remaining dirty profiles on a worker thread and await with a

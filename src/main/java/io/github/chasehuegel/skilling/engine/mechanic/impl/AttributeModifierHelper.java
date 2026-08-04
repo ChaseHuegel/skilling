@@ -2,6 +2,7 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.Skilling;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
@@ -26,14 +27,14 @@ import java.util.concurrent.ConcurrentMap;
  * when the player despawns (e.g. on quit); the retired callback drops the
  * tracked entry so nothing leaks for a player who logs out mid-buff.
  */
-final class AttributeModifierHelper {
+public final class AttributeModifierHelper {
 
     private static final ConcurrentMap<BuffKey, ScheduledTask> PENDING_REMOVALS = new ConcurrentHashMap<>();
 
     private AttributeModifierHelper() {}
 
-    /** Identifies a scheduled removal by the player and the modifier UUID. */
-    private record BuffKey(UUID playerId, UUID modifierId) {}
+    /** Identifies a scheduled removal by the player, the attribute, and the modifier UUID. */
+    private record BuffKey(UUID playerId, Attribute attribute, UUID modifierId) {}
 
     /**
      * Resolves the modifier UUID from an optional {@code uuid} parameter value.
@@ -74,7 +75,7 @@ final class AttributeModifierHelper {
         AttributeInstance inst = player.getAttribute(attribute);
         if (inst == null) return false;
 
-        BuffKey key = new BuffKey(player.getUniqueId(), uuid);
+        BuffKey key = new BuffKey(player.getUniqueId(), attribute, uuid);
         ScheduledTask previous = PENDING_REMOVALS.remove(key);
         if (previous != null && !previous.isCancelled()) {
             previous.cancel();
@@ -106,5 +107,41 @@ final class AttributeModifierHelper {
             PENDING_REMOVALS.put(key, task);
         }
         return true;
+    }
+
+    /**
+     * Cancels every tracked removal task and strips the pending transient
+     * modifiers from online players, then clears the tracker. Called on plugin
+     * disable and reload: Paper retires plugin-owned entity-scheduler tasks
+     * without running their callbacks, so the scheduled removals would otherwise
+     * never fire and the buffs would persist (and the static map would grow).
+     */
+    public static void clearAll() {
+        if (PENDING_REMOVALS.isEmpty()) return;
+        for (ScheduledTask task : PENDING_REMOVALS.values()) {
+            if (task != null && !task.isCancelled()) {
+                task.cancel();
+            }
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (BuffKey key : PENDING_REMOVALS.keySet()) {
+                if (key.playerId().equals(player.getUniqueId())) {
+                    AttributeInstance inst = player.getAttribute(key.attribute());
+                    if (inst != null) {
+                        inst.removeModifier(key.modifierId());
+                    }
+                }
+            }
+        }
+        PENDING_REMOVALS.clear();
+    }
+
+    /**
+     * Test-only seam: the number of tracked pending removals.
+     *
+     * @return the size of the pending-removal tracker
+     */
+    static int pendingRemovalsSize() {
+        return PENDING_REMOVALS.size();
     }
 }

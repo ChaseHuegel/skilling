@@ -6,6 +6,7 @@ import io.papermc.paper.registry.tag.Tag;
 import io.papermc.paper.registry.tag.TagKey;
 import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
@@ -301,5 +302,36 @@ class AttributeModifierHelperTest {
     @Test
     void malformedUuidFailsFast() {
         assertThrows(IllegalArgumentException.class, () -> AttributeModifierHelper.resolveUuid("not-a-uuid"));
+    }
+
+    @Test
+    void clearAllStripsModifiersAndClearsTracker() {
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            List<AttributeModifier> active = new ArrayList<>();
+            Player player = playerWithRecordingInstance(attribute, active);
+            UUID uuid = UUID.randomUUID();
+            when(Bukkit.getOnlinePlayers()).thenAnswer(inv -> List.of(player));
+
+            assertTrue(AttributeModifierHelper.applyTransient(player, attribute, uuid, "test", 1.0, 60));
+            assertEquals(1, active.size());
+            assertEquals(1, AttributeModifierHelper.pendingRemovalsSize());
+
+            // Plugin disable / reload: the scheduled removal tasks would be
+            // retired without running, so the modifier must be stripped directly.
+            AttributeModifierHelper.clearAll();
+
+            assertTrue(active.isEmpty(), "transient modifier must be removed from the player");
+            assertEquals(0, AttributeModifierHelper.pendingRemovalsSize(),
+                    "the pending-removal tracker must be emptied");
+        }
+    }
+
+    @Test
+    void clearAllDoesNothingWhenNothingPending() {
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getOnlinePlayers()).thenReturn(List.of());
+            AttributeModifierHelper.clearAll();
+            assertEquals(0, AttributeModifierHelper.pendingRemovalsSize());
+        }
     }
 }
