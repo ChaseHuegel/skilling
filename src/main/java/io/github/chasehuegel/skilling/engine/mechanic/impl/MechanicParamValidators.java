@@ -12,15 +12,19 @@ import org.bukkit.NamespacedKey;
  * typo (e.g. {@code effect: "minecraft:poisn"}) is rejected with a descriptive
  * {@link IllegalArgumentException} at load time instead of throwing inside an
  * event handler mid-game. Only constant-valued parameters can be validated at
- * load; a missing parameter is skipped so mechanics with an intentionally
- * optional string param keep their behavior.
+ * load; a missing required string param (effect, attribute) is rejected, while
+ * intentionally optional params (radius, chance, duration) and mechanics with an
+ * optional string param keep their skip-when-absent behavior. A present numeric
+ * param carrying a string (e.g. {@code duration: "3"}) is rejected instead of
+ * throwing {@link ClassCastException} at runtime.
  *
  * <p>The potion-effect and attribute key checks are injected by the plugin at
  * startup ({@link #configureLookups}) because the live Bukkit registries cannot
- * initialize in a plain-JUnit JVM. Until configured, those validators skip —
- * unit tests stay green, and the dedicated load-validation tests inject
- * deterministic predicates. Material and particle validation needs no registry
- * and always runs.
+ * initialize in a plain-JUnit JVM. Until configured, those validators skip the
+ * key check — but still reject a missing required param — so unit tests stay
+ * green, and the dedicated load-validation tests inject deterministic
+ * predicates. Material and particle validation needs no registry and always
+ * runs.
  */
 public final class MechanicParamValidators {
 
@@ -50,16 +54,20 @@ public final class MechanicParamValidators {
     }
 
     /**
-     * Validates a potion-effect parameter, skipping it when absent or when no
-     * registry key check has been configured.
+     * Validates a potion-effect parameter. The parameter is required: a missing
+     * effect would throw {@link IllegalArgumentException} inside the mechanic's
+     * event handler, so it is rejected here at load instead.
      *
      * @param context the load context (skill/ability) for error messages
      * @param params  the constant-valued mechanic parameters
      * @param key     the parameter key holding the effect
-     * @throws IllegalArgumentException if the effect is present but unknown
+     * @throws IllegalArgumentException if the effect is missing or unknown
      */
     public static void potionEffect(String context, Map<String, Object> params, String key) {
-        if (!params.containsKey(key) || potionKeyKnown == null) return;
+        if (!params.containsKey(key)) {
+            throw new IllegalArgumentException(context + ": missing required parameter '" + key + "'");
+        }
+        if (potionKeyKnown == null) return;
         Object raw = params.get(key);
         try {
             if (!potionKeyKnown.test(PotionEffectResolver.parseKey(raw))) {
@@ -71,16 +79,20 @@ public final class MechanicParamValidators {
     }
 
     /**
-     * Validates an attribute parameter, skipping it when absent or when no
-     * registry key check has been configured.
+     * Validates an attribute parameter. The parameter is required: a missing
+     * attribute would throw inside the mechanic's event handler, so it is
+     * rejected here at load instead.
      *
      * @param context the load context (skill/ability) for error messages
      * @param params  the constant-valued mechanic parameters
      * @param key     the parameter key holding the attribute
-     * @throws IllegalArgumentException if the attribute is present but unknown
+     * @throws IllegalArgumentException if the attribute is missing or unknown
      */
     public static void attribute(String context, Map<String, Object> params, String key) {
-        if (!params.containsKey(key) || attributeKeyKnown == null) return;
+        if (!params.containsKey(key)) {
+            throw new IllegalArgumentException(context + ": missing required parameter '" + key + "'");
+        }
+        if (attributeKeyKnown == null) return;
         Object raw = params.get(key);
         try {
             if (!attributeKeyKnown.test(ModifyAttributeMechanic.parseAttributeKey(raw))) {
@@ -180,10 +192,10 @@ public final class MechanicParamValidators {
      * @param context the load context (skill/ability) for error messages
      * @param params  the constant-valued mechanic parameters
      * @param key     the parameter key holding the radius
-     * @throws IllegalArgumentException if the radius is present but negative
+     * @throws IllegalArgumentException if the radius is present but not a number, or negative
      */
     public static void radius(String context, Map<String, Object> params, String key) {
-        Number value = number(params.get(key));
+        Number value = number(params.get(key), context, key);
         if (value != null && value.doubleValue() < 0) {
             throw new IllegalArgumentException(context + ": " + key + " must not be negative, got " + value);
         }
@@ -197,10 +209,10 @@ public final class MechanicParamValidators {
      * @param params  the constant-valued mechanic parameters
      * @param key     the parameter key holding the chance
      * @param max     the inclusive upper bound (e.g. 100 for percentages, 1 for a ratio)
-     * @throws IllegalArgumentException if the chance is present and out of bounds
+     * @throws IllegalArgumentException if the chance is present but not a number, or out of bounds
      */
     public static void chance(String context, Map<String, Object> params, String key, double max) {
-        Number value = number(params.get(key));
+        Number value = number(params.get(key), context, key);
         if (value != null && (value.doubleValue() < 0 || value.doubleValue() > max)) {
             throw new IllegalArgumentException(context + ": " + key
                     + " must be between 0 and " + max + ", got " + value);
@@ -214,10 +226,10 @@ public final class MechanicParamValidators {
      * @param context the load context (skill/ability) for error messages
      * @param params  the constant-valued mechanic parameters
      * @param key     the parameter key to validate
-     * @throws IllegalArgumentException if the parameter is present but negative
+     * @throws IllegalArgumentException if the parameter is present but not a number, or negative
      */
     public static void nonNegative(String context, Map<String, Object> params, String key) {
-        Number value = number(params.get(key));
+        Number value = number(params.get(key), context, key);
         if (value != null && value.doubleValue() < 0) {
             throw new IllegalArgumentException(context + ": " + key + " must not be negative, got " + value);
         }
@@ -229,16 +241,29 @@ public final class MechanicParamValidators {
      * @param context the load context (skill/ability) for error messages
      * @param params  the constant-valued mechanic parameters
      * @param key     the parameter key to validate
-     * @throws IllegalArgumentException if the parameter is present but not positive
+     * @throws IllegalArgumentException if the parameter is present but not a number, or not positive
      */
     public static void positive(String context, Map<String, Object> params, String key) {
-        Number value = number(params.get(key));
+        Number value = number(params.get(key), context, key);
         if (value != null && value.doubleValue() <= 0) {
             throw new IllegalArgumentException(context + ": " + key + " must be positive, got " + value);
         }
     }
 
-    private static Number number(Object value) {
-        return value instanceof Number n ? n : null;
+    /**
+     * Reads a numeric parameter value. A present non-number (e.g. a quoted
+     * {@code "3"}) would throw {@link ClassCastException} from the mechanics'
+     * {@code (Number)} casts at runtime, so it is rejected here instead.
+     *
+     * @param value   the raw parameter value (null when absent)
+     * @param context the load context for error messages
+     * @param key     the parameter key
+     * @return the numeric value, or null when absent
+     * @throws IllegalArgumentException if the value is present but not a number
+     */
+    private static Number number(Object value, String context, String key) {
+        if (value == null) return null;
+        if (value instanceof Number n) return n;
+        throw new IllegalArgumentException(context + ": parameter '" + key + "' must be a number, got: " + value);
     }
 }

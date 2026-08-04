@@ -40,10 +40,10 @@ class MechanicParamValidatorsTest {
     }
 
     @Test
-    void potionEffectSkipsWhenAbsentOrLookupUnconfigured() {
+    void potionEffectRejectsMissingAndSkipsWhenLookupUnconfigured() {
         assertDoesNotThrow(() ->
                 MechanicParamValidators.potionEffect("ctx", Map.of("effect", "minecraft:poisn"), "effect"));
-        assertDoesNotThrow(() ->
+        assertThrows(IllegalArgumentException.class, () ->
                 MechanicParamValidators.potionEffect("ctx", Map.of(), "effect"));
     }
 
@@ -57,10 +57,10 @@ class MechanicParamValidatorsTest {
     }
 
     @Test
-    void attributeSkipsWhenAbsentOrLookupUnconfigured() {
+    void attributeRejectsMissingAndSkipsWhenLookupUnconfigured() {
         assertDoesNotThrow(() ->
                 MechanicParamValidators.attribute("ctx", Map.of("attribute", "minecraft:whatever"), "attribute"));
-        assertDoesNotThrow(() ->
+        assertThrows(IllegalArgumentException.class, () ->
                 MechanicParamValidators.attribute("ctx", Map.of(), "attribute"));
     }
 
@@ -156,5 +156,17 @@ class MechanicParamValidatorsTest {
         assertThrows(IllegalArgumentException.class, () ->
                 MechanicParamValidators.positive("ctx", Map.of("multiplier", -1.0), "multiplier"));
         assertDoesNotThrow(() -> MechanicParamValidators.positive("ctx", Map.of("multiplier", 0.5), "multiplier"));
+    }
+
+    @Test
+    void stringValuedNumericIsRejectedInsteadOfSkipped() {
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.nonNegative("ctx", Map.of("duration", "3"), "duration"));
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.radius("ctx", Map.of("radius", "5"), "radius"));
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.chance("ctx", Map.of("chance", "100"), "chance", 100));
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.positive("ctx", Map.of("multiplier", "1.5"), "multiplier"));
     }
 }

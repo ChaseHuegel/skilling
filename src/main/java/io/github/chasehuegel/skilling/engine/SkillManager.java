@@ -489,6 +489,17 @@ public final class SkillManager {
             }
 
             Map<String, Object> rawParams = castMap(mechanicMap.getOrDefault("parameters", Map.of()));
+            // Reject parameters the mechanic does not support so a typo'd key
+            // (which the impl silently ignores) is caught at load, not left
+            // dangling as a no-op the author thinks is active.
+            List<String> supportedParams = mechanicRegistry.getParameterNames(type);
+            for (String paramKey : rawParams.keySet()) {
+                if (!supportedParams.contains(paramKey)) {
+                    throw new IllegalArgumentException("Mechanic '" + type + "' of ability '" + abilityId
+                            + "' in skill '" + skillId + "' does not support parameter '" + paramKey
+                            + "'; supported: " + supportedParams);
+                }
+            }
             Map<String, ParameterEvaluator> parameters = new HashMap<>();
             // Constant-valued parameters (e.g. a namespaced effect key) are handed
             // to the mechanic's load-time validator so a typo fails here, not in

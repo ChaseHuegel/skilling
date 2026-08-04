@@ -111,6 +111,56 @@ class SkillManagerMechanicParamValidationTest {
         assertTrue(ex.getMessage().contains("minecraft:not_a_particle"), ex.getMessage());
     }
 
+    @Test
+    void missingEffectFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:aoe_effect"
+                        parameters:
+                          radius: { constant: 5 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("effect"), ex.getMessage());
+    }
+
+    @Test
+    void missingAttributeFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:modify_attribute"
+                        parameters:
+                          amount: { constant: 1.0 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("attribute"), ex.getMessage());
+    }
+
+    @Test
+    void stringValuedNumericFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:apply_status"
+                        parameters:
+                          effect: { constant: "minecraft:poison" }
+                          duration: { constant: "3" }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("duration"), ex.getMessage());
+    }
+
+    @Test
+    void unsupportedParameterFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:apply_status"
+                        parameters:
+                          effect: { constant: "minecraft:poison" }
+                          typo: { constant: 1.0 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("typo"), ex.getMessage());
+    }
+
     private void writeAbilityWithFeedback(String abilityBody) throws Exception {
         Path skillsDir = tempDir.resolve("skills");
         Files.createDirectories(skillsDir);

@@ -300,7 +300,7 @@ public final class Skilling extends JavaPlugin {
                 });
         mechReg.register("core:cancel_damage", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
-        mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class, List.of("attribute", "amount", "duration"),
+        mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class, List.of("attribute", "amount", "duration", "uuid"),
                 (ctx, p) -> {
                     MechanicParamValidators.attribute(ctx, p, "attribute");
                     MechanicParamValidators.nonNegative(ctx, p, "duration");
@@ -310,7 +310,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:saturation_inject", SaturationInjectMechanic.class, List.of("saturation"));
         mechReg.register("core:modify_brew_time", ModifyBrewTimeMechanic.class, List.of("multiplier"));
         mechReg.register("core:modify_potion_duration", ModifyPotionDurationMechanic.class, List.of("multiplier"));
-        mechReg.register("core:aoe_effect", AoeEffectMechanic.class, List.of("effect", "radius", "duration", "amplifier"),
+        mechReg.register("core:aoe_effect", AoeEffectMechanic.class, List.of("effect", "radius", "duration", "amplifier", "targets"),
                 (ctx, p) -> {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");
                     MechanicParamValidators.radius(ctx, p, "radius");
@@ -323,7 +323,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:thorns_damage", ThornsDamageMechanic.class, List.of("damage"));
         mechReg.register("core:knockback", KnockbackMechanic.class, List.of("force", "radius", "vertical", "targets"),
                 (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
-        mechReg.register("core:shield_disable", ShieldDisableMechanic.class, List.of("ticks"),
+        mechReg.register("core:shield_disable", ShieldDisableMechanic.class, List.of("ticks", "target"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "ticks"));
         mechReg.register("core:offhand_strike", OffhandStrikeMechanic.class, List.of("multiplier", "reach", "targets"));
         mechReg.register("core:set_cooldown", SetCooldownMechanic.class, List.of("material", "ticks"),
@@ -331,22 +331,22 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.material(ctx, p, "material");
                     MechanicParamValidators.nonNegative(ctx, p, "ticks");
                 });
-        mechReg.register("core:modify_attack_speed", ModifyAttackSpeedMechanic.class, List.of("multiplier", "duration"),
+        mechReg.register("core:modify_attack_speed", ModifyAttackSpeedMechanic.class, List.of("multiplier", "duration", "uuid"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
         mechReg.register("core:dodge", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:lifesteal", LifestealMechanic.class, List.of("percentage"));
-        mechReg.register("core:armor_bonus", ArmorBonusMechanic.class, List.of("amount", "duration"),
+        mechReg.register("core:armor_bonus", ArmorBonusMechanic.class, List.of("amount", "duration", "uuid"),
                 (ctx, p) -> {
                     MechanicParamValidators.nonNegative(ctx, p, "amount");
                     MechanicParamValidators.nonNegative(ctx, p, "duration");
                 });
-        mechReg.register("core:knockback_resist", KnockbackResistMechanic.class, List.of("amount", "duration"),
+        mechReg.register("core:knockback_resist", KnockbackResistMechanic.class, List.of("amount", "duration", "uuid"),
                 (ctx, p) -> {
                     MechanicParamValidators.nonNegative(ctx, p, "amount");
                     MechanicParamValidators.nonNegative(ctx, p, "duration");
                 });
-        mechReg.register("core:crowd_control", CrowdControlMechanic.class, List.of("effect", "duration", "amplifier", "radius"),
+        mechReg.register("core:crowd_control", CrowdControlMechanic.class, List.of("effect", "duration", "amplifier", "radius", "targets"),
                 (ctx, p) -> {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");
                     MechanicParamValidators.radius(ctx, p, "radius");
@@ -355,7 +355,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:execute", ExecuteMechanic.class, List.of("threshold"));
         mechReg.register("core:auto_smelt", AutoSmeltMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
-        mechReg.register("core:speed_bonus", SpeedBonusMechanic.class, List.of("multiplier"),
+        mechReg.register("core:speed_bonus", SpeedBonusMechanic.class, List.of("multiplier", "duration", "uuid"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
         mechReg.register("core:xp_bonus", XpBonusMechanic.class, List.of("multiplier", "duration"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
@@ -374,7 +374,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:projectile_return", ProjectileReturnMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:modify_enchant_cost", ModifyEnchantCostMechanic.class, List.of("discount"));
-        mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier"),
+        mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier", "targets"),
                 (ctx, p) -> {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");
                     MechanicParamValidators.radius(ctx, p, "radius");
@@ -386,7 +386,7 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.radius(ctx, p, "radius");
                     MechanicParamValidators.nonNegative(ctx, p, "duration");
                 });
-        mechReg.register("core:modify_jump", ModifyJumpMechanic.class, List.of("multiplier", "duration"),
+        mechReg.register("core:modify_jump", ModifyJumpMechanic.class, List.of("multiplier", "duration", "uuid"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
         mechReg.register("core:block_particles", BlockParticlesMechanic.class, List.of("particle", "count", "speed"),
                 (ctx, p) -> MechanicParamValidators.particle(ctx, p, "particle"));

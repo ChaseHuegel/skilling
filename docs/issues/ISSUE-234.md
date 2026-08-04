@@ -6,10 +6,10 @@
 - **Severity:** High — `MechanicRegistry` param lists are purely informational and never enforced for presence, and the load validators skip absent keys, so a config missing `effect`/`attribute` passes load then throws `IllegalArgumentException` per activation (and quoted numerics like `duration: "3"` throw `ClassCastException` from `(Number)` casts). The per-mechanic catch in `SkillEventListener` (`:588-598`) turns each into WARNING spam while the ability never consumes cost/cooldown and can be spammed free.
 
 ## Implementation Requirements
-- [ ] Enforce the registered param list at parse time in `SkillManager.parseMechanics` (`SkillManager.java:477-532`): reject mechanic entries that supply parameters not in the registered list, and reject **missing required parameters** where the impl/validator requires them (the registry currently never validates presence).
-- [ ] Reject string-valued parameters where a `Number` is required at load, so quoted numerics fail fast instead of `ClassCastException` at runtime (mirror the fail-fast behavior of `MechanicParamValidators.number`, but reject instead of skip).
-- [ ] Reconcile the registered lists with what each impl actually reads: `core:shield_disable` registers `ticks` but reads `target`; `core:speed_bonus` registers `multiplier` but reads `duration`/`uuid`; `modify_attack_speed`/`modify_jump`/`armor_bonus`/`knockback_resist`/`modify_attribute` read `uuid` not listed; `aoe_effect`/`field_aura`/`crowd_control` read `targets` not listed. Decide required-vs-optional per param and enforce.
-- [ ] Add tests proving a missing `effect` and a string-valued `duration` both fail at load, not at activation.
+- [x] Enforce the registered param list at parse time in `SkillManager.parseMechanics` (`SkillManager.java:477-532`): reject mechanic entries that supply parameters not in the registered list, and reject **missing required parameters** where the impl/validator requires them (the registry currently never validates presence).
+- [x] Reject string-valued parameters where a `Number` is required at load, so quoted numerics fail fast instead of `ClassCastException` at runtime (mirror the fail-fast behavior of `MechanicParamValidators.number`, but reject instead of skip).
+- [x] Reconcile the registered lists with what each impl actually reads: `core:shield_disable` registers `ticks` but reads `target`; `core:speed_bonus` registers `multiplier` but reads `duration`/`uuid`; `modify_attack_speed`/`modify_jump`/`armor_bonus`/`knockback_resist`/`modify_attribute` read `uuid` not listed; `aoe_effect`/`field_aura`/`crowd_control` read `targets` not listed. Decide required-vs-optional per param and enforce.
+- [x] Add tests proving a missing `effect` and a string-valued `duration` both fail at load, not at activation.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -22,6 +22,6 @@
 - **Constraints:** Follow the fail-fast convention in `src/AGENTS.md` §9. Reconcile the param lists in the same change so legitimately-used params (e.g. `uuid`, `targets`) are not rejected.
 
 ## Verification & Definition of Done
-- [ ] A missing `effect`, missing `attribute`, and string-valued numeric all fail during `loadSkills`.
-- [ ] All bundled skill YAML still parses after the list reconciliation.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] A missing `effect`, missing `attribute`, and string-valued numeric all fail during `loadSkills`.
+- [x] All bundled skill YAML still parses after the list reconciliation.
+- [x] `./gradlew build` and `./gradlew test` pass.

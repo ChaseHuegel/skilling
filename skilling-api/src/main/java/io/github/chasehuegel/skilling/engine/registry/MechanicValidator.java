@@ -12,8 +12,9 @@ import java.util.Map;
  *
  * <p>The validator receives only the parameters that carry a constant value
  * (string or numeric). Level-scaled evaluator parameters are not included
- * because they cannot be resolved without a level context; validators simply
- * skip params that are absent from the map.
+ * because they cannot be resolved without a level context; validators skip
+ * params absent from the map unless the param is required, in which case a
+ * missing required param is rejected here so the failure happens at load.
  */
 @FunctionalInterface
 public interface MechanicValidator {
