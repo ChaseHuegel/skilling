@@ -434,8 +434,8 @@ public final class SkillSerializer {
             return new SkillDetailDTO.EvaluatorDTO("linear", params);
         }
         if (raw.containsKey("milestones")) {
-            Map<String, Object> n = (Map<String, Object>) raw.get("milestones");
-            return new SkillDetailDTO.EvaluatorDTO("milestones", Map.of("milestones", n));
+            return new SkillDetailDTO.EvaluatorDTO("milestones",
+                    Map.of("milestones", normalizeMilestones(raw.get("milestones"))));
         }
         if (raw.containsKey("polynomial")) {
             Map<String, Object> n = (Map<String, Object>) raw.get("polynomial");
@@ -459,10 +459,43 @@ public final class SkillSerializer {
                         : Map.of("constant", Map.of("value", value));
             }
             case "linear" -> Map.of("linear", ev.params());
-            case "milestones" -> Map.of("milestones", ev.params().getOrDefault("milestones", Map.of()));
+            case "milestones" -> Map.of("milestones",
+                    normalizeMilestones(ev.params().getOrDefault("milestones", Map.of())));
             case "polynomial" -> Map.of("polynomial", ev.params());
             default -> Map.of("constant", Map.of("value", 0));
         };
+    }
+
+    /**
+     * Normalizes a milestone evaluator's parameter value to an ordered
+     * {@code level → value} map, accepting either a YAML/JSON map shape
+     * ({@code {25: 3, 50: 8}}) or the editor's array-of-rows shape
+     * ({@code [{level: 25, value: 3}, ...]}). The engine's
+     * {@code parseInlineEvaluator} always expects the map form, so the web
+     * serializer must never emit (or pass through) a list.
+     *
+     * @param raw the raw milestones value
+     * @return an ordered {@code level → value} map
+     */
+    @SuppressWarnings("unchecked")
+    static Map<String, Object> normalizeMilestones(Object raw) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (raw instanceof Map<?, ?> m) {
+            m.forEach((k, v) -> {
+                if (k != null && v != null) result.put(String.valueOf(k), v);
+            });
+        } else if (raw instanceof List<?> list) {
+            for (Object item : list) {
+                if (item instanceof Map<?, ?> row) {
+                    Object level = row.get("level");
+                    Object value = row.get("value");
+                    if (level != null && value != null) {
+                        result.put(String.valueOf(level), value);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     @SuppressWarnings("unchecked")

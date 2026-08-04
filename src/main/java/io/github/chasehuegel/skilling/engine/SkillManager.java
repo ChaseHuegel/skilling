@@ -624,7 +624,14 @@ public final class SkillManager {
         }
 
         if (map.containsKey("milestones")) {
-            Map<String, Object> milestonesMap = castMap(map.get("milestones"));
+            Object rawMilestones = map.get("milestones");
+            if (!(rawMilestones instanceof Map<?, ?>)) {
+                // A list-valued milestones block (e.g. an un-normalized web editor
+                // payload) would otherwise silently resolve to an empty curve.
+                throw new IllegalArgumentException(
+                        "Milestones must be a map of level: value, got: " + rawMilestones);
+            }
+            Map<String, Object> milestonesMap = castMap(rawMilestones);
             TreeMap<Integer, Double> milestones = new TreeMap<>();
             for (var entry : milestonesMap.entrySet()) {
                 try {

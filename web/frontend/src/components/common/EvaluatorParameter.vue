@@ -38,6 +38,15 @@ const milestones = computed({
   get: () => {
     const entries = props.modelValue.params?.milestones
     if (Array.isArray(entries)) return entries as MilestoneEntry[]
+    // The API serializes milestones as an ordered { level: value } map; convert
+    // it to editor rows so an existing milestone evaluator renders as rows.
+    if (entries && typeof entries === 'object') {
+      return Object.entries(entries).map(([level, value]) => ({
+        _key: stableKey(),
+        level: Number(level),
+        value: Number(value),
+      }))
+    }
     return []
   },
   set: (val) => {

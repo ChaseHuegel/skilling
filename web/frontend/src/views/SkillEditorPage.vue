@@ -310,6 +310,36 @@ function stripRowKeys(value: any): any {
     return value;
 }
 
+/**
+ * Converts the API's milestone map shape ({ level: value }) to editor rows so
+ * the EvaluatorParameter list renders existing milestones.
+ */
+function milestonesToRows(milestones: any): any[] {
+  if (Array.isArray(milestones)) return milestones
+  if (milestones && typeof milestones === 'object') {
+    return Object.entries(milestones).map(([level, value]) => ({
+      _key: stableKey(),
+      level: Number(level),
+      value: Number(value),
+    }))
+  }
+  return []
+}
+
+/**
+ * Normalizes a milestone evaluator's params to the editor's array-of-rows
+ * shape (stable `_key` rows) so the list renders and drag/expanded state stays
+ * attached. Non-milestone evaluators pass through unchanged.
+ */
+function normalizeMilestonesEvaluator(ev: any): any {
+  if (!ev || typeof ev !== 'object') return ev
+  const milestones = ev.params?.milestones
+  if (milestones && !Array.isArray(milestones)) {
+    return { ...ev, params: { ...ev.params, milestones: milestonesToRows(milestones) } }
+  }
+  return ev
+}
+
 function apiAbilityToForm(ab: any): any {
     return {
         ...ab,
@@ -333,7 +363,10 @@ function apiAbilityToForm(ab: any): any {
         },
         mechanics: (ab.mechanics || []).map((m: any) => ({
             ...m,
-            params: Object.entries(m.parameters || {}).map(([name, evaluator]) => ({ name, evaluator })),
+            params: Object.entries(m.parameters || {}).map(([name, evaluator]) => ({
+                name,
+                evaluator: normalizeMilestonesEvaluator(evaluator),
+            })),
             parameters: undefined,
         })),
     };
@@ -388,6 +421,12 @@ onMounted(async () => {
             const data = await api.skills.get(skillId);
             if (data.abilities) {
                 data.abilities = data.abilities.map(apiAbilityToForm);
+            }
+            if (data.xpSources) {
+                data.xpSources = data.xpSources.map((src: any) => ({
+                    ...src,
+                    reward: normalizeMilestonesEvaluator(src.reward),
+                }));
             }
             Object.assign(form, data);
             enrichFormKeys(form);

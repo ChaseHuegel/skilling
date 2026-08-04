@@ -302,6 +302,23 @@ class SkillManagerTest {
     }
 
     @Test
+    void milestonesAsListFailsLoad() {
+        // A list-valued milestones block (an un-normalized web payload) must be
+        // rejected loudly instead of silently resolving to an empty curve.
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "mechanics", java.util.List.of(java.util.Map.of(
+                        "type", "core:chain_break",
+                        "parameters", java.util.Map.of("chain_limit",
+                                java.util.Map.of("milestones",
+                                        java.util.List.of(java.util.Map.of("level", 15, "value", 3)))))))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("Milestones"));
+    }
+
+    @Test
     void unknownMechanicTypeThrows() {
         var config = minimalSkill();
         config.set("abilities", java.util.List.of(java.util.Map.of(
