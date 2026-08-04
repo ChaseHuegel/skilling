@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ProfileManager {
 
     private final ConcurrentHashMap<UUID, PlayerProfile> profiles = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Long> sessionGenerations = new ConcurrentHashMap<>();
     private final DatabaseManager databaseManager;
 
     /**
@@ -80,12 +81,29 @@ public final class ProfileManager {
     }
 
     private void installHydrated(UUID playerUuid, PlayerProfile hydrated) {
+        // Bump the session generation so an in-flight quit-flush completion knows a
+        // new session began. A reconnect keeps the same dirty instance in the map
+        // (below), so identity alone cannot tell the completion apart from the old
+        // session; the generation can.
+        sessionGenerations.compute(playerUuid, (uuid, gen) -> (gen == null ? 0L : gen) + 1L);
         profiles.compute(playerUuid, (uuid, existing) -> {
             if (existing != null && existing.isDirty()) {
                 return existing;
             }
             return hydrated;
         });
+    }
+
+    /**
+     * Returns the session generation for a player. Each hydration install bumps
+     * the generation, so an async quit-flush completion can capture it at quit
+     * time and skip removal if the player has since rejoined.
+     *
+     * @param playerUuid the player's UUID
+     * @return the current session generation for the player
+     */
+    public long sessionGeneration(UUID playerUuid) {
+        return sessionGenerations.getOrDefault(playerUuid, 0L);
     }
 
     /**
@@ -137,6 +155,26 @@ public final class ProfileManager {
      * @return true if the entry was removed
      */
     public boolean unloadProfile(UUID playerUuid, PlayerProfile instance) {
+        return profiles.remove(playerUuid, instance);
+    }
+
+    /**
+     * Removes a player's profile from the cache only if the cached entry is the
+     * given instance AND the session generation still matches the one captured
+     * at quit. The generation guard prevents an in-flight quit flush from
+     * evicting the live profile of a player who reconnected while the flush ran:
+     * the reconnect keeps the same dirty instance in the map (so identity alone
+     * would match), but its hydration bumped the generation.
+     *
+     * @param playerUuid         the player's UUID
+     * @param instance           the profile instance that was unloaded
+     * @param expectedGeneration the session generation captured at quit
+     * @return true if the entry was removed
+     */
+    public boolean unloadProfile(UUID playerUuid, PlayerProfile instance, long expectedGeneration) {
+        if (sessionGenerations.getOrDefault(playerUuid, 0L) != expectedGeneration) {
+            return false;
+        }
         return profiles.remove(playerUuid, instance);
     }
 

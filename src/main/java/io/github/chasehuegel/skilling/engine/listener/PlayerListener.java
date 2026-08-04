@@ -72,6 +72,10 @@ public final class PlayerListener implements Listener {
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clear(player.getUniqueId());
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
         if (profile != null && profile.isDirty()) {
+            // Capture the session generation now; if the player rejoins while the
+            // flush is in flight, the reconnect bumps the generation and the
+            // completion must not evict the live profile.
+            long generationAtQuit = profileManager.sessionGeneration(player.getUniqueId());
             CompletableFuture.runAsync(() -> {
                 asyncBatchWorker.flushDirtyProfiles();
             }).whenComplete((v, ex) -> {
@@ -82,10 +86,10 @@ public final class PlayerListener implements Listener {
                 if (profile.isDirty()) {
                     asyncBatchWorker.flushDirtyProfiles();
                 }
-                // Only remove the exact instance that was unloaded; if the player
-                // reconnected and a newer profile was installed meanwhile, it must
-                // not be evicted by this completion handler.
-                profileManager.unloadProfile(player.getUniqueId(), profile);
+                // Only remove the exact instance from the same session; if the
+                // player reconnected, the generation no longer matches and the
+                // live profile is left in place.
+                profileManager.unloadProfile(player.getUniqueId(), profile, generationAtQuit);
             });
         } else if (profile != null) {
             profileManager.unloadProfile(player.getUniqueId(), profile);

@@ -49,6 +49,49 @@ class ProfileManagerRaceTest {
     }
 
     @Test
+    void quitFlushCompletingAfterReconnectKeepsSameDirtyInstance() {
+        ProfileManager manager = newManager();
+        UUID uuid = UUID.randomUUID();
+
+        // First session loads profile A and dirties it.
+        PlayerProfile profile = manager.loadProfile(uuid).join();
+        profile.addXp("mining", 500);
+
+        // Quit captures the session generation for this session.
+        long generationAtQuit = manager.sessionGeneration(uuid);
+
+        // Reconnect while the quit flush is in flight: installHydrated keeps the
+        // SAME dirty instance in the map (existing.isDirty() is true).
+        manager.loadProfile(uuid).join();
+        assertSame(profile, manager.getProfile(uuid), "dirty instance must be retained across the reconnect");
+
+        // The old session's async quit-flush completion must not evict the live
+        // profile of the now-online player, even though the instance matches.
+        boolean removed = manager.unloadProfile(uuid, profile, generationAtQuit);
+
+        assertFalse(removed, "quit flush must not evict the live profile of a reconnected player");
+        assertSame(profile, manager.getProfile(uuid), "reconnected player keeps a functional cached profile");
+        assertEquals(500L, manager.getProfile(uuid).getXp("mining"), "XP reads must persist");
+    }
+
+    @Test
+    void quitFlushCompletingWithoutReconnectStillUnloads() {
+        ProfileManager manager = newManager();
+        UUID uuid = UUID.randomUUID();
+
+        PlayerProfile profile = manager.loadProfile(uuid).join();
+        profile.addXp("mining", 500);
+        long generationAtQuit = manager.sessionGeneration(uuid);
+
+        // No reconnect happened, so the generation still matches and the flush
+        // completion may evict the offline profile.
+        boolean removed = manager.unloadProfile(uuid, profile, generationAtQuit);
+
+        assertTrue(removed, "offline profile must still be unloaded when no reconnect occurred");
+        assertEquals(null, manager.getProfile(uuid));
+    }
+
+    @Test
     void unloadProfileRemovesMatchingInstanceOnly() {
         ProfileManager manager = newManager();
         UUID uuid = UUID.randomUUID();
