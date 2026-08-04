@@ -286,14 +286,14 @@ public final class SkillManager {
 
             // Requirements
             SkillDefinition.Requirements requirements = parseRequirements(castMap(abilityMap.get("requirements")), id);
-            SkillDefinition.OnFailure onFailure = parseOnFailure(castMap(abilityMap.get("on_failure")));
+            SkillDefinition.OnFailure onFailure = parseOnFailure(castMap(abilityMap.get("on_failure")), id);
 
             // Mechanics
             List<SkillDefinition.MechanicEntry> mechanics = parseMechanics(skillId, id, abilityMap.get("mechanics"));
             validateAbilityLorePlaceholders(id, abilityDisplay, mechanics);
 
             // Feedback
-            SkillDefinition.Feedback feedback = parseFeedback(castMap(abilityMap.get("feedback")));
+            SkillDefinition.Feedback feedback = parseFeedback(castMap(abilityMap.get("feedback")), id);
 
             abilities.add(new SkillDefinition.Ability(id, displayName, unlockLevel, trigger, abilityDisplay,
                     requirements, onFailure, mechanics, feedback));
@@ -460,7 +460,7 @@ public final class SkillManager {
         }
     }
 
-    private SkillDefinition.OnFailure parseOnFailure(Map<String, Object> map) {
+    private SkillDefinition.OnFailure parseOnFailure(Map<String, Object> map, String abilityId) {
         if (map == null) return new SkillDefinition.OnFailure(Map.of());
         Map<String, SkillDefinition.FailureFeedback> failures = new HashMap<>();
         for (var entry : map.entrySet()) {
@@ -468,6 +468,7 @@ public final class SkillManager {
             String actionBar = (String) feedbackMap.getOrDefault("action_bar", "");
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> sounds = (List<Map<String, Object>>) feedbackMap.getOrDefault("sounds", List.of());
+            validateFeedbackSounds("on_failure '" + entry.getKey() + "' of ability '" + abilityId + "'", sounds);
             failures.put(entry.getKey(), new SkillDefinition.FailureFeedback(actionBar, sounds));
         }
         return new SkillDefinition.OnFailure(failures);
@@ -543,7 +544,7 @@ public final class SkillManager {
         return null;
     }
 
-    private SkillDefinition.Feedback parseFeedback(Map<String, Object> map) {
+    private SkillDefinition.Feedback parseFeedback(Map<String, Object> map, String abilityId) {
         if (map == null) {
             return new SkillDefinition.Feedback(false, false, "", List.of(), List.of());
         }
@@ -557,7 +558,22 @@ public final class SkillManager {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> sounds = (List<Map<String, Object>>) map.getOrDefault("sounds", List.of());
 
+        validateFeedbackParticles("feedback of ability '" + abilityId + "'", particles);
+        validateFeedbackSounds("feedback of ability '" + abilityId + "'", sounds);
+
         return new SkillDefinition.Feedback(actionBar, chat, message, particles, sounds);
+    }
+
+    private void validateFeedbackSounds(String context, List<Map<String, Object>> sounds) {
+        for (var sound : sounds) {
+            io.github.chasehuegel.skilling.engine.mechanic.impl.MechanicParamValidators.sound(context, sound, "type");
+        }
+    }
+
+    private void validateFeedbackParticles(String context, List<Map<String, Object>> particles) {
+        for (var particle : particles) {
+            io.github.chasehuegel.skilling.engine.mechanic.impl.MechanicParamValidators.particle(context, particle, "type");
+        }
     }
 
     /**

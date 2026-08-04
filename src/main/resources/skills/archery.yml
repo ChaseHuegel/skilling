@@ -56,7 +56,7 @@ abilities:
           multiplier: { linear: { base: 1.4, step: 0.01, max: 1.8 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&c✦ Power Shot! ✦" }
-      sounds: [ { type: "ENTITY_ARROW_HIT_PLAYER", volume: 0.5, pitch: 1.2, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.arrow.hit_player", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "mark_target"
     display_name: "Mark Target"
     unlock_level: 50

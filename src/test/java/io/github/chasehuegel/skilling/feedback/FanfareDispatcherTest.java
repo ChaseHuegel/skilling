@@ -66,4 +66,33 @@ class FanfareDispatcherTest {
     // dispatchSounds with a valid sound config cannot be tested without a live
     // Paper server because org.bukkit.Sound is registry-backed in 1.21.8
     // and throws ExceptionInInitializerError on class loading in unit tests.
+
+    @Test
+    void dispatchSoundsPlaysNamespacedSound() {
+        var player = mock(Player.class);
+        var world = mock(org.bukkit.World.class);
+        when(player.getWorld()).thenReturn(world);
+        when(player.getLocation()).thenReturn(new Location(world, 0, 0, 0));
+
+        FanfareDispatcher.dispatchSounds(player, null, List.of(Map.of(
+                "type", "minecraft:entity.player.levelup", "volume", 1.0, "pitch", 1.0)));
+
+        verify(world).playSound(any(Location.class), any(org.bukkit.Sound.class),
+                any(org.bukkit.SoundCategory.class), eq(1.0f), eq(1.0f));
+    }
+
+    @Test
+    void dispatchParticlesSpawnsNamespacedParticle() {
+        var player = mock(Player.class);
+        var world = mock(org.bukkit.World.class);
+        when(player.getWorld()).thenReturn(world);
+        when(player.getLocation()).thenReturn(new Location(world, 0, 0, 0));
+
+        FanfareDispatcher.dispatchParticles(player, null, List.of(Map.of(
+                "type", "minecraft:happy_villager", "count", 5,
+                "offset", List.of(0, 0, 0), "speed", 0.1)));
+
+        verify(world).spawnParticle(any(org.bukkit.Particle.class), any(Location.class),
+                eq(5), eq(0.0), eq(0.0), eq(0.0), eq(0.1));
+    }
 }

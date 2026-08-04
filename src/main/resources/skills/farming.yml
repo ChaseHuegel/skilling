@@ -58,7 +58,7 @@ abilities:
           chain_limit: { milestones: { 25: 3, 50: 6, 75: 10, 100: 16 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&a✦ Harvest Wave! ✦" }
-      sounds: [ { type: "ITEM_CROP_PLANT", volume: 0.5, pitch: 1.2, target: "self" } ]
+      sounds: [ { type: "minecraft:item.crop.plant", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "nutrient_rich"
     display_name: "Nutrient Rich"
     unlock_level: 50

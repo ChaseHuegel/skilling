@@ -90,7 +90,7 @@ abilities:
           threshold: { linear: { base: 3.0, step: 0.05, max: 7.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&c✦ Execute! ✦" }
-      sounds: [ { type: "ENTITY_PLAYER_ATTACK_CRIT", volume: 0.5, pitch: 0.8, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.player.attack.crit", volume: 0.5, pitch: 0.8, target: "self" } ]
   - id: "master_at_arms"
     display_name: "Master at Arms"
     unlock_level: 100

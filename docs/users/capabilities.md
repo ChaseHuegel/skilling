@@ -620,7 +620,7 @@ Spawns a configured particle burst at the event's clicked/broken/placed block. U
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `particle` | string | — | Particle enum name (e.g. `HAPPY_VILLAGER`) |
+| `particle` | string | — | Namespaced particle identifier (e.g. `minecraft:happy_villager`, `minecraft:portal`) |
 | `count` | double | `1` | Number of particles to spawn |
 | `speed` | double | `0` | Particle speed/extra |
 

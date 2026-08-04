@@ -27,12 +27,14 @@ class SkillManagerMechanicParamValidationTest {
     void setUp() {
         MechanicParamValidators.configureLookups(
                 key -> key.getKey().equals("poison"),
-                key -> key.getKey().equals("movement_speed"));
+                key -> key.getKey().equals("movement_speed"),
+                key -> key.getKey().equals("entity.player.levelup"),
+                key -> key.getKey().equals("happy_villager"));
     }
 
     @AfterEach
     void tearDown() {
-        MechanicParamValidators.configureLookups(null, null);
+        MechanicParamValidators.configureLookups(null, null, null, null);
     }
 
     private SkillManager newSkillManager() {
@@ -102,11 +104,80 @@ class SkillManagerMechanicParamValidationTest {
         writeSkill("""
                       - type: "core:block_particles"
                         parameters:
-                          particle: { constant: "NOT_A_PARTICLE" }
+                          particle: { constant: "minecraft:not_a_particle" }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
-        assertTrue(ex.getMessage().contains("NOT_A_PARTICLE"), ex.getMessage());
+        assertTrue(ex.getMessage().contains("minecraft:not_a_particle"), ex.getMessage());
+    }
+
+    private void writeAbilityWithFeedback(String abilityBody) throws Exception {
+        Path skillsDir = tempDir.resolve("skills");
+        Files.createDirectories(skillsDir);
+        Files.writeString(skillsDir.resolve("test.yml"), """
+                id: test
+                max_level: 100
+                display: { name: "Test", color: "GREEN", style: "SOLID" }
+                progression: { curve: "constant", base_xp: 100.0 }
+                xp_sources: []
+                abilities:
+                  - id: abil
+                    display_name: "Abil"
+                    unlock_level: 1
+                    trigger: "player_interact"
+                    mechanics: []
+                """ + abilityBody);
+    }
+
+    @Test
+    void invalidFeedbackSoundFailsToLoad() throws Exception {
+        writeAbilityWithFeedback("""
+                    feedback:
+                      notify: { action_bar: true }
+                      sounds: [ { type: "minecraft:not_a_sound" } ]
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("minecraft:not_a_sound"), ex.getMessage());
+    }
+
+    @Test
+    void invalidFeedbackParticleFailsToLoad() throws Exception {
+        writeAbilityWithFeedback("""
+                    feedback:
+                      notify: { action_bar: true }
+                      particles: [ { type: "minecraft:not_a_particle" } ]
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("minecraft:not_a_particle"), ex.getMessage());
+    }
+
+    @Test
+    void invalidOnFailureSoundFailsToLoad() throws Exception {
+        writeAbilityWithFeedback("""
+                    on_failure:
+                      cooldown:
+                        sounds: [ { type: "minecraft:not_a_sound" } ]
+                    feedback: { notify: { action_bar: false } }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("minecraft:not_a_sound"), ex.getMessage());
+    }
+
+    @Test
+    void validNamespacedFeedbackLoads() throws Exception {
+        writeAbilityWithFeedback("""
+                    on_failure:
+                      cooldown:
+                        sounds: [ { type: "minecraft:entity.player.levelup" } ]
+                    feedback:
+                      notify: { action_bar: true }
+                      sounds: [ { type: "minecraft:entity.player.levelup" } ]
+                      particles: [ { type: "minecraft:happy_villager" } ]
+                """);
+        assertDoesNotThrow(() -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
     }
 
     @Test
@@ -156,7 +227,7 @@ class SkillManagerMechanicParamValidationTest {
                           duration: { constant: 3 }
                       - type: "core:block_particles"
                         parameters:
-                          particle: { constant: "HAPPY_VILLAGER" }
+                          particle: { constant: "minecraft:happy_villager" }
                 """);
         SkillManager manager = newSkillManager();
         assertDoesNotThrow(() -> manager.loadSkills(tempDir.resolve("skills").toFile()));

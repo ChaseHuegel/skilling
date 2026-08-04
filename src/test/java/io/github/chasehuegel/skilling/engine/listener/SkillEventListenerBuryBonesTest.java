@@ -89,7 +89,7 @@ class SkillEventListenerBuryBonesTest {
                           - target: "#minecraft:dirt"
                           - tool: "minecraft:bone"
                         parameters:
-                          particle: { constant: "HAPPY_VILLAGER" }
+                          particle: { constant: "minecraft:happy_villager" }
                           count: { constant: 8 }
                     feedback: { notify: { action_bar: false } }
                 """);

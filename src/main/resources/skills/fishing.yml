@@ -88,7 +88,7 @@ abilities:
         chat: false
         message: "&b✦ Lucky Catch! ✦"
       sounds:
-        - type: "ENTITY_PLAYER_LEVELUP"
+        - type: "minecraft:entity.player.levelup"
           volume: 0.5
           pitch: 1.5
           target: "self"

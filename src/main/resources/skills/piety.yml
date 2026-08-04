@@ -73,7 +73,7 @@ abilities:
           duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&6✦ Prayer! ✦" }
-      sounds: [ { type: "BLOCK_BEACON_ACTIVATE", volume: 0.5, pitch: 1.2, target: "self" } ]
+      sounds: [ { type: "minecraft:block.beacon.activate", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "consecrate"
     display_name: "Consecrate"
     unlock_level: 50
@@ -134,10 +134,10 @@ abilities:
           - target: "#minecraft:dirt"
           - tool: "minecraft:bone"
         parameters:
-          particle: { constant: "HAPPY_VILLAGER" }
+          particle: { constant: "minecraft:happy_villager" }
           count: { constant: 8 }
           speed: { constant: 0.1 }
     feedback:
       notify: { action_bar: true, chat: false, message: "&6✦ You buried a bone. ✦" }
       sounds:
-        - { type: "ITEM_BONE_MEAL_USE", volume: 1.0, pitch: 1.0, target: "target" }
+        - { type: "minecraft:item.bone_meal.use", volume: 1.0, pitch: 1.0, target: "target" }

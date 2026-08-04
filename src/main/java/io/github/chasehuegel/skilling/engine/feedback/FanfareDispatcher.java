@@ -3,7 +3,8 @@ package io.github.chasehuegel.skilling.engine.feedback;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
-import org.bukkit.Sound;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import java.util.List;
@@ -18,6 +19,11 @@ import java.util.Map;
  *   <li><b>Particles</b> — world particle effects at {@code self} or {@code target} location</li>
  *   <li><b>Sounds</b> — sound effects played at {@code self} or {@code target} location</li>
  * </ul>
+ *
+ * <p>Sound and particle identifiers are the namespaced 1.21 forms (e.g.
+ * {@code minecraft:entity.player.levelup}, {@code minecraft:happy_villager}),
+ * resolved through the live {@link Registry}. An identifier that does not
+ * resolve is skipped at dispatch, but load-time validation rejects it earlier.
  *
  * <p>Uses legacy {@code &} ampersand codes for text formatting.
  */
@@ -61,12 +67,11 @@ public final class FanfareDispatcher {
             double offsetZ = offsetRaw.size() > 2 ? ((Number) offsetRaw.get(2)).doubleValue() : 0;
             double speed = ((Number) particleConfig.getOrDefault("speed", 0.0)).doubleValue();
 
-            try {
-                var particle = org.bukkit.Particle.valueOf(type);
-                player.getWorld().spawnParticle(particle, location, count, offsetX, offsetY, offsetZ, speed);
-            } catch (IllegalArgumentException ignored) {
-                // Unknown particle type - skip silently
-            }
+            // Namespaced resolution through the live particle registry; load-time
+            // validation rejects unknown identifiers, so a null here is defensive.
+            var particle = resolveParticle(type);
+            if (particle == null) continue;
+            player.getWorld().spawnParticle(particle, location, count, offsetX, offsetY, offsetZ, speed);
         }
     }
 
@@ -89,12 +94,23 @@ public final class FanfareDispatcher {
             Location location = "target".equals(targetType) && target != null
                     ? target : player.getLocation();
 
-            try {
-                Sound sound = Sound.valueOf(type);
-                player.getWorld().playSound(location, sound, SoundCategory.PLAYERS, volume, pitch);
-            } catch (IllegalArgumentException ignored) {
-                // Unknown sound type - skip silently
-            }
+            // Namespaced resolution through the live sound registry; load-time
+            // validation rejects unknown identifiers, so a null here is defensive.
+            var sound = resolveSound(type);
+            if (sound == null) continue;
+            player.getWorld().playSound(location, sound, SoundCategory.PLAYERS, volume, pitch);
         }
+    }
+
+    private static org.bukkit.Particle resolveParticle(String type) {
+        if (type == null || type.isBlank()) return null;
+        NamespacedKey key = NamespacedKey.fromString(type);
+        return key == null ? null : Registry.PARTICLE_TYPE.get(key);
+    }
+
+    private static org.bukkit.Sound resolveSound(String type) {
+        if (type == null || type.isBlank()) return null;
+        NamespacedKey key = NamespacedKey.fromString(type);
+        return key == null ? null : Registry.SOUND_EVENT.get(key);
     }
 }

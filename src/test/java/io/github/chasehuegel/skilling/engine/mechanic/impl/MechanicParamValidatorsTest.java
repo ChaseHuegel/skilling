@@ -8,6 +8,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Verifies the load-time parameter validators. The potion-effect and attribute
@@ -18,13 +19,15 @@ class MechanicParamValidatorsTest {
 
     @AfterEach
     void tearDown() {
-        MechanicParamValidators.configureLookups(null, null);
+        MechanicParamValidators.configureLookups(null, null, null, null);
     }
 
     private static void configureLookups() {
         MechanicParamValidators.configureLookups(
                 key -> key.getKey().equals("poison"),
-                key -> key.getKey().equals("movement_speed"));
+                key -> key.getKey().equals("movement_speed"),
+                key -> key.getKey().equals("entity.player.levelup"),
+                key -> key.getKey().equals("happy_villager"));
     }
 
     @Test
@@ -77,17 +80,45 @@ class MechanicParamValidatorsTest {
 
     @Test
     void particleAcceptsKnownAndRejectsUnknown() {
+        configureLookups();
         assertDoesNotThrow(() ->
-                MechanicParamValidators.particle("ctx", Map.of("particle", "happy_villager"), "particle"));
+                MechanicParamValidators.particle("ctx", Map.of("particle", "minecraft:happy_villager"), "particle"));
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                MechanicParamValidators.particle("ctx", Map.of("particle", "NOT_A_PARTICLE"), "particle"));
-        assertEquals("ctx: unknown particle 'NOT_A_PARTICLE'", ex.getMessage());
+                MechanicParamValidators.particle("ctx", Map.of("particle", "minecraft:not_a_particle"), "particle"));
+        assertEquals("ctx: unknown particle 'minecraft:not_a_particle'", ex.getMessage());
     }
 
     @Test
-    void particleSkipsWhenAbsentOrBlank() {
+    void particleSkipsWhenAbsentOrLookupUnconfigured() {
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.particle("ctx", Map.of("particle", "minecraft:whatever"), "particle"));
         assertDoesNotThrow(() -> MechanicParamValidators.particle("ctx", Map.of(), "particle"));
         assertDoesNotThrow(() -> MechanicParamValidators.particle("ctx", Map.of("particle", ""), "particle"));
+    }
+
+    @Test
+    void soundAcceptsKnownAndRejectsUnknown() {
+        configureLookups();
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.sound("ctx", Map.of("type", "minecraft:entity.player.levelup"), "type"));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.sound("ctx", Map.of("type", "minecraft:not_a_sound"), "type"));
+        assertEquals("ctx: unknown sound 'minecraft:not_a_sound'", ex.getMessage());
+    }
+
+    @Test
+    void soundSkipsWhenAbsentOrLookupUnconfigured() {
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.sound("ctx", Map.of("type", "minecraft:whatever"), "type"));
+        assertDoesNotThrow(() -> MechanicParamValidators.sound("ctx", Map.of(), "type"));
+    }
+
+    @Test
+    void soundRejectsMalformedNamespacedValue() {
+        configureLookups();
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.sound("ctx", Map.of("type", "NOT_A_SOUND"), "type"));
+        assertTrue(ex.getMessage().contains("invalid namespaced identifier"));
     }
 
     @Test

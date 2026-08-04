@@ -56,7 +56,7 @@ abilities:
           chance: { linear: { base: 50.0, step: 0.5, max: 90.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&b✦ Evasive Roll! ✦" }
-      sounds: [ { type: "ITEM_SHIELD_BLOCK", volume: 0.4, pitch: 1.5, target: "self" } ]
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.4, pitch: 1.5, target: "self" } ]
   - id: "spryness"
     display_name: "Spryness"
     unlock_level: 50

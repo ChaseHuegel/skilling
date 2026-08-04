@@ -58,8 +58,8 @@ abilities:
           range: { linear: { base: 5.0, step: 0.05, max: 12.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&d✦ Blink! ✦" }
-      particles: [ { type: "PORTAL", count: 15, offset: [0.5,0.5,0.5], speed: 0.5, target: "self" } ]
-      sounds: [ { type: "ENTITY_ENDERMAN_TELEPORT", volume: 0.5, pitch: 1.5, target: "self" } ]
+      particles: [ { type: "minecraft:portal", count: 15, offset: [0.5,0.5,0.5], speed: 0.5, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.enderman.teleport", volume: 0.5, pitch: 1.5, target: "self" } ]
   - id: "arcane_ward"
     display_name: "Arcane Ward"
     unlock_level: 25
@@ -85,7 +85,7 @@ abilities:
           duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&d✦ Arcane Ward! ✦" }
-      sounds: [ { type: "BLOCK_AMETHYST_BLOCK_CHIME", volume: 0.6, pitch: 1.2, target: "self" } ]
+      sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.6, pitch: 1.2, target: "self" } ]
   - id: "arcane_expertise"
     display_name: "Arcane Expertise"
     unlock_level: 50
@@ -122,8 +122,8 @@ abilities:
           amplifier: { constant: 1.0 }
     feedback:
       notify: { action_bar: true, chat: false, message: "&b✦ Frost Nova! ✦" }
-      particles: [ { type: "SNOWBALL", count: 20, offset: [1.0,0.5,1.0], speed: 0.5, target: "target" } ]
-      sounds: [ { type: "ENTITY_SNOW_GOLEM_SHOOT", volume: 0.5, pitch: 0.8, target: "self" } ]
+      particles: [ { type: "minecraft:item_snowball", count: 20, offset: [1.0,0.5,1.0], speed: 0.5, target: "target" } ]
+      sounds: [ { type: "minecraft:entity.snow_golem.shoot", volume: 0.5, pitch: 0.8, target: "self" } ]
   - id: "archmage"
     display_name: "Archmage"
     unlock_level: 100

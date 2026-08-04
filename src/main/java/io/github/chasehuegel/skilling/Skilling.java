@@ -273,7 +273,9 @@ public final class Skilling extends JavaPlugin {
         // load instead of inside an event handler.
         MechanicParamValidators.configureLookups(
                 key -> Registry.POTION_EFFECT_TYPE.get(key) != null,
-                key -> Registry.ATTRIBUTE.get(key) != null);
+                key -> Registry.ATTRIBUTE.get(key) != null,
+                key -> Registry.SOUND_EVENT.get(key) != null,
+                key -> Registry.PARTICLE_TYPE.get(key) != null);
     }
 
     /** Registers the built-in parameter evaluators into the given registry. */

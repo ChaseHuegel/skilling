@@ -68,7 +68,7 @@ abilities:
           ticks: { linear: { base: 40.0, step: -0.2, max: 20.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&d✦ Perform! ✦" }
-      sounds: [ { type: "ITEM_GOAT_HORN_PLAY", volume: 1.0, pitch: 1.0, target: "self" } ]
+      sounds: [ { type: "minecraft:item.goat_horn.sound.0", volume: 1.0, pitch: 1.0, target: "self" } ]
   - id: "song_of_protection"
     display_name: "Song of Protection"
     unlock_level: 50

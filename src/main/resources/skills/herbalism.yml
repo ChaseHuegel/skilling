@@ -90,7 +90,7 @@ abilities:
           max_blocks: { linear: { base: 16.0, step: 1.0, max: 48.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&2✦ Overgrowth! ✦" }
-      sounds: [ { type: "BLOCK_GRASS_BREAK", volume: 0.5, pitch: 1.2, target: "self" } ]
+      sounds: [ { type: "minecraft:block.grass.break", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "master_herbalist"
     display_name: "Master Herbalist"
     unlock_level: 100

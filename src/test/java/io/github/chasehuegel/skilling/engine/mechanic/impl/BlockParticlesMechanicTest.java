@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -36,7 +36,7 @@ class BlockParticlesMechanicTest {
         when(event.getAction()).thenReturn(Action.RIGHT_CLICK_BLOCK);
         when(event.getClickedBlock()).thenReturn(block);
 
-        assertTrue(mechanic.execute(player, Map.of("particle", "HAPPY_VILLAGER", "count", 8, "speed", 0.1), event));
+        assertTrue(mechanic.execute(player, Map.of("particle", "minecraft:happy_villager", "count", 8, "speed", 0.1), event));
         verify(world).spawnParticle(any(Particle.class), eq(location), eq(8), eq(0.0), eq(0.0), eq(0.0), eq(0.1));
     }
 
@@ -47,15 +47,15 @@ class BlockParticlesMechanicTest {
 
         var leftClick = mock(PlayerInteractEvent.class);
         when(leftClick.getAction()).thenReturn(Action.LEFT_CLICK_BLOCK);
-        assertFalse(mechanic.execute(player, Map.of("particle", "HAPPY_VILLAGER"), leftClick));
+        assertFalse(mechanic.execute(player, Map.of("particle", "minecraft:happy_villager"), leftClick));
 
         var air = mock(PlayerInteractEvent.class);
         when(air.getAction()).thenReturn(Action.RIGHT_CLICK_AIR);
-        assertFalse(mechanic.execute(player, Map.of("particle", "HAPPY_VILLAGER"), air));
+        assertFalse(mechanic.execute(player, Map.of("particle", "minecraft:happy_villager"), air));
     }
 
     @Test
-    void unknownParticleFailsFastAsARealBug() {
+    void unknownParticleNeverThrowsAtExecute() {
         var mechanic = new BlockParticlesMechanic();
         var player = BukkitMock.mockPlayer();
         var world = mock(World.class);
@@ -67,8 +67,8 @@ class BlockParticlesMechanicTest {
         when(event.getClickedBlock()).thenReturn(block);
 
         // Unknown particles are rejected at skill load by the registry validator;
-        // reaching execute with one is a real bug and must fail fast.
-        assertThrows(IllegalArgumentException.class,
-                () -> mechanic.execute(player, Map.of("particle", "NOT_A_PARTICLE"), event));
+        // if one still reaches execute it must be a defensive no-op, never a throw.
+        assertDoesNotThrow(() ->
+                mechanic.execute(player, Map.of("particle", "minecraft:not_a_particle"), event));
     }
 }

@@ -7,19 +7,19 @@
 ## Implementation Requirements
 
 ### Plugin resolvers
-- [ ] `FanfareDispatcher.dispatchSounds`/`dispatchParticles` (`FanfareDispatcher.java:49-99`) must resolve identifiers via the 1.21 registries (`Registry.SOUND_EVENT`, `Registry.PARTICLE_TYPE`, keyed by `NamespacedKey`) instead of `Sound.valueOf`/`Particle.valueOf`, so namespaced values like `minecraft:entity_zombie_break_wooden_door` work.
-- [ ] `BlockParticlesMechanic.java:40` and `MechanicParamValidators.java:118` must validate/resolve particle identifiers the same way (namespaced, not `Particle.valueOf(type.toUpperCase())`).
-- [ ] Invalid identifiers should fail fast at load time (per `src/AGENTS.md` fail-fast rule) via the mechanic/feedback validation path rather than being silently swallowed at dispatch. Add load-time validation for `feedback.sounds[].type`, `feedback.particles[].type`, `on_failure.*.sounds[].type`, and the `core:block_particles` `particle` parameter.
-- [ ] Keep a clear, documented behavior for any identifier that cannot be resolved (reject at load is preferred; never a silent no-op).
+- [x] `FanfareDispatcher.dispatchSounds`/`dispatchParticles` (`FanfareDispatcher.java:49-99`) must resolve identifiers via the 1.21 registries (`Registry.SOUND_EVENT`, `Registry.PARTICLE_TYPE`, keyed by `NamespacedKey`) instead of `Sound.valueOf`/`Particle.valueOf`, so namespaced values like `minecraft:entity_zombie_break_wooden_door` work.
+- [x] `BlockParticlesMechanic.java:40` and `MechanicParamValidators.java:118` must validate/resolve particle identifiers the same way (namespaced, not `Particle.valueOf(type.toUpperCase())`).
+- [x] Invalid identifiers should fail fast at load time (per `src/AGENTS.md` fail-fast rule) via the mechanic/feedback validation path rather than being silently swallowed at dispatch. Add load-time validation for `feedback.sounds[].type`, `feedback.particles[].type`, `on_failure.*.sounds[].type`, and the `core:block_particles` `particle` parameter.
+- [x] Keep a clear, documented behavior for any identifier that cannot be resolved (reject at load is preferred; never a silent no-op).
 
 ### Bundled content
-- [ ] Update every sound/particle value in `src/main/resources/skills/*.yml` to the namespaced 1.21 form (currently 22 sound entries and 2 particle entries use legacy enum names, e.g. `ITEM_SHIELD_BLOCK`, `ENTITY_ZOMBIE_BREAK_WOODEN_DOOR`, `ENTITY_PLAYER_LEVELUP`, `ENTITY_ENDERMAN_TELEPORT`, `SNOWBALL`, `PORTAL`, `HAPPY_VILLAGER`, plus the `core:block_particles` `particle: { constant: "HAPPY_VILLAGER" }` in `piety.yml:137`).
-- [ ] Update the same values in `src/main/resources/template-skill.yml` and `docs/dev/template-skill.yml` (e.g. `BLOCK_NOTE_BLOCK_BASS`, `ENTITY_PLAYER_BURP`, `BLOCK_CRACK`, `ENTITY_ZOMBIE_BREAK_WOODEN_DOOR`).
-- [ ] Update `docs/users/capabilities.md` (and any other user doc) that documents legacy sound/particle names.
+- [x] Update every sound/particle value in `src/main/resources/skills/*.yml` to the namespaced 1.21 form (currently 22 sound entries and 2 particle entries use legacy enum names, e.g. `ITEM_SHIELD_BLOCK`, `ENTITY_ZOMBIE_BREAK_WOODEN_DOOR`, `ENTITY_PLAYER_LEVELUP`, `ENTITY_ENDERMAN_TELEPORT`, `SNOWBALL`, `PORTAL`, `HAPPY_VILLAGER`, plus the `core:block_particles` `particle: { constant: "HAPPY_VILLAGER" }` in `piety.yml:137`).
+- [x] Update the same values in `src/main/resources/template-skill.yml` and `docs/dev/template-skill.yml` (e.g. `BLOCK_NOTE_BLOCK_BASS`, `ENTITY_PLAYER_BURP`, `BLOCK_CRACK`, `ENTITY_ZOMBIE_BREAK_WOODEN_DOOR`).
+- [x] Update `docs/users/capabilities.md` (and any other user doc) that documents legacy sound/particle names.
 
 ### Web GUI
-- [ ] Ensure the web editor sound/particle suggestions and placeholders are the authoritative namespaced 1.21 identifiers. `SoundConfigEditor.vue:21-51` and `AbilitiesSection.vue:16-30` already use `minecraft:` prefixed values — verify they are current for 1.21 and consistent with the plugin's new registry-based resolution.
-- [ ] Because staged skills are validated through the live `SkillManager` (`SkillHandler.validateStagedSkill`), confirm a web save containing an invalid sound/particle value surfaces a 400 instead of staging content that would silently fail at dispatch.
+- [x] Ensure the web editor sound/particle suggestions and placeholders are the authoritative namespaced 1.21 identifiers. `SoundConfigEditor.vue:21-51` and `AbilitiesSection.vue:16-30` already use `minecraft:` prefixed values — verify they are current for 1.21 and consistent with the plugin's new registry-based resolution.
+- [x] Because staged skills are validated through the live `SkillManager` (`SkillHandler.validateStagedSkill`), confirm a web save containing an invalid sound/particle value surfaces a 400 instead of staging content that would silently fail at dispatch.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -35,8 +35,8 @@
 - **Constraints:** Greenfield, no backward-compatibility obligation — migrating every legacy name in shipped content is in scope. Verify each legacy name's 1.21 namespaced equivalent (e.g. `ENTITY_ENDERMAN_TELEPORT` → `minecraft:entity_enderman_teleport`, `BLOCK_CRACK` → `minecraft:block_crack`).
 
 ## Verification & Definition of Done
-- [ ] All bundled skills + templates load with namespaced sound/particle identifiers and no load-time validation failures.
-- [ ] `FanfareDispatcher`/`BlockParticlesMechanic` resolve namespaced values against the 1.21 registries.
-- [ ] An invalid identifier is rejected at load (fails `validateStagedSkill`), not silently skipped.
-- [ ] `./gradlew build` and `./gradlew test` pass.
-- [ ] `cd web/frontend && npm run build` passes.
+- [x] All bundled skills + templates load with namespaced sound/particle identifiers and no load-time validation failures.
+- [x] `FanfareDispatcher`/`BlockParticlesMechanic` resolve namespaced values against the 1.21 registries.
+- [x] An invalid identifier is rejected at load (fails `validateStagedSkill`), not silently skipped.
+- [x] `./gradlew build` and `./gradlew test` pass.
+- [x] `cd web/frontend && npm run build` passes.

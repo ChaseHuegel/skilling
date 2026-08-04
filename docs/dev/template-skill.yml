@@ -131,7 +131,7 @@ abilities:
       cooldown:                            # Feedback when the ability is on cooldown
         action_bar: "&cVein Miner cooling down: {time}s"
         sounds:
-          - type: "BLOCK_NOTE_BLOCK_BASS"
+          - type: "minecraft:block.note_block.bass"
             volume: 1.0
             pitch: 0.5
       missing_item:                        # Feedback when item requirements are not met
@@ -139,7 +139,7 @@ abilities:
       exhaustion:                          # Feedback when the player is too exhausted
         action_bar: "&cToo exhausted to mine!"
         sounds:
-          - type: "ENTITY_PLAYER_BURP"
+          - type: "minecraft:entity.player.burp"
             volume: 0.5
             pitch: 0.5
             target: "self"
@@ -181,13 +181,13 @@ abilities:
         chat: false
         message: "&b✦ Vein Miner Activated! ✦"
       particles:
-        - type: "BLOCK_CRACK"
+        - type: "minecraft:happy_villager"
           count: 15
           offset: [0.5, 0.5, 0.5]
           speed: 0.1
           target: "target"                     # Spawns at the block location
       sounds:
-        - type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR"
+        - type: "minecraft:entity.zombie.break_wooden_door"
           volume: 0.5
           pitch: 1.2
           target: "self"                       # Plays at the player location

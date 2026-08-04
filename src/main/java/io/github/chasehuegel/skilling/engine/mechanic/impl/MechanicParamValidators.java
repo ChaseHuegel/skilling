@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
 
 /**
  * Load-time validators for string-valued mechanic parameters.
@@ -27,6 +26,8 @@ public final class MechanicParamValidators {
 
     private static volatile Predicate<NamespacedKey> potionKeyKnown;
     private static volatile Predicate<NamespacedKey> attributeKeyKnown;
+    private static volatile Predicate<NamespacedKey> soundKeyKnown;
+    private static volatile Predicate<NamespacedKey> particleKeyKnown;
 
     private MechanicParamValidators() {}
 
@@ -35,11 +36,17 @@ public final class MechanicParamValidators {
      *
      * @param potionKeyKnown    tests whether a namespaced potion effect key exists
      * @param attributeKeyKnown tests whether a namespaced attribute key exists
+     * @param soundKeyKnown     tests whether a namespaced sound key exists
+     * @param particleKeyKnown  tests whether a namespaced particle key exists
      */
     public static void configureLookups(Predicate<NamespacedKey> potionKeyKnown,
-                                        Predicate<NamespacedKey> attributeKeyKnown) {
+                                        Predicate<NamespacedKey> attributeKeyKnown,
+                                        Predicate<NamespacedKey> soundKeyKnown,
+                                        Predicate<NamespacedKey> particleKeyKnown) {
         MechanicParamValidators.potionKeyKnown = potionKeyKnown;
         MechanicParamValidators.attributeKeyKnown = attributeKeyKnown;
+        MechanicParamValidators.soundKeyKnown = soundKeyKnown;
+        MechanicParamValidators.particleKeyKnown = particleKeyKnown;
     }
 
     /**
@@ -103,7 +110,8 @@ public final class MechanicParamValidators {
     }
 
     /**
-     * Validates a particle parameter, skipping it when absent or blank.
+     * Validates a particle parameter, skipping it when absent or when no registry
+     * key check has been configured.
      *
      * @param context the load context (skill/ability) for error messages
      * @param params  the constant-valued mechanic parameters
@@ -111,14 +119,59 @@ public final class MechanicParamValidators {
      * @throws IllegalArgumentException if the particle is present but unknown
      */
     public static void particle(String context, Map<String, Object> params, String key) {
-        if (!params.containsKey(key)) return;
-        String particle = String.valueOf(params.get(key));
-        if (particle.isBlank()) return;
+        if (!params.containsKey(key) || particleKeyKnown == null) return;
+        Object raw = params.get(key);
         try {
-            Particle.valueOf(particle.toUpperCase());
+            if (!particleKeyKnown.test(parseNamespacedKey(raw))) {
+                throw new IllegalArgumentException("unknown particle '" + raw + "'");
+            }
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(context + ": unknown particle '" + particle + "'", e);
+            throw new IllegalArgumentException(context + ": " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Validates a sound parameter, skipping it when absent or when no registry
+     * key check has been configured.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued parameters holding the sound
+     * @param key     the parameter key holding the sound
+     * @throws IllegalArgumentException if the sound is present but unknown
+     */
+    public static void sound(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key) || soundKeyKnown == null) return;
+        Object raw = params.get(key);
+        try {
+            if (!soundKeyKnown.test(parseNamespacedKey(raw))) {
+                throw new IllegalArgumentException("unknown sound '" + raw + "'");
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(context + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Parses a namespaced identifier value ({@code namespace:key}) for registry
+     * key checks, throwing a descriptive error on a missing/invalid value.
+     *
+     * @param raw the raw parameter value
+     * @return the parsed namespaced key
+     */
+    private static NamespacedKey parseNamespacedKey(Object raw) {
+        if (raw == null) throw new IllegalArgumentException("missing value");
+        String value = String.valueOf(raw);
+        if (value.isBlank()) throw new IllegalArgumentException("blank value");
+        NamespacedKey key;
+        try {
+            key = NamespacedKey.fromString(value);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("invalid namespaced identifier '" + value + "'", e);
+        }
+        if (key == null) {
+            throw new IllegalArgumentException("invalid namespaced identifier '" + value + "'");
+        }
+        return key;
     }
 
     /**

@@ -97,4 +97,4 @@ abilities:
           duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&6✦ Master Chef! ✦" }
-      sounds: [ { type: "ENTITY_PLAYER_LEVELUP", volume: 0.5, pitch: 1.5, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.player.levelup", volume: 0.5, pitch: 1.5, target: "self" } ]

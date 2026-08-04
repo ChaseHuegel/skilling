@@ -2,7 +2,8 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import org.bukkit.Location;
-import org.bukkit.Particle;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -14,16 +15,16 @@ import java.util.Map;
  * Spawns a configured particle burst at the event's clicked/broken/placed block.
  *
  * <p>YAML key: {@code core:block_particles}
- * <br>Params: {@code particle} (Particle enum name), {@code count} (default 1),
- * {@code speed} (default 0).
+ * <br>Params: {@code particle} (namespaced particle identifier, e.g. {@code minecraft:happy_villager}),
+ * {@code count} (default 1), {@code speed} (default 0).
  *
  * <p>Returns true only when the event carries a block location (a right-click on a
  * block, a block break, or a block place), so it can serve as the executable action
  * that triggers the requirement {@code consume} step for item costs. An absent or
  * blank {@code particle} makes the mechanic a no-op (used purely as a consume
  * trigger); a present-but-unknown particle is rejected at skill load by the
- * registry validator and throws here only if a real bug or an unvalidated addon
- * mechanic passes one.
+ * registry validator and yields a no-op here only if a real bug or an unvalidated
+ * addon mechanic passes one.
  */
 public final class BlockParticlesMechanic implements SkillMechanic {
 
@@ -37,7 +38,11 @@ public final class BlockParticlesMechanic implements SkillMechanic {
         double speed = ((Number) params.getOrDefault("speed", 0.0)).doubleValue();
         if (type.isBlank()) return false;
 
-        Particle particle = Particle.valueOf(type.toUpperCase());
+        // Namespaced resolution through the live particle registry; load-time
+        // validation rejects unknown identifiers, so a null here is a no-op.
+        NamespacedKey key = NamespacedKey.fromString(type);
+        org.bukkit.Particle particle = key == null ? null : Registry.PARTICLE_TYPE.get(key);
+        if (particle == null) return false;
         blockLocation.getWorld().spawnParticle(particle, blockLocation, count, 0, 0, 0, speed);
         return true;
     }

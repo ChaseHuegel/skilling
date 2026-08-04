@@ -58,7 +58,7 @@ abilities:
           duration: { constant: 1.0 }   # single leap
     feedback:
       notify: { action_bar: true, chat: false, message: "&f✦ Leap! ✦" }
-      sounds: [ { type: "ENTITY_ENDERMAN_TELEPORT", volume: 0.3, pitch: 1.5, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.enderman.teleport", volume: 0.3, pitch: 1.5, target: "self" } ]
   - id: "agile"
     display_name: "Agile"
     unlock_level: 50

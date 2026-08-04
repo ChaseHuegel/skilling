@@ -47,7 +47,7 @@ class SkillManagerTriggerIndexTest {
                     unlock_level: 1
                     trigger: %s
                     mechanics:
-                      - { type: "core:block_particles", parameters: { particle: { constant: "HAPPY_VILLAGER" } } }
+                      - { type: "core:block_particles", parameters: { particle: { constant: "minecraft:happy_villager" } } }
                     feedback: { notify: { action_bar: false } }
                 """.formatted(fileName.replace(".yml", ""), trigger, abilityTrigger));
     }

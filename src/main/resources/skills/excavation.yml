@@ -59,7 +59,7 @@ abilities:
           max_blocks: { linear: { base: 9.0, step: 0.5, max: 49.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&e✦ Wide Sweep! ✦" }
-      sounds: [ { type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR", volume: 0.5, pitch: 1.5, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.zombie.break_wooden_door", volume: 0.5, pitch: 1.5, target: "self" } ]
   - id: "fossil_hunter"
     display_name: "Fossil Hunter"
     unlock_level: 50
