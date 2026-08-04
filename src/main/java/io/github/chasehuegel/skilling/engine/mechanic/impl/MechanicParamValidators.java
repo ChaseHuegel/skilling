@@ -251,6 +251,24 @@ public final class MechanicParamValidators {
     }
 
     /**
+     * Reads a boolean parameter value. Only real YAML booleans are accepted; a
+     * present non-boolean (e.g. a quoted {@code "true"}) would throw
+     * {@link ClassCastException} from a raw {@code (boolean)} cast at runtime, so
+     * it is rejected here instead.
+     *
+     * @param context the load context for error messages
+     * @param value   the raw parameter value (null when absent)
+     * @param key     the parameter key
+     * @return the boolean value, or false when absent
+     * @throws IllegalArgumentException if the value is present but not a boolean
+     */
+    public static boolean bool(String context, Object value, String key) {
+        if (value == null) return false;
+        if (value instanceof Boolean b) return b;
+        throw new IllegalArgumentException(context + ": parameter '" + key + "' must be a boolean, got: " + value);
+    }
+
+    /**
      * Reads a numeric parameter value. A present non-number (e.g. a quoted
      * {@code "3"}) would throw {@link ClassCastException} from the mechanics'
      * {@code (Number)} casts at runtime, so it is rejected here instead.

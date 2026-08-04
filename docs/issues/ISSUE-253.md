@@ -6,8 +6,8 @@
 - **Severity:** Low — `parseFeedback` casts `(boolean) notify.getOrDefault("action_bar", false)` (`SkillManager.java:552-553`); a non-boolean YAML scalar in that slot raises an uncaught `ClassCastException` during load rather than a descriptive `IllegalArgumentException`.
 
 ## Implementation Requirements
-- [ ] Replace the raw `(boolean)` casts in `parseFeedback` with a tolerant/fail-fast parse (e.g. `MechanicParamValidators`-style boolean helper that throws a descriptive `IllegalArgumentException` on a non-boolean).
-- [ ] Add a unit test feeding a malformed `notify` value.
+- [x] Replace the raw `(boolean)` casts in `parseFeedback` with a tolerant/fail-fast parse (e.g. `MechanicParamValidators`-style boolean helper that throws a descriptive `IllegalArgumentException` on a non-boolean).
+- [x] Add a unit test feeding a malformed `notify` value.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,6 +17,6 @@
 - **Constraints:** Keep accepting real YAML booleans.
 
 ## Verification & Definition of Done
-- [ ] Malformed `notify` values fail load with a clear message.
-- [ ] Valid feedback still parses.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Malformed `notify` values fail load with a clear message.
+- [x] Valid feedback still parses.
+- [x] `./gradlew build` and `./gradlew test` pass.

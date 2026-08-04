@@ -16,6 +16,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -155,6 +156,29 @@ class SkillYamlValidationTest {
             fail(file.getName() + ": ability '" + abilityId + "' " + mechanicType
                     + " uses unsupported effect value: " + value);
         }
+    }
+
+    @Test
+    void malformedNotifyBooleanFailsLoadWithClearMessage() {
+        String yaml = """
+                id: "mining"
+                max_level: 50
+                progression:
+                  curve: "constant"
+                  base_xp: 100
+                abilities:
+                  - id: "test_ability"
+                    unlock_level: 1
+                    trigger: "block_break"
+                    feedback:
+                      notify:
+                        action_bar: "true"
+                """;
+        var config = YamlConfiguration.loadConfiguration(new java.io.StringReader(yaml));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("action_bar"),
+                "expected a descriptive message naming the offending key, got: " + ex.getMessage());
     }
 
     private List<File> skillFiles() {

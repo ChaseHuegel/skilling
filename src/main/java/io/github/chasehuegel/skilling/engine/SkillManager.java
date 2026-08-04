@@ -575,8 +575,11 @@ public final class SkillManager {
             return new SkillDefinition.Feedback(false, false, "", List.of(), List.of());
         }
         Map<String, Object> notify = castMap(map.get("notify"));
-        boolean actionBar = (boolean) notify.getOrDefault("action_bar", false);
-        boolean chat = (boolean) notify.getOrDefault("chat", false);
+        String feedbackContext = "feedback of ability '" + abilityId + "'";
+        boolean actionBar = io.github.chasehuegel.skilling.engine.mechanic.impl.MechanicParamValidators
+                .bool(feedbackContext, notify.getOrDefault("action_bar", false), "action_bar");
+        boolean chat = io.github.chasehuegel.skilling.engine.mechanic.impl.MechanicParamValidators
+                .bool(feedbackContext, notify.getOrDefault("chat", false), "chat");
         String message = (String) notify.getOrDefault("message", "");
 
         @SuppressWarnings("unchecked")
