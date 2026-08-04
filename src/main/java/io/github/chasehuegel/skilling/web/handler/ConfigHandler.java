@@ -81,6 +81,11 @@ public final class ConfigHandler {
         try {
             Map<String, Object> body = WebError.parseBody(ctx, Map.class);
 
+            // Validate every modeled field's type and range up front, mirroring
+            // the SPA constraints, so a malformed request is rejected with a 400
+            // before anything is written into config.yml.
+            validate(body);
+
             // Merge the editor payload over the LIVE config rather than rebuilding
             // from a whitelist, so keys the editor does not know about (setup.first_run,
             // admin-added sections, future keys) survive the round-trip. Only keys
@@ -161,5 +166,71 @@ public final class ConfigHandler {
         if (raw instanceof Map<?, ?> map) return (Map<String, Object>) map;
         // A section key present with a non-object shape is a malformed request.
         throw new ClassCastException("section '" + key + "' must be an object");
+    }
+
+    /**
+     * Validates every modeled config field's type and range before anything is
+     * written, mirroring the SPA's input constraints. The web credential fields
+     * are exempted here: {@code web.password} may be blank ("keep current") and
+     * {@code web.port}/{@code web.username} changes are rejected later by the
+     * restart-required check.
+     *
+     * @param body the parsed request body
+     * @throws IllegalArgumentException on a wrong-typed or out-of-range value
+     */
+    private static void validate(Map<String, Object> body) {
+        requireIntInRange(section(body, "database"), "poolSize", 1, 100, "database.poolSize");
+        requireBoolean(section(body, "database"), "walMode", "database.walMode");
+
+        requireIntInRange(section(body, "bossbar"), "maxActive", 1, 10, "bossbar.maxActive");
+        requireIntInRange(section(body, "bossbar"), "fadeTicks", 0, 200, "bossbar.fadeTicks");
+
+        requireIntInRange(section(body, "debouncer"), "intervalMs", 100, 5000, "debouncer.intervalMs");
+
+        requireBoolean(body, "debugLogging", "debugLogging");
+
+        requireIntInRange(section(body, "titles"), "stayDuration", 1000, 30000, "titles.stayDuration");
+
+        requireDoubleInRange(body, "globalXpModifier", 0.1, 100.0, "globalXpModifier");
+
+        requireIntInRange(section(body, "cropGrow"), "searchRadius", 1, 50, "cropGrow.searchRadius");
+
+        requireBoolean(section(body, "skillsGuideBook"), "enabled", "skillsGuideBook.enabled");
+
+        requireBoolean(section(body, "web"), "enabled", "web.enabled");
+        requireIntInRange(section(body, "web"), "port", 1025, 65535, "web.port");
+    }
+
+    private static void requireBoolean(Map<String, Object> section, String key, String path) {
+        if (!section.containsKey(key)) return;
+        if (!(section.get(key) instanceof Boolean)) {
+            throw new IllegalArgumentException(path + " must be a boolean");
+        }
+    }
+
+    private static void requireIntInRange(Map<String, Object> section, String key,
+                                          int min, int max, String path) {
+        if (!section.containsKey(key)) return;
+        Object raw = section.get(key);
+        if (!(raw instanceof Number n)) {
+            throw new IllegalArgumentException(path + " must be a number");
+        }
+        int value = n.intValue();
+        if (value < min || value > max) {
+            throw new IllegalArgumentException(path + " must be between " + min + " and " + max);
+        }
+    }
+
+    private static void requireDoubleInRange(Map<String, Object> body, String key,
+                                             double min, double max, String path) {
+        if (!body.containsKey(key)) return;
+        Object raw = body.get(key);
+        if (!(raw instanceof Number n)) {
+            throw new IllegalArgumentException(path + " must be a number");
+        }
+        double value = n.doubleValue();
+        if (value < min || value > max) {
+            throw new IllegalArgumentException(path + " must be between " + min + " and " + max);
+        }
     }
 }

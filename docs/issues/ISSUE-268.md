@@ -6,8 +6,8 @@
 - **Severity:** Medium — the web API is a trust boundary that currently relies entirely on the SPA's validation.
 
 ## Implementation Requirements
-- [ ] Validate each `ConfigHandler.update` field's type and range server-side (mirroring the frontend constraints) and return 400 on violation, before any `liveConfig.set(...)`.
-- [ ] Add unit tests for wrong-typed and out-of-range payloads.
+- [x] Validate each `ConfigHandler.update` field's type and range server-side (mirroring the frontend constraints) and return 400 on violation, before any `liveConfig.set(...)`.
+- [x] Add unit tests for wrong-typed and out-of-range payloads.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,6 +17,6 @@
 - **Constraints:** Do not reject `web.password` empty-string ("keep current") or `web.allowed_origins` list; keep the merge-preserves-unmodeled-keys behavior. Note `ConfigHandler` is web-owned but `config.yml` defaults are documented in `src/main/resources/config.yml`.
 
 ## Verification & Definition of Done
-- [ ] Wrong-typed or out-of-range values return 400 and leave `config.yml` untouched.
-- [ ] Valid payloads still apply.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Wrong-typed or out-of-range values return 400 and leave `config.yml` untouched.
+- [x] Valid payloads still apply.
+- [x] `./gradlew build` and `./gradlew test` pass.

@@ -161,4 +161,87 @@ class ConfigHandlerSecurityTest {
         assertTrue(yaml.getValue().contains("first_run: false"), "setup.first_run was dropped");
         assertTrue(yaml.getValue().contains("admin_custom"), "admin-added section was dropped");
     }
+
+    @Test
+    void updateRejectsNegativeDebounceInterval() {
+        writeConfig(SECRET, "admin", 8082);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of(
+            "debouncer", Map.of("intervalMs", -5),
+            "web", Map.of("enabled", true, "port", 8082, "username", "admin", "password", "")));
+        StagingManager staging = mock(StagingManager.class);
+
+        new ConfigHandler(staging, configFile()).update(ctx);
+
+        verify(ctx).status(400);
+        assertTrue(jsonArg(ctx).toString().toLowerCase().contains("debouncer.intervalms"));
+        verify(staging, never()).stageConfigFile(anyString());
+    }
+
+    @Test
+    void updateRejectsZeroPoolSize() {
+        writeConfig(SECRET, "admin", 8082);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of(
+            "database", Map.of("poolSize", 0),
+            "web", Map.of("enabled", true, "port", 8082, "username", "admin", "password", "")));
+        StagingManager staging = mock(StagingManager.class);
+
+        new ConfigHandler(staging, configFile()).update(ctx);
+
+        verify(ctx).status(400);
+        assertTrue(jsonArg(ctx).toString().toLowerCase().contains("database.poolsize"));
+        verify(staging, never()).stageConfigFile(anyString());
+    }
+
+    @Test
+    void updateRejectsWrongTypedBoolean() {
+        writeConfig(SECRET, "admin", 8082);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of(
+            "database", Map.of("walMode", "yes"),
+            "web", Map.of("enabled", true, "port", 8082, "username", "admin", "password", "")));
+        StagingManager staging = mock(StagingManager.class);
+
+        new ConfigHandler(staging, configFile()).update(ctx);
+
+        verify(ctx).status(400);
+        assertTrue(jsonArg(ctx).toString().toLowerCase().contains("database.walmode"));
+        verify(staging, never()).stageConfigFile(anyString());
+    }
+
+    @Test
+    void updateRejectsOutOfRangeGlobalXpModifier() {
+        writeConfig(SECRET, "admin", 8082);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of(
+            "globalXpModifier", 200.0,
+            "web", Map.of("enabled", true, "port", 8082, "username", "admin", "password", "")));
+        StagingManager staging = mock(StagingManager.class);
+
+        new ConfigHandler(staging, configFile()).update(ctx);
+
+        verify(ctx).status(400);
+        assertTrue(jsonArg(ctx).toString().toLowerCase().contains("globalxpmodifier"));
+        verify(staging, never()).stageConfigFile(anyString());
+    }
+
+    @Test
+    void validInRangePayloadStillApplies() {
+        writeConfig(SECRET, "admin", 8082);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of(
+            "database", Map.of("poolSize", 20, "walMode", true),
+            "bossbar", Map.of("maxActive", 4, "fadeTicks", 60),
+            "web", Map.of("enabled", true, "port", 8082, "username", "admin", "password", "")));
+        StagingManager staging = mock(StagingManager.class);
+
+        new ConfigHandler(staging, configFile()).update(ctx);
+
+        verify(ctx).json(Map.of("status", "ok"));
+        ArgumentCaptor<String> yaml = ArgumentCaptor.forClass(String.class);
+        verify(staging).stageConfigFile(yaml.capture());
+        assertTrue(yaml.getValue().contains("pool_size: 20"));
+        assertTrue(yaml.getValue().contains("max_active: 4"));
+    }
 }
