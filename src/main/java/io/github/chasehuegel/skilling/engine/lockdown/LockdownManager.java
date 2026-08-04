@@ -148,39 +148,49 @@ public final class LockdownManager {
         var oldEntityTagResolver = plugin.getEntityTagResolver();
         var oldCustomTagLoader = plugin.getCustomTagLoader();
 
-        plugin.getRegistries().getEvaluatorRegistry().clear();
-        plugin.getRegistries().getMechanicRegistry().clear();
-        plugin.getRegistries().getTriggerRegistry().clear();
-
-        // Rebuild the registries around the new resolvers, then parse the new
-        // skills. loadSkills() swaps the skill set atomically only after every
-        // file parses, so a malformed skill throws here with the previous skills
-        // preserved — but if the resolvers were already committed, those surviving
-        // skills would silently stop matching against the new tags. Roll the
-        // resolver swap back on failure so the previous set keeps running against
-        // the previous tags.
-        plugin.setTagResolver(tagResolver);
-        plugin.setEntityTagResolver(entityTagResolver);
-        plugin.setCustomTagLoader(customTagLoader);
-        plugin.registerBuiltins();
-        skillManager.setTagResolver(tagResolver);
-        plugin.getRequirementEngine().setTagResolver(tagResolver);
-        plugin.getSkillEventListener().setTagResolver(tagResolver);
+        // Hold the registry write lock for the whole clear/rebuild so a concurrent
+        // staged-skill validation (Jetty worker, read lock) never sees the shared
+        // registries momentarily emptied mid-parse and spuriously reject valid
+        // content with "unknown mechanic/trigger/state".
+        java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock registryWrite = skillManager.registryLock().writeLock();
+        registryWrite.lock();
         try {
-            skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
-        } catch (Exception e) {
-            plugin.setTagResolver(oldTagResolver);
-            plugin.setEntityTagResolver(oldEntityTagResolver);
-            plugin.setCustomTagLoader(oldCustomTagLoader);
-            skillManager.setTagResolver(oldTagResolver);
-            plugin.getRequirementEngine().setTagResolver(oldTagResolver);
-            plugin.getSkillEventListener().setTagResolver(oldTagResolver);
-            // State filters capture the resolver at registration; re-register
-            // them with the old resolver so gating stays consistent.
-            plugin.getStateFilterRegistry().clear();
-            plugin.registerBuiltinStateFilters(
-                    plugin.getStateFilterRegistry(), oldTagResolver, oldEntityTagResolver);
-            throw e;
+            plugin.getRegistries().getEvaluatorRegistry().clear();
+            plugin.getRegistries().getMechanicRegistry().clear();
+            plugin.getRegistries().getTriggerRegistry().clear();
+
+            // Rebuild the registries around the new resolvers, then parse the new
+            // skills. loadSkills() swaps the skill set atomically only after every
+            // file parses, so a malformed skill throws here with the previous skills
+            // preserved — but if the resolvers were already committed, those surviving
+            // skills would silently stop matching against the new tags. Roll the
+            // resolver swap back on failure so the previous set keeps running against
+            // the previous tags.
+            plugin.setTagResolver(tagResolver);
+            plugin.setEntityTagResolver(entityTagResolver);
+            plugin.setCustomTagLoader(customTagLoader);
+            plugin.registerBuiltins();
+            skillManager.setTagResolver(tagResolver);
+            plugin.getRequirementEngine().setTagResolver(tagResolver);
+            plugin.getSkillEventListener().setTagResolver(tagResolver);
+            try {
+                skillManager.loadSkills(new File(plugin.getDataFolder(), "skills"));
+            } catch (Exception e) {
+                plugin.setTagResolver(oldTagResolver);
+                plugin.setEntityTagResolver(oldEntityTagResolver);
+                plugin.setCustomTagLoader(oldCustomTagLoader);
+                skillManager.setTagResolver(oldTagResolver);
+                plugin.getRequirementEngine().setTagResolver(oldTagResolver);
+                plugin.getSkillEventListener().setTagResolver(oldTagResolver);
+                // State filters capture the resolver at registration; re-register
+                // them with the old resolver so gating stays consistent.
+                plugin.getStateFilterRegistry().clear();
+                plugin.registerBuiltinStateFilters(
+                        plugin.getStateFilterRegistry(), oldTagResolver, oldEntityTagResolver);
+                throw e;
+            }
+        } finally {
+            registryWrite.unlock();
         }
         plugin.debug("Phase 4/6: Registries rebuilt.");
     }

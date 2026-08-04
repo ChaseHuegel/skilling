@@ -6,8 +6,8 @@
 - **Severity:** Medium — intermittent false failures from a cross-thread race between the web layer and the engine.
 
 ## Implementation Requirements
-- [ ] Serialize `validateStagedSkill` against the reload rebuild (e.g. take the staging lock or a reload read-lock during validation), or validate against a read-only snapshot of the registries so a concurrent `reloadAsync` clear/rebuild cannot empty them mid-parse.
-- [ ] Add a test (or extend an existing concurrency test) proving validation during a reload window succeeds for valid content.
+- [x] Serialize `validateStagedSkill` against the reload rebuild (e.g. take the staging lock or a reload read-lock during validation), or validate against a read-only snapshot of the registries so a concurrent `reloadAsync` clear/rebuild cannot empty them mid-parse.
+- [x] Add a test (or extend an existing concurrency test) proving validation during a reload window succeeds for valid content.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -18,6 +18,6 @@
 - **Constraints:** Do not block the main thread; keep the fail-fast behavior for genuinely invalid content. The concurrent `TagResolver` cache `warm` mutation is also owned by this fix.
 
 ## Verification & Definition of Done
-- [ ] Valid staged skills validate even when saved during a reload window.
-- [ ] Invalid skills still return 400.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Valid staged skills validate even when saved during a reload window.
+- [x] Invalid skills still return 400.
+- [x] `./gradlew build` and `./gradlew test` pass.

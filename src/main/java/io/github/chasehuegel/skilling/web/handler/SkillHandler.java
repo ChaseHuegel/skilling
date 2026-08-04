@@ -219,12 +219,19 @@ public final class SkillHandler {
      */
     private void validateStagedSkill(String yaml) {
         if (skillManager == null) return;
+        // Take the registry read lock so a concurrent reload rebuild (which holds
+        // the write lock while it clears/re-populates the shared registries) never
+        // empties them mid-parse, which would spuriously reject valid content.
+        java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock readLock = skillManager.registryLock().readLock();
+        readLock.lock();
         try {
             var config = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
                     new java.io.StringReader(yaml));
             skillManager.parseSkill(config);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid skill YAML: " + e.getMessage(), e);
+        } finally {
+            readLock.unlock();
         }
     }
 

@@ -56,6 +56,14 @@ class LockdownManagerReloadTest {
         return bukkit;
     }
 
+    /** A SkillManager mock whose registry lock is functional (rebuild takes the write lock). */
+    private static SkillManager skillManagerMock() {
+        SkillManager skillManager = mock(SkillManager.class);
+        when(skillManager.registryLock())
+                .thenReturn(new java.util.concurrent.locks.ReentrantReadWriteLock());
+        return skillManager;
+    }
+
     @Test
     void reloadThatThrowsNeverLeavesPluginReloading() throws Exception {
         Skilling plugin = mock(Skilling.class);
@@ -112,7 +120,7 @@ class LockdownManagerReloadTest {
 
         // loadSkills is the operation that can reject bad YAML after the resolver
         // swap; simulate a malformed skill.
-        SkillManager skillManager = mock(SkillManager.class);
+        SkillManager skillManager = skillManagerMock();
         doThrow(new RuntimeException("bad skill")).when(skillManager).loadSkills(any(java.io.File.class));
 
         AsyncBatchWorker worker = mock(AsyncBatchWorker.class);
@@ -155,7 +163,7 @@ class LockdownManagerReloadTest {
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         LockdownManager lockdown = new LockdownManager(plugin,
-                mock(ProfileManager.class), worker, mock(SkillManager.class), Runnable::run);
+                mock(ProfileManager.class), worker, skillManagerMock(), Runnable::run);
 
         try (MockedStatic<Bukkit> bukkit = mockBukkit();
              MockedStatic<io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper> helper =

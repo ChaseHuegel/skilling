@@ -42,6 +42,27 @@ public final class SkillManager {
     private volatile Map<String, List<AbilityRef>> abilitiesByTrigger = Map.of();
 
     /**
+     * Coordinates external validation ({@code SkillHandler.validateStagedSkill},
+     * which parses staged YAML against the shared registries on a Jetty worker)
+     * with the reload rebuild, which clears and re-populates those same registries
+     * on the main thread. Validation holds the read lock; the rebuild holds the
+     * write lock so a mid-reload parse never sees momentarily-empty registries.
+     */
+    private final java.util.concurrent.locks.ReentrantReadWriteLock registryLock =
+            new java.util.concurrent.locks.ReentrantReadWriteLock();
+
+    /**
+     * The read-write lock guarding the shared registries against the reload
+     * rebuild. Callers that validate skill content against the live registries
+     * take the read lock; the reload rebuild takes the write lock.
+     *
+     * @return the registry guard lock
+     */
+    public java.util.concurrent.locks.ReentrantReadWriteLock registryLock() {
+        return registryLock;
+    }
+
+    /**
      * A skill XP source paired with its owning skill, indexed by trigger so event
      * dispatch only visits the sources bound to the dispatched trigger.
      */

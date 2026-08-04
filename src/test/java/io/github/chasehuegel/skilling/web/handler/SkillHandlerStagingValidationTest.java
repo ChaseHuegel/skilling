@@ -12,6 +12,8 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_SELF;
@@ -143,6 +145,42 @@ class SkillHandlerStagingValidationTest {
 
         verify(staging).stageSkillFile(eq("mining"), anyString());
         verify(staging).stageSkillDeletion(eq("farming"));
+    }
+
+    @Test
+    void validationWaitsForReloadRebuild() throws Exception {
+        SkillManager skillManager = TestSkillManager.newBuiltIn();
+        StagingManager staging = mock(StagingManager.class);
+        SkillHandler handler = new SkillHandler(skillManager, staging, tempDir.resolve("skills").toFile());
+
+        SkillDetailDTO dto = MAPPER.readValue(skillJson("test"), SkillDetailDTO.class);
+
+        // Simulate the reload rebuild holding the registry write lock while it
+        // clears/re-populates the shared registries.
+        var writeLock = skillManager.registryLock().writeLock();
+        writeLock.lock();
+
+        var saveDone = new java.util.concurrent.CompletableFuture<Void>();
+        Thread saver = new Thread(() -> {
+            Context ctx = mock(Context.class, RETURNS_SELF);
+            when(ctx.bodyAsClass(SkillDetailDTO.class)).thenReturn(dto);
+            handler.create(ctx);
+            saveDone.complete(null);
+        });
+        saver.start();
+
+        // The validation must block (read lock unavailable) while the rebuild
+        // holds the write lock, so it can never observe emptied registries.
+        boolean blocked = !saveDone.isDone();
+        assertTrue(blocked, "validation must serialize against the reload rebuild");
+        Thread.sleep(200);
+        assertFalse(saveDone.isDone(), "validation must stay blocked while the rebuild runs");
+
+        // The rebuild finishes; validation proceeds and succeeds for valid content.
+        writeLock.unlock();
+        saver.join(5000);
+        assertTrue(saveDone.isDone(), "validation must complete once the rebuild releases the lock");
+        verify(staging).stageSkillFile(eq("test"), anyString());
     }
 
     private static String skillYaml(String id) {
