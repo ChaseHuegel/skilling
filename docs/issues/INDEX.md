@@ -37,6 +37,15 @@
 - [ ] [ISSUE-216](ISSUE-216.md) - Mechanic safety (teleport, tool-break chains, radius bounds, kill attribution, durability, NPE)
 - [ ] [ISSUE-217](ISSUE-217.md) - Reload atomicity and state-filter load validation
 - [ ] [ISSUE-218](ISSUE-218.md) - Web GUI config/data-loss and auth hardening
+- [ ] [ISSUE-220](ISSUE-220.md) - Fix milestone evaluator round-trip between the web GUI and the engine
+- [ ] [ISSUE-221](ISSUE-221.md) - Align web progression serialization with the engine's base_xp/exponent schema
+- [ ] [ISSUE-222](ISSUE-222.md) - Web editor destroys non-scalar cooldown requirements
+- [ ] [ISSUE-223](ISSUE-223.md) - Migrate sound/particle feedback identifiers from legacy enum names to modern 1.21 namespaced values
+- [ ] [ISSUE-224](ISSUE-224.md) - Web GUI layout round-trip drops per-page `gui_title`
+- [ ] [ISSUE-225](ISSUE-225.md) - Web gui-layout API must reject reserved navigation slots
+- [ ] [ISSUE-226](ISSUE-226.md) - Web ability editor on_failure reason list is incomplete
+- [ ] [ISSUE-227](ISSUE-227.md) - Refresh stale frontend fallback registries
+- [ ] [ISSUE-228](ISSUE-228.md) - Web skill editor cannot represent addon-registered evaluator types
 
 ### Improvements
 - [ ] [ISSUE-214](ISSUE-214.md) - Reload and shutdown must not block the Bukkit main thread
