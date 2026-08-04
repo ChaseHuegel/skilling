@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Manages the in-memory cache of {@link PlayerProfile} instances.
@@ -20,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * and flushes them to the database.
  */
 public final class ProfileManager {
+
+    private static final Logger LOGGER = Logger.getLogger(ProfileManager.class.getName());
 
     private final ConcurrentHashMap<UUID, PlayerProfile> profiles = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Long> sessionGenerations = new ConcurrentHashMap<>();
@@ -40,6 +44,11 @@ public final class ProfileManager {
      * <p>The hydrated profile is installed only when no newer dirty in-memory
      * profile exists; a dirty profile holds mutations that the DB snapshot does
      * not contain, so replacing it would lose XP.
+     *
+     * <p>On a transient database failure the profile is NOT treated as
+     * authoritative: it is installed uninitialized (in-memory only, never
+     * persisted by the write-behind flush) so the player can play on a best-effort
+     * basis without the empty placeholder ever overwriting their real persisted XP.
      *
      * @param playerUuid the player's UUID
      * @return a future that completes with the loaded profile
@@ -68,8 +77,15 @@ public final class ProfileManager {
                         }
                     }
                 }
-            } catch (Exception ignored) {
-                // Return empty profile on error
+            } catch (Exception e) {
+                // A transient DB failure must not produce an authoritative empty
+                // profile: the write-behind flush would UPSERT the empty values
+                // over the player's real rows once they earn any XP. Leave the
+                // profile uninitialized so it is in-memory only.
+                LOGGER.log(Level.SEVERE, "Failed to hydrate profile for player " + playerUuid
+                        + "; using an in-memory-only placeholder", e);
+                installPlaceholder(playerUuid, profile);
+                return profile;
             }
 
             loadPreferences(profile, playerUuid);
@@ -87,11 +103,45 @@ public final class ProfileManager {
         // session; the generation can.
         sessionGenerations.compute(playerUuid, (uuid, gen) -> (gen == null ? 0L : gen) + 1L);
         profiles.compute(playerUuid, (uuid, existing) -> {
-            if (existing != null && existing.isDirty()) {
-                return existing;
+            if (existing == null) {
+                return hydrated;
             }
-            return hydrated;
+            if (existing.isInitialized()) {
+                // A dirty in-memory profile holds mutations the DB snapshot does
+                // not contain; never clobber it with the snapshot.
+                return existing.isDirty() ? existing : hydrated;
+            }
+            // The existing profile is an uninitialized best-effort placeholder whose
+            // values are session-only and never persisted (see getDirtyProfiles).
+            // Carry the persisted snapshot into it so the player's real progress
+            // loads and no session XP is silently dropped, then mark it
+            // authoritative. addXp sums the persisted baseline onto the placeholder's
+            // session-only delta, which started at zero.
+            for (var entry : hydrated.getXpSnapshot().entrySet()) {
+                existing.addXp(entry.getKey(), entry.getValue());
+            }
+            for (String skillId : hydrated.pendingFanfareSkills()) {
+                existing.addPendingFanfare(skillId);
+            }
+            if (existing.getPreferences() == PlayerPreferences.DEFAULTS) {
+                existing.setPreferences(hydrated.getPreferences());
+            }
+            existing.markInitialized();
+            return existing;
         });
+    }
+
+    /**
+     * Installs an in-memory-only placeholder profile for a player whose hydration
+     * failed, without disturbing any existing profile. The placeholder stays
+     * uninitialized and is therefore never persisted by the write-behind flush.
+     *
+     * @param playerUuid  the player's UUID
+     * @param placeholder the uninitialized placeholder profile
+     */
+    private void installPlaceholder(UUID playerUuid, PlayerProfile placeholder) {
+        sessionGenerations.compute(playerUuid, (uuid, gen) -> (gen == null ? 0L : gen) + 1L);
+        profiles.putIfAbsent(playerUuid, placeholder);
     }
 
     /**
@@ -190,13 +240,18 @@ public final class ProfileManager {
     /**
      * Returns the set of dirty profiles that need saving.
      *
-     * @return a snapshot of dirty profiles
+     * <p>Uninitialized profiles are never included: they were never hydrated from
+     * the database, so flushing them would UPSERT an empty or session-only
+     * snapshot over the player's real persisted rows.
+     *
+     * @return a snapshot of dirty, initialized profiles
      */
     public Map<UUID, PlayerProfile> getDirtyProfiles() {
         Map<UUID, PlayerProfile> dirty = new HashMap<>();
         for (var entry : profiles.entrySet()) {
-            if (entry.getValue().isDirty()) {
-                dirty.put(entry.getKey(), entry.getValue());
+            PlayerProfile profile = entry.getValue();
+            if (profile.isInitialized() && profile.isDirty()) {
+                dirty.put(entry.getKey(), profile);
             }
         }
         return dirty;
@@ -222,8 +277,8 @@ public final class ProfileManager {
                     profile.setPreferencesFromJson(rs.getString("preferences"));
                 }
             }
-        } catch (Exception ignored) {
-            // Use defaults on error
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to load preferences for player " + playerUuid, e);
         }
     }
 
