@@ -1,7 +1,7 @@
 ## Active Sprint / Current Milestone
 
 ### Bugs
-- [ ] [ISSUE-248](ISSUE-248.md) - ModifyFurnaceOutputMechanic can create an oversized ItemStack on large multipliers [Severity: Low]
+- [x] [ISSUE-248](ISSUE-248.md) - ModifyFurnaceOutputMechanic can create an oversized ItemStack on large multipliers [Severity: Low]
 - [ ] [ISSUE-249](ISSUE-249.md) - LinearEvaluator does not validate finite base/step/min/max [Severity: Low]
 - [ ] [ISSUE-250](ISSUE-250.md) - XpBonusMechanic duration overflow and zero-duration no-op [Severity: Low]
 - [ ] [ISSUE-251](ISSUE-251.md) - LevelThresholds global lock on the hot level-lookup path [Severity: Low]

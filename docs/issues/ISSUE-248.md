@@ -6,8 +6,8 @@
 - **Severity:** Low — `new ItemStack(extractEvent.getItemType(), bonus)` (`ModifyFurnaceOutputMechanic.java:31`) does not split the bonus into capped stacks, unlike `YieldMultiplierMechanic` (`YieldMultiplierMechanic.java:39-44`).
 
 ## Implementation Requirements
-- [ ] Cap/split the produced stack to `maxStackSize` (give the remainder as a separate stack to the inventory or drop it), mirroring the split loop in `YieldMultiplierMechanic`.
-- [ ] Add a unit test with a multiplier large enough to exceed the stack cap.
+- [x] Cap/split the produced stack to `maxStackSize` (give the remainder as a separate stack to the inventory or drop it), mirroring the split loop in `YieldMultiplierMechanic`.
+- [x] Add a unit test with a multiplier large enough to exceed the stack cap.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,5 +17,5 @@
 - **Constraints:** None.
 
 ## Verification & Definition of Done
-- [ ] Bonus output never exceeds the item stack cap.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Bonus output never exceeds the item stack cap.
+- [x] `./gradlew build` and `./gradlew test` pass.
