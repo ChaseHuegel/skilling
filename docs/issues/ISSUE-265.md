@@ -6,8 +6,8 @@
 - **Severity:** Medium — silent failure of a gameplay gate.
 
 ## Implementation Requirements
-- [ ] Clamp cooldown duration to a sane maximum (e.g. 1 day) before both the `RequirementEngine` expiry arithmetic and the `SkillEventListener` ready-message scheduler delay.
-- [ ] Add unit tests for huge cooldown values asserting the cooldown is still enforced.
+- [x] Clamp cooldown duration to a sane maximum (e.g. 1 day) before both the `RequirementEngine` expiry arithmetic and the `SkillEventListener` ready-message scheduler delay.
+- [x] Add unit tests for huge cooldown values asserting the cooldown is still enforced.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -18,5 +18,5 @@
 - **Constraints:** Cooldowns are level-scaled evaluator outputs; the clamp must not change normal-range behavior. A negative overflow currently makes the cooldown instantly expired (never enforced) — clamp, don't reject, unless load-time validation is preferred.
 
 ## Verification & Definition of Done
-- [ ] Huge cooldowns are enforced for at least the clamped maximum.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Huge cooldowns are enforced for at least the clamped maximum.
+- [x] `./gradlew build` and `./gradlew test` pass.

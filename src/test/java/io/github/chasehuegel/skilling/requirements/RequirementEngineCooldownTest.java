@@ -102,4 +102,25 @@ class RequirementEngineCooldownTest {
         assertTrue(engine.check(player, "short", shortReq, 10, 5).success(),
                 "an expired cooldown must be released after pruning");
     }
+
+    @Test
+    void hugeCooldownIsClampedAndStillEnforced() {
+        // A level-scaled cooldown reaching a huge value would overflow the
+        // currentTimeMillis() + durationMs arithmetic and expire instantly.
+        // The clamp must keep the cooldown enforced for the clamped maximum.
+        var req = requirements(new ConstantEvaluator(1e12));
+        var player = mockPlayer();
+        assertTrue(engine.check(player, "ability", req, 10, 5).success());
+        engine.consume(player, "ability", req, 10, 5);
+        assertEquals(FailureReason.COOLDOWN, engine.check(player, "ability", req, 10, 5).failureReason(),
+                "a huge cooldown must remain enforced, not overflow to an instant expiry");
+    }
+
+    @Test
+    void clampCooldownSecondsKeepsNormalRangesUntouched() {
+        assertEquals(0.5, RequirementEngine.clampCooldownSeconds(0.5), 1e-9);
+        assertEquals(3600.0, RequirementEngine.clampCooldownSeconds(3600.0), 1e-9);
+        assertEquals(RequirementEngine.MAX_COOLDOWN_SECONDS,
+                RequirementEngine.clampCooldownSeconds(1e12), 1e-9);
+    }
 }

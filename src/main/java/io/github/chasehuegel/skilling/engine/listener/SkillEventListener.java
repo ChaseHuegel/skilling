@@ -628,7 +628,10 @@ public final class SkillEventListener implements Listener {
 
             double cdSec = ability.requirements().cooldown().evaluate(skillLevel, ability.unlockLevel());
             if (cdSec > 0) {
-                long delayTicks = (long) (cdSec * 20);
+                // Clamp so a huge level-scaled cooldown cannot overflow the
+                // scheduler delay and fire the ready message immediately.
+                long delayTicks = (long) (io.github.chasehuegel.skilling.engine.requirements.RequirementEngine
+                        .clampCooldownSeconds(cdSec) * 20);
                 plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                     if (player.isOnline()) {
                         String readyMsg = "<green>✦ " + ability.displayName() + " is ready!</green>";

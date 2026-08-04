@@ -33,10 +33,29 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class RequirementEngine {
 
+    /**
+     * Upper bound on a cooldown duration in seconds. A level-scaled evaluator can
+     * reach arbitrarily large values; beyond about a day the millisecond/tick
+     * arithmetic overflows and silently disables the cooldown, so the duration is
+     * clamped to this ceiling.
+     */
+    public static final double MAX_COOLDOWN_SECONDS = 86_400.0;
+
     private final Map<String, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
     private final Map<String, Material> materialCache = new ConcurrentHashMap<>();
     private TagResolver tagResolver;
     private final StateFilterRegistry stateFilterRegistry;
+
+    /**
+     * Clamps a cooldown duration to {@link #MAX_COOLDOWN_SECONDS} so the expiry
+     * arithmetic below never overflows.
+     *
+     * @param cdSec the evaluated cooldown in seconds
+     * @return the clamped duration in seconds
+     */
+    public static double clampCooldownSeconds(double cdSec) {
+        return Math.min(cdSec, MAX_COOLDOWN_SECONDS);
+    }
 
     /**
      * Constructs a new requirement engine with the given tag resolver and state
@@ -136,7 +155,7 @@ public final class RequirementEngine {
         // Apply cooldown
         double cdSec = requirements.cooldown().evaluate(skillLevel, unlockLevel);
         if (cdSec > 0) {
-            applyCooldown(player, abilityId, (long) (cdSec * 1000));
+            applyCooldown(player, abilityId, (long) (clampCooldownSeconds(cdSec) * 1000));
         }
 
         // Consume items
