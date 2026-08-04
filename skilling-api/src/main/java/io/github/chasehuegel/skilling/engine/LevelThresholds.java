@@ -10,11 +10,14 @@ import java.util.WeakHashMap;
  * never re-evaluates the XP curve on the event path.
  *
  * <p>A threshold is the truncated {@code (long)} requirement of each level (1..maxLevel)
- * for a given evaluator, with non-finite requirements marked unreachable. Tables are keyed
- * by the evaluator instance and {@code maxLevel}, and cached weakly: while a loaded
- * {@code SkillDefinition} keeps its evaluator alive the table is reused, and a reload that
- * replaces evaluators lets old entries be collected. This satisfies "invalidated on reload"
- * without a manual cache clear.
+ * for a given evaluator, with non-finite requirements marked unreachable. Thresholds are
+ * evaluated anchored at level 1 ({@code evaluate(level, 1)}), so {@code base_xp} is the
+ * exact requirement for level 1 across all progression curves (e.g. a {@code linear} curve
+ * registered with base {@code base_xp} and step {@code base_xp * 0.1} requires
+ * {@code base_xp} at level 1). Tables are keyed by the evaluator instance and
+ * {@code maxLevel}, and cached weakly: while a loaded {@code SkillDefinition} keeps its
+ * evaluator alive the table is reused, and a reload that replaces evaluators lets old
+ * entries be collected. This satisfies "invalidated on reload" without a manual cache clear.
  *
  * <p>Tables also record whether the truncated thresholds are non-decreasing, which lets
  * {@code getLevelForXp} binary-search the common monotonic curves while falling back to a
@@ -55,7 +58,9 @@ final class LevelThresholds {
         boolean sorted = true;
         long prev = Long.MIN_VALUE;
         for (int level = 1; level <= maxLevel; level++) {
-            double required = evaluator.evaluate(level, 0);
+            // Progression thresholds are anchored at level 1 so base_xp is the
+            // exact level-1 requirement (matching the polynomial curve).
+            double required = evaluator.evaluate(level, 1);
             int idx = level - 1;
             if (!Double.isFinite(required)) {
                 // A non-finite requirement is unreachable at any XP, mirroring the

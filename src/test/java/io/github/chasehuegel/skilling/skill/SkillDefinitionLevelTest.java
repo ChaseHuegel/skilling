@@ -2,7 +2,9 @@ package io.github.chasehuegel.skilling.skill;
 
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.LinearEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.MilestoneEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.PolynomialEvaluator;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -42,13 +44,32 @@ class SkillDefinitionLevelTest {
         assertEquals(2, skill.getLevelForXp(250)); // level 3 requires 300; 250 -> level 2
     }
 
+    @Test
+    void linearAndPolynomialRequireBaseXpAtLevelOne() {
+        // Both curves with the same base_xp must require exactly base_xp for
+        // level 1, mirroring how parseProgression registers them.
+        var linear = new SkillDefinition("linear", 100, null,
+                new SkillDefinition.Progression("linear", 100, 0,
+                        new LinearEvaluator(100.0, 10.0, 0, Double.MAX_VALUE)),
+                List.of(), List.of(), List.of());
+        var polynomial = new SkillDefinition("polynomial", 100, null,
+                new SkillDefinition.Progression("polynomial", 100, 2.5,
+                        new PolynomialEvaluator(100.0, 2.5)),
+                List.of(), List.of(), List.of());
+
+        assertEquals(0, linear.getLevelForXp(99), "99 XP must be below the level-1 threshold");
+        assertEquals(1, linear.getLevelForXp(100), "base_xp must be exactly the level-1 threshold");
+        assertEquals(0, polynomial.getLevelForXp(99));
+        assertEquals(1, polynomial.getLevelForXp(100));
+    }
+
     /**
      * Reference re-implementation of the previous linear scan that ISSUE-136 replaced,
      * used to prove the optimized version produces identical levels.
      */
     private static int referenceLinearScan(SkillDefinition skill, long xp) {
         for (int level = 1; level <= skill.maxLevel(); level++) {
-            double required = skill.progression().evaluator().evaluate(level, 0);
+            double required = skill.progression().evaluator().evaluate(level, 1);
             if (!Double.isFinite(required) || xp < (long) required) return level - 1;
         }
         return skill.maxLevel();
@@ -60,7 +81,7 @@ class SkillDefinitionLevelTest {
         samples.add(1L);
         samples.add(Long.MAX_VALUE);
         for (int level = 1; level <= skill.maxLevel(); level++) {
-            double required = skill.progression().evaluator().evaluate(level, 0);
+            double required = skill.progression().evaluator().evaluate(level, 1);
             if (!Double.isFinite(required)) continue;
             long t = (long) required;
             samples.add(Math.max(0, t - 1));

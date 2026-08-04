@@ -10,7 +10,7 @@
 - [x] [ISSUE-235](ISSUE-235.md) - Chain/level break off-by-one and durability waste on unbreakable blocks [Severity: High]
 - [x] [ISSUE-236](ISSUE-236.md) - Validate XP-source trigger keys against the TriggerRegistry at load [Severity: Medium]
 - [x] [ISSUE-237](ISSUE-237.md) - `%skilling_evaluator_%` placeholders break for skill IDs with underscores [Severity: Medium]
-- [ ] [ISSUE-238](ISSUE-238.md) - Fix the `linear` progression curve's level-1 threshold offset [Severity: Medium]
+- [x] [ISSUE-238](ISSUE-238.md) - Fix the `linear` progression curve's level-1 threshold offset [Severity: Medium]
 - [ ] [ISSUE-239](ISSUE-239.md) - Close custom-tag fail-fast holes (unknown `#c:` refs and scalar tag values pass silently) [Severity: Medium]
 - [ ] [ISSUE-240](ISSUE-240.md) - BossBarPool lifecycle — hide pooled bars on disable and document the main-thread requirement [Severity: Medium]
 - [ ] [ISSUE-241](ISSUE-241.md) - Guard LevelUpDispatcher scheduled unlock tasks against a quitting player [Severity: Medium]

@@ -198,6 +198,9 @@ public final class SkillManager {
 
         ParameterEvaluator evaluator = switch (curve) {
             case "polynomial" -> new PolynomialEvaluator(baseXp, exponent);
+            // Thresholds are evaluated anchored at level 1 (see LevelThresholds),
+            // so base_xp is the exact level-1 requirement and each further level
+            // adds base_xp * 0.1.
             case "linear" -> new LinearEvaluator(baseXp, baseXp * 0.1, 0, Double.MAX_VALUE);
             case "constant" -> new ConstantEvaluator(baseXp);
             default -> {
