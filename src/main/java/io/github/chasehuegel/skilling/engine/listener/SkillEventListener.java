@@ -274,10 +274,17 @@ public final class SkillEventListener implements Listener {
     /**
      * Handles {@link PlayerFishEvent} and routes it as a {@code fishing} trigger.
      *
+     * <p>The event fires once per state transition (cast, bite, reel, catch,
+     * fail), so only the {@code CAUGHT_FISH} state represents a completed catch.
+     * Gating on it ensures a single cast-and-catch grants exactly one XP reward
+     * and fires fishing abilities exactly once; casts, bites, reels, and failed
+     * attempts grant nothing.
+     *
      * @param event the player fish event
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onFish(PlayerFishEvent event) {
+        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
         dispatch(event.getPlayer(), event, "fishing");
     }
 

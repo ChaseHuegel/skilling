@@ -690,7 +690,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `brew_start` | `BrewingStartEvent` | A brewing stand begins a new brewing cycle |
 | `player_interact` | `PlayerInteractEvent` | Interacting (right/left click). A `target` filter matches the clicked block on right-click; left-clicks and air interactions never match a block target |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
-| `fishing` | `PlayerFishEvent` | Fishing |
+| `fishing` | `PlayerFishEvent` | Successfully catching a fish (only the `CAUGHT_FISH` state dispatches; casts, bites, reels, and failed attempts do not) |
 | `crop_grow` | `BlockGrowEvent` | Natural crop growth |
 | `breed_animals` | `EntityBreedEvent` | Breeding animals |
 | `sprint` | `PlayerToggleSprintEvent` | Player starts/stops sprinting |
