@@ -5,7 +5,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 
 /**
- * Triggers when a player starts or stops sprinting.
+ * Triggers when a player starts sprinting.
+ *
+ * <p>Dispatch is gated on the sprinting transition to the on-state
+ * ({@code PlayerToggleSprintEvent#isSprinting()}), so release does not fire.
  *
  * <p><b>YAML key:</b> {@code sprint}
  */

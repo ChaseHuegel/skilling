@@ -5,7 +5,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 /**
- * Triggers when a player starts or stops sneaking.
+ * Triggers when a player starts sneaking.
+ *
+ * <p>Dispatch is gated on the sneaking transition to the on-state
+ * ({@code PlayerToggleSneakEvent#isSneaking()}), so release does not fire.
  *
  * <p><b>YAML key:</b> {@code sneak}
  */

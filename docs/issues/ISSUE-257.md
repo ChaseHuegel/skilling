@@ -8,7 +8,7 @@
   - `FishingTrigger` says "casts or reels in", but only `CAUGHT_FISH` fires (`SkillEventListener.java:295`).
 
 ## Implementation Requirements
-- [ ] Update the three trigger Javadocs to state the actual dispatch conditions (fire only on start; only on `CAUGHT_FISH`), matching the listener behavior.
+- [x] Update the three trigger Javadocs to state the actual dispatch conditions (fire only on start; only on `CAUGHT_FISH`), matching the listener behavior.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -19,5 +19,5 @@
 - **Constraints:** Docs only — no behavior change. If `docs/users/capabilities.md` describes these triggers, align it too.
 
 ## Verification & Definition of Done
-- [ ] Javadocs match `SkillEventListener` dispatch gating.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Javadocs match `SkillEventListener` dispatch gating.
+- [x] `./gradlew build` and `./gradlew test` pass.
