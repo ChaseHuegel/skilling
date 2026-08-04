@@ -321,7 +321,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:block_damage", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:thorns_damage", ThornsDamageMechanic.class, List.of("damage"));
-        mechReg.register("core:knockback", KnockbackMechanic.class, List.of("force", "radius", "vertical"),
+        mechReg.register("core:knockback", KnockbackMechanic.class, List.of("force", "radius", "vertical", "targets"),
                 (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
         mechReg.register("core:shield_disable", ShieldDisableMechanic.class, List.of("ticks"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "ticks"));

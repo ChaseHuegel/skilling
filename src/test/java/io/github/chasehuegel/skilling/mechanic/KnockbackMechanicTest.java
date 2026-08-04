@@ -5,6 +5,7 @@ import io.github.chasehuegel.skilling.engine.mechanic.impl.KnockbackMechanic;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.util.Vector;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class KnockbackMechanicTest {
         var loc = spy(new Location(world, 0, 0, 0));
         when(player.getLocation()).thenReturn(loc);
 
-        var target = mock(LivingEntity.class);
+        var target = mock(Monster.class);
         var event = mock(EntityDamageByEntityEvent.class);
         when(event.getEntity()).thenReturn(target);
 
@@ -47,7 +48,7 @@ class KnockbackMechanicTest {
         var loc = spy(new Location(world, 0, 0, 0));
         when(player.getLocation()).thenReturn(loc);
 
-        var target = mock(LivingEntity.class);
+        var target = mock(Monster.class);
         when(loc.getNearbyLivingEntities(3.0)).thenReturn(List.of(target, player));
 
         assertTrue(mechanic.execute(player, Map.of("force", 2.0, "radius", 3.0),

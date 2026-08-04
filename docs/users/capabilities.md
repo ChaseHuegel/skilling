@@ -299,15 +299,16 @@ Reflects a flat amount of incoming damage back to the attacker.
 
 ### core:knockback
 
-Applies a directional velocity impulse (knockback) to the damaged entity, or to all living entities in a radius around the player.
+Applies a directional velocity impulse (knockback) to the damaged entity, or to all living entities in a radius around the player. Targets are gated by the `targets` filter, and other players are never knocked.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `force` | double | `0` | Horizontal impulse strength (velocity magnitude) |
-| `radius` | double | `0` | Radius in blocks; `0` = single target only (the damaged entity) |
-| `vertical` | double | `0.3` | Upward component added to the impulse |
+| `force` | double | `0` | Horizontal impulse strength (velocity magnitude), clamped to [0, 3] |
+| `radius` | double | `0` | Radius in blocks, clamped to [0, 32]; `0` = single target only (the damaged entity) |
+| `vertical` | double | `0.3` | Upward component added to the impulse, clamped to [0, 1.5] |
+| `targets` | string | `hostiles` | Which living entities receive the knockback: `hostiles` (default, monsters and angered neutrals), `allies`, or `all`; players are always excluded |
 
 **Event:** `EntityDamageByEntityEvent` (single target) / `PlayerInteractEvent` (radial shove)
 

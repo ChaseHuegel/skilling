@@ -4,7 +4,7 @@
 - [x] [ISSUE-229](ISSUE-229.md) - Bound the crowd_control mechanic's AoE radius [Severity: High]
 - [x] [ISSUE-230](ISSUE-230.md) - Fix the PlaceholderAPI hook, which can never register (proxy over an abstract class) [Severity: Critical]
 - [x] [ISSUE-231](ISSUE-231.md) - Attribute-modifier refresh truncates the buff duration [Severity: High]
-- [ ] [ISSUE-232](ISSUE-232.md) - Bound and guard the knockback mechanic (unclamped impulse, radius, no friendly-fire check) [Severity: High]
+- [x] [ISSUE-232](ISSUE-232.md) - Bound and guard the knockback mechanic (unclamped impulse, radius, no friendly-fire check) [Severity: High]
 - [ ] [ISSUE-233](ISSUE-233.md) - OffhandStrikeMechanic can damage any living entity, including other players [Severity: High]
 - [ ] [ISSUE-234](ISSUE-234.md) - Enforce mechanic registered parameter lists at load (missing/string-valued params fail at runtime) [Severity: High]
 - [ ] [ISSUE-235](ISSUE-235.md) - Chain/level break off-by-one and durability waste on unbreakable blocks [Severity: High]
