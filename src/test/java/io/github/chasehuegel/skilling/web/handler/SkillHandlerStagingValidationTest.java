@@ -9,9 +9,11 @@ import io.javalin.http.Context;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -97,5 +99,75 @@ class SkillHandlerStagingValidationTest {
 
         verify(ctx).status(400);
         verify(staging, never()).stageSkillFile(anyString(), anyString());
+    }
+
+    @Test
+    void renameOntoExistingSkillIdIsRejected() throws Exception {
+        SkillManager skillManager = TestSkillManager.newBuiltIn();
+        StagingManager staging = mock(StagingManager.class);
+        Path skillsDir = tempDir.resolve("skills");
+        Files.createDirectories(skillsDir);
+        Files.writeString(skillsDir.resolve("farming.yml"), skillYaml("farming"));
+        Files.writeString(skillsDir.resolve("mining.yml"), skillYaml("mining"));
+        SkillHandler handler = new SkillHandler(skillManager, staging, skillsDir.toFile());
+
+        // Renaming farming -> mining, where mining.yml already lives as a skill.
+        SkillDetailDTO dto = MAPPER.readValue(skillJson("mining"), SkillDetailDTO.class);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.pathParam("id")).thenReturn("farming");
+        when(ctx.bodyAsClass(SkillDetailDTO.class)).thenReturn(dto);
+
+        handler.update(ctx);
+
+        verify(ctx).status(400);
+        verify(staging, never()).stageSkillFile(anyString(), anyString());
+        verify(staging, never()).stageSkillDeletion(anyString());
+    }
+
+    @Test
+    void renameToAFreeIdStillStages() throws Exception {
+        SkillManager skillManager = TestSkillManager.newBuiltIn();
+        StagingManager staging = mock(StagingManager.class);
+        Path skillsDir = tempDir.resolve("skills");
+        Files.createDirectories(skillsDir);
+        Files.writeString(skillsDir.resolve("farming.yml"), skillYaml("farming"));
+        SkillHandler handler = new SkillHandler(skillManager, staging, skillsDir.toFile());
+
+        // Renaming farming -> mining with no live mining skill must keep working.
+        SkillDetailDTO dto = MAPPER.readValue(skillJson("mining"), SkillDetailDTO.class);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.pathParam("id")).thenReturn("farming");
+        when(ctx.bodyAsClass(SkillDetailDTO.class)).thenReturn(dto);
+
+        handler.update(ctx);
+
+        verify(staging).stageSkillFile(eq("mining"), anyString());
+        verify(staging).stageSkillDeletion(eq("farming"));
+    }
+
+    private static String skillYaml(String id) {
+        return """
+                id: "%s"
+                max_level: 100
+                display:
+                  name: "%s"
+                  icon: "minecraft:barrier"
+                  color: "GREEN"
+                  style: "SOLID"
+                progression:
+                  curve: "constant"
+                  base_xp: 100
+                xp_sources: []
+                abilities: []
+                """.formatted(id, id);
+    }
+
+    private static String skillJson(String id) {
+        return """
+            {"id":"%s","displayName":"%s","maxLevel":100,"icon":"minecraft:barrier",
+             "progression":{"curve":"constant","baseXp":100},
+             "xpSources":[],
+             "abilities":[]}
+            """.formatted(id, id);
     }
 }

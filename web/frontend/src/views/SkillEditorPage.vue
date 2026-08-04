@@ -142,7 +142,7 @@ function validate(): boolean {
 
     if (!trimmedId) {
         errors['id'] = 'Skill ID is required';
-    } else if (isNew && skillsStore.skills.some((s: any) => s.id === trimmedId)) {
+    } else if (skillsStore.skills.some((s: any) => s.id === trimmedId && s.id !== skillId)) {
         errors['id'] = 'Skill ID already exists';
     }
 

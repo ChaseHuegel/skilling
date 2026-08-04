@@ -108,6 +108,15 @@ public final class SkillHandler {
             String yaml = SkillSerializer.toYaml(dto);
             validateStagedSkill(yaml);
             if (!newId.equals(oldId)) {
+                // Renaming onto an ID that a different live skill already claims
+                // would silently overwrite its file on Apply. Reject up front
+                // rather than letting the reload destroy that skill. Renaming to
+                // a deleted or never-existing ID (no live file) keeps working.
+                File oldFile = resolveSkillFile(oldId);
+                File colliding = liveSkillFile(newId);
+                if (colliding != null && !colliding.equals(oldFile)) {
+                    throw new IllegalArgumentException("Skill id already exists: " + newId);
+                }
                 stagingManager.stageSkillFile(newId, yaml);
                 stagingManager.stageSkillDeletion(oldId);
             } else {
@@ -139,14 +148,24 @@ public final class SkillHandler {
     }
 
     private File resolveSkillFile(String id) {
-        // Fast path: check for file named exactly {id}.yml
+        File live = liveSkillFile(id);
+        if (live != null) return live;
+        File stagedFile = stagingManager.stagedSkillFile(id);
+        return stagedFile.exists() ? stagedFile : null;
+    }
+
+    /**
+     * Finds the live skill file for an id: a file named exactly {@code {id}.yml},
+     * or a live file whose parsed skill id matches {@code id} (handles files whose
+     * name differs from the skill id). Staged files are ignored, so this answers
+     * "does a live skill with this id already exist?" for collision checks.
+     *
+     * @param id the skill id
+     * @return the matching live file, or null
+     */
+    private File liveSkillFile(String id) {
         File namedFile = confinedLiveFile(id);
         if (namedFile != null && namedFile.exists()) return namedFile;
-        File stagedFile = stagingManager.stagedSkillFile(id);
-        if (stagedFile.exists()) return stagedFile;
-
-        // Fallback: scan all .yml files and match by parsed ID
-        // This handles cases where the filename differs from the skill ID
         if (!skillsDir.exists() || !skillsDir.isDirectory()) return null;
         File[] files = skillsDir.listFiles((d, name) -> name.endsWith(".yml"));
         if (files == null) return null;
