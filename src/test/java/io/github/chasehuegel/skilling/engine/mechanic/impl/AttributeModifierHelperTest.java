@@ -4,6 +4,8 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.tag.Tag;
 import io.papermc.paper.registry.tag.TagKey;
+import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
@@ -20,6 +22,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,9 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -162,10 +167,12 @@ class AttributeModifierHelperTest {
 
     /**
      * Builds a player whose attribute instance records every modifier add/remove
-     * so the test can assert modifier counts.
+     * so the test can assert modifier counts. The entity scheduler hands back a
+     * mock task per scheduled removal so the helper can track them.
      */
     private static Player playerWithRecordingInstance(Attribute attribute, List<AttributeModifier> active) {
         Player player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         AttributeInstance inst = mock(AttributeInstance.class);
         when(player.getAttribute(attribute)).thenReturn(inst);
         doAnswer(inv -> {
@@ -179,12 +186,37 @@ class AttributeModifierHelperTest {
             active.removeIf(am -> am.getUniqueId().equals(m.getUniqueId()));
             return null;
         }).when(inst).removeModifier(any(AttributeModifier.class));
+        doAnswer(inv -> {
+            UUID id = inv.getArgument(0);
+            active.removeIf(am -> am.getUniqueId().equals(id));
+            return null;
+        }).when(inst).removeModifier(any(UUID.class));
         when(inst.getModifier(any(UUID.class))).thenAnswer(inv -> {
             UUID id = inv.getArgument(0);
             return active.stream().filter(am -> am.getUniqueId().equals(id)).findFirst().orElse(null);
         });
-        when(player.getScheduler()).thenReturn(mock(io.papermc.paper.threadedregions.scheduler.EntityScheduler.class));
+        EntityScheduler scheduler = mock(EntityScheduler.class);
+        when(scheduler.runDelayed(any(), any(), any(), anyLong()))
+                .thenReturn(mock(ScheduledTask.class));
+        when(player.getScheduler()).thenReturn(scheduler);
         return player;
+    }
+
+    /**
+     * Builds a scheduler that records every scheduled removal consumer and its
+     * task, returning a fresh task per call so the test can drive the removal.
+     */
+    private static EntityScheduler capturingScheduler(List<Consumer<ScheduledTask>> removals,
+                                                      List<ScheduledTask> tasks) {
+        EntityScheduler scheduler = mock(EntityScheduler.class);
+        when(scheduler.runDelayed(any(), any(), any(), anyLong())).thenAnswer(inv -> {
+            removals.add(inv.getArgument(1));
+            ScheduledTask task = mock(ScheduledTask.class);
+            when(task.isCancelled()).thenReturn(false);
+            tasks.add(task);
+            return task;
+        });
+        return scheduler;
     }
 
     @Test
@@ -226,6 +258,44 @@ class AttributeModifierHelperTest {
         assertTrue(AttributeModifierHelper.applyTransient(player, attribute, second, "test", 2.0, 5));
 
         assertEquals(2, active.size());
+    }
+
+    @Test
+    void refreshCancelsStaleRemovalSoBuffLastsFullNewDuration() {
+        List<AttributeModifier> active = new ArrayList<>();
+        List<Consumer<ScheduledTask>> removals = new ArrayList<>();
+        List<ScheduledTask> tasks = new ArrayList<>();
+        Player player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        AttributeInstance inst = mock(AttributeInstance.class);
+        when(player.getAttribute(attribute)).thenReturn(inst);
+        doAnswer(inv -> {
+            active.removeIf(m -> m.getUniqueId().equals(((AttributeModifier) inv.getArgument(0)).getUniqueId()));
+            active.add(inv.getArgument(0));
+            return null;
+        }).when(inst).addTransientModifier(any(AttributeModifier.class));
+        doAnswer(inv -> {
+            active.removeIf(m -> m.getUniqueId().equals(inv.getArgument(0)));
+            return null;
+        }).when(inst).removeModifier(any(UUID.class));
+        when(inst.getModifier(any(UUID.class))).thenAnswer(inv -> {
+            UUID id = inv.getArgument(0);
+            return active.stream().filter(m -> m.getUniqueId().equals(id)).findFirst().orElse(null);
+        });
+        EntityScheduler scheduler = capturingScheduler(removals, tasks);
+        when(player.getScheduler()).thenReturn(scheduler);
+
+        UUID uuid = UUID.randomUUID();
+        assertTrue(AttributeModifierHelper.applyTransient(player, attribute, uuid, "test", 1.0, 10));
+        assertTrue(AttributeModifierHelper.applyTransient(player, attribute, uuid, "test", 1.0, 10));
+
+        // The stale first removal must be cancelled so it cannot fire early and
+        // cut the refreshed buff back to the previous expiry.
+        verify(tasks.get(0)).cancel();
+        assertEquals(1, active.size());
+        // The buff lives until the replacement removal fires.
+        removals.get(1).accept(tasks.get(1));
+        assertTrue(active.isEmpty());
     }
 
     @Test
