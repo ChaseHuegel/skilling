@@ -43,11 +43,16 @@ xp_sources:
 
 ### progression
 
+Every curve is derived from `base_xp` (plus `exponent` for polynomial). A
+`linear` curve uses step `base_xp * 0.1`; a `constant` curve returns `base_xp`
+for every level. There are no other per-curve keys — the web GUI and the engine
+share this single schema.
+
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `curve` | string | `"polynomial"` | XP curve type: `polynomial`, `linear`, or `constant` |
 | `base_xp` | double | `50.0` | XP required for level 1 |
-| `exponent` | double | `2.5` | Exponent for polynomial curve |
+| `exponent` | double | `2.5` | Exponent for the polynomial curve (ignored by `linear`/`constant`) |
 
 ### xp_sources
 

@@ -21,9 +21,10 @@ display:
 # MATH & PROGRESSION
 # ----------------------------------------
 progression:
-  curve: "polynomial"           # Evaluator type for the overall curve
-  base_xp: 50                   # XP required for level 1
-  exponent: 2.5                 # Exponent for the polynomial curve
+  curve: "polynomial"           # Evaluator type: polynomial | linear | constant (or a registered custom curve)
+  # Every curve is derived from these two keys only:
+  base_xp: 50                   # XP required for level 1 (linear step = base_xp * 0.1; constant value = base_xp)
+  exponent: 2.5                 # Exponent for the polynomial curve (ignored by linear/constant)
 
 # ----------------------------------------
 # EXPERIENCE SOURCES

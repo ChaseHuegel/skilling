@@ -31,17 +31,8 @@ public record SkillDetailDTO(
     public record ProgressionDTO(
         String curve,
         double baseXp,
-        double exponent,
-        Double base,
-        Double step,
-        Double min,
-        Double max,
-        Double value
-    ) {
-        public ProgressionDTO(String curve, double baseXp, double exponent) {
-            this(curve, baseXp, exponent, null, null, null, null, null);
-        }
-    }
+        double exponent
+    ) {}
 
     public record XpSourceDTO(
         String trigger,

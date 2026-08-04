@@ -5,11 +5,6 @@ interface ProgressionConfig {
   curve: string
   baseXp?: number
   exponent?: number
-  base?: number
-  step?: number
-  min?: number
-  max?: number
-  value?: number
 }
 
 const props = defineProps<{
@@ -50,14 +45,16 @@ function setParam(key: string, val: number) {
       </select>
     </div>
 
+    <!-- Every curve is derived from base_xp; only polynomial adds exponent. -->
+    <div class="field-row">
+      <label class="field-label">Base XP</label>
+      <DecimalInput
+        :model-value="modelValue.baseXp"
+        @update:model-value="setParam('baseXp', $event)"
+      />
+    </div>
+
     <template v-if="modelValue.curve === 'polynomial'">
-      <div class="field-row">
-        <label class="field-label">Base XP</label>
-        <DecimalInput
-          :model-value="modelValue.baseXp"
-          @update:model-value="setParam('baseXp', $event)"
-        />
-      </div>
       <div class="field-row">
         <label class="field-label">Exponent</label>
         <DecimalInput
@@ -66,48 +63,6 @@ function setParam(key: string, val: number) {
         />
       </div>
     </template>
-
-    <template v-else-if="modelValue.curve === 'linear'">
-      <div class="field-row">
-        <label class="field-label">Base</label>
-        <DecimalInput
-          :model-value="modelValue.base"
-          @update:model-value="setParam('base', $event)"
-        />
-      </div>
-      <div class="field-row">
-        <label class="field-label">Step</label>
-        <DecimalInput
-          :model-value="modelValue.step"
-          @update:model-value="setParam('step', $event)"
-        />
-      </div>
-      <div class="field-row">
-        <label class="field-label">Min</label>
-        <DecimalInput
-          :model-value="modelValue.min"
-          @update:model-value="setParam('min', $event)"
-        />
-      </div>
-      <div class="field-row">
-        <label class="field-label">Max</label>
-        <DecimalInput
-          :model-value="modelValue.max"
-          @update:model-value="setParam('max', $event)"
-        />
-      </div>
-    </template>
-
-    <template v-else-if="modelValue.curve === 'constant'">
-      <div class="field-row">
-        <label class="field-label">Value</label>
-        <DecimalInput
-          :model-value="modelValue.value"
-          @update:model-value="setParam('value', $event)"
-        />
-      </div>
-    </template>
-
   </div>
 </template>
 
