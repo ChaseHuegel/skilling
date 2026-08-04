@@ -1,14 +1,6 @@
 ## Active Sprint / Current Milestone
 
 ### Bugs
-
-### Improvements
-
-### Research
-
-## Backlog
-
-### Bugs
 - [ ] [ISSUE-208](ISSUE-208.md) - Gate the `fishing` trigger on the caught-fish event state
 - [ ] [ISSUE-209](ISSUE-209.md) - Fail-fast on scalar YAML values where an evaluator block is required
 - [ ] [ISSUE-210](ISSUE-210.md) - Preserve the `entity_tags:` section when saving tags.yml via the web GUI
@@ -32,5 +24,13 @@
 ### Improvements
 - [ ] [ISSUE-214](ISSUE-214.md) - Reload and shutdown must not block the Bukkit main thread
 - [ ] [ISSUE-219](ISSUE-219.md) - Hot-path logging and low-severity correctness polish
+
+### Research
+
+## Backlog
+
+### Bugs
+
+### Improvements
 
 ### Research
