@@ -15,7 +15,7 @@
 - [x] [ISSUE-259](ISSUE-259.md) - Quit-flush hydration race silently loses XP on quit→immediate-rejoin [Severity: High]
 - [x] [ISSUE-260](ISSUE-260.md) - Renaming a skill to an existing ID silently overwrites the live skill on Apply [Severity: High]
 - [x] [ISSUE-261](ISSUE-261.md) - Transient attribute modifiers and PENDING_REMOVALS leak on disable/reload [Severity: Medium]
-- [ ] [ISSUE-262](ISSUE-262.md) - CraftItemEvent null-recipe NPE in resolveEventMaterial [Severity: Medium]
+- [x] [ISSUE-262](ISSUE-262.md) - CraftItemEvent null-recipe NPE in resolveEventMaterial [Severity: Medium]
 - [ ] [ISSUE-263](ISSUE-263.md) - Unbounded chain_limit / max_blocks can freeze the main thread [Severity: Medium]
 - [ ] [ISSUE-264](ISSUE-264.md) - onPrepareAnvil MONITOR handler is missing ignoreCancelled [Severity: Medium]
 - [ ] [ISSUE-265](ISSUE-265.md) - Cooldown arithmetic overflow silently disables cooldowns [Severity: Medium]

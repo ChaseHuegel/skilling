@@ -793,7 +793,7 @@ public final class SkillEventListener implements Listener {
         return Math.round(xp);
     }
 
-    Material resolveEventMaterial(Event event) {
+    static Material resolveEventMaterial(Event event) {
         if (event instanceof BlockBreakEvent be) return be.getBlock().getType();
         if (event instanceof BlockPlaceEvent pe) return pe.getBlockPlaced().getType();
         if (event instanceof EntityDamageByEntityEvent de) {
@@ -806,7 +806,9 @@ public final class SkillEventListener implements Listener {
             }
         }
         if (event instanceof org.bukkit.event.inventory.CraftItemEvent ce) {
-            return ce.getRecipe().getResult().getType();
+            org.bukkit.inventory.Recipe recipe = ce.getRecipe();
+            if (recipe == null || recipe.getResult() == null) return null;
+            return recipe.getResult().getType();
         }
         if (event instanceof org.bukkit.event.inventory.FurnaceExtractEvent fe) {
             return fe.getItemType();
@@ -849,7 +851,7 @@ public final class SkillEventListener implements Listener {
         return io.github.chasehuegel.skilling.engine.mechanic.impl.BlockParticlesMechanic.resolveBlockLocation(event);
     }
 
-    private Material projectileToMaterial(org.bukkit.entity.Entity damager) {
+    private static Material projectileToMaterial(org.bukkit.entity.Entity damager) {
         if (damager instanceof Projectile proj) {
             return switch (proj.getType()) {
                 case ARROW -> Material.ARROW;

@@ -9,6 +9,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Verifies the parse → evaluate pipeline keeps string-valued parameter
@@ -40,5 +43,18 @@ class SkillEventListenerParamsTest {
         Map<String, Object> params = SkillEventListener.evaluateParams(entry, 10, 1);
         assertEquals(3.0, params.get("duration"));
         assertInstanceOf(Double.class, params.get("duration"));
+    }
+
+    @Test
+    void resolveEventMaterialToleratesNullCraftRecipe() {
+        var event = mock(org.bukkit.event.inventory.CraftItemEvent.class);
+        when(event.getRecipe()).thenReturn(null);
+        assertNull(SkillEventListener.resolveEventMaterial(event));
+
+        // A recipe with a null result is likewise a no-match, not an NPE.
+        var recipe = mock(org.bukkit.inventory.Recipe.class);
+        when(event.getRecipe()).thenReturn(recipe);
+        when(recipe.getResult()).thenReturn(null);
+        assertNull(SkillEventListener.resolveEventMaterial(event));
     }
 }

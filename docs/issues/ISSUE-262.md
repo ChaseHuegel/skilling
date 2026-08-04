@@ -6,8 +6,8 @@
 - **Severity:** Medium — unguarded dereference on a path the code already defends elsewhere for the same event type.
 
 ## Implementation Requirements
-- [ ] Guard `CraftItemEvent` in `resolveEventMaterial`: return `null` when `getRecipe()` or its result is null, mirroring `resolveEventBulkScalar`'s guard.
-- [ ] Add a unit test covering a `CraftItemEvent` with a null recipe through the material resolver.
+- [x] Guard `CraftItemEvent` in `resolveEventMaterial`: return `null` when `getRecipe()` or its result is null, mirroring `resolveEventBulkScalar`'s guard.
+- [x] Add a unit test covering a `CraftItemEvent` with a null recipe through the material resolver.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,5 +17,5 @@
 - **Constraints:** Return `null` (treated as "no match") rather than throwing; do not alter other event branches.
 
 ## Verification & Definition of Done
-- [ ] Null-recipe `CraftItemEvent` resolves to no material without throwing.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Null-recipe `CraftItemEvent` resolves to no material without throwing.
+- [x] `./gradlew build` and `./gradlew test` pass.
