@@ -240,7 +240,7 @@ public final class SkillEventListener implements Listener {
      *
      * @param event the prepare anvil event
      */
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPrepareAnvil(org.bukkit.event.inventory.PrepareAnvilEvent event) {
         if (event.getView().getPlayer() instanceof Player player) {
             dispatch(player, event, "repair");

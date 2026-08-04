@@ -6,7 +6,7 @@
 - **Severity:** Medium — behavioral inconsistency; the only MONITOR handler without `ignoreCancelled`.
 
 ## Implementation Requirements
-- [ ] Add `ignoreCancelled = true` to the `@EventHandler` on `onPrepareAnvil` (currently the only MONITOR handler that lacks it).
+- [x] Add `ignoreCancelled = true` to the `@EventHandler` on `onPrepareAnvil` (currently the only MONITOR handler that lacks it).
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -16,5 +16,5 @@
 - **Constraints:** Match the pattern of the other MONITOR handlers (block break/place, damage, craft, fish, interact).
 
 ## Verification & Definition of Done
-- [ ] Cancelled `PrepareAnvilEvent`s no longer trigger `repair`.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Cancelled `PrepareAnvilEvent`s no longer trigger `repair`.
+- [x] `./gradlew build` and `./gradlew test` pass.

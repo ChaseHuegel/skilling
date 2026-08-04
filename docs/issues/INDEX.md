@@ -17,7 +17,7 @@
 - [x] [ISSUE-261](ISSUE-261.md) - Transient attribute modifiers and PENDING_REMOVALS leak on disable/reload [Severity: Medium]
 - [x] [ISSUE-262](ISSUE-262.md) - CraftItemEvent null-recipe NPE in resolveEventMaterial [Severity: Medium]
 - [x] [ISSUE-263](ISSUE-263.md) - Unbounded chain_limit / max_blocks can freeze the main thread [Severity: Medium]
-- [ ] [ISSUE-264](ISSUE-264.md) - onPrepareAnvil MONITOR handler is missing ignoreCancelled [Severity: Medium]
+- [x] [ISSUE-264](ISSUE-264.md) - onPrepareAnvil MONITOR handler is missing ignoreCancelled [Severity: Medium]
 - [ ] [ISSUE-265](ISSUE-265.md) - Cooldown arithmetic overflow silently disables cooldowns [Severity: Medium]
 - [ ] [ISSUE-266](ISSUE-266.md) - Apply-then-reload ordering leaves a false, permanent 409 conflict [Severity: Medium]
 - [ ] [ISSUE-267](ISSUE-267.md) - Staged-skill validation races the reload rebuild, causing spurious 400s [Severity: Medium]

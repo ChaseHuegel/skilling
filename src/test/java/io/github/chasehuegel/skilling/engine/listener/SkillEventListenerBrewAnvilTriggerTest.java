@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -131,5 +132,15 @@ class SkillEventListenerBrewAnvilTriggerTest {
         assertEquals(BrewEvent.class, new BrewPotionTrigger().getEventClass());
         assertEquals(BrewingStartEvent.class, new BrewStartTrigger().getEventClass());
         assertEquals(PrepareAnvilEvent.class, new RepairTrigger().getEventClass());
+    }
+
+    @Test
+    void onPrepareAnvilIgnoresCancelledEvents() throws Exception {
+        var method = SkillEventListener.class.getDeclaredMethod("onPrepareAnvil",
+                org.bukkit.event.inventory.PrepareAnvilEvent.class);
+        var handler = method.getAnnotation(org.bukkit.event.EventHandler.class);
+        assertTrue(handler.ignoreCancelled(),
+                "onPrepareAnvil must ignore cancelled events so a cancelled anvil interaction never triggers repair");
+        assertEquals(org.bukkit.event.EventPriority.MONITOR, handler.priority());
     }
 }
