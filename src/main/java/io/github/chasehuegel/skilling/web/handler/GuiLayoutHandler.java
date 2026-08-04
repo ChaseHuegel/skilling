@@ -39,13 +39,19 @@ public final class GuiLayoutHandler {
 
     /**
      * GET handler: returns the current gui.yml content as a GuiLayoutDTO JSON object.
-     * If the file doesn't exist, returns the default layout.
+     * A staged edit (pending reload) is shown in preference to the live file so the
+     * editor never re-saves against stale content. If no file exists, returns the
+     * default layout.
      */
     public void get(Context ctx) {
         try {
+            // Prefer the staged layout so pending edits stay visible after a save;
+            // fall back to the live file when nothing is staged.
+            File staged = stagingManager.stagedGuiFile();
+            File source = staged.exists() ? staged : guiFile;
             GuiLayoutDTO layout;
-            if (guiFile.exists()) {
-                String content = Files.readString(guiFile.toPath(), StandardCharsets.UTF_8);
+            if (source.exists()) {
+                String content = Files.readString(source.toPath(), StandardCharsets.UTF_8);
                 layout = GuiLayoutSerializer.parse(content);
             } else {
                 layout = GuiLayoutDTO.empty();

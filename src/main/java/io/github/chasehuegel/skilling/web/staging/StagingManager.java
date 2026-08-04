@@ -59,6 +59,15 @@ public final class StagingManager {
         return new File(skillsDir, skillId + ".yml");
     }
 
+    /**
+     * The staged gui.yml file, if a layout edit is pending.
+     *
+     * @return the staged gui.yml file
+     */
+    public File stagedGuiFile() {
+        return new File(stagingDir, "gui.yml");
+    }
+
     public boolean hasPendingChanges() {
         return statusFile().exists();
     }

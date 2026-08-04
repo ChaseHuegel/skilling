@@ -148,10 +148,12 @@ public final class SkillHandler {
     }
 
     private File resolveSkillFile(String id) {
-        File live = liveSkillFile(id);
-        if (live != null) return live;
+        // Prefer the staged file so the editor shows pending edits after a save
+        // (consistent with the create path); fall back to the live file when
+        // nothing is staged.
         File stagedFile = stagingManager.stagedSkillFile(id);
-        return stagedFile.exists() ? stagedFile : null;
+        if (stagedFile != null && stagedFile.exists()) return stagedFile;
+        return liveSkillFile(id);
     }
 
     /**

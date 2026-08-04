@@ -6,9 +6,9 @@
 - **Severity:** Medium — confusing UX that can lead admins to overwrite their own staged edits.
 
 ## Implementation Requirements
-- [ ] Make `SkillHandler.get` / `resolveSkillFile` prefer the staged file over the live file when one exists (consistent with the create path), so updates show staged changes.
-- [ ] Add a staged-file fallback to `GuiLayoutHandler.get` so the layout editor also reflects pending changes.
-- [ ] Add an e2e spec (or unit tests) covering save → re-fetch shows the staged content.
+- [x] Make `SkillHandler.get` / `resolveSkillFile` prefer the staged file over the live file when one exists (consistent with the create path), so updates show staged changes.
+- [x] Add a staged-file fallback to `GuiLayoutHandler.get` so the layout editor also reflects pending changes.
+- [x] Add an e2e spec (or unit tests) covering save → re-fetch shows the staged content.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -20,6 +20,6 @@
 - **Constraints:** The staging banner must continue to distinguish pending vs applied; read paths must still serve the live file when no staged edit exists. Keep the existing editor behavior for new (staged-only) skills unchanged.
 
 ## Verification & Definition of Done
-- [ ] After saving an edit, re-fetching the skill/layout shows the staged content.
-- [ ] Unedited skills still show live content.
-- [ ] `cd web/frontend && npm run build` and `./gradlew build` / `./gradlew test` pass.
+- [x] After saving an edit, re-fetching the skill/layout shows the staged content.
+- [x] Unedited skills still show live content.
+- [x] `cd web/frontend && npm run build` and `./gradlew build` / `./gradlew test` pass.

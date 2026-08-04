@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
@@ -96,5 +97,37 @@ class GuiLayoutHandlerValidationTest {
         verify(ctx, never()).status(400);
         verify(staging).stageGuiFile(anyString());
         verify(ctx).json(Map.of("status", "ok"));
+    }
+
+    @Test
+    void getPrefersStagedLayoutOverLive() throws Exception {
+        StagingManager staging = new StagingManager(tempDir.toFile());
+        java.nio.file.Files.writeString(tempDir.resolve("gui.yml"),
+                "rows: 3\npages: []\n");
+        // A pending edit changes the row count; the editor must show the staged layout.
+        staging.stageGuiFile("rows: 6\npages: []\n");
+
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        handlerWith(staging).get(ctx);
+
+        org.mockito.ArgumentCaptor<Object> captor = org.mockito.ArgumentCaptor.forClass(Object.class);
+        verify(ctx).json(captor.capture());
+        GuiLayoutDTO dto = (GuiLayoutDTO) captor.getValue();
+        assertEquals(6, dto.rows(), "get must prefer the staged layout over the live file");
+    }
+
+    @Test
+    void getReturnsLiveLayoutWhenNothingStaged() throws Exception {
+        StagingManager staging = new StagingManager(tempDir.toFile());
+        java.nio.file.Files.writeString(tempDir.resolve("gui.yml"),
+                "rows: 3\npages: []\n");
+
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        handlerWith(staging).get(ctx);
+
+        org.mockito.ArgumentCaptor<Object> captor = org.mockito.ArgumentCaptor.forClass(Object.class);
+        verify(ctx).json(captor.capture());
+        GuiLayoutDTO dto = (GuiLayoutDTO) captor.getValue();
+        assertEquals(3, dto.rows(), "without a staged edit the live layout must be served");
     }
 }
