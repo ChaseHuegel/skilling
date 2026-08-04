@@ -106,15 +106,22 @@ public class PlaceholderAPIHook {
     }
 
     private String resolveEvaluator(Player player, String params) {
-        String[] parts = params.split("_", 2);
-        if (parts.length < 2) return "0";
-
-        String skillId = parts[0];
-        String abilityParam = parts[1];
-
-        SkillDefinition skill = plugin.getSkillManager().getSkill(skillId);
+        // Skill IDs may contain underscores, so match the longest registered
+        // skill ID that prefixes the placeholder rather than splitting on the
+        // first underscore (which would resolve "heavy_weapons" as "heavy").
+        SkillDefinition skill = null;
+        String abilityParam = "";
+        for (SkillDefinition candidate : plugin.getSkillManager().getSkills().values()) {
+            String prefix = candidate.id() + "_";
+            if (params.startsWith(prefix) && params.length() > prefix.length()
+                    && (skill == null || candidate.id().length() > skill.id().length())) {
+                skill = candidate;
+                abilityParam = params.substring(prefix.length());
+            }
+        }
         if (skill == null) return "0";
 
+        String skillId = skill.id();
         PlayerProfile profile = plugin.getProfileManager().getProfile(player.getUniqueId());
         if (profile == null) return "0";
 

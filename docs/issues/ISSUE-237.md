@@ -6,8 +6,8 @@
 - **Severity:** Medium — `PlaceholderAPIHook.resolveEvaluator` splits the placeholder on the first `_` (`PlaceholderAPIHook.java:111`), so `heavy_weapons_double_strike_multiplier` resolves skill `heavy` and fails. Many bundled skill IDs contain underscores.
 
 ## Implementation Requirements
-- [ ] Resolve the skill ID in the evaluator placeholder against the full placeholder string instead of a blind `_` split (e.g. match the longest registered skill-id prefix, or a delimiter scheme that distinguishes skill/ability/param). `total_levels` is already special-cased at `:55`; extend the same awareness to this path.
-- [ ] Add unit tests covering a skill ID with underscores (e.g. `%skilling_evaluator_heavy_weapons_<ability>_<param>%`).
+- [x] Resolve the skill ID in the evaluator placeholder against the full placeholder string instead of a blind `_` split (e.g. match the longest registered skill-id prefix, or a delimiter scheme that distinguishes skill/ability/param). `total_levels` is already special-cased at `:55`; extend the same awareness to this path.
+- [x] Add unit tests covering a skill ID with underscores (e.g. `%skilling_evaluator_heavy_weapons_<ability>_<param>%`).
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,6 +17,6 @@
 - **Constraints:** Keep the existing `%skilling_level_<skill>%` / `%skilling_xp_<skill>%` syntax working (those split once and treat the rest as the skill ID, which already handles underscores — do not regress them).
 
 ## Verification & Definition of Done
-- [ ] Evaluator placeholders resolve for underscore-containing skill IDs.
-- [ ] Existing level/xp placeholders still work.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Evaluator placeholders resolve for underscore-containing skill IDs.
+- [x] Existing level/xp placeholders still work.
+- [x] `./gradlew build` and `./gradlew test` pass.

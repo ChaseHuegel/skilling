@@ -45,6 +45,19 @@ class PlaceholderAPIHookTest {
             max_level: 100
             progression: { curve: linear, base_xp: 100 }
             """);
+        Files.writeString(skillsDir.resolve("heavy_weapons.yml"), """
+            id: heavy_weapons
+            max_level: 100
+            progression: { curve: linear, base_xp: 100 }
+            abilities:
+              - id: double_strike
+                unlock_level: 1
+                trigger: "player_interact"
+                mechanics:
+                  - type: "core:modify_damage"
+                    parameters:
+                      multiplier: { constant: 1.5 }
+            """);
         skillManager.loadSkills(skillsDir.toFile());
 
         DatabaseManager db = mock(DatabaseManager.class);
@@ -77,5 +90,11 @@ class PlaceholderAPIHookTest {
         int miningLevel = skillManager.getSkill("mining").getLevelForXp(150);
         assertEquals(String.valueOf(miningLevel), hook.onRequest(player, "level_mining"));
         assertEquals("150", hook.onRequest(player, "xp_mining"));
+    }
+
+    @Test
+    void evaluatorPlaceholderResolvesUnderscoreSkillId() {
+        assertEquals("1.50",
+                hook.onRequest(player, "evaluator_heavy_weapons_double_strike_multiplier"));
     }
 }
