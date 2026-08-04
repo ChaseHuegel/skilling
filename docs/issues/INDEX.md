@@ -1,14 +1,6 @@
 ## Active Sprint / Current Milestone
 
 ### Bugs
-
-### Improvements
-
-### Research
-
-## Backlog
-
-### Bugs
 - [ ] [ISSUE-229](ISSUE-229.md) - Bound the crowd_control mechanic's AoE radius [Severity: High]
 - [ ] [ISSUE-230](ISSUE-230.md) - Fix the PlaceholderAPI hook, which can never register (proxy over an abstract class) [Severity: Critical]
 - [ ] [ISSUE-231](ISSUE-231.md) - Attribute-modifier refresh truncates the buff duration [Severity: High]
@@ -38,6 +30,14 @@
 - [ ] [ISSUE-255](ISSUE-255.md) - Make FeedbackDebouncer check-then-act atomic [Severity: Low]
 - [ ] [ISSUE-256](ISSUE-256.md) - Unify the duplicated ConstantEvaluator / ConstantValueEvaluator handling [Severity: Low]
 - [ ] [ISSUE-257](ISSUE-257.md) - Fix trigger Javadocs that contradict the actual dispatch gating [Severity: Low]
+
+### Improvements
+
+### Research
+
+## Backlog
+
+### Bugs
 
 ### Improvements
 
