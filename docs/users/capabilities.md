@@ -228,7 +228,7 @@ Modifies the brewing time of potions in a brewing stand.
 |---|---|---|---|
 | `modifier` | double | `1.0` | Brewing time multiplier (<1.0 speeds up, >1.0 slows down) |
 
-**Event:** `BrewEvent`
+**Event:** `BrewingStartEvent`
 
 ### core:modify_potion_duration
 

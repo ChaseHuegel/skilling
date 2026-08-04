@@ -6,9 +6,9 @@
 - **Severity:** Medium — two shipped abilities are permanent no-ops because the mechanic only acts on `BrewingStartEvent`, not the `BrewEvent` their trigger listens for.
 
 ## Implementation Requirements
-- [ ] Change `trigger: "brew_potion"` to `trigger: "brew_start"` on the `rapid_brewing` and `master_alchemist` abilities in `src/main/resources/skills/alchemy.yml` (lines 20 and 85).
-- [ ] Fix the `capabilities.md` entry for `core:modify_brew_time` to document its actual event (`BrewingStartEvent`), aligning with the doc's own trigger table.
-- [ ] Add a unit test asserting `core:modify_brew_time` executes on a `BrewingStartEvent` (and not on a `BrewEvent`), if not already covered.
+- [x] Change `trigger: "brew_potion"` to `trigger: "brew_start"` on the `rapid_brewing` and `master_alchemist` abilities in `src/main/resources/skills/alchemy.yml` (lines 20 and 85).
+- [x] Fix the `capabilities.md` entry for `core:modify_brew_time` to document its actual event (`BrewingStartEvent`), aligning with the doc's own trigger table.
+- [x] Add a unit test asserting `core:modify_brew_time` executes on a `BrewingStartEvent` (and not on a `BrewEvent`), if not already covered.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -21,6 +21,6 @@
 - **Constraints:** Keep the XP source on `brew_potion` unchanged (that is a valid pairing). Verify no other bundled skill pairs `brew_potion` with `core:modify_brew_time`.
 
 ## Verification & Definition of Done
-- [ ] Both abilities execute on brewing start.
-- [ ] No other `brew_potion` + `core:modify_brew_time` pairing remains.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Both abilities execute on brewing start.
+- [x] No other `brew_potion` + `core:modify_brew_time` pairing remains.
+- [x] `./gradlew build` and `./gradlew test` pass.
