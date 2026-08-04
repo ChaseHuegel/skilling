@@ -30,6 +30,19 @@
 - [ ] [ISSUE-255](ISSUE-255.md) - Make FeedbackDebouncer check-then-act atomic [Severity: Low]
 - [ ] [ISSUE-256](ISSUE-256.md) - Unify the duplicated ConstantEvaluator / ConstantValueEvaluator handling [Severity: Low]
 - [ ] [ISSUE-257](ISSUE-257.md) - Fix trigger Javadocs that contradict the actual dispatch gating [Severity: Low]
+- [ ] [ISSUE-258](ISSUE-258.md) - Empty feedback scalars cause NPEs that abort the whole ability dispatch [Severity: High]
+- [ ] [ISSUE-259](ISSUE-259.md) - Quit-flush hydration race silently loses XP on quit→immediate-rejoin [Severity: High]
+- [ ] [ISSUE-260](ISSUE-260.md) - Renaming a skill to an existing ID silently overwrites the live skill on Apply [Severity: High]
+- [ ] [ISSUE-261](ISSUE-261.md) - Transient attribute modifiers and PENDING_REMOVALS leak on disable/reload [Severity: Medium]
+- [ ] [ISSUE-262](ISSUE-262.md) - CraftItemEvent null-recipe NPE in resolveEventMaterial [Severity: Medium]
+- [ ] [ISSUE-263](ISSUE-263.md) - Unbounded chain_limit / max_blocks can freeze the main thread [Severity: Medium]
+- [ ] [ISSUE-264](ISSUE-264.md) - onPrepareAnvil MONITOR handler is missing ignoreCancelled [Severity: Medium]
+- [ ] [ISSUE-265](ISSUE-265.md) - Cooldown arithmetic overflow silently disables cooldowns [Severity: Medium]
+- [ ] [ISSUE-266](ISSUE-266.md) - Apply-then-reload ordering leaves a false, permanent 409 conflict [Severity: Medium]
+- [ ] [ISSUE-267](ISSUE-267.md) - Staged-skill validation races the reload rebuild, causing spurious 400s [Severity: Medium]
+- [ ] [ISSUE-268](ISSUE-268.md) - ConfigHandler accepts untyped and out-of-range config values [Severity: Medium]
+- [ ] [ISSUE-269](ISSUE-269.md) - Skill and GUI-layout editors show the live file, hiding staged edits after save [Severity: Medium]
+- [ ] [ISSUE-270](ISSUE-270.md) - Bundled alchemy abilities pair brew_potion with modify_brew_time and never fire [Severity: Medium]
 
 ### Improvements
 
