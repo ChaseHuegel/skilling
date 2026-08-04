@@ -15,7 +15,7 @@
 - [x] [ISSUE-221](ISSUE-221.md) - Align web progression serialization with the engine's base_xp/exponent schema
 - [x] [ISSUE-222](ISSUE-222.md) - Web editor destroys non-scalar cooldown requirements
 - [x] [ISSUE-223](ISSUE-223.md) - Migrate sound/particle feedback identifiers from legacy enum names to modern 1.21 namespaced values
-- [ ] [ISSUE-224](ISSUE-224.md) - Web GUI layout round-trip drops per-page `gui_title`
+- [x] [ISSUE-224](ISSUE-224.md) - Web GUI layout round-trip drops per-page `gui_title`
 - [ ] [ISSUE-225](ISSUE-225.md) - Web gui-layout API must reject reserved navigation slots
 - [ ] [ISSUE-226](ISSUE-226.md) - Web ability editor on_failure reason list is incomplete
 - [ ] [ISSUE-227](ISSUE-227.md) - Refresh stale frontend fallback registries

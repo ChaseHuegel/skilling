@@ -66,6 +66,10 @@ All API routes are registered in `WebServer.java` using Javalin 7's `routes` API
 | `PUT` | `/api/config` | `ConfigHandler.update` | Update config.yml (staged) |
 | `GET` | `/api/gui-layout` | `GuiLayoutHandler.get` | Get gui.yml layout (DTO) |
 | `PUT` | `/api/gui-layout` | `GuiLayoutHandler.update` | Validate + stage gui.yml layout (400 on invalid rows/slots, reserved navigation-row slots, or duplicate slots) |
+
+The gui-layout DTO carries the per-page `gui_title` (the engine's inventory title
+override) on read and writes it back on save; the editor does not expose it, so
+it is preserved read-only through the round-trip.
 | `GET` | `/api/staging/status` | inline | Check pending changes |
 | `DELETE` | `/api/staging` | inline | Discard all staged changes |
 | `POST` | `/api/reload` | `ReloadHandler.reload` | Apply staged + reload |

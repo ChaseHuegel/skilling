@@ -315,4 +315,45 @@ class GuiLayoutSerializerTest {
         assertEquals("minecraft:red_stained_glass_pane", reparsed.filler().material());
         assertEquals(7, reparsed.filler().customModelData());
     }
+
+    @Test
+    void guiTitleSurvivesLegacyRoundTrip() {
+        String yaml = """
+            pages:
+              gathering:
+                title: "&6Gathering"
+                gui_title: "&eGathering Skills"
+                skills:
+                  mining: 0
+            """;
+
+        GuiLayoutDTO dto = GuiLayoutSerializer.parse(yaml);
+        assertEquals("&eGathering Skills", dto.pages().get(0).guiTitle());
+
+        GuiLayoutDTO reparsed = GuiLayoutSerializer.parse(GuiLayoutSerializer.serialize(dto));
+        assertEquals("&eGathering Skills", reparsed.pages().get(0).guiTitle(),
+                "per-page gui_title must survive a web round-trip");
+    }
+
+    @Test
+    void guiTitleSurvivesNewFormatRoundTrip() {
+        GuiLayoutDTO original = new GuiLayoutDTO("Test", 6, java.util.List.of(
+            new GuiLayoutDTO.GuiPageDTO("&eCombat", Map.of(0, "swords"), "minecraft:book", 0, "&cCombat Skills")
+        ), 1);
+
+        GuiLayoutDTO reparsed = GuiLayoutSerializer.parse(GuiLayoutSerializer.serialize(original));
+        assertEquals("&cCombat Skills", reparsed.pages().get(0).guiTitle());
+    }
+
+    @Test
+    void absentGuiTitleStaysNull() {
+        GuiLayoutDTO dto = GuiLayoutSerializer.parse("""
+            pages:
+              gathering:
+                title: "&6Gathering"
+                skills:
+                  mining: 0
+            """);
+        assertNull(dto.pages().get(0).guiTitle());
+    }
 }

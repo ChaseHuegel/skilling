@@ -86,10 +86,11 @@ public final class GuiLayoutSerializer {
         List<GuiLayoutDTO.GuiPageDTO> pages = new ArrayList<>();
         for (var pageMap : pagesList) {
             String label = str(pageMap, "label", "&6Page");
+            String guiTitle = str(pageMap, "gui_title", null);
             Map<Integer, String> slots = parseSlotsMap(pageMap.get("slots"));
             String icon = str(pageMap, "icon", "minecraft:book");
             int cmd = intVal(pageMap, "custom_model_data", 0);
-            pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots, icon, cmd));
+            pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots, icon, cmd, guiTitle));
         }
 
         return parseCommon(map, pages);
@@ -101,10 +102,11 @@ public final class GuiLayoutSerializer {
             if (!(pageEntry.getValue() instanceof Map<?, ?> pageData)) continue;
             Map<String, Object> pageMap = (Map<String, Object>) (Map<?, ?>) pageData;
             String label = str(pageMap, "title", pageEntry.getKey());
+            String guiTitle = str(pageMap, "gui_title", null);
             Map<Integer, String> slots = parseLegacySkills(pageMap.get("skills"));
             String icon = str(pageMap, "icon", "minecraft:book");
             int cmd = intVal(pageMap, "custom_model_data", 0);
-            pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots, icon, cmd));
+            pages.add(new GuiLayoutDTO.GuiPageDTO(label, slots, icon, cmd, guiTitle));
         }
 
         return parseCommon(map, pages);
@@ -180,6 +182,9 @@ public final class GuiLayoutSerializer {
             String pageKey = "page_" + pageIdx++;
             Map<String, Object> pageMap = new LinkedHashMap<>();
             pageMap.put("title", page.label());
+            if (page.guiTitle() != null && !page.guiTitle().isBlank()) {
+                pageMap.put("gui_title", page.guiTitle());
+            }
             pageMap.put("icon", page.icon() != null ? page.icon() : "minecraft:book");
             pageMap.put("custom_model_data", page.customModelData());
             pageMap.put("rows", dto.rows());

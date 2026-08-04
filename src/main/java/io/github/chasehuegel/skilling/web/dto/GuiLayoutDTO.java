@@ -43,10 +43,15 @@ public record GuiLayoutDTO(
         String label,
         Map<Integer, String> slots,
         String icon,
-        int customModelData
+        int customModelData,
+        String guiTitle
     ) {
         public GuiPageDTO {
             if (icon == null) icon = "minecraft:book";
+        }
+
+        public GuiPageDTO(String label, Map<Integer, String> slots, String icon, int customModelData) {
+            this(label, slots, icon, customModelData, null);
         }
     }
 }

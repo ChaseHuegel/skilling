@@ -7,6 +7,7 @@ export interface GuiPageDTO {
   slots: Record<number, string>
   icon?: string
   customModelData?: number
+  guiTitle?: string
 }
 
 export interface GuiLayoutDTO {
