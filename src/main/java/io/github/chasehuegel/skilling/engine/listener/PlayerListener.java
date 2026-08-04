@@ -88,7 +88,15 @@ public final class PlayerListener implements Listener {
                 // Only remove the exact instance from the same session; if the
                 // player reconnected, the generation no longer matches and the
                 // live profile is left in place.
-                profileManager.unloadProfile(player.getUniqueId(), profile, generationAtQuit);
+                boolean removed = profileManager.unloadProfile(player.getUniqueId(), profile, generationAtQuit);
+                if (!removed) {
+                    // The player reconnected while the flush ran, so a rejoin
+                    // hydration may be reading a DB snapshot taken before this
+                    // flush's write. Bump the generation so that hydration does
+                    // not replace the live, already-flushed profile with the
+                    // stale snapshot.
+                    profileManager.noteFlushCompleted(player.getUniqueId());
+                }
             });
         } else if (profile != null) {
             profileManager.unloadProfile(player.getUniqueId(), profile);

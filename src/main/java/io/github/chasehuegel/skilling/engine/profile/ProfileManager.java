@@ -45,6 +45,13 @@ public final class ProfileManager {
      * profile exists; a dirty profile holds mutations that the DB snapshot does
      * not contain, so replacing it would lose XP.
      *
+     * <p>A new session begins at hydration start: the session generation is bumped
+     * up front so an in-flight quit-flush completion from the previous session can
+     * neither evict this profile (the generation guard on unload) nor be missed by
+     * {@link #installHydrated}, which uses the generation to detect a flush that
+     * completed while the DB was being read and skips replacing the live profile
+     * with a possibly-stale snapshot.
+     *
      * <p>On a transient database failure the profile is NOT treated as
      * authoritative: it is installed uninitialized (in-memory only, never
      * persisted by the write-behind flush) so the player can play on a best-effort
@@ -57,9 +64,15 @@ public final class ProfileManager {
         return CompletableFuture.supplyAsync(() -> {
             PlayerProfile profile = new PlayerProfile(playerUuid);
 
+            // Bump the generation for the new session, then capture it. A
+            // quit-flush completion that lands during the DB read bumps it again,
+            // so installHydrated can tell its snapshot may be stale.
+            sessionGenerations.compute(playerUuid, (uuid, gen) -> (gen == null ? 0L : gen) + 1L);
+            long hydrationGeneration = sessionGenerations.getOrDefault(playerUuid, 0L);
+
             if (!databaseManager.isInitialized()) {
                 profile.markInitialized();
-                installHydrated(playerUuid, profile);
+                installHydrated(playerUuid, profile, hydrationGeneration);
                 return profile;
             }
 
@@ -91,17 +104,17 @@ public final class ProfileManager {
             loadPreferences(profile, playerUuid);
             profile.markInitialized();
 
-            installHydrated(playerUuid, profile);
+            installHydrated(playerUuid, profile, hydrationGeneration);
             return profile;
         });
     }
 
-    private void installHydrated(UUID playerUuid, PlayerProfile hydrated) {
-        // Bump the session generation so an in-flight quit-flush completion knows a
-        // new session began. A reconnect keeps the same dirty instance in the map
-        // (below), so identity alone cannot tell the completion apart from the old
-        // session; the generation can.
-        sessionGenerations.compute(playerUuid, (uuid, gen) -> (gen == null ? 0L : gen) + 1L);
+    private void installHydrated(UUID playerUuid, PlayerProfile hydrated, long hydrationGeneration) {
+        // If the generation changed while this hydration read the DB, an in-flight
+        // quit-flush completed mid-read: the snapshot predates that flush's write
+        // and is stale relative to the live profile. Capture that before the
+        // compute so the replace decision below can keep the live profile.
+        boolean snapshotMayBeStale = sessionGenerations.getOrDefault(playerUuid, 0L) != hydrationGeneration;
         profiles.compute(playerUuid, (uuid, existing) -> {
             if (existing == null) {
                 return hydrated;
@@ -109,7 +122,14 @@ public final class ProfileManager {
             if (existing.isInitialized()) {
                 // A dirty in-memory profile holds mutations the DB snapshot does
                 // not contain; never clobber it with the snapshot.
-                return existing.isDirty() ? existing : hydrated;
+                if (existing.isDirty()) {
+                    return existing;
+                }
+                // A clean profile was already flushed, so the snapshot is normally
+                // equivalent. But if a quit-flush completed while this hydration
+                // read the DB, the snapshot may predate that flush's write; keep
+                // the live profile rather than replacing it with stale data.
+                return snapshotMayBeStale ? existing : hydrated;
             }
             // The existing profile is an uninitialized best-effort placeholder whose
             // values are session-only and never persisted (see getDirtyProfiles).
@@ -135,12 +155,13 @@ public final class ProfileManager {
      * Installs an in-memory-only placeholder profile for a player whose hydration
      * failed, without disturbing any existing profile. The placeholder stays
      * uninitialized and is therefore never persisted by the write-behind flush.
+     * The session generation was already bumped at hydration start, so the
+     * placeholder needs no additional bump.
      *
      * @param playerUuid  the player's UUID
      * @param placeholder the uninitialized placeholder profile
      */
     private void installPlaceholder(UUID playerUuid, PlayerProfile placeholder) {
-        sessionGenerations.compute(playerUuid, (uuid, gen) -> (gen == null ? 0L : gen) + 1L);
         profiles.putIfAbsent(playerUuid, placeholder);
     }
 
@@ -154,6 +175,20 @@ public final class ProfileManager {
      */
     public long sessionGeneration(UUID playerUuid) {
         return sessionGenerations.getOrDefault(playerUuid, 0L);
+    }
+
+    /**
+     * Signals that a quit-flush for the previous session completed while the
+     * player reconnected. Bumps the session generation so any rejoin hydration
+     * whose DB read began before this flush finished — and therefore holds a
+     * snapshot that predates the flush's write — detects the change in
+     * {@link #installHydrated} and does not replace the live, already-flushed
+     * profile with that stale snapshot.
+     *
+     * @param playerUuid the player's UUID
+     */
+    public void noteFlushCompleted(UUID playerUuid) {
+        sessionGenerations.compute(playerUuid, (uuid, gen) -> (gen == null ? 0L : gen) + 1L);
     }
 
     /**

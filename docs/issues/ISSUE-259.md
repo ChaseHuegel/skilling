@@ -6,8 +6,8 @@
 - **Severity:** High — data loss. The session-generation guard covers eviction but not the install/replace decision.
 
 ## Implementation Requirements
-- [ ] Prevent `installHydrated` from replacing a clean initialized profile with a stale DB snapshot while that profile's quit-flush is still in flight (e.g. capture the session generation at hydration start and skip the replace when it changed, or coordinate per-UUID so hydration and quit-flush serialize).
-- [ ] Add a unit test that simulates hydration racing an in-flight flush and asserts the newer in-memory XP is not clobbered by the DB snapshot.
+- [x] Prevent `installHydrated` from replacing a clean initialized profile with a stale DB snapshot while that profile's quit-flush is still in flight (e.g. capture the session generation at hydration start and skip the replace when it changed, or coordinate per-UUID so hydration and quit-flush serialize).
+- [x] Add a unit test that simulates hydration racing an in-flight flush and asserts the newer in-memory XP is not clobbered by the DB snapshot.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -19,6 +19,6 @@
 - **Constraints:** Do not break the existing dirty-protection semantics: a *dirty* in-memory profile must still never be replaced by the snapshot. Reuse the existing `sessionGenerations` mechanism rather than adding a second concurrency model.
 
 ## Verification & Definition of Done
-- [ ] Rejoin-during-quit-flush never results in the DB snapshot overwriting newer in-memory XP.
-- [ ] Dirty-profile protection still holds.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Rejoin-during-quit-flush never results in the DB snapshot overwriting newer in-memory XP.
+- [x] Dirty-profile protection still holds.
+- [x] `./gradlew build` and `./gradlew test` pass.

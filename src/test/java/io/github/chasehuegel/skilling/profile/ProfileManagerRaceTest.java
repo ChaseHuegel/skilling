@@ -142,6 +142,68 @@ class ProfileManagerRaceTest {
     }
 
     @Test
+    void rejoinHydrationDoesNotClobberXpWithInFlightQuitFlush() throws Exception {
+        DatabaseManager db = mock(DatabaseManager.class);
+        when(db.isInitialized()).thenReturn(true);
+        ProfileManager manager = new ProfileManager(db);
+        UUID uuid = UUID.randomUUID();
+
+        Connection conn = mock(Connection.class);
+        PreparedStatement stmt = mock(PreparedStatement.class);
+        ResultSet rs = mock(ResultSet.class);
+        doReturn(conn).when(db).getConnection();
+        when(conn.prepareStatement(anyString())).thenReturn(stmt);
+        when(stmt.executeQuery()).thenReturn(rs);
+
+        // First session: persisted XP is 100 for mining.
+        when(rs.next()).thenReturn(true, false);
+        when(rs.getString("skill_id")).thenReturn("mining");
+        when(rs.getLong("xp")).thenReturn(100L);
+        when(rs.getInt("fanfare_pending")).thenReturn(0);
+
+        PlayerProfile profile = manager.loadProfile(uuid).join();
+        assertEquals(100L, profile.getXp("mining"));
+
+        // The player earns more XP, then quits: the quit-flush writes the newer
+        // value and marks the profile clean.
+        profile.addXp("mining", 20);
+        profile.markSaved(profile.getModCount());
+
+        // Rejoin hydration reads a STALE snapshot (the DB read races the flush's
+        // write and the mock never saw the +20). Pause the read mid-result-set so
+        // the test can simulate the flush completing while the read is in flight.
+        java.util.concurrent.CountDownLatch readStarted = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch releaseRead = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicInteger row = new java.util.concurrent.atomic.AtomicInteger();
+        when(rs.next()).thenAnswer(inv -> {
+            if (row.getAndIncrement() == 0) {
+                return true; // the stale persisted row (100)
+            }
+            readStarted.countDown();
+            try {
+                releaseRead.await(5, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return false; // end of result set
+        });
+
+        java.util.concurrent.CompletableFuture<PlayerProfile> rejoin = manager.loadProfile(uuid);
+        assertTrue(readStarted.await(5, java.util.concurrent.TimeUnit.SECONDS),
+                "rejoin hydration must start reading before the flush completes");
+        // The in-flight quit-flush completes while the hydration holds the stale row.
+        manager.noteFlushCompleted(uuid);
+        releaseRead.countDown();
+        rejoin.join();
+
+        // The newer in-memory XP (120) must win over the stale snapshot (100).
+        assertSame(profile, manager.getProfile(uuid),
+                "the live profile must win over a stale DB snapshot");
+        assertEquals(120L, manager.getProfile(uuid).getXp("mining"),
+                "newer in-memory XP must not be clobbered by the stale snapshot");
+    }
+
+    @Test
     void loadProfileInstallsInitializedProfile() {
         ProfileManager manager = newManager();
         UUID uuid = UUID.randomUUID();
