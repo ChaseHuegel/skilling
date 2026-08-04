@@ -48,6 +48,8 @@ class YieldMultiplierMechanicTest {
         var drop = mock(ItemStack.class);
         when(drop.isEmpty()).thenReturn(false);
         when(drop.getAmount()).thenReturn(1);
+        when(drop.getMaxStackSize()).thenReturn(64);
+        when(drop.clone()).thenReturn(drop);
         when(block.getDrops(any())).thenReturn(List.of(drop));
 
         var world = mock(World.class);
@@ -60,6 +62,35 @@ class YieldMultiplierMechanicTest {
         verify(event).setDropItems(false);
         verify(drop).setAmount(2);
         verify(world).dropItemNaturally(any(Location.class), eq(drop));
+    }
+
+    @Test
+    void doublingBeyondStackCapSpawnsRemainderStack() {
+        var mechanic = new YieldMultiplierMechanic();
+        var player = BukkitMock.mockPlayer();
+        var event = BukkitMock.mockBlockBreakEvent();
+        var block = mock(Block.class);
+        when(event.getBlock()).thenReturn(block);
+
+        var drop = mock(ItemStack.class);
+        when(drop.isEmpty()).thenReturn(false);
+        when(drop.getAmount()).thenReturn(40);
+        when(drop.getMaxStackSize()).thenReturn(64);
+        when(drop.clone()).thenAnswer(inv -> {
+            var clone = mock(ItemStack.class);
+            when(clone.getMaxStackSize()).thenReturn(64);
+            return clone;
+        });
+        when(block.getDrops(any())).thenReturn(List.of(drop));
+
+        var world = mock(World.class);
+        when(block.getWorld()).thenReturn(world);
+        when(block.getLocation()).thenReturn(new Location(world, 1, 2, 3));
+
+        assertTrue(mechanic.execute(player, Map.of("yield_chance", 100.0), event));
+
+        // 40 * 2 = 80 -> a 64-stack plus a 16-stack remainder, never a stack > 64.
+        verify(world, org.mockito.Mockito.times(2)).dropItemNaturally(any(Location.class), any(ItemStack.class));
     }
 
     @Test

@@ -19,7 +19,9 @@ public final class SaturationInjectMechanic implements SkillMechanic {
         if (!(event instanceof PlayerItemConsumeEvent)) return false;
         double saturation = ((Number) params.getOrDefault("saturation", 0.0)).doubleValue();
         if (saturation <= 0) return false;
-        player.setSaturation(player.getSaturation() + (float) saturation);
+        // Clamp to the vanilla saturation cap (20, matching the hunger bar).
+        float capped = Math.min(player.getSaturation() + (float) saturation, 20.0f);
+        player.setSaturation(capped);
         return true;
     }
 }

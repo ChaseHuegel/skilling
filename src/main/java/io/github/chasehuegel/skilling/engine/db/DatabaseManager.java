@@ -26,6 +26,9 @@ public final class DatabaseManager {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:sqlite:" + new File(dataFolder, "data.db").getAbsolutePath());
         hikariConfig.setMaximumPoolSize(poolSize);
+        // foreign_keys is a per-connection pragma in SQLite, so run it on every
+        // pooled connection instead of just the bootstrap one.
+        hikariConfig.setConnectionInitSql("PRAGMA foreign_keys = ON;");
         hikariConfig.setConnectionTestQuery("SELECT 1");
         hikariConfig.setPoolName("skilling-pool");
 
@@ -45,13 +48,9 @@ public final class DatabaseManager {
                     }
                 }
             }
-            try (var stmt = conn.createStatement()) {
-                stmt.execute("PRAGMA foreign_keys = ON;");
-            }
             createSchema(conn);
         }
     }
-
     private void createSchema(Connection conn) throws SQLException {
         try (var stmt = conn.createStatement()) {
             stmt.execute("""

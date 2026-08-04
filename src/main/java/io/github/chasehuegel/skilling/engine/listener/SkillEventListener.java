@@ -248,11 +248,11 @@ public final class SkillEventListener implements Listener {
     }
 
     private void dispatchToNearby(Event event, org.bukkit.Location location, String triggerKey) {
-        if (location.getWorld() != null) {
-            var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
-            for (Player player : players) {
-                dispatch(player, event, triggerKey);
-            }
+        // BrewEvent.getContents().getLocation() can be null; nothing to do without a world.
+        if (location == null || location.getWorld() == null) return;
+        var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
+        for (Player player : players) {
+            dispatch(player, event, triggerKey);
         }
     }
 
@@ -263,6 +263,9 @@ public final class SkillEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
+        // Skip the off-hand duplicate of a two-handed interaction so a right-click
+        // with items in both hands fires the ability / XP source once, not twice.
+        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
         dispatch(event.getPlayer(), event, "player_interact");
     }
 
@@ -327,11 +330,15 @@ public final class SkillEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSprint(org.bukkit.event.player.PlayerToggleSprintEvent event) {
+        // Fire only when sprinting starts, not on release.
+        if (!event.isSprinting()) return;
         dispatch(event.getPlayer(), event, "sprint");
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSneak(org.bukkit.event.player.PlayerToggleSneakEvent event) {
+        // Fire only when sneaking starts, not on release.
+        if (!event.isSneaking()) return;
         dispatch(event.getPlayer(), event, "sneak");
     }
 
@@ -507,8 +514,6 @@ public final class SkillEventListener implements Listener {
                 debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey
                         + ") base=" + reward + " scalar=" + scalar + " global=" + global
                         + " xpBonus=" + xpBonus);
-                plugin.getLogger().info(player.getName() + " earned " + rounded
-                        + " XP in " + skill.id() + " (" + triggerKey + ")");
             }
         }
     }

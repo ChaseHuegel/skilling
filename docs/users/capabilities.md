@@ -690,13 +690,13 @@ attribute: { constant: "minecraft:movement_speed" }
 | `furnace_extract` | `FurnaceExtractEvent` | Extracting from a furnace |
 | `brew_potion` | `BrewEvent` | A brewing stand finishes brewing a batch |
 | `brew_start` | `BrewingStartEvent` | A brewing stand begins a new brewing cycle |
-| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click). A `target` filter matches the clicked block on right-click; left-clicks and air interactions never match a block target |
+| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) with the main hand only — the off-hand duplicate of a two-handed interaction is skipped so abilities fire once. A `target` filter matches the clicked block on right-click; left-clicks and air interactions never match a block target |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
 | `fishing` | `PlayerFishEvent` | Successfully catching a fish (only the `CAUGHT_FISH` state dispatches; casts, bites, reels, and failed attempts do not) |
 | `crop_grow` | `BlockGrowEvent` | Natural crop growth |
 | `breed_animals` | `EntityBreedEvent` | Breeding animals |
-| `sprint` | `PlayerToggleSprintEvent` | Player starts/stops sprinting |
-| `sneak` | `PlayerToggleSneakEvent` | Player starts/stops sneaking |
+| `sprint` | `PlayerToggleSprintEvent` | Player starts sprinting (release is not a trigger) |
+| `sneak` | `PlayerToggleSneakEvent` | Player starts sneaking (release is not a trigger) |
 | `ride_horse` | `VehicleEnterEvent` | Player mounts a vehicle |
 | `collect_xp` | `PlayerExpChangeEvent` | Collecting vanilla XP orbs |
 | `level_up` | `SkillingLevelUpEvent` | A Skilling skill levels up |

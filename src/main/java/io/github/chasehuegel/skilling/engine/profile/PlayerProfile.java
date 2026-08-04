@@ -130,7 +130,11 @@ public final class PlayerProfile implements PlayerProfileView {
      * @param amount  the amount to add
      */
     public void addXp(String skillId, long amount) {
-        xpMap.merge(skillId, amount, Long::sum);
+        xpMap.merge(skillId, amount, (old, added) -> {
+            long sum = old + added;
+            // Saturate instead of wrapping to a negative value on overflow.
+            return sum < 0 ? Long.MAX_VALUE : sum;
+        });
         modCount.incrementAndGet();
     }
 

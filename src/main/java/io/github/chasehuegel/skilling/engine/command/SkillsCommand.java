@@ -67,7 +67,7 @@ public final class SkillsCommand {
                             ? ctx.exception().getCause().getMessage()
                             : ctx.exception().getMessage();
                     ctx.context().sender().source().sendMessage(
-                            MINI_MESSAGE.deserialize("<red>" + (msg != null ? msg : "Invalid argument")));
+                            MINI_MESSAGE.deserialize("<red>" + MINI_MESSAGE.escapeTags(msg != null ? msg : "Invalid argument")));
                 });
 
         var skills = commandManager.commandBuilder("skills");

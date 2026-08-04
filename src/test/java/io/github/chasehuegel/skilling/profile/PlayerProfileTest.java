@@ -22,6 +22,15 @@ class PlayerProfileTest {
     }
 
     @Test
+    void addXpSaturatesInsteadOfOverflowing() {
+        var profile = new PlayerProfile(UUID.randomUUID());
+        profile.setXp("mining", Long.MAX_VALUE - 1);
+        profile.addXp("mining", 100);
+        assertEquals(Long.MAX_VALUE, profile.getXp("mining"),
+                "XP must saturate at Long.MAX_VALUE, never wrap negative");
+    }
+
+    @Test
     void setXpMarksDirty() {
         var profile = new PlayerProfile(UUID.randomUUID());
         profile.setXp("mining", 200);

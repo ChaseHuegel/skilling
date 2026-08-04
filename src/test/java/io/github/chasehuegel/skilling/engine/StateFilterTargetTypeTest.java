@@ -146,4 +146,24 @@ class StateFilterTargetTypeTest {
         assertTrue(registry.evaluate("player_placed", player, placed, "true"));
         assertFalse(registry.evaluate("player_placed", player, natural, "true"));
     }
+
+    @Test
+    void timeFilterCoversTheWholeCycleWithoutGaps() {
+        var world = mock(org.bukkit.World.class);
+        when(player.getWorld()).thenReturn(world);
+
+        // Dusk (12300-12999) previously matched neither day nor night.
+        when(world.getTime()).thenReturn(12500L);
+        assertTrue(registry.evaluate("time", player, null, "day"));
+        assertFalse(registry.evaluate("time", player, null, "night"));
+
+        when(world.getTime()).thenReturn(13500L);
+        assertFalse(registry.evaluate("time", player, null, "day"));
+        assertTrue(registry.evaluate("time", player, null, "night"));
+
+        // The tail before midnight (23900-24000) was previously counted as day.
+        when(world.getTime()).thenReturn(23950L);
+        assertFalse(registry.evaluate("time", player, null, "day"));
+        assertTrue(registry.evaluate("time", player, null, "night"));
+    }
 }

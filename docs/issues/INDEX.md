@@ -23,7 +23,7 @@
 
 ### Improvements
 - [x] [ISSUE-214](ISSUE-214.md) - Reload and shutdown must not block the Bukkit main thread
-- [ ] [ISSUE-219](ISSUE-219.md) - Hot-path logging and low-severity correctness polish
+- [x] [ISSUE-219](ISSUE-219.md) - Hot-path logging and low-severity correctness polish
 
 ### Research
 

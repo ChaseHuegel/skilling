@@ -28,7 +28,9 @@ public final class FishingLootMechanic implements SkillMechanic {
         if (!(fishEvent.getCaught() instanceof Item caught)) return false;
 
         ItemStack stack = caught.getItemStack();
-        int newAmount = (int) Math.round(stack.getAmount() * multiplier);
+        // Floor the multiplied amount so a fractional multiplier on a small stack
+        // never inflates the caught count (rounding 1 fish x 1.5 to 2 was wrong).
+        int newAmount = (int) (stack.getAmount() * multiplier);
         if (newAmount > stack.getAmount()) {
             int extra = newAmount - stack.getAmount();
             ItemStack bonus = stack.clone();

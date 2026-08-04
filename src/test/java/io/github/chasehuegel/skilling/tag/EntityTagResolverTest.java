@@ -107,6 +107,21 @@ class EntityTagResolverTest {
     }
 
     @Test
+    void emptyVanillaTagResolvesToEmptySetNotThrow() {
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            @SuppressWarnings("unchecked")
+            Tag<EntityType> tag = mock(Tag.class);
+            when(tag.getValues()).thenReturn(Set.of());
+            when(Bukkit.getTag(anyString(), any(NamespacedKey.class), eq(EntityType.class)))
+                    .thenReturn(tag);
+
+            var resolver = new EntityTagResolver(new CustomTagLoader());
+            assertTrue(resolver.resolve("#minecraft:empty_tag").isEmpty(),
+                    "an empty vanilla tag must resolve to an empty set, not throw");
+        }
+    }
+
+    @Test
     void repeatedEntityResolutionIsCached() {
         var resolver = new EntityTagResolver(new CustomTagLoader());
         resolver.resolve("minecraft:zombie");

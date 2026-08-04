@@ -30,12 +30,17 @@ public final class YieldMultiplierMechanic implements SkillMechanic {
             breakEvent.setDropItems(false);
             Collection<ItemStack> drops = breakEvent.getBlock().getDrops(player.getInventory().getItemInMainHand());
             for (ItemStack drop : drops) {
-                if (!drop.isEmpty()) {
-                    drop.setAmount(drop.getAmount() * 2);
-                    breakEvent.getBlock().getWorld().dropItemNaturally(
-                            breakEvent.getBlock().getLocation().add(0.5, 0.5, 0.5),
-                            drop
-                    );
+                if (drop.isEmpty()) continue;
+                // Clamp each doubled stack to the stack-size cap, dropping the
+                // remainder as an extra stack so a doubling never exceeds 64.
+                int remaining = drop.getAmount() * 2;
+                int maxStack = drop.getMaxStackSize();
+                var location = breakEvent.getBlock().getLocation().add(0.5, 0.5, 0.5);
+                while (remaining > 0) {
+                    ItemStack toDrop = drop.clone();
+                    toDrop.setAmount(Math.min(remaining, maxStack));
+                    breakEvent.getBlock().getWorld().dropItemNaturally(location, toDrop);
+                    remaining -= Math.min(remaining, maxStack);
                 }
             }
         }

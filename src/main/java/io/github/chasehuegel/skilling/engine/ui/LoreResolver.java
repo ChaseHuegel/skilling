@@ -46,8 +46,12 @@ public final class LoreResolver {
             String replacement;
 
             if (evaluator != null) {
-                double value = evaluator.evaluate(currentLevel, unlockLevel);
-                replacement = formatValue(value);
+                if (evaluator instanceof io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator cve) {
+                    replacement = String.valueOf(cve.value());
+                } else {
+                    double value = evaluator.evaluate(currentLevel, unlockLevel);
+                    replacement = formatValue(value);
+                }
             } else {
                 var instance = io.github.chasehuegel.skilling.Skilling.getInstance();
                 if (instance != null) {

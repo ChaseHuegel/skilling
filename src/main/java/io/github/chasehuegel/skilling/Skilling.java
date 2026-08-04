@@ -336,10 +336,16 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:dodge", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:lifesteal", LifestealMechanic.class, List.of("percentage"));
-        mechReg.register("core:armor_bonus", ArmorBonusMechanic.class, List.of("amount"),
-                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
-        mechReg.register("core:knockback_resist", KnockbackResistMechanic.class, List.of("amount"),
-                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
+        mechReg.register("core:armor_bonus", ArmorBonusMechanic.class, List.of("amount", "duration"),
+                (ctx, p) -> {
+                    MechanicParamValidators.nonNegative(ctx, p, "amount");
+                    MechanicParamValidators.nonNegative(ctx, p, "duration");
+                });
+        mechReg.register("core:knockback_resist", KnockbackResistMechanic.class, List.of("amount", "duration"),
+                (ctx, p) -> {
+                    MechanicParamValidators.nonNegative(ctx, p, "amount");
+                    MechanicParamValidators.nonNegative(ctx, p, "duration");
+                });
         mechReg.register("core:crowd_control", CrowdControlMechanic.class, List.of("effect", "duration", "amplifier", "radius"),
                 (ctx, p) -> {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");
@@ -459,8 +465,11 @@ public final class Skilling extends JavaPlugin {
         });
 
         sf.register("time", (p, e, v) -> switch (v) {
-            case "day" -> p.getWorld().getTime() < 12300 || p.getWorld().getTime() > 23900;
-            case "night" -> p.getWorld().getTime() >= 13000 && p.getWorld().getTime() <= 23900;
+            // Day spans ticks [0, 13000) (dawn through dusk); night is [13000, 24000).
+            // The halves are non-overlapping and leave no dusk gap (previously
+            // 12300-12999 matched neither).
+            case "day" -> p.getWorld().getTime() < 13000;
+            case "night" -> p.getWorld().getTime() >= 13000;
             default -> false;
         });
 

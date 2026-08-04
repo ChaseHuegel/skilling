@@ -111,7 +111,10 @@ public final class EntityTagResolver {
             if (tag == null) {
                 throw new IllegalArgumentException("Unknown vanilla entity tag: #minecraft:" + key);
             }
-            return EnumSet.copyOf(tag.getValues());
+            // EnumSet.copyOf throws on an empty collection; addAll handles it.
+            EnumSet<EntityType> result = EnumSet.noneOf(EntityType.class);
+            result.addAll(tag.getValues());
+            return result;
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (RuntimeException e) {
