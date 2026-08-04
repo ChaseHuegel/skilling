@@ -19,17 +19,32 @@ import org.bukkit.inventory.meta.Damageable;
  * interactions, and empty-hand actions never trigger it. The durability decrement
  * is written back to the off-hand slot, and an air/unbreakable off-hand is a no-op.
  *
+ * <p>The raycast is gated by the {@code targets} filter and never strikes another
+ * player or the caster, so a cheap right-click cannot damage players across a
+ * room. The {@code reach} and {@code multiplier} params are clamped at execution
+ * time so level-scaled evaluator outputs stay bounded too.
+ *
  * <p>YAML key: {@code core:offhand_strike}
  * <br>Params:
  * <ul>
- *   <li>{@code multiplier} (double, optional, default 1.0) — scales the off-hand base damage</li>
- *   <li>{@code reach} (double, optional, default 4) — maximum raycast distance in blocks</li>
+ *   <li>{@code multiplier} (double, optional, default 1.0) — scales the off-hand
+ *       base damage (clamped to [0, 4])</li>
+ *   <li>{@code reach} (double, optional, default 4) — maximum raycast distance in
+ *       blocks (clamped to [0, 4.5])</li>
+ *   <li>{@code targets} (string, optional, default {@code hostiles}) — which
+ *       living entities may be struck; other players are never struck</li>
  * </ul>
  *
  * <p>Requires {@link PlayerInteractEvent}. The {@link #BASE_DAMAGE} table maps vanilla
  * weapon materials to their base attack damage; unarmed off-hand defaults to 1.0.
  */
 public final class OffhandStrikeMechanic implements SkillMechanic {
+
+    /** Vanilla survival attack reach, so the raycast cannot hit across a room. */
+    static final double MAX_REACH = 4.5;
+
+    /** Sane damage-multiplier cap so a level-scaled multiplier cannot one-shot. */
+    static final double MAX_MULTIPLIER = 4.0;
 
     static final Map<Material, Double> BASE_DAMAGE = Map.ofEntries(
             Map.entry(Material.WOODEN_SWORD, 4.0),
@@ -59,9 +74,10 @@ public final class OffhandStrikeMechanic implements SkillMechanic {
                 && action != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return false;
         if (interactEvent.useItemInHand() == org.bukkit.event.Event.Result.DENY) return false;
 
-        double multiplier = ((Number) params.getOrDefault("multiplier", 1.0)).doubleValue();
+        double multiplier = clampMultiplier(((Number) params.getOrDefault("multiplier", 1.0)).doubleValue());
         if (multiplier <= 0) return false;
-        double reach = ((Number) params.getOrDefault("reach", 4.0)).doubleValue();
+        double reach = clampReach(((Number) params.getOrDefault("reach", 4.0)).doubleValue());
+        String targets = String.valueOf(params.getOrDefault("targets", "hostiles"));
 
         ItemStack offhand = player.getInventory().getItemInOffHand();
         if (offhand == null || offhand.getType() == Material.AIR) return false;
@@ -70,6 +86,9 @@ public final class OffhandStrikeMechanic implements SkillMechanic {
 
         Entity target = player.getTargetEntity((int) reach);
         if (!(target instanceof LivingEntity livingTarget)) return false;
+        // PvP protection: never strike another player, and honor the targets filter.
+        if (livingTarget instanceof Player) return false;
+        if (!AuraTargetFilter.accepts(targets, livingTarget)) return false;
 
         double dmg = baseDamage(offhand.getType()) * multiplier;
         livingTarget.damage(dmg, player);
@@ -80,6 +99,14 @@ public final class OffhandStrikeMechanic implements SkillMechanic {
         // invalid damage state.
         ToolDurability.damageOnce(player, offhand, org.bukkit.inventory.EquipmentSlot.OFF_HAND);
         return true;
+    }
+
+    static double clampReach(double reach) {
+        return Math.max(0.0, Math.min(reach, MAX_REACH));
+    }
+
+    static double clampMultiplier(double multiplier) {
+        return Math.max(0.0, Math.min(multiplier, MAX_MULTIPLIER));
     }
 
     /**

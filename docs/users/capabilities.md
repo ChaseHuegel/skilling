@@ -327,14 +327,15 @@ Triggers the vanilla shield raise-lockout cooldown on a target player, rendering
 
 ### core:offhand_strike
 
-Deals a melee hit using the base attack damage of the off-hand weapon to the entity the player is looking at, consuming 1 off-hand durability.
+Deals a melee hit using the base attack damage of the off-hand weapon to the entity the player is looking at, consuming 1 off-hand durability. Targets are gated by the `targets` filter, and other players are never struck.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `multiplier` | double | `1.0` | Scales the off-hand weapon's base damage |
-| `reach` | double | `4` | Maximum targeting distance in blocks |
+| `multiplier` | double | `1.0` | Scales the off-hand weapon's base damage, clamped to [0, 4] |
+| `reach` | double | `4` | Maximum targeting distance in blocks, clamped to [0, 4.5] |
+| `targets` | string | `hostiles` | Which living entities may be struck: `hostiles` (default, monsters and angered neutrals), `allies`, or `all`; players are always excluded |
 
 **Event:** `PlayerInteractEvent`
 

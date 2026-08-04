@@ -138,7 +138,7 @@ class OffhandStrikeMechanicTest {
         when(offhand.getItemMeta()).thenReturn(meta);
         when(inv.getItemInOffHand()).thenReturn(offhand);
 
-        var target = mock(LivingEntity.class);
+        var target = mock(org.bukkit.entity.Monster.class);
         when(player.getTargetEntity(4)).thenReturn(target);
 
         try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {

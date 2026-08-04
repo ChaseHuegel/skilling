@@ -325,7 +325,7 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
         mechReg.register("core:shield_disable", ShieldDisableMechanic.class, List.of("ticks"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "ticks"));
-        mechReg.register("core:offhand_strike", OffhandStrikeMechanic.class, List.of("multiplier", "reach"));
+        mechReg.register("core:offhand_strike", OffhandStrikeMechanic.class, List.of("multiplier", "reach", "targets"));
         mechReg.register("core:set_cooldown", SetCooldownMechanic.class, List.of("material", "ticks"),
                 (ctx, p) -> {
                     MechanicParamValidators.material(ctx, p, "material");
