@@ -2,7 +2,6 @@ package io.github.chasehuegel.skilling.engine;
 
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
-import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.LinearEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.MilestoneEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.PolynomialEvaluator;
@@ -565,8 +564,7 @@ public final class SkillManager {
      * @return the constant string/number, or null
      */
     private static Object constantValueOf(ParameterEvaluator evaluator) {
-        if (evaluator instanceof ConstantValueEvaluator cve) return cve.value();
-        if (evaluator instanceof ConstantEvaluator ce) return ce.evaluate(0, 1);
+        if (evaluator instanceof ConstantEvaluator ce) return ce.rawValue();
         return null;
     }
 
@@ -639,7 +637,7 @@ public final class SkillManager {
             if (val instanceof Number n) {
                 return new ConstantEvaluator(n.doubleValue());
             }
-            return new ConstantValueEvaluator(String.valueOf(val));
+            return new ConstantEvaluator(String.valueOf(val));
         }
 
         // Check for known evaluator type keys
@@ -649,14 +647,14 @@ public final class SkillManager {
                 return new ConstantEvaluator(n.doubleValue());
             }
             if (val instanceof String s) {
-                return new ConstantValueEvaluator(s);
+                return new ConstantEvaluator(s);
             }
             Map<String, Object> nested = castMap(val);
             Object nestedValue = nested.getOrDefault("value", 0.0);
             if (nestedValue instanceof Number n) {
                 return new ConstantEvaluator(n.doubleValue());
             }
-            return new ConstantValueEvaluator(String.valueOf(nestedValue));
+            return new ConstantEvaluator(String.valueOf(nestedValue));
         }
 
         if (map.containsKey("linear")) {

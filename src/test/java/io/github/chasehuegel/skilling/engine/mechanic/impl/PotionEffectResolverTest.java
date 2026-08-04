@@ -66,10 +66,10 @@ class PotionEffectResolverTest {
 
     @Test
     void stringConstantFromEvaluatorPassesKeyThroughRegistryLookup() {
-        var evaluator = new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator("minecraft:slowness");
+        var evaluator = new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator("minecraft:slowness");
         List<NamespacedKey> seen = new ArrayList<>();
         assertThrows(IllegalArgumentException.class,
-                () -> PotionEffectResolver.resolve(evaluator.value(), key -> {
+                () -> PotionEffectResolver.resolve((String) evaluator.rawValue(), key -> {
                     seen.add(key);
                     return null;
                 }));

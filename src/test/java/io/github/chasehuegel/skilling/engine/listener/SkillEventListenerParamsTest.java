@@ -2,7 +2,6 @@ package io.github.chasehuegel.skilling.engine.listener;
 
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
-import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -24,7 +23,7 @@ class SkillEventListenerParamsTest {
         var entry = new SkillDefinition.MechanicEntry(
                 "core:apply_status",
                 List.of(),
-                Map.of("effect", new ConstantValueEvaluator("minecraft:poison"))
+                Map.of("effect", new ConstantEvaluator("minecraft:poison"))
         );
         Map<String, Object> params = SkillEventListener.evaluateParams(entry, 10, 1);
         assertEquals("minecraft:poison", params.get("effect"));

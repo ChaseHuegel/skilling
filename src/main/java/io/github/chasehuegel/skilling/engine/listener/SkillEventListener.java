@@ -4,7 +4,7 @@ import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
-import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
@@ -875,8 +875,10 @@ public final class SkillEventListener implements Listener {
         Map<String, Object> result = new HashMap<>();
         for (var paramEntry : entry.parameters().entrySet()) {
             ParameterEvaluator evaluator = paramEntry.getValue();
-            if (evaluator instanceof ConstantValueEvaluator raw) {
-                result.put(paramEntry.getKey(), raw.value());
+            if (evaluator instanceof ConstantEvaluator constant) {
+                // A string-valued constant (e.g. an effect key) is emitted
+                // verbatim; a numeric constant carries its number.
+                result.put(paramEntry.getKey(), constant.rawValue());
             } else {
                 result.put(paramEntry.getKey(), evaluator.evaluate(level, unlockLevel));
             }

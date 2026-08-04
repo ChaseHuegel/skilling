@@ -239,7 +239,7 @@ public final class SkillMenuBuilder {
             Map<String, ParameterEvaluator> skillParams = Map.of(
                 "level", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(level),
                 "max_level", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(skill.maxLevel()),
-                "skill_name", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator(
+                "skill_name", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(
                         skill.display().name()),
                 "xp", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(currentXp)
             );

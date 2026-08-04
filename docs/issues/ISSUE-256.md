@@ -6,9 +6,9 @@
 - **Severity:** Low (maintainability) — the API `ConstantEvaluator` (double) and the engine `ConstantValueEvaluator` (string) both document YAML key `constant`, and code special-cases them at four+ sites (`SkillEventListener.evaluateParams:878`, `SkillManager.constantValueOf:541-545`, `LoreResolver:49`, `SkillMenuBuilder:240-244`), which is easy to mishandle in future code.
 
 ## Implementation Requirements
-- [ ] Collapse to one evaluator (e.g. have `ConstantEvaluator` carry a `double` and a string variant, or make the constant evaluator polymorphic) and remove the special-casing at every use site so constant parameters flow through the generic `evaluate(...)` path.
-- [ ] Ensure `ConstantValueEvaluator`'s string value (e.g. namespaced effect keys) survives the round-trip through `SkillManager.constantValueOf` for load-time validation and the web serializer.
-- [ ] Add tests covering constant string-valued parameters (effect keys) end-to-end.
+- [x] Collapse to one evaluator (e.g. have `ConstantEvaluator` carry a `double` and a string variant, or make the constant evaluator polymorphic) and remove the special-casing at every use site so constant parameters flow through the generic `evaluate(...)` path.
+- [x] Ensure `ConstantValueEvaluator`'s string value (e.g. namespaced effect keys) survives the round-trip through `SkillManager.constantValueOf` for load-time validation and the web serializer.
+- [x] Add tests covering constant string-valued parameters (effect keys) end-to-end.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -22,6 +22,6 @@
 - **Constraints:** Greenfield — no compat obligation; the web serializer round-trip tests must keep passing.
 
 ## Verification & Definition of Done
-- [ ] One constant-evaluator contract; no `instanceof ConstantValueEvaluator` special-cases remain.
-- [ ] String-valued constant parameters still round-trip through load validation and the web GUI.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] One constant-evaluator contract; no `instanceof ConstantValueEvaluator` special-cases remain.
+- [x] String-valued constant parameters still round-trip through load validation and the web GUI.
+- [x] `./gradlew build` and `./gradlew test` pass.

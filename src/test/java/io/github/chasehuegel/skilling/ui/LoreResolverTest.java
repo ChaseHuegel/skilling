@@ -77,7 +77,7 @@ class LoreResolverTest {
     @Test
     void stringEvaluatorPlaceholderResolvesVerbatim() {
         Map<String, ParameterEvaluator> evaluators = Map.of(
-                "skill_name", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantValueEvaluator("Mining")
+                "skill_name", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator("Mining")
         );
         String result = LoreResolver.resolve("Welcome to {skill_name}!", evaluators, 50, 15);
         assertEquals("Welcome to Mining!", result);
