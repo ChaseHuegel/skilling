@@ -7,7 +7,7 @@
 - [x] [ISSUE-232](ISSUE-232.md) - Bound and guard the knockback mechanic (unclamped impulse, radius, no friendly-fire check) [Severity: High]
 - [x] [ISSUE-233](ISSUE-233.md) - OffhandStrikeMechanic can damage any living entity, including other players [Severity: High]
 - [x] [ISSUE-234](ISSUE-234.md) - Enforce mechanic registered parameter lists at load (missing/string-valued params fail at runtime) [Severity: High]
-- [ ] [ISSUE-235](ISSUE-235.md) - Chain/level break off-by-one and durability waste on unbreakable blocks [Severity: High]
+- [x] [ISSUE-235](ISSUE-235.md) - Chain/level break off-by-one and durability waste on unbreakable blocks [Severity: High]
 - [ ] [ISSUE-236](ISSUE-236.md) - Validate XP-source trigger keys against the TriggerRegistry at load [Severity: Medium]
 - [ ] [ISSUE-237](ISSUE-237.md) - `%skilling_evaluator_%` placeholders break for skill IDs with underscores [Severity: Medium]
 - [ ] [ISSUE-238](ISSUE-238.md) - Fix the `linear` progression curve's level-1 threshold offset [Severity: Medium]

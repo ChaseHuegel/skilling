@@ -67,16 +67,18 @@ class ChainBreakMechanicTest {
     }
 
     @Test
-    void durabilityConsumedOncePerChainedBlock() {
+    void chainLimitCountsOriginSoChainsOneFewer() {
         var world = mock(World.class);
         var origin = block(world, 0, 0, 0, Material.STONE);
         var n1 = block(world, 1, 0, 0, Material.STONE);
         var n2 = block(world, -1, 0, 0, Material.STONE);
+        var n3 = block(world, 0, 1, 0, Material.STONE);
         var air = block(world, 99, 99, 99, Material.AIR);
 
         Map<Location, Block> neighbors = new HashMap<>();
         neighbors.put(n1.getLocation(), n1);
         neighbors.put(n2.getLocation(), n2);
+        neighbors.put(n3.getLocation(), n3);
         when(origin.getRelative(anyInt(), anyInt(), anyInt())).thenAnswer(inv -> {
             int dx = inv.getArgument(0), dy = inv.getArgument(1), dz = inv.getArgument(2);
             Location loc = new Location(world, dx, dy, dz);
@@ -84,6 +86,7 @@ class ChainBreakMechanicTest {
         });
         when(n1.getRelative(anyInt(), anyInt(), anyInt())).thenReturn(air);
         when(n2.getRelative(anyInt(), anyInt(), anyInt())).thenReturn(air);
+        when(n3.getRelative(anyInt(), anyInt(), anyInt())).thenReturn(air);
 
         var event = mock(BlockBreakEvent.class);
         when(event.getBlock()).thenReturn(origin);
@@ -100,19 +103,70 @@ class ChainBreakMechanicTest {
         when(meta.getDamage()).thenReturn(5);
         when(tool.getItemMeta()).thenReturn(meta);
         when(inv.getItemInMainHand()).thenReturn(tool);
+        when(n1.breakNaturally(tool)).thenReturn(true);
+        when(n2.breakNaturally(tool)).thenReturn(true);
+        when(n3.breakNaturally(tool)).thenReturn(true);
 
         var pluginManager = mock(org.bukkit.plugin.PluginManager.class);
         try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
             when(Bukkit.getPluginManager()).thenReturn(pluginManager);
 
-            new ChainBreakMechanic().execute(player, Map.of("chain_limit", 2), event);
+            // chain_limit 3 = origin + 2 chained blocks, so n3 must not break.
+            new ChainBreakMechanic().execute(player, Map.of("chain_limit", 3), event);
         }
 
-        // Two chained blocks were broken; the tool lost 1 durability each.
         verify(n1).breakNaturally(tool);
         verify(n2).breakNaturally(tool);
+        verify(n3, never()).breakNaturally(tool);
+        // Two chained blocks were broken; the tool lost 1 durability each.
         verify(meta, times(2)).setDamage(6);
         verify(inv, times(2)).setItemInMainHand(tool);
+    }
+
+    @Test
+    void failedChainBreakConsumesNoLimitOrDurability() {
+        var world = mock(World.class);
+        var origin = block(world, 0, 0, 0, Material.STONE);
+        var n1 = block(world, 1, 0, 0, Material.STONE);
+        var air = block(world, 99, 99, 99, Material.AIR);
+
+        Map<Location, Block> neighbors = new HashMap<>();
+        neighbors.put(n1.getLocation(), n1);
+        when(origin.getRelative(anyInt(), anyInt(), anyInt())).thenAnswer(inv -> {
+            int dx = inv.getArgument(0), dy = inv.getArgument(1), dz = inv.getArgument(2);
+            Location loc = new Location(world, dx, dy, dz);
+            return neighbors.getOrDefault(loc, air);
+        });
+        when(n1.getRelative(anyInt(), anyInt(), anyInt())).thenReturn(air);
+
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(origin);
+
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inv = mock(org.bukkit.inventory.PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inv);
+        var tool = mock(ItemStack.class);
+        var toolMaterial = mock(Material.class);
+        when(toolMaterial.getMaxDurability()).thenReturn((short) 100);
+        when(tool.getType()).thenReturn(toolMaterial);
+        var meta = mock(Damageable.class);
+        when(meta.getDamage()).thenReturn(5);
+        when(tool.getItemMeta()).thenReturn(meta);
+        when(inv.getItemInMainHand()).thenReturn(tool);
+        // The only chained block cannot be broken (e.g. unbreakable type).
+        when(n1.breakNaturally(tool)).thenReturn(false);
+
+        var pluginManager = mock(org.bukkit.plugin.PluginManager.class);
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getPluginManager()).thenReturn(pluginManager);
+
+            new ChainBreakMechanic().execute(player, Map.of("chain_limit", 10), event);
+        }
+
+        verify(n1).breakNaturally(tool);
+        verify(meta, never()).setDamage(anyInt());
+        verify(inv, never()).setItemInMainHand(tool);
     }
 
     @Test
@@ -150,6 +204,8 @@ class ChainBreakMechanicTest {
         when(meta.getDamage()).thenReturn(99);
         when(tool.getItemMeta()).thenReturn(meta);
         when(inv.getItemInMainHand()).thenReturn(tool);
+        when(n1.breakNaturally(tool)).thenReturn(true);
+        when(n2.breakNaturally(tool)).thenReturn(true);
 
         var pluginManager = mock(org.bukkit.plugin.PluginManager.class);
         try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
