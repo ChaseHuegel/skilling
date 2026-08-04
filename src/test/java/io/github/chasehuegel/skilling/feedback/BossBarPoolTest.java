@@ -25,6 +25,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class BossBarPoolTest {
@@ -171,6 +173,19 @@ class BossBarPoolTest {
 
         pool.removeAll(player);
         assertEquals(0, pool.size());
+    }
+
+    @Test
+    void removeAllHidesAndClearsEveryBar() {
+        var pool = new BossBarPool(5, 20);
+        pool.getOrCreate(player, "mining");
+        pool.getOrCreate(player, "woodcutting");
+        assertEquals(2, pool.size());
+
+        pool.removeAll();
+        assertEquals(0, pool.size());
+        // Every pooled bar is hidden so none survives a plugin disable.
+        verify(mockBar, times(2)).setVisible(false);
     }
 
     @Test

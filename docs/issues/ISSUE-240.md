@@ -6,8 +6,8 @@
 - **Severity:** Medium — two related lifecycle issues.
 
 ## Implementation Requirements
-- [ ] `Skilling.onDisable()` (`Skilling.java:651-676`) never hides the bars owned by `BossBarPool`; after `/reload` the old pool's bars stay registered and visible (frozen, since the tick loop is gone). Call `removeAll`/hide every pooled bar in `onDisable()` before shutdown.
-- [ ] `BossBarPool` calls main-thread-only Bukkit BossBar APIs (`Bukkit.createBossBar`, `addPlayer`, `hideBar`) while holding a lock (`BossBarPool.java:71-98`, `106-134`), but its Javadoc (`:17-19`) explicitly invites async callers via `SkillingAPI.getBossBarPool()`. Either route the API through a main-thread scheduler handoff or document the main-thread requirement and enforce it (Paper's `Player.getScheduler` / `Bukkit.getServer().getScheduler()`).
+- [x] `Skilling.onDisable()` (`Skilling.java:651-676`) never hides the bars owned by `BossBarPool`; after `/reload` the old pool's bars stay registered and visible (frozen, since the tick loop is gone). Call `removeAll`/hide every pooled bar in `onDisable()` before shutdown.
+- [x] `BossBarPool` calls main-thread-only Bukkit BossBar APIs (`Bukkit.createBossBar`, `addPlayer`, `hideBar`) while holding a lock (`BossBarPool.java:71-98`, `106-134`), but its Javadoc (`:17-19`) explicitly invites async callers via `SkillingAPI.getBossBarPool()`. Either route the API through a main-thread scheduler handoff or document the main-thread requirement and enforce it (Paper's `Player.getScheduler` / `Bukkit.getServer().getScheduler()`).
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -19,6 +19,6 @@
 - **Constraints:** `bossbar.max_active` and `fade_ticks` behavior (including ISSUE-245) must stay consistent.
 
 ## Verification & Definition of Done
-- [ ] No pooled boss bar survives `onDisable()`/reload.
-- [ ] The pool's public entry points either run on the main thread or the Javadoc states the requirement clearly.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] No pooled boss bar survives `onDisable()`/reload.
+- [x] The pool's public entry points either run on the main thread or the Javadoc states the requirement clearly.
+- [x] `./gradlew build` and `./gradlew test` pass.

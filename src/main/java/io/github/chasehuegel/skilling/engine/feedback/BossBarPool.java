@@ -16,7 +16,14 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>Uses an access-ordered {@link LinkedHashMap}; the whole get-or-create
  * (including eviction and creation) runs under the pool lock so concurrent
- * callers (including async addons) never orphan a visible bar.
+ * callers never orphan a visible bar.
+ *
+ * <p><b>Threading:</b> every public method must be called from the Bukkit main
+ * thread. The pool creates, mutates, and hides {@link BossBar}s through
+ * main-thread-only APIs; the lock guards the in-memory caches only, and the
+ * per-tick {@link #tickAll()} runs on the main thread via the plugin scheduler.
+ * Async addon code must hand off to the main thread (e.g. via
+ * {@code Bukkit.getScheduler()}) before touching the pool.
  *
  * <p>YAML configuration keys: {@code bossbar.max_active}, {@code bossbar.fade_ticks}.
  */
@@ -130,6 +137,20 @@ public final class BossBarPool {
                 }
                 return false;
             });
+        }
+    }
+
+    /**
+     * Hides and removes every pooled boss bar. Called on plugin disable so no
+     * frozen bar survives a {@code /reload} once the tick loop is gone.
+     */
+    public void removeAll() {
+        synchronized (cache) {
+            for (BossBar bar : cache.values()) {
+                hideBar(bar);
+            }
+            cache.clear();
+            ttlMap.clear();
         }
     }
 

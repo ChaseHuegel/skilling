@@ -93,6 +93,9 @@ public final class SkillingAPI {
     /**
      * Returns the boss bar pool for displaying XP progress bars to players.
      *
+     * <p>All pool methods must be called from the Bukkit main thread; async
+     * addon code must hand off via the server scheduler first.
+     *
      * @return the boss bar pool instance
      */
     public BossBarPool getBossBarPool() {

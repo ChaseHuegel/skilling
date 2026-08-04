@@ -650,6 +650,11 @@ public final class Skilling extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Hide every pooled boss bar first so a /reload never leaves frozen
+        // bars floating over players after the tick loop is gone.
+        if (bossBarPool != null) {
+            bossBarPool.removeAll();
+        }
         if (integrationManager != null) {
             integrationManager.shutdown();
         }
