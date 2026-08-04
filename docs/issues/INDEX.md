@@ -5,7 +5,7 @@
 - [x] [ISSUE-249](ISSUE-249.md) - LinearEvaluator does not validate finite base/step/min/max [Severity: Low]
 - [x] [ISSUE-250](ISSUE-250.md) - XpBonusMechanic duration overflow and zero-duration no-op [Severity: Low]
 - [x] [ISSUE-251](ISSUE-251.md) - LevelThresholds global lock on the hot level-lookup path [Severity: Low]
-- [ ] [ISSUE-252](ISSUE-252.md) - Remove or fix dead `PolynomialEvaluator.xpToNextLevel` [Severity: Low]
+- [x] [ISSUE-252](ISSUE-252.md) - Remove or fix dead `PolynomialEvaluator.xpToNextLevel` [Severity: Low]
 - [ ] [ISSUE-253](ISSUE-253.md) - Harden `SkillManager.parseFeedback` boolean casts [Severity: Low]
 - [ ] [ISSUE-254](ISSUE-254.md) - Rename `bStatsHook` to follow Java naming conventions [Severity: Low]
 - [ ] [ISSUE-255](ISSUE-255.md) - Make FeedbackDebouncer check-then-act atomic [Severity: Low]

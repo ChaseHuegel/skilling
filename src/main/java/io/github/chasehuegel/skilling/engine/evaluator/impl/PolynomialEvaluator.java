@@ -45,16 +45,4 @@ public record PolynomialEvaluator(double baseXp, double exponent) implements Par
     public double xpForLevel(int level) {
         return baseXp * Math.pow(level, exponent);
     }
-
-    /**
-     * Computes the XP needed to go from the current level to the next.
-     *
-     * @param currentLevel the current level
-     * @return XP remaining to the next level
-     */
-    public double xpToNextLevel(int currentLevel, long currentXp) {
-        double totalForCurrent = xpForLevel(currentLevel);
-        double totalForNext = xpForLevel(currentLevel + 1);
-        return totalForNext - currentXp;
-    }
 }

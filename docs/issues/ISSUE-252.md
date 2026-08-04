@@ -6,8 +6,8 @@
 - **Severity:** Low — `PolynomialEvaluator.xpToNextLevel` (`PolynomialEvaluator.java:55-59`) is referenced nowhere in the codebase, returns `totalForNext - currentXp` which is negative whenever the player already has enough XP for the next level (no clamp), computes `totalForCurrent` without using it, and its Javadoc declares a `@param currentXp` the method does not take.
 
 ## Implementation Requirements
-- [ ] Remove the dead method (preferred) or fix its semantics and add a real caller + tests.
-- [ ] If removed, confirm nothing (including addons) references it.
+- [x] Remove the dead method (preferred) or fix its semantics and add a real caller + tests.
+- [x] If removed, confirm nothing (including addons) references it.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,5 +17,5 @@
 - **Constraints:** If any addon-facing surface exposes it, check `docs/users/api-integration.md`; it is `public` in the engine module (not `skilling-api`), so removal is safe.
 
 ## Verification & Definition of Done
-- [ ] Method removed (or fixed with tests and a caller).
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Method removed (or fixed with tests and a caller).
+- [x] `./gradlew build` and `./gradlew test` pass.
