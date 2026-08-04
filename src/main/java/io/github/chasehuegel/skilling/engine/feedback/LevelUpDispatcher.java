@@ -118,6 +118,9 @@ public final class LevelUpDispatcher {
         for (int i = 0; i < unlockedAbilities.size(); i++) {
             int idx = i;
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                // The player may log out before the delayed announcement fires;
+                // touching a disconnected reference throws on the main thread.
+                if (!player.isOnline()) return;
                 Component line = SkillMenuBuilder.formatAbilityLine(unlockedAbilities.get(idx), newLevel);
                     String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
                 if (prefs.logUnlocks()) {

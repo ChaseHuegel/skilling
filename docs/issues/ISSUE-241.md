@@ -6,8 +6,8 @@
 - **Severity:** Medium — `LevelUpDispatcher` (`LevelUpDispatcher.java:120-136`) runs `sendMessage`/`showTitle` on a `Player` via `runTaskLater` up to ~3s after the level-up with no `isOnline()` guard; a disconnected player reference can throw `IllegalStateException` on the main thread. The same codebase already guards this pattern in `SkillEventListener.java:633`.
 
 ## Implementation Requirements
-- [ ] Add an `isOnline()` (and player-still-connected) guard inside each scheduled task lambda in `LevelUpDispatcher` before touching the player, matching the existing pattern.
-- [ ] Add a unit test (using `BukkitMock` or a fake scheduler) that schedules the announcements, marks the player offline, and asserts the task no-ops without throwing.
+- [x] Add an `isOnline()` (and player-still-connected) guard inside each scheduled task lambda in `LevelUpDispatcher` before touching the player, matching the existing pattern.
+- [x] Add a unit test (using `BukkitMock` or a fake scheduler) that schedules the announcements, marks the player offline, and asserts the task no-ops without throwing.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,5 +17,5 @@
 - **Constraints:** None.
 
 ## Verification & Definition of Done
-- [ ] Scheduled level-up/unlock feedback no-ops safely for an offline player.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Scheduled level-up/unlock feedback no-ops safely for an offline player.
+- [x] `./gradlew build` and `./gradlew test` pass.
