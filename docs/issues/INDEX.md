@@ -19,7 +19,7 @@
 - [x] [ISSUE-225](ISSUE-225.md) - Web gui-layout API must reject reserved navigation slots
 - [x] [ISSUE-226](ISSUE-226.md) - Web ability editor on_failure reason list is incomplete
 - [x] [ISSUE-227](ISSUE-227.md) - Refresh stale frontend fallback registries
-- [ ] [ISSUE-228](ISSUE-228.md) - Web skill editor cannot represent addon-registered evaluator types
+- [x] [ISSUE-228](ISSUE-228.md) - Web skill editor cannot represent addon-registered evaluator types
 
 ### Improvements
 - [ ] [ISSUE-214](ISSUE-214.md) - Reload and shutdown must not block the Bukkit main thread

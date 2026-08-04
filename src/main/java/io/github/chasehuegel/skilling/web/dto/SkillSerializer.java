@@ -431,7 +431,18 @@ public final class SkillSerializer {
         if (raw.size() == 1 && raw.values().iterator().next() instanceof Number n) {
             return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", n.doubleValue()));
         }
-        return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", 0.0));
+        // A single-key object whose type is not a built-in is a registered custom
+        // evaluator (e.g. { logistic: {...} }); preserve the type and raw params
+        // instead of collapsing it to a constant 0.
+        if (raw.size() == 1) {
+            String type = raw.keySet().iterator().next();
+            Object nested = raw.get(type);
+            if (nested instanceof Map<?, ?> m) {
+                return new SkillDetailDTO.EvaluatorDTO(type, castMap(m));
+            }
+            return new SkillDetailDTO.EvaluatorDTO(type, Map.of("value", nested));
+        }
+        throw new IllegalArgumentException("Unknown evaluator type in: " + raw);
     }
 
     static Map<String, Object> evaluatorToMap(SkillDetailDTO.EvaluatorDTO ev) {
@@ -446,7 +457,9 @@ public final class SkillSerializer {
             case "milestones" -> Map.of("milestones",
                     normalizeMilestones(ev.params().getOrDefault("milestones", Map.of())));
             case "polynomial" -> Map.of("polynomial", ev.params());
-            default -> Map.of("constant", Map.of("value", 0));
+            // A registered custom evaluator type (e.g. { logistic: {...} }) must
+            // round-trip as-is; rewriting it to a constant would zero the parameter.
+            default -> Map.of(ev.type(), ev.params() != null ? ev.params() : Map.of());
         };
     }
 

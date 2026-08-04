@@ -29,6 +29,9 @@ const EVALUATOR_TYPES = computed(
   () => props.types ?? (['constant', 'linear', 'milestones', 'polynomial'] as const)
 )
 
+/** Whether the type is one this editor can edit; unknown types are read-only. */
+const isKnownType = computed(() => EVALUATOR_TYPES.value.includes(props.modelValue.type))
+
 /** Stable per-row identity; `_key` is assigned at creation and preserved by spreads. */
 function milestoneKey(entry: MilestoneEntry): string {
   if (!entry._key) {
@@ -101,21 +104,22 @@ function updateMilestone(index: number, key: 'level' | 'value', val: number) {
   <div class="evaluator-parameter">
     <label class="evaluator-label">{{ name }}</label>
 
-    <select
-      class="evaluator-type-select"
-      :value="modelValue.type"
-      @change="setType(($event.target as HTMLSelectElement).value)"
-    >
-      <option
-        v-for="t in EVALUATOR_TYPES"
-        :key="t"
-        :value="t"
+    <template v-if="isKnownType">
+      <select
+        class="evaluator-type-select"
+        :value="modelValue.type"
+        @change="setType(($event.target as HTMLSelectElement).value)"
       >
-        {{ t }}
-      </option>
-    </select>
+        <option
+          v-for="t in EVALUATOR_TYPES"
+          :key="t"
+          :value="t"
+        >
+          {{ t }}
+        </option>
+      </select>
 
-    <div class="evaluator-fields">
+      <div class="evaluator-fields">
       <template v-if="modelValue.type === 'constant'">
         <div class="field-row">
           <label class="field-label">Value</label>
@@ -207,6 +211,12 @@ function updateMilestone(index: number, key: 'level' | 'value', val: number) {
           />
         </div>
       </template>
+      </div>
+    </template>
+
+    <div v-else class="custom-evaluator-note">
+      <code>{{ modelValue.type }}</code>
+      <span>custom evaluator — preserved read-only (no built-in editor).</span>
     </div>
   </div>
 </template>
@@ -261,5 +271,21 @@ function updateMilestone(index: number, key: 'level' | 'value', val: number) {
   align-items: center;
   gap: 0.4rem;
   margin-bottom: 0.3rem;
+}
+
+.custom-evaluator-note {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px dashed var(--p-content-border-color, #444);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--p-form-field-placeholder-color);
+}
+
+.custom-evaluator-note code {
+  color: var(--p-text-color);
+  font-weight: 600;
 }
 </style>

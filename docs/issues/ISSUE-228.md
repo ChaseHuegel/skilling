@@ -5,11 +5,11 @@
 - **Agent Role:** You are an expert full-stack engineer executing this task.
 
 ## Implementation Requirements
-- [ ] `SkillSerializer.parseEvaluator` (lines 407-451) must not collapse unknown evaluator shapes to `constant 0`. When a YAML parameter is a single-key object whose type is not one of the built-ins (`constant`, `linear`, `milestones`, `polynomial`), preserve it generically (type name + raw params) rather than defaulting to a constant.
-- [ ] `SkillSerializer.evaluatorToMap` must round-trip those generic evaluator types so a web save does not rewrite them.
-- [ ] The `EvaluatorDTO` representation should carry the raw custom type/params through the JSON so the frontend can at least round-trip them untouched; ideally the editor renders an "advanced/custom evaluator" read-only or raw-JSON view for unknown types.
-- [ ] Add a round-trip regression test: a skill with a parameter `{ logistic: { ... } }` (registered evaluator) survives `fromMap` → `toYaml` → engine `parseSkill` with the same evaluator type.
-- [ ] Cross-check with `SkillManager.parseInlineEvaluator` (`SkillManager.java:589-596`), which already supports a registered custom evaluator type key — the web side is the only place that loses it.
+- [x] `SkillSerializer.parseEvaluator` (lines 407-451) must not collapse unknown evaluator shapes to `constant 0`. When a YAML parameter is a single-key object whose type is not one of the built-ins (`constant`, `linear`, `milestones`, `polynomial`), preserve it generically (type name + raw params) rather than defaulting to a constant.
+- [x] `SkillSerializer.evaluatorToMap` must round-trip those generic evaluator types so a web save does not rewrite them.
+- [x] The `EvaluatorDTO` representation should carry the raw custom type/params through the JSON so the frontend can at least round-trip them untouched; ideally the editor renders an "advanced/custom evaluator" read-only or raw-JSON view for unknown types.
+- [x] Add a round-trip regression test: a skill with a parameter `{ logistic: { ... } }` (registered evaluator) survives `fromMap` → `toYaml` → engine `parseSkill` with the same evaluator type.
+- [x] Cross-check with `SkillManager.parseInlineEvaluator` (`SkillManager.java:589-596`), which already supports a registered custom evaluator type key — the web side is the only place that loses it.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -20,7 +20,7 @@
 - **Constraints:** Never silently convert an unknown evaluator to `ConstantEvaluator(0)` — that is the bug (it zeroes mechanic parameters). Preserve or reject loudly.
 
 ## Verification & Definition of Done
-- [ ] A custom evaluator type round-trips through the web GET/PUT unchanged and loads in the engine.
-- [ ] The editor does not convert unknown types to a constant `0` on load or save.
-- [ ] `./gradlew build` and `./gradlew test` pass.
-- [ ] `cd web/frontend && npm run build` passes.
+- [x] A custom evaluator type round-trips through the web GET/PUT unchanged and loads in the engine.
+- [x] The editor does not convert unknown types to a constant `0` on load or save.
+- [x] `./gradlew build` and `./gradlew test` pass.
+- [x] `cd web/frontend && npm run build` passes.
