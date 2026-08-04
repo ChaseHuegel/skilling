@@ -25,7 +25,9 @@ public record ExecuteMechanic() implements SkillMechanic {
             double maxHp = target.getAttribute(Attribute.MAX_HEALTH) != null
                 ? target.getAttribute(Attribute.MAX_HEALTH).getValue() : 20.0;
             if (target.getHealth() / maxHp * 100 <= threshold) {
-                target.setHealth(0);
+                // Route the kill through the damage pipeline so it stays
+                // attributed to the player (killer credit, vanilla XP, armor).
+                target.damage(target.getHealth(), player);
                 return true;
             }
         }

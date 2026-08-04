@@ -90,7 +90,11 @@ public final class AreaHarvestMechanic implements SkillMechanic {
                         broken++;
                         // The vanilla break only deducted durability for the
                         // origin block; each additional harvested block costs one.
-                        ToolDurability.damageOnce(player, tool);
+                        if (ToolDurability.damageOnce(player, tool)) {
+                            // The tool broke mid-harvest; stop so a broken tool
+                            // cannot grant free drops on remaining blocks.
+                            return true;
+                        }
                     } finally {
                         processing.remove(loc);
                     }

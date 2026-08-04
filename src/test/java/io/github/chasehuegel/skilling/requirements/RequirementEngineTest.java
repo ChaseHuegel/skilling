@@ -421,6 +421,24 @@ class RequirementEngineTest {
     }
 
     @Test
+    void nullTagIsNullSafeInResolver() {
+        // Defense-in-depth: a programmatically built null tag yields an empty
+        // match set rather than NPEing; the YAML path rejects it at load.
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("possession", null, "HAND", 1, 0.0))
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(inventory.getContents()).thenReturn(new ItemStack[36]);
+
+        var result = engine.check(player, "a", requirements, 10, 5);
+        assertEquals(FailureReason.MISSING_ITEM, result.failureReason());
+    }
+
+    @Test
     void tagCostConsumesOnlyMatchingItems() throws Exception {
         java.nio.file.Path tagsFile = tempDir.resolve("tags.yml");
         java.nio.file.Files.writeString(tagsFile,

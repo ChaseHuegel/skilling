@@ -385,6 +385,11 @@ public final class SkillManager {
     private SkillDefinition.ItemRequirement parseItemRequirement(Map<String, Object> map) {
         String action = (String) map.getOrDefault("action", "possession");
         String tag = (String) map.get("tag");
+        // Fail fast: a missing tag would NPE inside the requirement resolver on
+        // the event path; reject it here at load instead.
+        if (tag == null || tag.isBlank()) {
+            throw new IllegalArgumentException("Item requirement missing required 'tag'");
+        }
         String slot = (String) map.getOrDefault("slot", "HAND");
         validateTagReference(tag);
         int amount = ((Number) map.getOrDefault("amount", 1)).intValue();

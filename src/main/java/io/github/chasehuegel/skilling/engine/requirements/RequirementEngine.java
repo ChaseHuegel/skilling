@@ -92,8 +92,12 @@ public final class RequirementEngine {
             switch (itemReq.action()) {
                 case "possession", "cost" -> {
                     if (!hasItems(player, itemReq.tag(), itemReq.amount(), itemReq.slot())) {
+                        // Map.of rejects null values, and a programmatically built
+                        // requirement may carry a null tag; the YAML path rejects
+                        // it at load, so report a missing item instead of NPEing.
+                        String tag = itemReq.tag() == null ? "" : itemReq.tag();
                         return RequirementResult.failed(FailureReason.MISSING_ITEM, Map.of(
-                                "item", itemReq.tag(),
+                                "item", tag,
                                 "amount", String.valueOf(itemReq.amount())
                         ));
                     }
@@ -193,6 +197,9 @@ public final class RequirementEngine {
      * cached name parse.
      */
     private Set<Material> resolveMaterialSet(String tag) {
+        // Defense-in-depth against a programmatically built null reference; the
+        // YAML path rejects a missing tag at load (SkillManager).
+        if (tag == null || tag.isBlank()) return Set.of();
         if (tag.startsWith("#")) {
             return tagResolver.resolve(tag);
         }

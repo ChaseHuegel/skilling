@@ -2,6 +2,7 @@ package io.github.chasehuegel.skilling.mechanic;
 
 import io.github.chasehuegel.skilling.BukkitMock;
 import io.github.chasehuegel.skilling.engine.mechanic.impl.OffhandStrikeMechanic;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
@@ -10,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import java.util.Map;
 
@@ -17,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -138,11 +141,16 @@ class OffhandStrikeMechanicTest {
         var target = mock(LivingEntity.class);
         when(player.getTargetEntity(4)).thenReturn(target);
 
-        assertTrue(mechanic.execute(player, Map.of("multiplier", 2.0), rightClick()));
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getPluginManager()).thenReturn(mock(org.bukkit.plugin.PluginManager.class));
+            assertTrue(mechanic.execute(player, Map.of("multiplier", 2.0), rightClick()));
+        }
+
         verify(target).damage(12.0, player);
+        // Durability is consumed through ToolDurability's cancellable
+        // PlayerItemDamageEvent path and written back to the off-hand slot.
         verify(meta).setDamage(11);
         verify(offhand).setItemMeta(meta);
-        // The durability change must be written back to the inventory slot.
-        verify(inv).setItemInOffHand(offhand);
+        verify(inv).setItem(org.bukkit.inventory.EquipmentSlot.OFF_HAND, offhand);
     }
 }

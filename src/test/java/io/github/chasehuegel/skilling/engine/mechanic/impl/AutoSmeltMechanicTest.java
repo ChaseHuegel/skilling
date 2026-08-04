@@ -56,8 +56,18 @@ class AutoSmeltMechanicTest {
         MockedStatic<RegistryAccess> registry = mockStatic(RegistryAccess.class);
         RegistryAccess access = mock(RegistryAccess.class);
         registry.when(RegistryAccess::registryAccess).thenReturn(access);
-        when(access.getRegistry(any(Class.class))).thenAnswer(inv -> enchantmentRegistry());
-        when(access.getRegistry(any(RegistryKey.class))).thenAnswer(inv -> enchantmentRegistry());
+        when(access.getRegistry(any(Class.class))).thenAnswer(inv -> {
+            Class<?> requested = inv.getArgument(0);
+            return Enchantment.class.equals(requested)
+                    ? enchantmentRegistry()
+                    : io.github.chasehuegel.skilling.testutil.FakeRegistryAccess.registryFor(requested);
+        });
+        when(access.getRegistry(any(RegistryKey.class))).thenAnswer(inv -> {
+            RegistryKey<?> requested = inv.getArgument(0);
+            return requested == RegistryKey.ENCHANTMENT
+                    ? enchantmentRegistry()
+                    : io.github.chasehuegel.skilling.testutil.FakeRegistryAccess.registryFor(requested);
+        });
         return registry;
     }
 

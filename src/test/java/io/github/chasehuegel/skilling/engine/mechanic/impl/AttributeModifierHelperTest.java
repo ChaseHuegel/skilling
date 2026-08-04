@@ -47,8 +47,18 @@ class AttributeModifierHelperTest {
         registryMock = mockStatic(RegistryAccess.class);
         RegistryAccess access = mock(RegistryAccess.class);
         registryMock.when(RegistryAccess::registryAccess).thenReturn(access);
-        when(access.getRegistry(any(Class.class))).thenAnswer(inv -> makeAttributeRegistry());
-        when(access.getRegistry(any(RegistryKey.class))).thenAnswer(inv -> makeAttributeRegistry());
+        when(access.getRegistry(any(Class.class))).thenAnswer(inv -> {
+            Class<?> requested = inv.getArgument(0);
+            return Attribute.class.equals(requested)
+                    ? makeAttributeRegistry()
+                    : io.github.chasehuegel.skilling.testutil.FakeRegistryAccess.registryFor(requested);
+        });
+        when(access.getRegistry(any(RegistryKey.class))).thenAnswer(inv -> {
+            RegistryKey<?> requested = inv.getArgument(0);
+            return requested == RegistryKey.ATTRIBUTE
+                    ? makeAttributeRegistry()
+                    : io.github.chasehuegel.skilling.testutil.FakeRegistryAccess.registryFor(requested);
+        });
         attribute = Attribute.ARMOR;
     }
 

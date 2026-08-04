@@ -88,6 +88,7 @@ public class ChainBreakMechanic implements SkillMechanic {
         int[][] dirs = directions();
         try {
             int broken = 0;
+            search:
             while (!queue.isEmpty() && broken < limit) {
                 Block current = queue.poll();
                 for (int[] dir : dirs) {
@@ -104,7 +105,12 @@ public class ChainBreakMechanic implements SkillMechanic {
                             if (!chainEvent.isCancelled()) {
                                 neighbor.breakNaturally(player.getInventory().getItemInMainHand());
                                 broken++;
-                                ToolDurability.damageOnce(player, player.getInventory().getItemInMainHand());
+                                // A broken tool must not keep applying silk-touch/
+                                // fortune to later blocks for free drops.
+                                if (ToolDurability.damageOnce(player,
+                                        player.getInventory().getItemInMainHand())) {
+                                    break search;
+                                }
                                 if (broken < limit) {
                                     queue.add(neighbor);
                                 }

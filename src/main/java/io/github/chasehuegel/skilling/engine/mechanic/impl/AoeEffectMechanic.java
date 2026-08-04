@@ -24,12 +24,15 @@ import java.util.Map;
  */
 public final class AoeEffectMechanic implements SkillMechanic {
 
+    /** Matches Bukkit's entity-search radius cap, mirroring {@link AllyAuraMechanic}. */
+    static final double MAX_RADIUS = 32.0;
+
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         PotionEffectType type = PotionEffectResolver.resolve(params.get("effect"));
         if (type == null) return false;
 
-        double radius = ((Number) params.getOrDefault("radius", 5.0)).doubleValue();
+        double radius = clampRadius(((Number) params.getOrDefault("radius", 5.0)).doubleValue());
         int duration = ((Number) params.getOrDefault("duration", 5.0)).intValue() * 20;
         int amplifier = ((Number) params.getOrDefault("amplifier", 0.0)).intValue();
         String targets = String.valueOf(params.getOrDefault("targets", "allies"));
@@ -41,17 +44,28 @@ public final class AoeEffectMechanic implements SkillMechanic {
      *
      * @param player  the casting player
      * @param effect  the resolved effect to apply
-     * @param radius  the search radius in blocks
+     * @param radius  the search radius in blocks (clamped to [0, 32])
      * @param targets the {@code allies | hostiles | all} filter
      * @return true
      */
     static boolean apply(Player player, PotionEffect effect, double radius, String targets) {
-        for (LivingEntity target : player.getLocation().getNearbyLivingEntities(radius)) {
+        for (LivingEntity target : player.getLocation().getNearbyLivingEntities(clampRadius(radius))) {
             if (target.equals(player)) continue;
             if (AuraTargetFilter.accepts(targets, target)) {
                 target.addPotionEffect(effect);
             }
         }
         return true;
+    }
+
+    /**
+     * Clamps a radius to Bukkit's [0, 32] entity-search bounds so an oversized
+     * config can never trigger an unbounded nearby-entity scan.
+     *
+     * @param radius the requested radius
+     * @return the clamped radius
+     */
+    static double clampRadius(double radius) {
+        return Math.max(0.0, Math.min(radius, MAX_RADIUS));
     }
 }

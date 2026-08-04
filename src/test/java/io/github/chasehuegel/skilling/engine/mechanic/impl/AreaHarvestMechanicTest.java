@@ -204,6 +204,56 @@ class AreaHarvestMechanicTest {
     }
 
     @Test
+    void harvestStopsWhenToolBreaks() {
+        var world = mock(World.class);
+        var origin = mock(Block.class);
+        when(origin.getType()).thenReturn(Material.WHEAT);
+        when(origin.getLocation()).thenReturn(new Location(world, 0, 0, 0));
+
+        AtomicInteger breakCount = new AtomicInteger();
+        when(origin.getRelative(anyInt(), eq(0), anyInt())).thenAnswer(inv -> {
+            int dx = inv.getArgument(0);
+            int dz = inv.getArgument(2);
+            var block = mock(Block.class);
+            when(block.getType()).thenReturn(Material.WHEAT);
+            when(block.getLocation()).thenReturn(new Location(world, dx, 0, dz));
+            doAnswer(inv2 -> {
+                breakCount.incrementAndGet();
+                return null;
+            }).when(block).breakNaturally(any());
+            return block;
+        });
+
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(origin);
+
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inventory = mock(org.bukkit.inventory.PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+
+        var tool = mock(ItemStack.class);
+        var material = mock(Material.class);
+        when(material.getMaxDurability()).thenReturn((short) 100);
+        when(tool.getType()).thenReturn(material);
+        var meta = mock(Damageable.class);
+        // One point away from breaking: the first harvested block consumes the tool.
+        when(meta.getDamage()).thenReturn(99);
+        when(tool.getItemMeta()).thenReturn(meta);
+        when(inventory.getItemInMainHand()).thenReturn(tool);
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getPluginManager()).thenReturn(mock(PluginManager.class));
+            new AreaHarvestMechanic().execute(player, Map.of("radius", 1), event);
+        }
+
+        // The first harvested block breaks, then the tool breaks and the
+        // harvest stops: no free drops from a broken tool on remaining blocks.
+        assertEquals(1, breakCount.get());
+        verify(tool).setAmount(0);
+    }
+
+    @Test
     void protectionPluginCancellationIsRespected() {
         // Every synthetic BlockBreakEvent is cancelled -> nothing is broken.
         int broken = runHarvest(3, 100, mock(PluginManager.class), true);

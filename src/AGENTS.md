@@ -83,6 +83,7 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 * `./gradlew test` — JUnit 5; must pass after every phase.
 * **What to Test:** Every `ParameterEvaluator` implementation, the `RequirementEngine` check/consume lifecycle, `TagResolver` resolution, and `LoreResolver` placeholder injection must have unit tests.
 * Tests live in `src/test/` mirroring the main source tree.
+* **Registry bootstrap:** Bukkit's `Registry` static initializer runs once per JVM and fails in a plain-JUnit JVM unless a `RegistryAccess` is present. `src/test/.../testutil/FakeRegistryAccess.java` is installed via `src/test/resources/META-INF/services/` so registry-backed constants (`Attribute.MAX_HEALTH`, `Material.getMaxDurability()`, enchantments) initialize regardless of test ordering. Do not mock `ItemType`; the fake returns `null` for ITEM entries because `Material.getMaxDurability()` treats that as "no durability". Tests that install their own `mockStatic(RegistryAccess.class)` must keep their `getRegistry` answers type-aware (delegate non-owned keys to `FakeRegistryAccess.registryFor(...)`) so a per-test fake cannot poison another registry during class-init.
 
 ## Child DOX Index
 

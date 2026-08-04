@@ -290,6 +290,18 @@ class SkillManagerTest {
     }
 
     @Test
+    void itemRequirementMissingTagThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "requirements", java.util.Map.of("items",
+                        java.util.List.of(java.util.Map.of("action", "possession", "amount", 1))))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("tag"));
+    }
+
+    @Test
     void unknownMechanicTypeThrows() {
         var config = minimalSkill();
         config.set("abilities", java.util.List.of(java.util.Map.of(

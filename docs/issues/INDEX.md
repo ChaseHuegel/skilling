@@ -8,7 +8,7 @@
 - [x] [ISSUE-212](ISSUE-212.md) - DB hydration failure must not install an empty profile that overwrites persisted XP
 - [x] [ISSUE-213](ISSUE-213.md) - Isolate mechanic execution failures so a throwing mechanic cannot skip ability cost/consume
 - [x] [ISSUE-215](ISSUE-215.md) - Engine data-integrity hardening (cooldowns, offline grants, negative XP, DB init, flush interval)
-- [ ] [ISSUE-216](ISSUE-216.md) - Mechanic safety (teleport, tool-break chains, radius bounds, kill attribution, durability, NPE)
+- [x] [ISSUE-216](ISSUE-216.md) - Mechanic safety (teleport, tool-break chains, radius bounds, kill attribution, durability, NPE)
 - [ ] [ISSUE-217](ISSUE-217.md) - Reload atomicity and state-filter load validation
 - [ ] [ISSUE-218](ISSUE-218.md) - Web GUI config/data-loss and auth hardening
 - [ ] [ISSUE-220](ISSUE-220.md) - Fix milestone evaluator round-trip between the web GUI and the engine
@@ -30,6 +30,7 @@
 ## Backlog
 
 ### Bugs
+- [ ] [ISSUE-229](ISSUE-229.md) - Bound the crowd_control mechanic's AoE radius
 
 ### Improvements
 

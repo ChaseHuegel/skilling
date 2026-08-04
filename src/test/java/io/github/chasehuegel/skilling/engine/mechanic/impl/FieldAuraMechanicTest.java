@@ -67,4 +67,15 @@ class FieldAuraMechanicTest {
         verify(s.hostile).addPotionEffect(s.effect);
         verify(s.neutral).addPotionEffect(s.effect);
     }
+
+    @Test
+    void oversizedRadiusIsClampedToBukkitCap() {
+        Scene s = new Scene();
+        when(s.player.getLocation().getNearbyLivingEntities(32.0)).thenReturn(List.of(s.hostile, s.neutral));
+        assertTrue(FieldAuraMechanic.apply(s.player, s.effect, 1000.0, "all"));
+        // The unbounded scan must never run: the radius is clamped to [0, 32].
+        verify(s.player.getLocation()).getNearbyLivingEntities(32.0);
+        verify(s.hostile).addPotionEffect(s.effect);
+        verify(s.neutral).addPotionEffect(s.effect);
+    }
 }

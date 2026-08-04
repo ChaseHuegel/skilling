@@ -21,6 +21,8 @@ import java.util.function.Function;
  * the {@link Enchantment#UNBREAKING Unbreaking} enchantment (each durability
  * point has a 1/(level+1) chance of being consumed), and breaks the tool when
  * it reaches max durability instead of leaving it in an invalid damage state.
+ * Callers are told whether the item broke via the {@code damageOnce} return
+ * value so a chain/harvest loop can stop before a broken tool grants drops.
  *
  * <p>The random source and the Unbreaking-level reader are injectable so the
  * logic is deterministic under test without a live registry; production always
@@ -60,23 +62,36 @@ final class ToolDurability {
     }
 
     /**
-     * Costs one durability point on the tool for an additional block broken.
+     * Costs one durability point on the main-hand tool for an additional block broken.
      *
      * @param player the breaking player
      * @param tool   the held tool
+     * @return true if the tool broke (reached max durability and was removed)
      */
-    static void damageOnce(Player player, ItemStack tool) {
-        if (tool == null || tool.getType() == Material.AIR) return;
-        int unbreaking = unbreakingReader.apply(tool);
+    static boolean damageOnce(Player player, ItemStack tool) {
+        return damageOnce(player, tool, org.bukkit.inventory.EquipmentSlot.HAND);
+    }
+
+    /**
+     * Costs one durability point on the item held in the given slot.
+     *
+     * @param player the player
+     * @param item   the item in the slot
+     * @param slot   the equipment slot holding the item
+     * @return true if the item broke (reached max durability and was removed)
+     */
+    static boolean damageOnce(Player player, ItemStack item, org.bukkit.inventory.EquipmentSlot slot) {
+        if (item == null || item.getType() == Material.AIR) return false;
+        int unbreaking = unbreakingReader.apply(item);
         // Vanilla Unbreaking: each durability point is consumed with probability
         // 1/(level+1); the roll happens per damage event.
         if (unbreaking > 0 && randomSource.getAsDouble() * (unbreaking + 1) >= 1.0) {
-            return;
+            return false;
         }
-        PlayerItemDamageEvent damageEvent = new PlayerItemDamageEvent(player, tool, 1);
+        PlayerItemDamageEvent damageEvent = new PlayerItemDamageEvent(player, item, 1);
         Bukkit.getPluginManager().callEvent(damageEvent);
-        if (damageEvent.isCancelled()) return;
-        applyDamage(player, tool, Math.max(1, damageEvent.getDamage()));
+        if (damageEvent.isCancelled()) return false;
+        return applyDamage(player, item, Math.max(1, damageEvent.getDamage()), slot);
     }
 
     /**
@@ -92,20 +107,32 @@ final class ToolDurability {
         return 0;
     }
 
-    private static void applyDamage(Player player, ItemStack tool, int damage) {
-        if (tool.getItemMeta() instanceof Damageable damageable) {
-            int maxDurability = tool.getType().getMaxDurability();
+    private static boolean applyDamage(Player player, ItemStack item, int damage,
+                                       org.bukkit.inventory.EquipmentSlot slot) {
+        if (item.getItemMeta() instanceof Damageable damageable) {
+            int maxDurability = item.getType().getMaxDurability();
             int newDamage = damageable.getDamage() + damage;
             if (maxDurability > 0 && newDamage >= maxDurability) {
-                // The tool reaches max durability and breaks like a vanilla break
+                // The item reaches max durability and breaks like a vanilla break
                 // rather than resting in an invalid damage state.
-                tool.setAmount(0);
-                player.getInventory().setItemInMainHand(tool);
+                item.setAmount(0);
+                writeBack(player, item, slot);
+                return true;
             } else {
                 damageable.setDamage(newDamage);
-                tool.setItemMeta((org.bukkit.inventory.meta.ItemMeta) damageable);
-                player.getInventory().setItemInMainHand(tool);
+                item.setItemMeta((org.bukkit.inventory.meta.ItemMeta) damageable);
+                writeBack(player, item, slot);
+                return false;
             }
+        }
+        return false;
+    }
+
+    private static void writeBack(Player player, ItemStack item, org.bukkit.inventory.EquipmentSlot slot) {
+        if (slot == org.bukkit.inventory.EquipmentSlot.HAND) {
+            player.getInventory().setItemInMainHand(item);
+        } else {
+            player.getInventory().setItem(slot, item);
         }
     }
 }

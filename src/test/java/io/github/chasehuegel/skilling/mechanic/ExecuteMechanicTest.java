@@ -48,8 +48,10 @@ class ExecuteMechanicTest {
         when(event.getEntity()).thenReturn(target);
 
         assertTrue(mechanic.execute(player, Map.of("threshold", 50.0), event));
-        // 5/20 (default max health) = 25% <= 50%, so the target is killed.
-        verify(target).setHealth(0);
+        // 5/20 (default max health) = 25% <= 50%, so the target is killed
+        // through the damage pipeline (attributed to the player, vanilla XP).
+        verify(target).damage(5.0, player);
+        verify(target, never()).setHealth(0);
     }
 
     @Test

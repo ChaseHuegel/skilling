@@ -20,6 +20,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Verifies the shared tool-durability cost used by chain/harvest mechanics:
  * one point per additional block, Unbreaking interaction, plugin veto via
@@ -134,6 +137,26 @@ class ToolDurabilityTest {
         verify(tool).setAmount(0);
         verify((Damageable) tool.getItemMeta(), never()).setDamage(anyInt());
         verify(player.getInventory()).setItemInMainHand(tool);
+    }
+
+    @Test
+    void damageOnceReportsBreakAndSurvival() {
+        var breaking = mockTool(99, 100);
+        withPluginManager(() -> assertTrue(ToolDurability.damageOnce(playerWithTool(breaking), breaking)));
+
+        var surviving = mockTool(5, 100);
+        withPluginManager(() -> assertFalse(ToolDurability.damageOnce(playerWithTool(surviving), surviving)));
+    }
+
+    @Test
+    void offhandSlotDamageWritesBackToOffHandSlot() {
+        var tool = mockTool(5, 100);
+        var player = playerWithTool(tool);
+
+        withPluginManager(() -> ToolDurability.damageOnce(player, tool, org.bukkit.inventory.EquipmentSlot.OFF_HAND));
+
+        verify((Damageable) tool.getItemMeta()).setDamage(6);
+        verify(player.getInventory()).setItem(org.bukkit.inventory.EquipmentSlot.OFF_HAND, tool);
     }
 
     @Test

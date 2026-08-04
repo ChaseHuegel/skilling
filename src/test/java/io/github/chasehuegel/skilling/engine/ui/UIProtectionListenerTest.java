@@ -5,11 +5,7 @@ import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
-import io.papermc.paper.registry.tag.Tag;
-import io.papermc.paper.registry.tag.TagKey;
-import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -28,9 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -61,64 +54,16 @@ class UIProtectionListenerTest {
         registryMock = mockStatic(RegistryAccess.class);
         RegistryAccess access = mock(RegistryAccess.class);
         registryMock.when(RegistryAccess::registryAccess).thenReturn(access);
-        when(access.getRegistry(any(Class.class))).thenAnswer(inv -> emptyRegistry());
-        when(access.getRegistry(any(RegistryKey.class))).thenAnswer(inv -> emptyRegistry());
+        when(access.getRegistry(any(Class.class))).thenAnswer(inv ->
+                io.github.chasehuegel.skilling.testutil.FakeRegistryAccess.registryFor((Class<?>) inv.getArgument(0)));
+        when(access.getRegistry(any(RegistryKey.class))).thenAnswer(inv ->
+                io.github.chasehuegel.skilling.testutil.FakeRegistryAccess.registryFor((RegistryKey<?>) inv.getArgument(0)));
     }
 
     @AfterEach
     void tearDown() {
         skillingStatic.close();
         registryMock.close();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Registry<Keyed> emptyRegistry() {
-        return new Registry<>() {
-            @Override
-            public Keyed get(NamespacedKey key) {
-                return null;
-            }
-
-            @Override
-            public Iterator<Keyed> iterator() {
-                return Collections.emptyIterator();
-            }
-
-            @Override
-            public int size() {
-                return 0;
-            }
-
-            @Override
-            public NamespacedKey getKey(Keyed value) {
-                return null;
-            }
-
-            @Override
-            public boolean hasTag(TagKey<Keyed> key) {
-                return false;
-            }
-
-            @Override
-            public Tag<Keyed> getTag(TagKey<Keyed> key) {
-                return null;
-            }
-
-            @Override
-            public Collection<Tag<Keyed>> getTags() {
-                return Collections.emptyList();
-            }
-
-            @Override
-            public Stream<Keyed> stream() {
-                return Stream.empty();
-            }
-
-            @Override
-            public Stream<NamespacedKey> keyStream() {
-                return Stream.empty();
-            }
-        };
     }
 
     private ItemStack taggedStack() {

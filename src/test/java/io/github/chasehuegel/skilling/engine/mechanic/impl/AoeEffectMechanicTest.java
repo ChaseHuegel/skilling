@@ -39,4 +39,20 @@ class AoeEffectMechanicTest {
         verify(hostile, never()).addPotionEffect(effect);
         verify(neutral).addPotionEffect(effect);
     }
+
+    @Test
+    void oversizedRadiusIsClampedToBukkitCap() {
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var loc = mock(Location.class);
+        when(player.getLocation()).thenReturn(loc);
+        var neutral = mock(LivingEntity.class);
+        when(neutral.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(loc.getNearbyLivingEntities(32.0)).thenReturn(List.of(neutral));
+
+        var effect = mock(PotionEffect.class);
+        assertTrue(AoeEffectMechanic.apply(player, effect, 1000.0, "allies"));
+        // The unbounded scan must never run: the radius is clamped to [0, 32].
+        verify(loc).getNearbyLivingEntities(32.0);
+    }
 }

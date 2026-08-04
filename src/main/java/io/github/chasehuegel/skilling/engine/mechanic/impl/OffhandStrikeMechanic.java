@@ -74,10 +74,11 @@ public final class OffhandStrikeMechanic implements SkillMechanic {
         double dmg = baseDamage(offhand.getType()) * multiplier;
         livingTarget.damage(dmg, player);
 
-        damageable.setDamage(damageable.getDamage() + 1);
-        offhand.setItemMeta((org.bukkit.inventory.meta.ItemMeta) damageable);
-        // getItemInOffHand() returns a copy; persist the durability change.
-        player.getInventory().setItemInOffHand(offhand);
+        // Consume off-hand durability through the cancellable
+        // PlayerItemDamageEvent so Unbreaking rolls and other plugins can veto,
+        // and the item breaks at max durability instead of resting in an
+        // invalid damage state.
+        ToolDurability.damageOnce(player, offhand, org.bukkit.inventory.EquipmentSlot.OFF_HAND);
         return true;
     }
 
