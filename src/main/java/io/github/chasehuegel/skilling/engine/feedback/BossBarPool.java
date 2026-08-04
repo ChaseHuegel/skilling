@@ -70,9 +70,12 @@ public final class BossBarPool {
      *
      * @param player  the player
      * @param skillId the skill identifier
-     * @return the BossBar
+     * @return the BossBar, or null when {@code bossbar.max_active} is {@code 0}
+     *         or negative (bars disabled)
      */
     public BossBar getOrCreate(Player player, String skillId) {
+        // max_active <= 0 means the XP boss bar is disabled entirely.
+        if (maxActive <= 0) return null;
         String key = key(player, skillId);
         String prefix = player.getUniqueId() + ":";
         synchronized (cache) {

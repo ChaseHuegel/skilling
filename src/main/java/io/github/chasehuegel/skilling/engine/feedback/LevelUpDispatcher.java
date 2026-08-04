@@ -49,6 +49,8 @@ public final class LevelUpDispatcher {
                 ? skill.display().name() : skillId;
 
         BossBar bar = bossBarPool.getOrCreate(player, skillId);
+        // bossbar.max_active <= 0 disables the XP boss bar entirely.
+        if (bar == null) return;
 
         TextColor textColor = resolveBarColor(skill.display() != null ? skill.display().color() : null);
         Component title;

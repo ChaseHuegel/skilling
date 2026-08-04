@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,6 +62,14 @@ class BossBarPoolTest {
         BossBar bar = pool.getOrCreate(player, "mining");
         assertNotNull(bar);
         assertSame(mockBar, bar);
+    }
+
+    @Test
+    void zeroMaxActiveDisablesBarsEntirely() {
+        var pool = new BossBarPool(0, 20);
+        assertNull(pool.getOrCreate(player, "mining"));
+        assertEquals(0, pool.size(), "no bar must be pooled when max_active is 0");
+        verify(mockBar, never()).addPlayer(any());
     }
 
     @Test

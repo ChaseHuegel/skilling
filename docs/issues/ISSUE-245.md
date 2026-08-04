@@ -6,8 +6,8 @@
 - **Severity:** Medium — `BossBarPool` with `maxActive == 0` finds no eviction candidate (`countForPrefix(prefix) >= maxActive` is `0 >= 0`, `eldest == null` breaks) and proceeds to create a bar anyway (`BossBarPool.java:79-92`).
 
 ## Implementation Requirements
-- [ ] Treat `maxActive <= 0` as "bars disabled": `getOrCreate` returns/exposes no bar and the pool never registers one.
-- [ ] Add a unit test asserting no bar is created when `max_active: 0`.
+- [x] Treat `maxActive <= 0` as "bars disabled": `getOrCreate` returns/exposes no bar and the pool never registers one.
+- [x] Add a unit test asserting no bar is created when `max_active: 0`.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -18,6 +18,6 @@
 - **Constraints:** `max_active: 1`..N still works as today (see ISSUE-240 for lifecycle).
 
 ## Verification & Definition of Done
-- [ ] `max_active: 0` yields no boss bar at all.
-- [ ] Positive caps unchanged.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] `max_active: 0` yields no boss bar at all.
+- [x] Positive caps unchanged.
+- [x] `./gradlew build` and `./gradlew test` pass.

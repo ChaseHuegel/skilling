@@ -9,7 +9,8 @@ database:
   wal_mode: true
 
 bossbar:
-  # Maximum active Boss Bars visible on a player's screen at once (LRU eviction)
+  # Maximum active Boss Bars visible on a player's screen at once (LRU eviction).
+  # Set to 0 to disable the XP boss bar entirely.
   max_active: 2
   # Tick duration for Boss Bar fade-out animation
   fade_ticks: 40
