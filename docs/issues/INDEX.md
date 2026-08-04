@@ -8,7 +8,7 @@
 - [x] [ISSUE-252](ISSUE-252.md) - Remove or fix dead `PolynomialEvaluator.xpToNextLevel` [Severity: Low]
 - [x] [ISSUE-253](ISSUE-253.md) - Harden `SkillManager.parseFeedback` boolean casts [Severity: Low]
 - [x] [ISSUE-254](ISSUE-254.md) - Rename `bStatsHook` to follow Java naming conventions [Severity: Low]
-- [ ] [ISSUE-255](ISSUE-255.md) - Make FeedbackDebouncer check-then-act atomic [Severity: Low]
+- [x] [ISSUE-255](ISSUE-255.md) - Make FeedbackDebouncer check-then-act atomic [Severity: Low]
 - [ ] [ISSUE-256](ISSUE-256.md) - Unify the duplicated ConstantEvaluator / ConstantValueEvaluator handling [Severity: Low]
 - [ ] [ISSUE-257](ISSUE-257.md) - Fix trigger Javadocs that contradict the actual dispatch gating [Severity: Low]
 - [ ] [ISSUE-258](ISSUE-258.md) - Empty feedback scalars cause NPEs that abort the whole ability dispatch [Severity: High]

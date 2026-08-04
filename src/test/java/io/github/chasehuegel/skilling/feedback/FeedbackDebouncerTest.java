@@ -76,4 +76,28 @@ class FeedbackDebouncerTest {
         assertTrue(debouncer.tryDebounce(uuid, "test"),
                 "a runtime interval change must take effect");
     }
+
+    @Test
+    void concurrentCallsEmitAtMostOncePerInterval() throws Exception {
+        var debouncer = new FeedbackDebouncer(500);
+        UUID uuid = UUID.randomUUID();
+        int workers = 8;
+        var gate = new java.util.concurrent.CountDownLatch(1);
+        var emissions = new java.util.concurrent.atomic.AtomicInteger();
+        var threads = java.util.stream.IntStream.range(0, workers)
+                .mapToObj(i -> new Thread(() -> {
+                    try {
+                        gate.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    if (debouncer.tryDebounce(uuid, "test")) emissions.incrementAndGet();
+                }))
+                .toList();
+        threads.forEach(Thread::start);
+        gate.countDown();
+        for (Thread t : threads) t.join();
+
+        assertEquals(1, emissions.get(), "exactly one concurrent caller may emit within the interval");
+    }
 }

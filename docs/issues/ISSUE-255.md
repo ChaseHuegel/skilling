@@ -6,8 +6,8 @@
 - **Severity:** Low — `FeedbackDebouncer.tryDebounce` uses a non-atomic read-then-write (`abilities.get(abilityId)` → `abilities.put(...)`, `FeedbackDebouncer.java:62-70`), so two concurrent callers (the class is exposed via `SkillingAPI.getFeedbackDebouncer()`) can both observe a stale value and both return `true`.
 
 ## Implementation Requirements
-- [ ] Replace the check-then-act with a single atomic `abilities.compute(...)` so only one caller per interval returns `true`.
-- [ ] Add a unit test that asserts a single emission across concurrent calls (reuse the `FeedbackDebouncerTest` harness).
+- [x] Replace the check-then-act with a single atomic `abilities.compute(...)` so only one caller per interval returns `true`.
+- [x] Add a unit test that asserts a single emission across concurrent calls (reuse the `FeedbackDebouncerTest` harness).
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,5 +17,5 @@
 - **Constraints:** Keep the per-player, per-ability semantics and the `clear(player)` API.
 
 ## Verification & Definition of Done
-- [ ] Concurrent callers emit at most one message per interval.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Concurrent callers emit at most one message per interval.
+- [x] `./gradlew build` and `./gradlew test` pass.

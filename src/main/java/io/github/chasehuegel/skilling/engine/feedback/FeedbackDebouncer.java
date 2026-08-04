@@ -60,14 +60,17 @@ public final class FeedbackDebouncer {
         long now = System.currentTimeMillis();
 
         Map<String, Long> abilities = lastFeedback.computeIfAbsent(playerUuid, k -> new ConcurrentHashMap<>());
-        Long last = abilities.get(abilityId);
-
-        if (last != null && (now - last) < intervalMs) {
-            return false;
-        }
-
-        abilities.put(abilityId, now);
-        return true;
+        java.util.concurrent.atomic.AtomicBoolean allowed = new java.util.concurrent.atomic.AtomicBoolean(false);
+        // compute() is atomic per ability key, so among concurrent callers only
+        // the first observes a stale/absent timestamp and claims the interval slot.
+        abilities.compute(abilityId, (key, last) -> {
+            if (last != null && (now - last) < intervalMs) {
+                return last; // suppressed: leave the existing timestamp
+            }
+            allowed.set(true);
+            return now;
+        });
+        return allowed.get();
     }
 
     /**
