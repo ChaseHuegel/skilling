@@ -6,8 +6,8 @@
 - **Severity:** Medium — admin stuck with no path to retry; live files changed while the engine still runs the old config.
 
 ## Implementation Requirements
-- [ ] After a successful `applyAndBackup()`, refresh the `status.json` file fingerprints (re-snapshot the now-live files), or clear the conflict state on apply so the subsequent reload does not see the applied files as "modified since staging".
-- [ ] Add a unit test covering apply → reload-failure → retry-reload succeeding.
+- [x] After a successful `applyAndBackup()`, refresh the `status.json` file fingerprints (re-snapshot the now-live files), or clear the conflict state on apply so the subsequent reload does not see the applied files as "modified since staging".
+- [x] Add a unit test covering apply → reload-failure → retry-reload succeeding.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -18,6 +18,6 @@
 - **Constraints:** Preserve the genuine external-modification conflict detection (FTP-edited files must still 409). Only the self-inflicted post-apply state must stop conflicting. Staging is preserved on failure by design; the retry must work.
 
 ## Verification & Definition of Done
-- [ ] After a failed reload, a retry `POST /api/reload` no longer reports a false 409.
-- [ ] Externally-modified live files still trigger a real 409.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] After a failed reload, a retry `POST /api/reload` no longer reports a false 409.
+- [x] Externally-modified live files still trigger a real 409.
+- [x] `./gradlew build` and `./gradlew test` pass.

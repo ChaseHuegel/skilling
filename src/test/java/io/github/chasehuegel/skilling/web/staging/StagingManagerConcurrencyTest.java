@@ -116,4 +116,34 @@ class StagingManagerConcurrencyTest {
         assertThrows(IllegalStateException.class, sm::applyAndBackup);
         assertTrue(sm.hasPendingChanges(), "staging must be preserved for retry after a failed apply");
     }
+
+    @Test
+    void applyThenRetryDoesNotReportFalseConflict() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        sm.stageTagsFile("debug_logging: true\n");
+        // Apply, then simulate the reload failing/timing out with staging preserved.
+        sm.applyAndBackup();
+
+        // A retry after the failed reload must not see the Apply itself as an
+        // external modification of the live files.
+        assertTrue(sm.checkConflicts().isEmpty(),
+                "applied files must not be reported as conflicts on retry");
+        sm.applyAndBackup(); // the retry reload must apply cleanly
+        assertTrue(sm.checkConflicts().isEmpty());
+    }
+
+    @Test
+    void externalModificationAfterApplyStillConflicts() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        sm.stageTagsFile("debug_logging: true\n");
+        sm.applyAndBackup();
+
+        // A genuine post-apply edit (e.g. FTP) must still be flagged on retry.
+        File liveTags = new File(tempDir.toFile(), "tags.yml");
+        Files.writeString(liveTags.toPath(), "debug_logging: externally_edited\n");
+
+        List<String> conflicts = sm.checkConflicts();
+        assertTrue(conflicts.contains("tags.yml"),
+                "a genuine external edit after Apply must still be detected as a conflict");
+    }
 }

@@ -261,6 +261,10 @@ public final class StagingManager {
                 // of clearing it; earlier files remain backed up for manual restore.
                 throw new IllegalStateException("Failed to apply staged changes; staging preserved for retry", e);
             }
+            // Re-snapshot the now-live files so a reload that preserves staging on
+            // failure (for retry) does not see its own Apply as an external
+            // modification. Genuine post-staging edits still conflict.
+            writeStatus(status().files());
             return applied;
         } finally {
             lock.unlock();
