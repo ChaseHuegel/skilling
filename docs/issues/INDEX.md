@@ -17,7 +17,7 @@
 - [x] [ISSUE-223](ISSUE-223.md) - Migrate sound/particle feedback identifiers from legacy enum names to modern 1.21 namespaced values
 - [x] [ISSUE-224](ISSUE-224.md) - Web GUI layout round-trip drops per-page `gui_title`
 - [x] [ISSUE-225](ISSUE-225.md) - Web gui-layout API must reject reserved navigation slots
-- [ ] [ISSUE-226](ISSUE-226.md) - Web ability editor on_failure reason list is incomplete
+- [x] [ISSUE-226](ISSUE-226.md) - Web ability editor on_failure reason list is incomplete
 - [ ] [ISSUE-227](ISSUE-227.md) - Refresh stale frontend fallback registries
 - [ ] [ISSUE-228](ISSUE-228.md) - Web skill editor cannot represent addon-registered evaluator types
 

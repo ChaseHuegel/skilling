@@ -20,12 +20,19 @@ const emit = defineEmits<{
   'update:modelValue': [value: OnFailure]
 }>()
 
-const FAILURE_REASON_OPTIONS = ['cooldown', 'missing_item', 'missing_state']
+// Every reason the engine's FailureReason enum can produce, in the lowercase
+// snake_case form the dispatch lookup uses (FailureReason.name().toLowerCase()).
+const FAILURE_REASON_OPTIONS = [
+  'cooldown', 'missing_item', 'missing_state', 'exhaustion', 'insufficient_items', 'unknown',
+]
 
 const FAILURE_REASON_LABELS: Record<string, string> = {
   cooldown: 'Cooldown',
   missing_item: 'Missing Item',
   missing_state: 'Missing State',
+  exhaustion: 'Exhaustion',
+  insufficient_items: 'Insufficient Items',
+  unknown: 'Unknown',
 }
 
 const newFailureReason = ref('')
@@ -63,6 +70,9 @@ function updateFailureSounds(reason: string, sounds: SoundConfig[]) {
 function failurePlaceholder(reason: string): string {
   if (reason === 'cooldown') return "&cCooling down: {time}s";
   if (reason === 'missing_item') return "&cRequires {amount}x {item}";
+  if (reason === 'missing_state') return "&cRequires a state condition";
+  if (reason === 'exhaustion') return "&cToo exhausted!";
+  if (reason === 'insufficient_items') return "&cNot enough items";
   return '&c' + reason + ' message...';
 }
 </script>
