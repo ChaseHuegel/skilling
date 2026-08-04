@@ -8,6 +8,7 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.extendedclip.com/releases/")
     maven("https://repo.incendo.org/repository/maven-releases/")
 
 }
@@ -40,6 +41,9 @@ dependencies {
 
     // External integrations
     implementation("org.bstats:bstats-bukkit:3.1.0")
+    // PlaceholderAPI is provided by the server plugin; compileOnly so the hook
+    // can extend PlaceholderExpansion without shading PlaceholderAPI itself.
+    compileOnly("me.clip:placeholderapi:2.12.3")
 
     // Testing
     testImplementation("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
@@ -48,6 +52,9 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.15.2")
     testImplementation("org.mockito:mockito-junit-jupiter:5.15.2")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:2.13.4.2")
+    // PlaceholderAPI on the test classpath so the hook's nested expansion class
+    // resolves even though no test ever instantiates it.
+    testImplementation("me.clip:placeholderapi:2.12.3")
 }
 
 val shouldBuildFrontend = providers.provider {

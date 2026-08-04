@@ -3,53 +3,52 @@ package io.github.chasehuegel.skilling.engine.integration;
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Method;
-
+/**
+ * Registers the {@code skilling} PlaceholderAPI expansion.
+ *
+ * <p>The expansion is a real {@link PlaceholderExpansion} subclass compiled
+ * {@code compileOnly} against PlaceholderAPI, so its classes are only loaded
+ * when the plugin is present on the server. {@link #register()} reports whether
+ * the expansion actually became live so {@link IntegrationManager} can gate
+ * {@code hasPlaceholderAPI()} on a working hook instead of a dangling proxy.
+ */
 public class PlaceholderAPIHook {
     private final Skilling plugin;
-    private Object expansion;
+    private SkillingExpansion expansion;
 
     public PlaceholderAPIHook(Skilling plugin) {
         this.plugin = plugin;
     }
 
-    @SuppressWarnings("unchecked")
-    public void register() {
+    /**
+     * Registers the expansion, reporting whether it became live.
+     *
+     * @return true when PlaceholderAPI accepted the expansion, false otherwise
+     */
+    public boolean register() {
         try {
-            Class<?> expansionClass = Class.forName("me.clip.placeholderapi.expansion.PlaceholderExpansion");
-            Class<?> pluginClass = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
-
-            expansion = java.lang.reflect.Proxy.newProxyInstance(
-                    expansionClass.getClassLoader(),
-                    new Class<?>[]{expansionClass},
-                    (proxy, method, args) -> {
-                        return switch (method.getName()) {
-                            case "getIdentifier" -> "skilling";
-                            case "getAuthor" -> "ChaseHuegel";
-                            case "getVersion" -> plugin.getPluginMeta().getVersion();
-                            case "persist" -> true;
-                            case "onPlaceholderRequest" -> {
-                                if (args == null || args.length < 2) yield "";
-                                var player = args[0];
-                                var params = (String) args[1];
-                                if (player == null || params == null) yield "";
-                                yield onRequest(player, params);
-                            }
-                            default -> method.invoke(this, args);
-                        };
-                    });
-
-            Method registerMethod = pluginClass.getMethod("registerPlaceholderExpansion", expansionClass);
-            registerMethod.invoke(null, expansion);
-        } catch (Exception e) {
+            expansion = new SkillingExpansion(plugin, this);
+            if (expansion.register()) {
+                return true;
+            }
+            plugin.getLogger().warning("PlaceholderAPI rejected the skilling expansion");
+        } catch (Throwable e) {
             plugin.getLogger().warning("Failed to register PlaceholderAPI expansion: " + e.getMessage());
         }
+        return false;
     }
 
-    String onRequest(Object playerObj, String params) {
-        var player = (org.bukkit.entity.Player) playerObj;
+    /**
+     * Resolves a placeholder request against the live skill and profile state.
+     *
+     * @param player the player the placeholder is evaluated for
+     * @param params the parameters after the {@code skilling_} prefix
+     * @return the resolved placeholder value
+     */
+    String onRequest(Player player, String params) {
         // total_levels contains an underscore, so it must be matched whole before
         // the action/skill split (otherwise "total_levels" -> ["total", "levels"]).
         if ("total_levels".equals(params)) {
@@ -106,8 +105,7 @@ public class PlaceholderAPIHook {
         return String.valueOf(total);
     }
 
-    private String resolveEvaluator(Object playerObj, String params) {
-        var player = (org.bukkit.entity.Player) playerObj;
+    private String resolveEvaluator(Player player, String params) {
         String[] parts = params.split("_", 2);
         if (parts.length < 2) return "0";
 
@@ -140,12 +138,54 @@ public class PlaceholderAPIHook {
         return "0";
     }
 
+    /**
+     * Unregisters the expansion if it was registered.
+     */
     public void unregister() {
-        try {
-            if (expansion != null) {
-                Method unregister = expansion.getClass().getMethod("unregister");
-                unregister.invoke(expansion);
-            }
-        } catch (Exception ignored) {}
+        if (expansion != null) {
+            expansion.unregister();
+            expansion = null;
+        }
+    }
+
+    /**
+     * The actual {@link PlaceholderExpansion} subclass backing the
+     * {@code skilling} identifier. Only ever constructed when PlaceholderAPI is
+     * present, so loading this class never fails on servers without it.
+     */
+    static final class SkillingExpansion extends PlaceholderExpansion {
+        private final Skilling plugin;
+        private final PlaceholderAPIHook hook;
+
+        SkillingExpansion(Skilling plugin, PlaceholderAPIHook hook) {
+            this.plugin = plugin;
+            this.hook = hook;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return "skilling";
+        }
+
+        @Override
+        public String getAuthor() {
+            return "ChaseHuegel";
+        }
+
+        @Override
+        public String getVersion() {
+            return plugin.getPluginMeta().getVersion();
+        }
+
+        @Override
+        public boolean persist() {
+            return true;
+        }
+
+        @Override
+        public String onPlaceholderRequest(Player player, String params) {
+            if (player == null || params == null) return "";
+            return hook.onRequest(player, params);
+        }
     }
 }

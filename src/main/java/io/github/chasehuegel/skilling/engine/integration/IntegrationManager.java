@@ -15,8 +15,11 @@ public class IntegrationManager {
     public void initialize() {
         if (plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             papiHook = new PlaceholderAPIHook(plugin);
-            papiHook.register();
-            plugin.getLogger().info("PlaceholderAPI integration enabled");
+            if (papiHook.register()) {
+                plugin.getLogger().info("PlaceholderAPI integration enabled");
+            } else {
+                papiHook = null;
+            }
         }
         if (plugin.getServer().getPluginManager().getPlugin("Vault") != null) {
             vaultHook = new VaultHook(plugin);
