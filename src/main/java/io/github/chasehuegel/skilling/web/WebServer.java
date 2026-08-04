@@ -14,6 +14,7 @@ import io.github.chasehuegel.skilling.web.handler.StateFilterHandler;
 import io.github.chasehuegel.skilling.web.handler.TagHandler;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import java.io.File;
 import java.time.Duration;
 import java.util.Map;
@@ -70,19 +71,29 @@ public final class WebServer {
             var reloadHandler = new ReloadHandler(plugin, stagingManager, lockdownManager);
 
             routes.before(ctx -> {
-                ctx.res().setHeader("Access-Control-Allow-Origin", "*");
                 ctx.res().setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
                 ctx.res().setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
                 ctx.res().setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
                 ctx.res().setHeader("Pragma", "no-cache");
                 ctx.res().setHeader("Expires", "0");
+                // CORS: only reflect an explicitly allowed origin. The frontend is
+                // served same-origin, so same-origin requests work without any CORS
+                // header; a blanket "*" would let any cross-origin page read admin
+                // API responses. Basic auth credentials are origin-scoped and are
+                // never attached to cross-origin requests, so refusing the header
+                // also prevents cross-origin state changes from being read.
+                String origin = ctx.header("Origin");
+                if (origin != null && originAllowed(origin, ctx)) {
+                    ctx.res().setHeader("Access-Control-Allow-Origin", origin);
+                    ctx.res().setHeader("Vary", "Origin");
+                }
             });
 
             routes.before("/api/*", ctx -> {
                 if (ctx.method().name().equals("OPTIONS")) return;
                 if (ctx.path().equals("/api/auth/check")) return;
                 if (ctx.path().equals("/api/health")) return;
-                String ip = ctx.ip();
+                String ip = clientIp(ctx);
                 if (rateLimiter.isBlocked(ip)) {
                     ctx.status(429).json(Map.of(
                         "status", "error",
@@ -109,7 +120,7 @@ public final class WebServer {
             });
 
             routes.get("/api/auth/check", ctx -> {
-                String ip = ctx.ip();
+                String ip = clientIp(ctx);
                 if (rateLimiter.isBlocked(ip)) {
                     ctx.status(429).json(Map.of(
                         "status", "error",
@@ -193,6 +204,62 @@ public final class WebServer {
         if (app != null) {
             app.stop();
             plugin.getLogger().info("Web GUI stopped.");
+        }
+    }
+
+    /**
+     * Resolves the client identity for rate limiting. Behind a trusted reverse
+     * proxy every socket appears as the proxy, so one client's failures would
+     * otherwise lock out everyone; the real client IP is read from the right-most
+     * {@code X-Forwarded-For} entry (the address the trusted proxy appended) when
+     * {@code behind_proxy} is enabled.
+     *
+     * @param ctx the current request context
+     * @return the client IP to rate-limit on
+     */
+    private String clientIp(Context ctx) {
+        return resolveClientIp(ctx.ip(), ctx.header("X-Forwarded-For"), config.behindProxy());
+    }
+
+    /**
+     * Resolves the rate-limit identity from the socket IP and optional forwarded
+     * header. Package-private and pure so the proxy/IP logic is unit-testable
+     * without a live server.
+     *
+     * @param socketIp     the TCP peer address
+     * @param forwardedFor the {@code X-Forwarded-For} header, or null
+     * @param behindProxy  whether a trusted reverse proxy is in front
+     * @return the identity to rate-limit on
+     */
+    static String resolveClientIp(String socketIp, String forwardedFor, boolean behindProxy) {
+        if (!behindProxy || forwardedFor == null || forwardedFor.isBlank()) return socketIp;
+        String[] parts = forwardedFor.split(",");
+        String last = parts[parts.length - 1].trim();
+        return last.isBlank() ? socketIp : last;
+    }
+
+    /**
+     * Whether a cross-origin request's Origin header may be reflected back. The
+     * API's own origin (the request's Host) is always allowed, plus any origin
+     * explicitly listed in {@code web.allowed_origins}. Anything else gets no
+     * {@code Access-Control-Allow-Origin} header, so the browser blocks reading
+     * the response.
+     *
+     * @param origin the request's Origin header
+     * @param ctx    the current request context
+     * @return true if the origin may read the response
+     */
+    private boolean originAllowed(String origin, Context ctx) {
+        if (config.allowedOrigins().contains(origin)) return true;
+        try {
+            var uri = new java.net.URI(origin);
+            String host = uri.getHost();
+            if (host == null) return false;
+            String hostPort = uri.getPort() == -1 ? host : host + ":" + uri.getPort();
+            String requestHost = ctx.header("Host");
+            return hostPort.equalsIgnoreCase(requestHost);
+        } catch (java.net.URISyntaxException e) {
+            return false;
         }
     }
 }

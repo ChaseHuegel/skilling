@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BasicAuthenticatorTest {
 
     private static final WebConfig CONFIG =
-        new WebConfig(true, 8082, "admin", "correct horse battery staple", "0.0.0.0");
+        new WebConfig(true, 8082, "admin", "correct horse battery staple", "0.0.0.0", false, java.util.List.of());
 
     @Test
     void constantTimeEqualsMatchesEqualStrings() {

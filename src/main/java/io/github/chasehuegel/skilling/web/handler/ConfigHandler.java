@@ -81,70 +81,66 @@ public final class ConfigHandler {
         try {
             Map<String, Object> body = WebError.parseBody(ctx, Map.class);
 
+            // Merge the editor payload over the LIVE config rather than rebuilding
+            // from a whitelist, so keys the editor does not know about (setup.first_run,
+            // admin-added sections, future keys) survive the round-trip. Only keys
+            // actually present in the body are overwritten; everything else stays.
             org.bukkit.configuration.file.YamlConfiguration liveConfig =
                     org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(configFile);
 
-            var yamlConfig = new org.bukkit.configuration.file.YamlConfiguration();
+            Map<String, Object> db = section(body, "database");
+            if (db.containsKey("poolSize")) liveConfig.set("database.pool_size", db.get("poolSize"));
+            if (db.containsKey("walMode")) liveConfig.set("database.wal_mode", db.get("walMode"));
 
-            Map<String, Object> db = (Map<String, Object>) body.getOrDefault("database", Map.of());
-            yamlConfig.set("database.pool_size", db.getOrDefault("poolSize", 10));
-            yamlConfig.set("database.wal_mode", db.getOrDefault("walMode", true));
+            Map<String, Object> bb = section(body, "bossbar");
+            if (bb.containsKey("maxActive")) liveConfig.set("bossbar.max_active", bb.get("maxActive"));
+            if (bb.containsKey("fadeTicks")) liveConfig.set("bossbar.fade_ticks", bb.get("fadeTicks"));
 
-            Map<String, Object> bb = (Map<String, Object>) body.getOrDefault("bossbar", Map.of());
-            yamlConfig.set("bossbar.max_active", bb.getOrDefault("maxActive", 2));
-            yamlConfig.set("bossbar.fade_ticks", bb.getOrDefault("fadeTicks", 40));
+            Map<String, Object> deb = section(body, "debouncer");
+            if (deb.containsKey("intervalMs")) liveConfig.set("debouncer.interval_ms", deb.get("intervalMs"));
 
-            Map<String, Object> deb = (Map<String, Object>) body.getOrDefault("debouncer", Map.of());
-            yamlConfig.set("debouncer.interval_ms", deb.getOrDefault("intervalMs", 500));
+            if (body.containsKey("debugLogging")) liveConfig.set("debug_logging", body.get("debugLogging"));
 
-            yamlConfig.set("debug_logging", body.getOrDefault("debugLogging", false));
+            Map<String, Object> titles = section(body, "titles");
+            if (titles.containsKey("stayDuration")) liveConfig.set("titles.stay_duration", titles.get("stayDuration"));
 
-            Map<String, Object> titles = (Map<String, Object>) body.getOrDefault("titles", Map.of());
-            yamlConfig.set("titles.stay_duration", titles.getOrDefault("stayDuration", 5000));
+            if (body.containsKey("globalXpModifier")) liveConfig.set("global_xp_modifier", body.get("globalXpModifier"));
 
-            yamlConfig.set("global_xp_modifier", body.getOrDefault("globalXpModifier", 1.0));
+            Map<String, Object> cropGrow = section(body, "cropGrow");
+            if (cropGrow.containsKey("searchRadius")) liveConfig.set("crop_grow.search_radius", cropGrow.get("searchRadius"));
 
-            Map<String, Object> cropGrow = (Map<String, Object>) body.getOrDefault("cropGrow", Map.of());
-            yamlConfig.set("crop_grow.search_radius", cropGrow.getOrDefault("searchRadius", 10));
+            Map<String, Object> skillsGuideBook = section(body, "skillsGuideBook");
+            if (skillsGuideBook.containsKey("enabled")) liveConfig.set("skills_guide_book.enabled", skillsGuideBook.get("enabled"));
 
-            Map<String, Object> skillsGuideBook = (Map<String, Object>) body.getOrDefault("skillsGuideBook", Map.of());
-            yamlConfig.set("skills_guide_book.enabled", skillsGuideBook.getOrDefault("enabled", true));
-
-            Map<String, Object> web = (Map<String, Object>) body.getOrDefault("web", Map.of());
-            yamlConfig.set("web.enabled", web.getOrDefault("enabled", false));
+            Map<String, Object> web = section(body, "web");
+            if (web.containsKey("enabled")) liveConfig.set("web.enabled", web.get("enabled"));
 
             // Port/credential changes cannot be applied to the running embedded
             // server; reject them explicitly so admins are not misled into
             // believing their change took effect.
             int currentPort = liveConfig.getInt("web.port", 8082);
-            int requestedPort = ((Number) web.getOrDefault("port", currentPort)).intValue();
+            int requestedPort = web.containsKey("port")
+                    ? ((Number) web.get("port")).intValue() : currentPort;
             if (requestedPort != currentPort) {
                 throw new IllegalArgumentException(WEB_RESTART_REQUIRED);
             }
-            yamlConfig.set("web.port", requestedPort);
 
             String currentUsername = liveConfig.getString("web.username", "admin");
-            String requestedUsername = String.valueOf(web.getOrDefault("username", currentUsername));
+            String requestedUsername = web.containsKey("username")
+                    ? String.valueOf(web.get("username")) : currentUsername;
             if (!currentUsername.equals(requestedUsername)) {
                 throw new IllegalArgumentException(WEB_RESTART_REQUIRED);
             }
-            yamlConfig.set("web.username", requestedUsername);
 
             Object passwordValue = web.get("password");
             String requestedPassword = passwordValue == null ? "" : String.valueOf(passwordValue);
-            String currentPassword = liveConfig.getString("web.password", "skilling");
             if (!requestedPassword.isBlank()) {
                 throw new IllegalArgumentException(WEB_RESTART_REQUIRED);
             }
-            // Blank password means "keep current"; preserve it so an apply
-            // round-trip never resets credentials to the default.
-            yamlConfig.set("web.password", currentPassword);
+            // Blank password means "keep current"; it is already in the live
+            // config and survives the merge untouched.
 
-            // Preserve the bind address (not exposed in the editor) so a save
-            // round-trip never drops a locally-scoped binding.
-            yamlConfig.set("web.bind_address", liveConfig.getString("web.bind_address", "0.0.0.0"));
-
-            String yamlContent = yamlConfig.saveToString();
+            String yamlContent = liveConfig.saveToString();
             stagingManager.stageConfigFile(yamlContent);
             ctx.json(Map.of("status", "ok"));
         } catch (IllegalArgumentException e) {
@@ -156,5 +152,14 @@ public final class ConfigHandler {
         } catch (Exception e) {
             WebError.internal(ctx, LOGGER, "Failed to stage config.yml", e);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> section(Map<String, Object> body, String key) {
+        Object raw = body.get(key);
+        if (raw == null) return Map.of();
+        if (raw instanceof Map<?, ?> map) return (Map<String, Object>) map;
+        // A section key present with a non-object shape is a malformed request.
+        throw new ClassCastException("section '" + key + "' must be an object");
     }
 }

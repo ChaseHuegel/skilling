@@ -65,3 +65,13 @@ web:
   # console) the first time the web GUI is enabled. Do not leave it as the
   # known default "skilling".
   password: "skilling"
+  # Set to true when this instance is behind a trusted reverse proxy that sets
+  # X-Forwarded-For. Rate limiting then keys on the real client IP (the
+  # right-most entry the proxy appended) instead of the proxy's address, so one
+  # client's failed attempts cannot lock out everyone behind the proxy.
+  behind_proxy: false
+  # Cross-origin origins allowed to read the admin API. The frontend is served
+  # same-origin, so this is normally empty; add entries (e.g. the Vite dev
+  # server "http://localhost:5173") only when accessing from another origin.
+  # Unlisted origins get no Access-Control-Allow-Origin header and are blocked.
+  allowed_origins: []

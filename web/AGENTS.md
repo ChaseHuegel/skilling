@@ -112,9 +112,9 @@ https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/{VERSION}/
 ### Security Considerations
 
 - **Auth:** Basic Auth over HTTP. All API routes (except `/api/health` and `/api/auth/check`) require a valid `Authorization: Basic ...` header. Credential comparison is constant-time (`MessageDigest.isEqual`).
-- **Brute-force protection:** `AuthRateLimiter` tracks failed attempts per client IP and locks out after 10 failures within 15 minutes (HTTP 429). Failures are counted on `/api/auth/check` and the global `/api/*` auth filter; a successful login resets the counter.
+- **Brute-force protection:** `AuthRateLimiter` tracks failed attempts per client IP and locks out after 10 failures within 15 minutes (HTTP 429). Failures are counted on `/api/auth/check` and the global `/api/*` auth filter; a successful login resets the counter. Behind a reverse proxy set `web.behind_proxy: true` so the limiter keys on the real client IP from `X-Forwarded-For` (right-most entry) instead of the proxy's address — otherwise one client's failures lock out everyone.
 - **Default credentials:** On first enable with the shipped default password, `Skilling.ensureWebPassword` generates and persists a random password and logs it once. The web GUI binds to `web.bind_address` (`0.0.0.0` by default; `127.0.0.1` restricts to localhost).
-- **CORS:** All origins/methods/headers allowed (admin tool, trusted network).
+- **CORS:** Only the API's own origin and the origins in `web.allowed_origins` get an `Access-Control-Allow-Origin` header (reflected); unlisted cross-origin origins are blocked from reading responses. Basic auth credentials are origin-scoped and never attached cross-origin, so refusing the header also blocks cross-origin state changes.
 - **XSS:** Vue's template compiler sanitizes all user input. No `v-html`.
 - **Path traversal:** Skill IDs are validated against `[a-z_][a-z0-9_]*`.
 - **Credential handling:** `GET /api/config` redacts `web.password` (returns `""`); the frontend treats blank as "keep current". Changing `web.port`/`web.username`/`web.password` is rejected with a 400 "requires server restart" message because the embedded server snapshot cannot be reconfigured live.

@@ -128,4 +128,37 @@ class ConfigHandlerSecurityTest {
         verify(staging).stageConfigFile(yaml.capture());
         assertTrue(yaml.getValue().contains("password: " + SECRET), "staged config lost current password");
     }
+
+    @Test
+    void updateRoundTripPreservesKeysOutsideTheEditor() {
+        // Keys the editor does not model (setup.first_run, an admin-added section)
+        // must survive a save instead of being dropped by a whitelist rebuild.
+        try {
+            Files.writeString(configFile().toPath(),
+                "setup:\n"
+                + "  first_run: false\n"
+                + "admin_custom:\n"
+                + "  key: \"value\"\n"
+                + "web:\n"
+                + "  enabled: true\n"
+                + "  port: 8082\n"
+                + "  username: \"admin\"\n"
+                + "  password: \"" + SECRET + "\"\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of(
+            "web", Map.of("enabled", true, "port", 8082, "username", "admin", "password", "")));
+        StagingManager staging = mock(StagingManager.class);
+
+        new ConfigHandler(staging, configFile()).update(ctx);
+
+        verify(ctx).json(Map.of("status", "ok"));
+        ArgumentCaptor<String> yaml = ArgumentCaptor.forClass(String.class);
+        verify(staging).stageConfigFile(yaml.capture());
+        assertTrue(yaml.getValue().contains("first_run: false"), "setup.first_run was dropped");
+        assertTrue(yaml.getValue().contains("admin_custom"), "admin-added section was dropped");
+    }
 }

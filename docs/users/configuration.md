@@ -63,8 +63,10 @@ Global settings for the Skilling engine.
 | `web.bind_address` | string | `0.0.0.0` | Address to bind. Use `127.0.0.1` to restrict the GUI to this machine only (recommended without a reverse proxy). |
 | `web.username` | string | `admin` | Basic auth username |
 | `web.password` | string | `skilling` | Basic auth password. The shipped default is replaced by a generated random password the first time the web GUI is enabled. |
+| `web.behind_proxy` | bool | `false` | Set `true` when a trusted reverse proxy (nginx, Caddy) sits in front and sets `X-Forwarded-For`. Rate limiting then keys on the real client IP (the right-most forwarded entry) instead of the proxy's address, so one client's failed attempts cannot lock out everyone behind the proxy. |
+| `web.allowed_origins` | list | `[]` | Cross-origin origins allowed to read the admin API. The frontend is served same-origin, so this is normally empty; add entries (e.g. `http://localhost:5173` for the Vite dev server) only when accessing from another origin. Unlisted origins get no `Access-Control-Allow-Origin` header and are blocked. |
 
-The web GUI uses Basic auth over plaintext HTTP, so credentials are base64-encoded, not encrypted. Put the GUI behind a TLS-terminating reverse proxy (nginx, Caddy) or bind to `127.0.0.1` in production. Failed logins are rate-limited per client IP (locked out after 10 failures within 15 minutes). Changing `web.port`, `web.username`, or `web.password` requires editing `config.yml` and restarting the server; the web UI rejects such changes with a "requires restart" message.
+The web GUI uses Basic auth over plaintext HTTP, so credentials are base64-encoded, not encrypted. Put the GUI behind a TLS-terminating reverse proxy (nginx, Caddy) or bind to `127.0.0.1` in production. Failed logins are rate-limited per client IP (locked out after 10 failures within 15 minutes). Changing `web.port`, `web.username`, or `web.password` requires editing `config.yml` and restarting the server; the web UI rejects such changes with a "requires restart" message. Saving config from the web UI preserves every key the editor does not model (e.g. `setup.first_run`); only the edited keys are written.
 
 ## tags.yml
 
