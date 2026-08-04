@@ -16,7 +16,7 @@
 - [x] [ISSUE-241](ISSUE-241.md) - Guard LevelUpDispatcher scheduled unlock tasks against a quitting player [Severity: Medium]
 - [x] [ISSUE-242](ISSUE-242.md) - `/skills set database.pool_size` reports success but has no effect until restart [Severity: Medium]
 - [x] [ISSUE-243](ISSUE-243.md) - Bound `max_level` to prevent huge threshold-table allocations [Severity: Medium]
-- [ ] [ISSUE-244](ISSUE-244.md) - SkillsGuideBook recipe is not removed when the book is disabled [Severity: Medium]
+- [x] [ISSUE-244](ISSUE-244.md) - SkillsGuideBook recipe is not removed when the book is disabled [Severity: Medium]
 - [ ] [ISSUE-245](ISSUE-245.md) - `bossbar.max_active: 0` should disable the bar, not degrade to a cap of 1 [Severity: Medium]
 - [ ] [ISSUE-246](ISSUE-246.md) - `/skills reset` leaves a stale XP boss bar visible [Severity: Medium]
 - [ ] [ISSUE-247](ISSUE-247.md) - ExecuteMechanic does not guarantee the kill and lacks target-state guards [Severity: Low]

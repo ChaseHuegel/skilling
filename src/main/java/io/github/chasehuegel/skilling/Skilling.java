@@ -655,6 +655,11 @@ public final class Skilling extends JavaPlugin {
         if (bossBarPool != null) {
             bossBarPool.removeAll();
         }
+        // Bukkit does not remove recipes automatically; unregister the guide book
+        // recipe so a disabled/reloaded book leaves the game entirely.
+        if (skillsGuideBook != null) {
+            skillsGuideBook.shutdown();
+        }
         if (integrationManager != null) {
             integrationManager.shutdown();
         }

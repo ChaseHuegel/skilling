@@ -6,9 +6,9 @@
 - **Severity:** Medium — `SkillsGuideBook.setEnabled(false)` only flips the flag; the interact handler goes inert but the registered recipe stays craftable and discovered (`SkillsGuideBook.java:53-67`, `registerRecipe`). `/skills set skills_guide_book.enabled false` therefore leaves the book in the game, and `onDisable` never removes the recipe.
 
 ## Implementation Requirements
-- [ ] Remove the recipe from the server's recipe manager when the book is disabled at runtime, and on plugin disable (Bukkit does not auto-remove recipes).
-- [ ] Re-register the recipe when the book is re-enabled.
-- [ ] Add a test asserting the recipe is removed on disable.
+- [x] Remove the recipe from the server's recipe manager when the book is disabled at runtime, and on plugin disable (Bukkit does not auto-remove recipes).
+- [x] Re-register the recipe when the book is re-enabled.
+- [x] Add a test asserting the recipe is removed on disable.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -19,5 +19,5 @@
 - **Constraints:** Keep recipe discovery (`onPlayerJoin`) behavior consistent with the enabled/disabled state.
 
 ## Verification & Definition of Done
-- [ ] Disabling the book removes its recipe; re-enabling restores it.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Disabling the book removes its recipe; re-enabling restores it.
+- [x] `./gradlew build` and `./gradlew test` pass.

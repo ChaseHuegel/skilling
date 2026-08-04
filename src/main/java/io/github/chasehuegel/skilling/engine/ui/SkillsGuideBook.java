@@ -35,7 +35,8 @@ public final class SkillsGuideBook implements Listener {
     private final ProfileManager profileManager;
     private final SkillMenuBuilder skillMenuBuilder;
     private volatile boolean enabled;
-    private boolean registered;
+    private boolean listenerRegistered;
+    private boolean recipeRegistered;
 
     public SkillsGuideBook(Skilling plugin, ProfileManager profileManager, SkillMenuBuilder skillMenuBuilder) {
         this.plugin = plugin;
@@ -45,25 +46,37 @@ public final class SkillsGuideBook implements Listener {
     }
 
     /**
-     * Updates the enabled flag at runtime (from config). When enabling a book that
-     * was disabled at startup, the recipe and listener are registered on first use.
+     * Updates the enabled state at runtime (from config). Disabling removes the
+     * recipe from the server so the book actually leaves the game; re-enabling
+     * re-registers it and re-discovers it for online players.
      *
      * @param enabled whether the guide book should be active
      */
     public void setEnabled(boolean enabled) {
+        boolean wasEnabled = this.enabled;
         this.enabled = enabled;
-        if (enabled && !registered) {
-            registered = true;
+        if (enabled && !wasEnabled) {
             register();
+        } else if (!enabled && wasEnabled) {
+            removeRecipe();
         }
     }
 
+    /**
+     * Registers the listener and recipe (idempotent). Called at plugin enable and
+     * whenever the book transitions from disabled to enabled at runtime.
+     */
     public void register() {
-        registered = true;
         if (!enabled) return;
-        registerRecipe();
-        Bukkit.getPluginManager().registerEvents(this, plugin);
-        Bukkit.getOnlinePlayers().forEach(p -> p.discoverRecipe(RECIPE_KEY));
+        if (!listenerRegistered) {
+            listenerRegistered = true;
+            Bukkit.getPluginManager().registerEvents(this, plugin);
+        }
+        if (!recipeRegistered) {
+            registerRecipe();
+            recipeRegistered = true;
+            Bukkit.getOnlinePlayers().forEach(p -> p.discoverRecipe(RECIPE_KEY));
+        }
     }
 
     private void registerRecipe() {
@@ -72,6 +85,21 @@ public final class SkillsGuideBook implements Listener {
         recipe.addIngredient(Material.BOOK);
         recipe.addIngredient(Material.COAL);
         Bukkit.addRecipe(recipe, false);
+    }
+
+    /**
+     * Removes the recipe from the server. Called when the book is disabled at
+     * runtime and on plugin disable; Bukkit does not remove recipes automatically.
+     */
+    public void shutdown() {
+        removeRecipe();
+    }
+
+    private void removeRecipe() {
+        if (recipeRegistered) {
+            Bukkit.removeRecipe(RECIPE_KEY);
+            recipeRegistered = false;
+        }
     }
 
     public static ItemStack create() {
