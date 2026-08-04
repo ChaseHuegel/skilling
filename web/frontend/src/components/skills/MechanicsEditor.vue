@@ -28,11 +28,22 @@ const emit = defineEmits<{
 
 const registriesStore = useRegistriesStore()
 
+// Offline fallbacks mirroring Skilling.registerBuiltinMechanics (Skilling.java).
+// The live /api/mechanics endpoint is the source of truth; these only render
+// when that fetch fails, so they must stay in sync with the registrations.
 const FALLBACK_MECHANICS = [
-  'core:yield_multiplier', 'core:apply_status', 'core:chain_break', 'core:projectile',
-  'core:modify_brew_time', 'core:modify_potion_duration', 'core:modify_furnace_output',
-  'core:modify_attribute', 'core:knockback', 'core:shield_disable', 'core:offhand_strike',
-  'core:set_cooldown', 'core:modify_attack_speed', 'core:ally_aura',
+  'core:yield_multiplier', 'core:chain_break', 'core:level_break', 'core:modify_damage',
+  'core:apply_status', 'core:cancel_damage', 'core:modify_attribute', 'core:modify_craft_output',
+  'core:modify_furnace_output', 'core:saturation_inject', 'core:modify_brew_time',
+  'core:modify_potion_duration', 'core:aoe_effect', 'core:projectile', 'core:teleport',
+  'core:block_damage', 'core:thorns_damage', 'core:knockback', 'core:shield_disable',
+  'core:offhand_strike', 'core:set_cooldown', 'core:modify_attack_speed', 'core:dodge',
+  'core:lifesteal', 'core:armor_bonus', 'core:knockback_resist', 'core:crowd_control',
+  'core:execute', 'core:auto_smelt', 'core:speed_bonus', 'core:xp_bonus',
+  'core:fishing_yield', 'core:fishing_loot', 'core:area_harvest', 'core:auto_replant',
+  'core:durability_save', 'core:haste_effect', 'core:repair_discount',
+  'core:modify_tame_chance', 'core:projectile_return', 'core:modify_enchant_cost',
+  'core:field_aura', 'core:ally_aura', 'core:modify_jump', 'core:block_particles',
 ]
 
 const MECHANIC_SUGGESTIONS = computed(() =>
@@ -41,25 +52,50 @@ const MECHANIC_SUGGESTIONS = computed(() =>
 
 const FALLBACK_PARAM_NAMES: Record<string, string[]> = {
   'core:yield_multiplier': ['yield_chance'],
-  'core:chain_break': ['chain_limit', 'exhaustion'],
-  'core:apply_status': ['effect', 'duration', 'amplifier'],
-  'core:modify_attribute': ['attribute', 'amount', 'duration'],
+  'core:chain_break': ['chain_limit'],
+  'core:level_break': ['chain_limit'],
   'core:modify_damage': ['multiplier'],
+  'core:apply_status': ['effect', 'duration', 'amplifier'],
   'core:cancel_damage': ['chance'],
+  'core:modify_attribute': ['attribute', 'amount', 'duration'],
+  'core:modify_craft_output': ['multiplier'],
   'core:modify_furnace_output': ['multiplier'],
+  'core:saturation_inject': ['saturation'],
   'core:modify_brew_time': ['multiplier'],
   'core:modify_potion_duration': ['multiplier'],
-  'core:modify_craft_output': ['multiplier'],
-  'core:saturation_inject': ['saturation'],
   'core:aoe_effect': ['effect', 'radius', 'duration', 'amplifier'],
   'core:projectile': ['speed', 'damage'],
   'core:teleport': ['range'],
+  'core:block_damage': ['chance'],
+  'core:thorns_damage': ['damage'],
   'core:knockback': ['force', 'radius', 'vertical'],
   'core:shield_disable': ['ticks'],
   'core:offhand_strike': ['multiplier', 'reach'],
   'core:set_cooldown': ['material', 'ticks'],
   'core:modify_attack_speed': ['multiplier', 'duration'],
+  'core:dodge': ['chance'],
+  'core:lifesteal': ['percentage'],
+  'core:armor_bonus': ['amount'],
+  'core:knockback_resist': ['amount'],
+  'core:crowd_control': ['effect', 'duration', 'amplifier', 'radius'],
+  'core:execute': ['threshold'],
+  'core:auto_smelt': ['chance'],
+  'core:speed_bonus': ['multiplier'],
+  'core:xp_bonus': ['multiplier', 'duration'],
+  'core:fishing_yield': ['yield_chance'],
+  'core:fishing_loot': ['multiplier'],
+  'core:area_harvest': ['radius', 'max_blocks'],
+  'core:auto_replant': [],
+  'core:durability_save': ['chance'],
+  'core:haste_effect': ['amplifier', 'duration'],
+  'core:repair_discount': ['discount'],
+  'core:modify_tame_chance': ['multiplier'],
+  'core:projectile_return': ['chance'],
+  'core:modify_enchant_cost': ['discount'],
+  'core:field_aura': ['effect', 'radius', 'duration', 'amplifier'],
   'core:ally_aura': ['effect', 'radius', 'duration', 'amplifier'],
+  'core:modify_jump': ['multiplier', 'duration'],
+  'core:block_particles': ['particle', 'count', 'speed'],
 }
 
 const MECHANIC_PARAM_NAMES = computed(() =>

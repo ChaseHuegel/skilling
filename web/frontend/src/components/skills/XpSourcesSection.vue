@@ -76,11 +76,15 @@ const TRIGGER_OPTIONS = computed(() =>
   registriesStore.triggers.length > 0 ? registriesStore.triggers : FALLBACK_TRIGGERS
 )
 
+// Offline fallback mirroring Skilling.registerBuiltinTriggers (Skilling.java).
+// The live /api/triggers endpoint is the source of truth.
 const FALLBACK_TRIGGERS = [
   'block_break', 'block_place', 'entity_damage', 'entity_damage_taken',
-  'entity_kill', 'craft_item', 'furnace_extract', 'brew_potion',
-  'player_interact', 'consume_item', 'fishing', 'crop_grow', 'breed_animals',
-  'resurrect', 'cure_villager', 'elytra_glide',
+  'entity_kill', 'craft_item', 'furnace_extract', 'brew_potion', 'brew_start',
+  'repair', 'player_interact', 'consume_item', 'fishing', 'crop_grow',
+  'breed_animals', 'sprint', 'sneak', 'ride_horse', 'collect_xp', 'level_up',
+  'enchant_item', 'shoot_bow', 'item_damage', 'player_shear', 'player_tame',
+  'launch_projectile', 'projectile_hit', 'resurrect', 'cure_villager', 'elytra_glide',
 ]
 
 function updateSource(index: number, patch: Partial<XpSource>) {

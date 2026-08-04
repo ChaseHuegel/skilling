@@ -13,6 +13,8 @@ export const STATE_SUGGESTIONS: string[] = [
   'light_level:below:7', 'light_level:above:7', 'light_level:exactly:0',
   'health:below:50%', 'health:above:75%',
   'hunger:below:6', 'hunger:above:15',
+  'biome:minecraft:plains', 'biome:minecraft:forest',
+  'target_type:#c:undead', 'target_type:minecraft:zombie',
   'hand:empty', 'offhand:empty', 'offhand:weapon',
   'equipped_all:#c:heavy_armor', 'equipped_all:#c:medium_armor',
   'equipped_all:#c:light_armor', 'equipped_all:#c:unarmored',

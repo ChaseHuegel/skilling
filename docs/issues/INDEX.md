@@ -18,7 +18,7 @@
 - [x] [ISSUE-224](ISSUE-224.md) - Web GUI layout round-trip drops per-page `gui_title`
 - [x] [ISSUE-225](ISSUE-225.md) - Web gui-layout API must reject reserved navigation slots
 - [x] [ISSUE-226](ISSUE-226.md) - Web ability editor on_failure reason list is incomplete
-- [ ] [ISSUE-227](ISSUE-227.md) - Refresh stale frontend fallback registries
+- [x] [ISSUE-227](ISSUE-227.md) - Refresh stale frontend fallback registries
 - [ ] [ISSUE-228](ISSUE-228.md) - Web skill editor cannot represent addon-registered evaluator types
 
 ### Improvements
