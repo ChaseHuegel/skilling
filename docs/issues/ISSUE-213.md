@@ -5,10 +5,10 @@
 - **Agent Role:** You are an expert backend engineer executing this task.
 
 ## Implementation Requirements
-- [ ] `SkillEventListener.fireAbilities` must not let a thrown `mechanic.execute(...)` propagate out of the ability loop (`SkillEventListener.java:564`).
-- [ ] Per-mechanic failure handling: catch the exception, log it (SEVERE/WARNING) with the skill and mechanic type, mark that mechanic as not executed, and continue to the next mechanic and next ability.
-- [ ] The Check -> Execute -> Consume lifecycle must still hold: `requirementEngine.consume` (line 581) must not be skipped because a later/other mechanic threw, and a mechanic that threw must not count as an executed activation that spends the ability cost if it produced no effect.
-- [ ] Add a regression test with a mechanic stub that throws, asserting: the dispatch completes, the remaining abilities run, and consume/cooldown behavior matches the failure semantics chosen.
+- [x] `SkillEventListener.fireAbilities` must not let a thrown `mechanic.execute(...)` propagate out of the ability loop (`SkillEventListener.java:564`).
+- [x] Per-mechanic failure handling: catch the exception, log it (SEVERE/WARNING) with the skill and mechanic type, mark that mechanic as not executed, and continue to the next mechanic and next ability.
+- [x] The Check -> Execute -> Consume lifecycle must still hold: `requirementEngine.consume` (line 581) must not be skipped because a later/other mechanic threw, and a mechanic that threw must not count as an executed activation that spends the ability cost if it produced no effect.
+- [x] Add a regression test with a mechanic stub that throws, asserting: the dispatch completes, the remaining abilities run, and consume/cooldown behavior matches the failure semantics chosen.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -18,6 +18,6 @@
 - **Constraints:** Mechanics are constructed per dispatch via reflection (`mechanicRegistry.create`, line 551); a construction failure should also be isolated. Keep the existing behavior where a mechanic returning `false` (no-op, wrong event type) does not consume the cost.
 
 ## Verification & Definition of Done
-- [ ] A throwing mechanic no longer aborts the event dispatch or skips other abilities' execution.
-- [ ] Cost/cooldown consumption is correct after a throwing mechanic.
-- [ ] New regression test passes; `./gradlew build` and `./gradlew test` pass.
+- [x] A throwing mechanic no longer aborts the event dispatch or skips other abilities' execution.
+- [x] Cost/cooldown consumption is correct after a throwing mechanic.
+- [x] New regression test passes; `./gradlew build` and `./gradlew test` pass.

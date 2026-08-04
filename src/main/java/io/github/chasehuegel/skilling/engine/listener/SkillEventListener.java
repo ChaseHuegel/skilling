@@ -555,24 +555,36 @@ public final class SkillEventListener implements Listener {
             boolean anyExecuted = false;
             for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
                 debug("    mechanic=" + entry.type() + " skill=" + skill.id());
-                SkillMechanic mechanic = mechanicRegistry.create(entry.type());
-                if (mechanic == null) {
-                    debug("    -> mechanic not found in registry, skipping");
-                    continue;
-                }
+                try {
+                    SkillMechanic mechanic = mechanicRegistry.create(entry.type());
+                    if (mechanic == null) {
+                        debug("    -> mechanic not found in registry, skipping");
+                        continue;
+                    }
 
-                if (!matchesFilters(player, event, entry.filters())) {
-                    debug("    -> filters failed, skipping");
-                    continue;
-                }
+                    if (!matchesFilters(player, event, entry.filters())) {
+                        debug("    -> filters failed, skipping");
+                        continue;
+                    }
 
-                Map<String, Object> evaluatedParams = evaluateParams(entry, skillLevel, ability.unlockLevel());
-                debug("    executing mechanic with params=" + evaluatedParams);
-                boolean executed = mechanic.execute(player, evaluatedParams, event);
-                if (executed) {
-                    anyExecuted = true;
-                } else {
-                    debug("    -> mechanic returned false (no-op), skipping");
+                    Map<String, Object> evaluatedParams = evaluateParams(entry, skillLevel, ability.unlockLevel());
+                    debug("    executing mechanic with params=" + evaluatedParams);
+                    boolean executed = mechanic.execute(player, evaluatedParams, event);
+                    if (executed) {
+                        anyExecuted = true;
+                    } else {
+                        debug("    -> mechanic returned false (no-op), skipping");
+                    }
+                } catch (Exception ex) {
+                    // Isolate per-mechanic failures: a mechanic that throws during
+                    // construction, filter matching, parameter evaluation, or
+                    // execution must not abort the dispatch, must not skip the
+                    // remaining mechanics/abilities, and must not count as an
+                    // executed activation (which would spend the ability's cost and
+                    // cooldown for an effect that did not happen).
+                    plugin.getLogger().log(Level.WARNING, "Mechanic " + entry.type()
+                            + " for ability " + ability.id() + " in skill " + skill.id()
+                            + " failed during execution", ex);
                 }
             }
 

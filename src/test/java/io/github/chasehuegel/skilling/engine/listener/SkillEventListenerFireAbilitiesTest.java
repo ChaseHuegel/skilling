@@ -68,6 +68,17 @@ class SkillEventListenerFireAbilitiesTest {
         }
     }
 
+    /** Throwing test mechanic: simulates a mechanic that fails during execution. */
+    public static class ThrowingMechanic implements SkillMechanic {
+        public static final AtomicInteger EXECUTIONS = new AtomicInteger();
+
+        @Override
+        public boolean execute(Player player, Map<String, Object> params, Event event) {
+            EXECUTIONS.incrementAndGet();
+            throw new IllegalStateException("simulated mechanic failure");
+        }
+    }
+
     @TempDir
     Path tempDir;
 
@@ -80,6 +91,7 @@ class SkillEventListenerFireAbilitiesTest {
     void setUp() {
         CountingMechanic.EXECUTIONS.set(0);
         NoOpMechanic.EXECUTIONS.set(0);
+        ThrowingMechanic.EXECUTIONS.set(0);
     }
 
     private void buildSkillWithAbility(String abilityRequirementsBlock) throws IOException {
@@ -94,6 +106,7 @@ class SkillEventListenerFireAbilitiesTest {
                 reg -> {
                     reg.register("test:count", CountingMechanic.class, java.util.List.of());
                     reg.register("test:noop", NoOpMechanic.class, java.util.List.of());
+                    reg.register("test:throw", ThrowingMechanic.class, java.util.List.of());
                 });
 
         Path skillsDir = tempDir.resolve("skills");
@@ -128,6 +141,7 @@ class SkillEventListenerFireAbilitiesTest {
         MechanicRegistry mechReg = new MechanicRegistry();
         mechReg.register("test:count", CountingMechanic.class, java.util.List.of());
         mechReg.register("test:noop", NoOpMechanic.class, java.util.List.of());
+        mechReg.register("test:throw", ThrowingMechanic.class, java.util.List.of());
 
         var tagResolver = new TagResolver(new CustomTagLoader());
         RequirementEngine requirementEngine = new RequirementEngine(tagResolver, new StateFilterRegistry());
@@ -136,6 +150,7 @@ class SkillEventListenerFireAbilitiesTest {
         Server server = mock(Server.class);
         when(plugin.getServer()).thenReturn(server);
         when(server.getScheduler()).thenReturn(mock(org.bukkit.scheduler.BukkitScheduler.class));
+        when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("fire-abilities-test"));
 
         listener = new SkillEventListener(plugin, skillManager, profileManager, tagResolver,
                 requirementEngine, mechReg, new FeedbackDebouncer(500), mock(BossBarPool.class),
@@ -217,5 +232,75 @@ class SkillEventListenerFireAbilitiesTest {
         assertEquals(2, NoOpMechanic.EXECUTIONS.get(),
                 "a no-op must not consume, so the ability fires again on the next event");
         verify(coal, never()).setAmount(anyInt());
+    }
+
+    @Test
+    void throwingMechanicDoesNotAbortDispatchOrConsume() throws IOException {
+        buildSkillWithMechanics("""
+                    requirements:
+                      cooldown: 10.0
+                      items:
+                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                """, """
+                  - { type: "test:throw" }
+            """);
+
+        org.bukkit.inventory.PlayerInventory inventory = mock(org.bukkit.inventory.PlayerInventory.class);
+        ItemStack coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(5);
+        ItemStack[] contents = new ItemStack[36];
+        contents[0] = coal;
+        when(inventory.getContents()).thenReturn(contents);
+        when(player.getInventory()).thenReturn(inventory);
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+
+        // A throwing mechanic produces no effect, so the dispatch must complete
+        // without spending cost/cooldown, leaving the ability re-triggerable.
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+
+        assertEquals(2, ThrowingMechanic.EXECUTIONS.get(),
+                "a throwing mechanic must not abort the dispatch");
+        verify(coal, never()).setAmount(anyInt());
+    }
+
+    @Test
+    void throwingMechanicAfterSuccessfulMechanicStillConsumes() throws IOException {
+        buildSkillWithMechanics("""
+                    requirements:
+                      cooldown: 10.0
+                      items:
+                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                """, """
+                  - { type: "test:count" }
+                  - { type: "test:throw" }
+            """);
+
+        org.bukkit.inventory.PlayerInventory inventory = mock(org.bukkit.inventory.PlayerInventory.class);
+        ItemStack coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(5);
+        ItemStack[] contents = new ItemStack[36];
+        contents[0] = coal;
+        when(inventory.getContents()).thenReturn(contents);
+        when(player.getInventory()).thenReturn(inventory);
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+
+        // The throwing mechanic is isolated, but the earlier mechanic DID execute,
+        // so the cost and cooldown must still be consumed exactly once.
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+        assertEquals(1, CountingMechanic.EXECUTIONS.get(),
+                "the successful mechanic must still run");
+        assertEquals(1, ThrowingMechanic.EXECUTIONS.get(),
+                "the throwing mechanic must be reached and isolated");
+        verify(coal, times(1)).setAmount(4);
+
+        // The cooldown was applied by consume, so a second fire does nothing.
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+        assertEquals(1, CountingMechanic.EXECUTIONS.get(),
+                "consume must not be skipped because a later mechanic threw");
     }
 }
