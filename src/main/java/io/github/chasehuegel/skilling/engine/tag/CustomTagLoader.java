@@ -40,6 +40,7 @@ public final class CustomTagLoader {
 
     private final Map<String, EnumSet<Material>> customTags = new HashMap<>();
     private final Map<String, EnumSet<EntityType>> customEntityTags = new HashMap<>();
+    private volatile boolean loaded;
 
     /**
      * Loads custom tags from the given YAML file.
@@ -50,7 +51,11 @@ public final class CustomTagLoader {
     public void load(File file) {
         customTags.clear();
         customEntityTags.clear();
-        if (!file.exists() || !file.isFile()) return;
+        if (!file.exists() || !file.isFile()) {
+            // A definitive (empty) store: a #c: reference is genuinely unknown.
+            loaded = true;
+            return;
+        }
 
         try (var reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(reader);
@@ -59,6 +64,18 @@ public final class CustomTagLoader {
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to read tags.yml: " + file, e);
         }
+        loaded = true;
+    }
+
+    /**
+     * Whether {@link #load(File)} has completed for this loader. A loader that
+     * never ran (e.g. a unit-test resolver without a tags.yml) defers existence
+     * checks; a loaded store is authoritative about which {@code #c:} keys exist.
+     *
+     * @return true once a load attempt has completed
+     */
+    public boolean isLoaded() {
+        return loaded;
     }
 
     private void loadMaterialSection(YamlConfiguration config) {
@@ -67,7 +84,7 @@ public final class CustomTagLoader {
 
         Map<String, List<String>> rawEntries = new HashMap<>();
         for (String key : section.getKeys(false)) {
-            rawEntries.put(key, section.getStringList(key));
+            rawEntries.put(key, requireList(section, key));
         }
 
         Set<String> resolving = new HashSet<>();
@@ -82,13 +99,31 @@ public final class CustomTagLoader {
 
         Map<String, List<String>> rawEntries = new HashMap<>();
         for (String key : section.getKeys(false)) {
-            rawEntries.put(key, section.getStringList(key));
+            rawEntries.put(key, requireList(section, key));
         }
 
         Set<String> resolving = new HashSet<>();
         for (String key : rawEntries.keySet()) {
             resolveEntity(key, rawEntries, resolving);
         }
+    }
+
+    /**
+     * Reads a tag value as a list of entries, rejecting a scalar or map value
+     * (which would otherwise silently resolve to an empty tag).
+     *
+     * @param section the custom-tags section
+     * @param key     the tag key
+     * @return the list of entries
+     * @throws IllegalArgumentException if the value is not a list
+     */
+    private static List<String> requireList(ConfigurationSection section, String key) {
+        Object value = section.get(key);
+        if (!(value instanceof List<?>)) {
+            throw new IllegalArgumentException(
+                    "Custom tag '" + key + "' must be a list of entries, got: " + value);
+        }
+        return section.getStringList(key);
     }
 
     private EnumSet<Material> resolve(String key, Map<String, List<String>> rawEntries, Set<String> resolving) {

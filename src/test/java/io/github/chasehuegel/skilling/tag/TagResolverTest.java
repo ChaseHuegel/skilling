@@ -98,6 +98,26 @@ class TagResolverTest {
     }
 
     @Test
+    void unknownCustomTagKeyRejectedWhenStoreLoaded() throws IOException {
+        File tagsFile = tempDir.resolve("tags.yml").toFile();
+        Files.writeString(tagsFile.toPath(), "custom_tags:\n  ores:\n    - \"minecraft:coal\"\n");
+        var loader = new CustomTagLoader();
+        loader.load(tagsFile);
+
+        var resolver = new TagResolver(loader);
+        assertTrue(resolver.isKnown("#c:ores"));
+        assertFalse(resolver.isKnown("#c:typo"));
+    }
+
+    @Test
+    void unknownCustomTagKeyDefersWhenLoaderNeverRan() {
+        // A resolver whose loader never ran (unit-test context) must not reject
+        // #c: references it cannot verify.
+        var resolver = new TagResolver(new CustomTagLoader());
+        assertTrue(resolver.isKnown("#c:anything"));
+    }
+
+    @Test
     void singleMaterialResolvesToSingletonSet() {
         var resolver = new TagResolver(new CustomTagLoader());
         var set = resolver.resolve("minecraft:stone");

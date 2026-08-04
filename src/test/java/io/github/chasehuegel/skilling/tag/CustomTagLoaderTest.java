@@ -131,6 +131,30 @@ class CustomTagLoaderTest {
     }
 
     @Test
+    void scalarTagValueFailsFast() throws IOException {
+        File tagsFile = tempDir.resolve("tags.yml").toFile();
+        try (var w = new FileWriter(tagsFile)) {
+            w.write("custom_tags:\n  ores: \"minecraft:coal\"\n");
+        }
+
+        var loader = new CustomTagLoader();
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> loader.load(tagsFile));
+        assertTrue(ex.getMessage().contains("ores"), ex.getMessage());
+    }
+
+    @Test
+    void scalarEntityTagValueFailsFast() throws IOException {
+        File tagsFile = tempDir.resolve("tags.yml").toFile();
+        try (var w = new FileWriter(tagsFile)) {
+            w.write("entity_tags:\n  undead: \"minecraft:zombie\"\n");
+        }
+
+        var loader = new CustomTagLoader();
+        assertThrows(IllegalArgumentException.class, () -> loader.load(tagsFile));
+    }
+
+    @Test
     void parsesEntityTagKeys() throws IOException {
         File tagsFile = tempDir.resolve("tags.yml").toFile();
         try (var w = new FileWriter(tagsFile)) {

@@ -102,7 +102,11 @@ public final class TagResolver {
         String prefix = namespace.substring(0, colonIndex);
         String key = namespace.substring(colonIndex + 1);
         if ("c".equals(prefix)) {
-            if (customTagLoader.getKeys().isEmpty()) return true; // not loaded; defer
+            // Defer only when the loader never ran (e.g. a unit-test resolver
+            // without a tags.yml); a loaded store is authoritative, so an
+            // undefined #c: key is rejected at load instead of silently never
+            // matching at runtime.
+            if (!customTagLoader.isLoaded()) return true;
             return customTagLoader.getKeys().contains("#c:" + key);
         }
         if ("minecraft".equals(prefix)) {
