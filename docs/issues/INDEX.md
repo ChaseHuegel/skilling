@@ -11,7 +11,7 @@
 - [x] [ISSUE-255](ISSUE-255.md) - Make FeedbackDebouncer check-then-act atomic [Severity: Low]
 - [x] [ISSUE-256](ISSUE-256.md) - Unify the duplicated ConstantEvaluator / ConstantValueEvaluator handling [Severity: Low]
 - [x] [ISSUE-257](ISSUE-257.md) - Fix trigger Javadocs that contradict the actual dispatch gating [Severity: Low]
-- [ ] [ISSUE-258](ISSUE-258.md) - Empty feedback scalars cause NPEs that abort the whole ability dispatch [Severity: High]
+- [x] [ISSUE-258](ISSUE-258.md) - Empty feedback scalars cause NPEs that abort the whole ability dispatch [Severity: High]
 - [ ] [ISSUE-259](ISSUE-259.md) - Quit-flush hydration race silently loses XP on quit→immediate-rejoin [Severity: High]
 - [ ] [ISSUE-260](ISSUE-260.md) - Renaming a skill to an existing ID silently overwrites the live skill on Apply [Severity: High]
 - [ ] [ISSUE-261](ISSUE-261.md) - Transient attribute modifiers and PENDING_REMOVALS leak on disable/reload [Severity: Medium]

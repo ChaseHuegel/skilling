@@ -6,8 +6,8 @@
 - **Severity:** High — SnakeYAML gives a `null` value for a key written as `action_bar:` or `message:` (present but empty). `getOrDefault(key, "")` only supplies the default when the key is *absent*, not when its value is `null`, so the null reaches `.isBlank()` on the event path.
 
 ## Implementation Requirements
-- [ ] Coalesce null feedback strings to `""` at parse time in `SkillManager.parseOnFailure` (action_bar) and `SkillManager.parseFeedback` (message), OR guard the call sites in `SkillEventListener` (`failure.actionBar()`, `ability.feedback().message()`).
-- [ ] Add a unit test feeding a `feedback.notify.message:` / `on_failure.<reason>.action_bar:` empty-scalar YAML and asserting the skill still loads and dispatches without an NPE.
+- [x] Coalesce null feedback strings to `""` at parse time in `SkillManager.parseOnFailure` (action_bar) and `SkillManager.parseFeedback` (message), OR guard the call sites in `SkillEventListener` (`failure.actionBar()`, `ability.feedback().message()`).
+- [x] Add a unit test feeding a `feedback.notify.message:` / `on_failure.<reason>.action_bar:` empty-scalar YAML and asserting the skill still loads and dispatches without an NPE.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -18,5 +18,5 @@
 - **Constraints:** The null deref in `fireAbilities` occurs *outside* the per-mechanic try/catch (`SkillEventListener.java:588-598`), so the NPE is not contained; fix must cover the failure-feedback and success-feedback paths.
 
 ## Verification & Definition of Done
-- [ ] No NPE when feedback strings are empty scalars; dispatch completes normally.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] No NPE when feedback strings are empty scalars; dispatch completes normally.
+- [x] `./gradlew build` and `./gradlew test` pass.

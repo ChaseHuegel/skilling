@@ -479,7 +479,7 @@ public final class SkillManager {
         Map<String, SkillDefinition.FailureFeedback> failures = new HashMap<>();
         for (var entry : map.entrySet()) {
             Map<String, Object> feedbackMap = castMap(entry.getValue());
-            String actionBar = (String) feedbackMap.getOrDefault("action_bar", "");
+            String actionBar = feedbackString(feedbackMap, "action_bar");
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> sounds = (List<Map<String, Object>>) feedbackMap.getOrDefault("sounds", List.of());
             validateFeedbackSounds("on_failure '" + entry.getKey() + "' of ability '" + abilityId + "'", sounds);
@@ -578,7 +578,7 @@ public final class SkillManager {
                 .bool(feedbackContext, notify.getOrDefault("action_bar", false), "action_bar");
         boolean chat = io.github.chasehuegel.skilling.engine.mechanic.impl.MechanicParamValidators
                 .bool(feedbackContext, notify.getOrDefault("chat", false), "chat");
-        String message = (String) notify.getOrDefault("message", "");
+        String message = feedbackString(notify, "message");
 
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> particles = (List<Map<String, Object>>) map.getOrDefault("particles", List.of());
@@ -589,6 +589,20 @@ public final class SkillManager {
         validateFeedbackSounds("feedback of ability '" + abilityId + "'", sounds);
 
         return new SkillDefinition.Feedback(actionBar, chat, message, particles, sounds);
+    }
+
+    /**
+     * Reads a feedback string, coalescing an absent or empty scalar (SnakeYAML
+     * yields {@code null} for a key written as {@code key:}) to an empty string
+     * so the event path never NPEs on {@code null.isBlank()}.
+     *
+     * @param map the feedback map
+     * @param key the feedback key
+     * @return the string value, or "" when absent/empty
+     */
+    private static String feedbackString(Map<String, Object> map, String key) {
+        Object raw = map.get(key);
+        return raw == null ? "" : (String) raw;
     }
 
     private void validateFeedbackSounds(String context, List<Map<String, Object>> sounds) {

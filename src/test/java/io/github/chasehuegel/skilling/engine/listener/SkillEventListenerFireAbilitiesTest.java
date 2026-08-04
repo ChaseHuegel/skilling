@@ -104,6 +104,19 @@ class SkillEventListenerFireAbilitiesTest {
     }
 
     private void buildSkillWithMechanics(String abilityRequirementsBlock, String mechanicsBlock) throws IOException {
+        buildSkillWithMechanicsAndFeedback(abilityRequirementsBlock, mechanicsBlock,
+                "feedback: { notify: { action_bar: false } }");
+    }
+
+    /** Indents a feedback YAML block to the ability's sub-key level (4 spaces). */
+    private static String indentFeedback(String feedbackBlock) {
+        return feedbackBlock.lines()
+                .map(line -> line.isBlank() ? "" : "    " + line)
+                .collect(java.util.stream.Collectors.joining("\n"));
+    }
+
+    private void buildSkillWithMechanicsAndFeedback(String abilityRequirementsBlock, String mechanicsBlock,
+                                                    String feedbackBlock) throws IOException {
         SkillManager skillManager = io.github.chasehuegel.skilling.TestSkillManager.newWith(
                 reg -> {
                     reg.register("test:count", CountingMechanic.class, java.util.List.of());
@@ -126,9 +139,7 @@ class SkillEventListenerFireAbilitiesTest {
                     trigger: "block_break"
                 """ + abilityRequirementsBlock + """
                     mechanics:
-                """ + mechanicsBlock + """
-                    feedback: { notify: { action_bar: false } }
-                """);
+                """ + mechanicsBlock + "\n" + indentFeedback(feedbackBlock) + "\n");
         skillManager.loadSkills(skillsDir.toFile());
 
         DatabaseManager db = mock(DatabaseManager.class);
@@ -324,5 +335,55 @@ class SkillEventListenerFireAbilitiesTest {
         listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
         assertEquals(1, CountingMechanic.EXECUTIONS.get(),
                 "consume must not be skipped because a later mechanic threw");
+    }
+
+    @Test
+    void emptySuccessFeedbackMessageDoesNotAbortDispatch() throws IOException {
+        buildSkillWithMechanicsAndFeedback("""
+                """, """
+                  - { type: "test:count" }
+            """, """
+            feedback:
+              notify:
+                action_bar: true
+                message:
+            """);
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+
+        // An empty 'message:' scalar (null from SnakeYAML) must not NPE the
+        // isBlank() check; the dispatch completes and the mechanic runs.
+        assertEquals(1, CountingMechanic.EXECUTIONS.get(),
+                "dispatch must complete despite an empty success-feedback message");
+    }
+
+    @Test
+    void emptyFailureActionBarDoesNotAbortDispatch() throws IOException {
+        // An item cost the player does not hold fails the requirement check,
+        // routing into the on_failure feedback path.
+        buildSkillWithMechanicsAndFeedback("""
+                    requirements:
+                      items:
+                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                """, """
+                  - { type: "test:count" }
+            """, """
+                on_failure:
+                  missing_item:
+                    action_bar:
+                """);
+
+        org.bukkit.inventory.PlayerInventory inventory = mock(org.bukkit.inventory.PlayerInventory.class);
+        when(inventory.getContents()).thenReturn(new ItemStack[36]);
+        when(player.getInventory()).thenReturn(inventory);
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+
+        // An empty 'action_bar:' scalar (null from SnakeYAML) must not NPE the
+        // failure-feedback isBlank() check; the dispatch completes.
+        assertEquals(0, CountingMechanic.EXECUTIONS.get(),
+                "the failing requirement must gate the mechanic, not crash the dispatch");
     }
 }

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -179,6 +180,37 @@ class SkillYamlValidationTest {
                 () -> skillManager.parseSkill(config));
         assertTrue(ex.getMessage().contains("action_bar"),
                 "expected a descriptive message naming the offending key, got: " + ex.getMessage());
+    }
+
+    @Test
+    void emptyFeedbackScalarsCoalesceToEmptyStrings() {
+        String yaml = """
+                id: "mining"
+                max_level: 50
+                progression:
+                  curve: "constant"
+                  base_xp: 100
+                abilities:
+                  - id: "test_ability"
+                    unlock_level: 1
+                    trigger: "block_break"
+                    feedback:
+                      notify:
+                        action_bar: true
+                        message:
+                    on_failure:
+                      missing_item:
+                        action_bar:
+                """;
+        var config = YamlConfiguration.loadConfiguration(new java.io.StringReader(yaml));
+        SkillDefinition def = skillManager.parseSkill(config);
+        SkillDefinition.Ability ability = def.abilities().get(0);
+        assertNotNull(ability.feedback().message(),
+                "an empty 'message:' scalar must not become a null that NPEs dispatch");
+        assertEquals("", ability.feedback().message());
+        assertNotNull(ability.onFailure().reasons().get("missing_item").actionBar(),
+                "an empty 'action_bar:' scalar must not become a null that NPEs dispatch");
+        assertEquals("", ability.onFailure().reasons().get("missing_item").actionBar());
     }
 
     private List<File> skillFiles() {
