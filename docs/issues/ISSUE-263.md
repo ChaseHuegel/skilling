@@ -6,8 +6,8 @@
 - **Severity:** Medium — main-thread freeze (TPS drop) reachable from config.
 
 ## Implementation Requirements
-- [ ] Clamp the block budget in `ChainBreakMechanic` (`chain_limit`) and `AreaHarvestMechanic` (`max_blocks`) to a sane cap at execution time, and/or validate the range at load via `MechanicParamValidators`.
-- [ ] Add unit tests asserting oversized values are clamped to the cap.
+- [x] Clamp the block budget in `ChainBreakMechanic` (`chain_limit`) and `AreaHarvestMechanic` (`max_blocks`) to a sane cap at execution time, and/or validate the range at load via `MechanicParamValidators`.
+- [x] Add unit tests asserting oversized values are clamped to the cap.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -19,5 +19,5 @@
 - **Constraints:** Every sibling mechanic clamps its magnitude params; pick a documented cap consistent with the existing `MAX_RADIUS` (e.g. ≤ 128 blocks).
 
 ## Verification & Definition of Done
-- [ ] `chain_limit`/`max_blocks` above the cap are clamped, not executed raw.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] `chain_limit`/`max_blocks` above the cap are clamped, not executed raw.
+- [x] `./gradlew build` and `./gradlew test` pass.

@@ -25,6 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ChainBreakMechanic implements SkillMechanic {
 
+    /**
+     * Upper bound on {@code chain_limit}: a larger value (e.g. from a level-scaled
+     * evaluator) would break hundreds of thousands of blocks synchronously on the
+     * main thread and freeze the server, so the budget is clamped here.
+     */
+    static final int MAX_CHAIN_LIMIT = 128;
+
     private static final Set<UUID> CHAINING_PLAYERS = ConcurrentHashMap.newKeySet();
     private static final ThreadLocal<Set<Location>> PROCESSING =
             ThreadLocal.withInitial(HashSet::new);
@@ -76,6 +83,7 @@ public class ChainBreakMechanic implements SkillMechanic {
             CHAINING_PLAYERS.remove(player.getUniqueId());
             return false;
         }
+        limit = Math.min(limit, MAX_CHAIN_LIMIT);
 
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();

@@ -29,6 +29,13 @@ public final class AreaHarvestMechanic implements SkillMechanic {
     static final int MAX_RADIUS = 32;
     static final int DEFAULT_MAX_BLOCKS = 64;
 
+    /**
+     * Upper bound on {@code max_blocks}: a larger value (e.g. from a level-scaled
+     * evaluator) would break hundreds of thousands of blocks synchronously on the
+     * main thread and freeze the server, so the budget is clamped here.
+     */
+    static final int MAX_BLOCKS = 128;
+
     private static final ThreadLocal<Set<Location>> PROCESSING =
             ThreadLocal.withInitial(HashSet::new);
 
@@ -65,6 +72,7 @@ public final class AreaHarvestMechanic implements SkillMechanic {
 
         int maxBlocks = ((Number) params.getOrDefault("max_blocks", DEFAULT_MAX_BLOCKS)).intValue();
         if (maxBlocks <= 0) return false;
+        maxBlocks = Math.min(maxBlocks, MAX_BLOCKS);
 
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();

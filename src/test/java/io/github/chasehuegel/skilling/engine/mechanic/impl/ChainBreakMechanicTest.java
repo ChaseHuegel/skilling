@@ -26,10 +26,13 @@ import org.mockito.MockedStatic;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
@@ -64,6 +67,66 @@ class ChainBreakMechanicTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         assertFalse(new ChainBreakMechanic().execute(player, Map.of(),
                 mock(BlockBreakEvent.class)));
+    }
+
+    @Test
+    void oversizedChainLimitIsClampedToCap() {
+        var world = mock(World.class);
+        var origin = block(world, 0, 0, 0, Material.STONE);
+        // A long linear chain far beyond the cap; the budget must bind.
+        Map<Location, Block> chain = new HashMap<>();
+        for (int i = 1; i <= 200; i++) {
+            chain.put(new Location(world, i, 0, 0), block(world, i, 0, 0, Material.STONE));
+        }
+        var air = block(world, 999, 999, 999, Material.AIR);
+        java.util.function.BiFunction<Block, int[], Block> neighbor = (b, dir) ->
+                chain.getOrDefault(new Location(world,
+                        b.getLocation().getBlockX() + dir[0],
+                        b.getLocation().getBlockY() + dir[1],
+                        b.getLocation().getBlockZ() + dir[2]), air);
+        when(origin.getRelative(anyInt(), anyInt(), anyInt()))
+                .thenAnswer(inv -> neighbor.apply(origin, new int[]{
+                        inv.getArgument(0), inv.getArgument(1), inv.getArgument(2)}));
+        for (var b : chain.values()) {
+            Block current = b;
+            when(b.getRelative(anyInt(), anyInt(), anyInt()))
+                    .thenAnswer(inv -> neighbor.apply(current, new int[]{
+                            inv.getArgument(0), inv.getArgument(1), inv.getArgument(2)}));
+        }
+
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(origin);
+
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inv = mock(org.bukkit.inventory.PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inv);
+        var tool = mock(ItemStack.class);
+        var toolMaterial = mock(Material.class);
+        when(toolMaterial.getMaxDurability()).thenReturn((short) 10_000);
+        when(tool.getType()).thenReturn(toolMaterial);
+        var meta = mock(Damageable.class);
+        when(meta.getDamage()).thenReturn(0);
+        when(tool.getItemMeta()).thenReturn(meta);
+        when(inv.getItemInMainHand()).thenReturn(tool);
+
+        AtomicInteger broken = new AtomicInteger();
+        for (var b : chain.values()) {
+            doAnswer(inv2 -> {
+                broken.incrementAndGet();
+                return true;
+            }).when(b).breakNaturally(any());
+        }
+
+        var pluginManager = mock(org.bukkit.plugin.PluginManager.class);
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getPluginManager()).thenReturn(pluginManager);
+            new ChainBreakMechanic().execute(player, Map.of("chain_limit", 100_000), event);
+        }
+
+        // chain_limit counts the origin, so the mechanic breaks cap - 1 chained blocks.
+        assertEquals(ChainBreakMechanic.MAX_CHAIN_LIMIT - 1, broken.get(),
+                "an oversized chain_limit must be clamped, not executed raw");
     }
 
     @Test

@@ -110,9 +110,19 @@ class AreaHarvestMechanicTest {
 
     @Test
     void radiusIsClampedToConfiguredMax() {
-        // Radius 100 clamps to 32 -> (2*32+1)^2 - 1 = 4224 harvested blocks.
+        // Radius 100 clamps to 32 -> (2*32+1)^2 - 1 = 4224 candidate blocks, but
+        // the break budget is also clamped to MAX_BLOCKS, so the cap binds rather
+        // than breaking all 4224 blocks on the main thread.
         int broken = runHarvest(100, 100_000, mock(PluginManager.class), false);
-        assertEquals(4224, broken);
+        assertEquals(AreaHarvestMechanic.MAX_BLOCKS, broken);
+    }
+
+    @Test
+    void maxBlocksIsClampedToConfiguredCap() {
+        // A radius-8 disk has (2*8+1)^2 - 1 = 288 candidates; an oversized
+        // max_blocks must clamp to MAX_BLOCKS, not break every candidate.
+        int broken = runHarvest(8, 100_000, mock(PluginManager.class), false);
+        assertEquals(AreaHarvestMechanic.MAX_BLOCKS, broken);
     }
 
     @Test
