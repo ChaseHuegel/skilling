@@ -379,7 +379,7 @@ allies.
 | `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:poison`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `duration` | double | `3` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
-| `radius` | double | `5` | Effect radius in blocks |
+| `radius` | double | `5` | Effect radius in blocks (clamped to [0, 32]) |
 | `targets` | string | `hostiles` | Who receives the effect: `hostiles` (default, monsters and angered neutrals), `allies`, or `all` |
 
 **Event:** `EntityDamageByEntityEvent`

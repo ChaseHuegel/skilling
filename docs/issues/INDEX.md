@@ -1,7 +1,7 @@
 ## Active Sprint / Current Milestone
 
 ### Bugs
-- [ ] [ISSUE-229](ISSUE-229.md) - Bound the crowd_control mechanic's AoE radius [Severity: High]
+- [x] [ISSUE-229](ISSUE-229.md) - Bound the crowd_control mechanic's AoE radius [Severity: High]
 - [ ] [ISSUE-230](ISSUE-230.md) - Fix the PlaceholderAPI hook, which can never register (proxy over an abstract class) [Severity: Critical]
 - [ ] [ISSUE-231](ISSUE-231.md) - Attribute-modifier refresh truncates the buff duration [Severity: High]
 - [ ] [ISSUE-232](ISSUE-232.md) - Bound and guard the knockback mechanic (unclamped impulse, radius, no friendly-fire check) [Severity: High]
