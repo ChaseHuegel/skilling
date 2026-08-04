@@ -5,11 +5,11 @@
 - **Agent Role:** You are an expert full-stack engineer executing this task.
 
 ## Implementation Requirements
-- [ ] Stop collapsing cooldown evaluators to a bare number. Today `cooldownToNumber` (`web/frontend/src/utils/cooldown.ts:18-25`) returns `0` for any evaluator without a numeric `params.value` (e.g. `{type: "linear", params: {base, step}}`), and `apiAbilityToForm` (`SkillEditorPage.vue:325`) applies it on load — so a linear/milestone cooldown becomes `0`, `isAbilityActive` (`AbilityCard.vue:135-138`) labels the ability "Passive", and the save payload writes `cooldown: 0` (the engine drops it, `SkillSerializer.abilityToMap:281-287`).
-- [ ] Preserve the raw cooldown evaluator through the load/save round trip when it is not a plain constant.
-- [ ] Add an evaluator editor for the cooldown requirement (reuse the `EvaluatorParameter`-style type/params editing, or a purpose-built constant/linear/milestones picker) so admins can set and change evaluator cooldowns. Plain constant cooldowns should keep the current scalar input.
-- [ ] Keep `cooldownLabel` behavior (display only) consistent with the new editor.
-- [ ] Add an E2E or component-level regression test: an ability with `requirements.cooldown: { linear: { base: 5, step: -0.02, max: 1 } }` loads showing a cooldown, saves, and the staged YAML still contains the linear cooldown block.
+- [x] Stop collapsing cooldown evaluators to a bare number. Today `cooldownToNumber` (`web/frontend/src/utils/cooldown.ts:18-25`) returns `0` for any evaluator without a numeric `params.value` (e.g. `{type: "linear", params: {base, step}}`), and `apiAbilityToForm` (`SkillEditorPage.vue:325`) applies it on load — so a linear/milestone cooldown becomes `0`, `isAbilityActive` (`AbilityCard.vue:135-138`) labels the ability "Passive", and the save payload writes `cooldown: 0` (the engine drops it, `SkillSerializer.abilityToMap:281-287`).
+- [x] Preserve the raw cooldown evaluator through the load/save round trip when it is not a plain constant.
+- [x] Add an evaluator editor for the cooldown requirement (reuse the `EvaluatorParameter`-style type/params editing, or a purpose-built constant/linear/milestones picker) so admins can set and change evaluator cooldowns. Plain constant cooldowns should keep the current scalar input.
+- [x] Keep `cooldownLabel` behavior (display only) consistent with the new editor.
+- [x] Add an E2E or component-level regression test: an ability with `requirements.cooldown: { linear: { base: 5, step: -0.02, max: 1 } }` loads showing a cooldown, saves, and the staged YAML still contains the linear cooldown block.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -22,7 +22,7 @@
 - **Constraints:** The engine and web DTO already support evaluator cooldowns end-to-end; only the frontend collapses them. `docs/dev/template-skill.yml:107-109` documents the linear cooldown form — keep that supported.
 
 ## Verification & Definition of Done
-- [ ] A skill with a linear/milestone cooldown loads, displays, saves, and reloads with the evaluator intact.
-- [ ] Plain constant cooldowns still work as a scalar number.
-- [ ] `cd web/frontend && npm run build` passes.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] A skill with a linear/milestone cooldown loads, displays, saves, and reloads with the evaluator intact.
+- [x] Plain constant cooldowns still work as a scalar number.
+- [x] `cd web/frontend && npm run build` passes.
+- [x] `./gradlew build` and `./gradlew test` pass.

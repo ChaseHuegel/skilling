@@ -13,7 +13,7 @@
 - [x] [ISSUE-218](ISSUE-218.md) - Web GUI config/data-loss and auth hardening
 - [x] [ISSUE-220](ISSUE-220.md) - Fix milestone evaluator round-trip between the web GUI and the engine
 - [x] [ISSUE-221](ISSUE-221.md) - Align web progression serialization with the engine's base_xp/exponent schema
-- [ ] [ISSUE-222](ISSUE-222.md) - Web editor destroys non-scalar cooldown requirements
+- [x] [ISSUE-222](ISSUE-222.md) - Web editor destroys non-scalar cooldown requirements
 - [ ] [ISSUE-223](ISSUE-223.md) - Migrate sound/particle feedback identifiers from legacy enum names to modern 1.21 namespaced values
 - [ ] [ISSUE-224](ISSUE-224.md) - Web GUI layout round-trip drops per-page `gui_title`
 - [ ] [ISSUE-225](ISSUE-225.md) - Web gui-layout API must reject reserved navigation slots

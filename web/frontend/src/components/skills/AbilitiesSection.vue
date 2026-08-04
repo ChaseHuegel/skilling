@@ -6,10 +6,12 @@ import SoundConfigEditor, { type SoundConfig } from '../common/SoundConfigEditor
 import MechanicsEditor, { type MechanicEntry } from './MechanicsEditor.vue'
 import OnFailureEditor, { type OnFailure } from './OnFailureEditor.vue'
 import FormattedText from '../common/FormattedText.vue'
+import EvaluatorParameter from '../common/EvaluatorParameter.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 import { useRegistriesStore } from '../../stores/registries'
 import { STATE_SUGGESTIONS } from '../common/stateFilters'
 import { stableKey } from '../../utils/stableKey'
+import { cooldownToNumber, isDynamicCooldown, type CooldownEvaluator } from '../../utils/cooldown'
 
 const registriesStore = useRegistriesStore()
 
@@ -69,7 +71,7 @@ interface Ability {
   trigger: string
   lore: string[]
   requirements: {
-    cooldown: number
+    cooldown: number | CooldownEvaluator
     state: string[]
     items: RequirementItem[]
   }
@@ -134,7 +136,17 @@ function toggleExpand(idx: number) {
 
 function isAbilityActive(ability: Ability): boolean {
   const r = ability.requirements
-  return r.cooldown > 0 || r.state.length > 0 || r.items.length > 0
+  return cooldownToNumber(r.cooldown) > 0
+    || isDynamicCooldown(r.cooldown)
+    || r.state.length > 0
+    || r.items.length > 0
+}
+
+/** Converts a scalar cooldown into a constant evaluator so it can be edited dynamically. */
+function setDynamicCooldown(index: number) {
+  const ab = props.modelValue[index]
+  const current = cooldownToNumber(ab.requirements.cooldown)
+  updateRequirement(index, { cooldown: { type: 'constant', params: { value: current } } })
 }
 
 function emptyAbility(): Ability {
@@ -507,13 +519,31 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
           <template v-if="isSectionExpanded(idx, 'requirements')">
             <div class="field-row">
               <label class="field-label">Cooldown (s)</label>
-              <input
-                class="field-input"
-                type="number"
-                step="any"
-                min="0"
-                :value="ability.requirements.cooldown"
-                @input="updateRequirement(idx, { cooldown: Number(($event.target as HTMLInputElement).value) })"
+              <template v-if="!isDynamicCooldown(ability.requirements.cooldown)">
+                <input
+                  class="field-input"
+                  type="number"
+                  step="any"
+                  min="0"
+                  :value="ability.requirements.cooldown"
+                  @input="updateRequirement(idx, { cooldown: Number(($event.target as HTMLInputElement).value) })"
+                />
+                <button
+                  class="btn btn-ghost btn-sm"
+                  title="Edit as an evaluator (linear/milestones)"
+                  @click="setDynamicCooldown(idx)"
+                >
+                  dynamic
+                </button>
+              </template>
+            </div>
+            <div v-if="isDynamicCooldown(ability.requirements.cooldown)" class="cooldown-evaluator">
+              <EvaluatorParameter
+                :model-value="ability.requirements.cooldown"
+                label="Cooldown"
+                name="Cooldown (s)"
+                :types="['constant', 'linear', 'milestones']"
+                @update:model-value="updateRequirement(idx, { cooldown: $event })"
               />
             </div>
 

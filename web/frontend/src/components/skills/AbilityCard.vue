@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { cooldownToNumber, cooldownLabel } from '../../utils/cooldown';
+import { cooldownToNumber, cooldownLabel, isDynamicCooldown } from '../../utils/cooldown';
 
 const props = defineProps<{
     index: number;
@@ -52,7 +52,10 @@ const props = defineProps<{
 
 const isActive = computed(() => {
     const r = props.ability.requirements;
-    return cooldownToNumber(r?.cooldown) > 0 || (r?.state?.length ?? 0) > 0 || (r?.items?.length ?? 0) > 0;
+    return cooldownToNumber(r?.cooldown) > 0
+        || isDynamicCooldown(r?.cooldown)
+        || (r?.state?.length ?? 0) > 0
+        || (r?.items?.length ?? 0) > 0;
 });
 
 const cooldownLabelValue = computed(() => cooldownLabel(props.ability.requirements?.cooldown));

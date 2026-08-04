@@ -9,7 +9,7 @@
 
 export interface CooldownEvaluator {
     type: string;
-    params?: Record<string, any>;
+    params: Record<string, any>;
 }
 
 export type CooldownInput = number | CooldownEvaluator | undefined | null;
@@ -22,6 +22,16 @@ export function cooldownToNumber(cooldown: CooldownInput): number {
         if (typeof value === 'number') return value;
     }
     return 0;
+}
+
+/**
+ * Whether the cooldown is a dynamic (non-constant) evaluator such as a linear
+ * or milestone block. Dynamic cooldowns must be preserved as evaluator objects
+ * through the editor round-trip — collapsing them to a bare number would reset
+ * them to `0` on save.
+ */
+export function isDynamicCooldown(cooldown: CooldownInput): cooldown is CooldownEvaluator {
+    return !!cooldown && typeof cooldown === 'object' && cooldown.type !== 'constant';
 }
 
 /**

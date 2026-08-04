@@ -97,7 +97,7 @@
 import { ref, reactive, onMounted, computed, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
-import { cooldownToNumber } from '../utils/cooldown';
+import { cooldownToNumber, isDynamicCooldown } from '../utils/cooldown';
 import { stableKey } from '../utils/stableKey';
 import { useSkillsStore } from '../stores/skills';
 import MinecraftIcon from '../components/common/MinecraftIcon.vue';
@@ -352,7 +352,9 @@ function apiAbilityToForm(ab: any): any {
         } : ab.feedback,
         requirements: {
             ...ab.requirements,
-            cooldown: cooldownToNumber(ab.requirements?.cooldown),
+            cooldown: isDynamicCooldown(ab.requirements?.cooldown)
+                ? ab.requirements?.cooldown
+                : cooldownToNumber(ab.requirements?.cooldown),
             items: (ab.requirements?.items || []).map((item: any) => ({
                 action: item.action || 'possession',
                 tag: item.tag || '',

@@ -18,13 +18,16 @@ const props = defineProps<{
   modelValue: EvaluatorValue
   label: string
   name: string
+  types?: readonly string[]
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: EvaluatorValue]
 }>()
 
-const EVALUATOR_TYPES = ['constant', 'linear', 'milestones', 'polynomial'] as const
+const EVALUATOR_TYPES = computed(
+  () => props.types ?? (['constant', 'linear', 'milestones', 'polynomial'] as const)
+)
 
 /** Stable per-row identity; `_key` is assigned at creation and preserved by spreads. */
 function milestoneKey(entry: MilestoneEntry): string {
