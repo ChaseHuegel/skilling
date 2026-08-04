@@ -81,4 +81,42 @@ class SkillManagerTriggerFieldTest {
         assertEquals("block_break", def.abilities().get(0).trigger());
         assertEquals("has_trigger", def.abilities().get(0).id());
     }
+
+    @Test
+    void unknownXpSourceTriggerFailsToLoad() {
+        String yaml = """
+                id: "test"
+                max_level: 10
+                progression:
+                  curve: "constant"
+                  base_xp: 100
+                xp_sources:
+                  - trigger: "block_braek"
+                    reward:
+                      constant: 10
+                """;
+        var config = YamlConfiguration.loadConfiguration(new StringReader(yaml));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("block_braek"), ex.getMessage());
+    }
+
+    @Test
+    void validXpSourceTriggerParses() {
+        String yaml = """
+                id: "test"
+                max_level: 10
+                progression:
+                  curve: "constant"
+                  base_xp: 100
+                xp_sources:
+                  - trigger: "block_break"
+                    reward:
+                      constant: 10
+                """;
+        var config = YamlConfiguration.loadConfiguration(new StringReader(yaml));
+        SkillDefinition def = skillManager.parseSkill(config);
+        assertEquals(1, def.xpSources().size());
+        assertEquals("block_break", def.xpSources().get(0).trigger());
+    }
 }

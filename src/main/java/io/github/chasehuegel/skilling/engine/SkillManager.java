@@ -221,6 +221,11 @@ public final class SkillManager {
             Map<String, Object> entry = castMap(map);
             String trigger = (String) entry.get("trigger");
             if (trigger == null) throw new IllegalArgumentException("XP source missing 'trigger'");
+            // Fail fast on a typo'd trigger so a source that can never be
+            // dispatched is rejected here instead of silently never firing.
+            if (!triggerRegistry.contains(trigger)) {
+                throw new IllegalArgumentException("XP source has unknown trigger: " + trigger);
+            }
 
             List<SkillDefinition.Filter> filters = new ArrayList<>();
             Object filtersRaw = entry.get("filters");
