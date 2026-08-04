@@ -6,8 +6,8 @@
 - **Severity:** Low — `LinearEvaluator`'s constructor only checks `min > max` (`LinearEvaluator.java:35-44`); NaN comparisons are false, so SnakeYAML `.nan`/`.inf` values pass load and then reach `Math.clamp` on the event path, producing NaN results or throwing. `PolynomialEvaluator` already validates finiteness.
 
 ## Implementation Requirements
-- [ ] Validate that `base`, `step`, `min`, `max` are finite (where provided) in the `LinearEvaluator` constructor, mirroring `PolynomialEvaluator`'s finiteness checks.
-- [ ] Add a unit test asserting NaN/Infinity inputs fail construction.
+- [x] Validate that `base`, `step`, `min`, `max` are finite (where provided) in the `LinearEvaluator` constructor, mirroring `PolynomialEvaluator`'s finiteness checks.
+- [x] Add a unit test asserting NaN/Infinity inputs fail construction.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,6 +17,6 @@
 - **Constraints:** `min`/`max` may legitimately be `-Infinity`/`+Infinity` when unspecified (they default that way) — only reject explicit NaN/Infinity *values*, or reject non-finite non-sentinel inputs.
 
 ## Verification & Definition of Done
-- [ ] NaN/Infinity `base`/`step`/`min`/`max` fail at construction.
-- [ ] Default sentinel `±Infinity` bounds still work.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] NaN/Infinity `base`/`step`/`min`/`max` fail at construction.
+- [x] Default sentinel `±Infinity` bounds still work.
+- [x] `./gradlew build` and `./gradlew test` pass.

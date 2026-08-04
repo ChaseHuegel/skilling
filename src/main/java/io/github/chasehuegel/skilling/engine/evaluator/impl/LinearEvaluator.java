@@ -31,8 +31,27 @@ public final class LinearEvaluator implements ParameterEvaluator {
      * @param step added per level above unlock
      * @param min  minimum clamp (use -Infinity for no floor)
      * @param max  maximum clamp (use +Infinity for no ceiling)
+     * @throws IllegalArgumentException if any parameter is NaN, {@code base} or
+     *                                  {@code step} is non-finite, or a bound
+     *                                  is a non-finite value other than its
+     *                                  {@code ±Infinity} sentinel
      */
     public LinearEvaluator(double base, double step, double min, double max) {
+        if (!Double.isFinite(base)) {
+            throw new IllegalArgumentException("linear evaluator base must be finite, got: " + base);
+        }
+        if (!Double.isFinite(step)) {
+            throw new IllegalArgumentException("linear evaluator step must be finite, got: " + step);
+        }
+        // min/max default to the ±Infinity sentinels for "no clamp"; any other
+        // non-finite value (NaN, or the wrong-signed Infinity) is a config error
+        // that would otherwise surface as NaN results on the event path.
+        if (Double.isNaN(min) || min == Double.POSITIVE_INFINITY) {
+            throw new IllegalArgumentException("linear evaluator min must be finite or -Infinity, got: " + min);
+        }
+        if (Double.isNaN(max) || max == Double.NEGATIVE_INFINITY) {
+            throw new IllegalArgumentException("linear evaluator max must be finite or +Infinity, got: " + max);
+        }
         if (min > max) {
             throw new IllegalArgumentException(
                     "linear evaluator min (" + min + ") must be <= max (" + max + ")");

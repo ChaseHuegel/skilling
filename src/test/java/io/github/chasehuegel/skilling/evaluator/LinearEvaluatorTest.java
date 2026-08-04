@@ -52,4 +52,20 @@ class LinearEvaluatorTest {
     void minGreaterThanMaxThrows() {
         assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(10.0, 1.0, 50.0, 25.0));
     }
+
+    @Test
+    void nanAndInfinityBaseOrStepFailConstruction() {
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(Double.NaN, 1.0, 0.0, 100.0));
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(Double.POSITIVE_INFINITY, 1.0, 0.0, 100.0));
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(10.0, Double.NaN, 0.0, 100.0));
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(10.0, Double.NEGATIVE_INFINITY, 0.0, 100.0));
+    }
+
+    @Test
+    void nanOrWrongSignedInfinityBoundFailsConstruction() {
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(10.0, 1.0, Double.NaN, 100.0));
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(10.0, 1.0, 0.0, Double.NaN));
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(10.0, 1.0, Double.POSITIVE_INFINITY, 100.0));
+        assertThrows(IllegalArgumentException.class, () -> new LinearEvaluator(10.0, 1.0, 0.0, Double.NEGATIVE_INFINITY));
+    }
 }
