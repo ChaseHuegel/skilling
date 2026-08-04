@@ -56,7 +56,7 @@ export const api = {
         delete: (id: string) => apiFetch<any>(`/api/skills/${id}`, { method: 'DELETE' }),
     },
     tags: {
-        get: () => apiFetch<{ tags: Record<string, string[]> }>('/api/tags'),
+        get: () => apiFetch<{ tags: Record<string, string[]>; entityTags?: Record<string, string[]> }>('/api/tags'),
         update: (tags: Record<string, string[]>) => apiFetch<any>('/api/tags', { method: 'PUT', body: JSON.stringify({ tags }) }),
     },
     config: {

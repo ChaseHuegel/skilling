@@ -33,6 +33,13 @@
 
         <div v-else class="tags-content">
             <TagListEditor v-model="filteredTags" :suggestions="suggestions" />
+            <div v-if="entityTagKeys.length > 0" class="entity-tags-note">
+                <strong>Entity tags (read-only)</strong>
+                <span>Preserved on save and used by the <code>target_type</code> state filter:</span>
+                <div class="entity-tags-list">
+                    <span v-for="key in entityTagKeys" :key="key" class="entity-tag-key">{{ key }}</span>
+                </div>
+            </div>
         </div>
 
         <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveTags" @cancel="confirmCancel" />
@@ -76,6 +83,7 @@ const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const tags = reactive<Record<string, string[]>>({});
+const entityTagKeys = ref<string[]>([]);
 const cleanTags = ref('');
 const searchQuery = ref('');
 const showCancelDialog = ref(false);
@@ -167,6 +175,7 @@ async function fetchTags() {
     try {
         const data = await api.tags.get();
         Object.assign(tags, data.tags || {});
+        entityTagKeys.value = Object.keys(data.entityTags || {});
         cleanTags.value = JSON.stringify(tags);
     } catch (e: any) {
         error.value = e.message || 'Failed to load tags';
@@ -312,5 +321,39 @@ async function saveTags() {
     margin: 0.15rem 0 0;
     font-size: 0.8rem;
     color: var(--p-text-muted-color, #888);
+}
+.entity-tags-note {
+    margin-top: 1.25rem;
+    padding: 0.75rem;
+    border: 1px dashed var(--p-content-border-color, #ccc);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--p-text-muted-color, #888);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.entity-tags-note strong {
+    color: var(--p-text-color, #000);
+}
+.entity-tags-note code {
+    font-family: monospace;
+    background: var(--p-content-background, #f6f6f6);
+    padding: 0 0.25rem;
+    border-radius: 3px;
+}
+.entity-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+}
+.entity-tag-key {
+    font-family: monospace;
+    font-size: 0.75rem;
+    background: var(--p-content-background, #f0f0f0);
+    border: 1px solid var(--p-content-border-color, #ddd);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
 }
 </style>

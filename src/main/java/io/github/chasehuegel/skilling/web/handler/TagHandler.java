@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.http.Context;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public final class TagHandler {
     public void get(Context ctx) {
         try {
             Map<String, List<String>> tags = new LinkedHashMap<>();
+            Map<String, List<String>> entityTags = new LinkedHashMap<>();
             if (tagsFile.exists()) {
                 String content = Files.readString(tagsFile.toPath(), StandardCharsets.UTF_8);
                 var yaml = new org.yaml.snakeyaml.Yaml();
@@ -38,9 +40,15 @@ public final class TagHandler {
                             tags.put("#c:" + entry.getKey(), (List<String>) entry.getValue());
                         }
                     }
+                    Map<String, Object> rawEntityTags = (Map<String, Object>) raw.get("entity_tags");
+                    if (rawEntityTags != null) {
+                        for (var entry : rawEntityTags.entrySet()) {
+                            entityTags.put("#c:" + entry.getKey(), (List<String>) entry.getValue());
+                        }
+                    }
                 }
             }
-            ctx.json(Map.of("tags", tags));
+            ctx.json(Map.of("tags", tags, "entityTags", entityTags));
         } catch (Exception e) {
             WebError.internal(ctx, LOGGER, "Failed to read tags.yml", e);
         }
@@ -78,6 +86,14 @@ public final class TagHandler {
 
             Map<String, Object> root = new LinkedHashMap<>();
             root.put("custom_tags", customTags);
+            // Preserve the read-only entity_tags section so a GUI save does not
+            // silently delete it: EntityTagResolver reads it to resolve the
+            // target_type state filter, and skills may reference e.g.
+            // state: "target_type:#c:undead".
+            Object entityTags = loadEntityTags();
+            if (entityTags != null) {
+                root.put("entity_tags", entityTags);
+            }
             var yaml = new org.yaml.snakeyaml.Yaml();
             String yamlContent = yaml.dump(root);
 
@@ -88,5 +104,26 @@ public final class TagHandler {
         } catch (Exception e) {
             WebError.internal(ctx, LOGGER, "Failed to stage tags.yml", e);
         }
+    }
+
+    /**
+     * Loads the {@code entity_tags} section from the live tags.yml, or null when
+     * the file is absent or has no such section. An unreadable file is treated as
+     * having nothing to preserve rather than failing the stage.
+     *
+     * @return the raw entity_tags value, or null
+     */
+    private Object loadEntityTags() {
+        if (!tagsFile.exists()) return null;
+        try {
+            String content = Files.readString(tagsFile.toPath(), StandardCharsets.UTF_8);
+            Object loaded = new org.yaml.snakeyaml.Yaml().load(content);
+            if (loaded instanceof Map<?, ?> existing) {
+                return existing.get("entity_tags");
+            }
+        } catch (IOException e) {
+            LOGGER.warning("Could not read tags.yml to preserve entity_tags: " + e.getMessage());
+        }
+        return null;
     }
 }

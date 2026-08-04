@@ -131,3 +131,7 @@ The shipped `tags.yml` defines these custom tags (used by the bundled skill YAML
 | Entity tag | Members |
 |---|---|
 | `#c:undead` | `#minecraft:zombies`, `#minecraft:skeletons`, wither skeleton, phantom, zombified piglin, drowned, stray, husk |
+
+> **Web GUI:** The Tags page edits `custom_tags` only. `entity_tags` are read-only
+> in the GUI, displayed for reference, and preserved verbatim when tags are saved
+> through the API.
