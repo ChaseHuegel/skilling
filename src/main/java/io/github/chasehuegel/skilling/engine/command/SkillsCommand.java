@@ -208,16 +208,7 @@ public final class SkillsCommand {
                 .permission("skilling.admin")
                 .required("key", ConfigKeyParser.configKeyParser())
                 .required("value", StringParser.stringParser())
-                .handler(ctx -> {
-                    String key = ctx.get("key");
-                    String value = ctx.get("value");
-                    var config = plugin.getConfig();
-                    config.set(key, parseConfigValue(value));
-                    plugin.saveConfig();
-                    plugin.reloadConfigSettings();
-                    ctx.sender().source().sendMessage(
-                            MINI_MESSAGE.deserialize("<green>Set <yellow>" + key + " <green>to <yellow>" + value));
-                }));
+                .handler(ctx -> handleSetConfig(ctx.sender().source(), ctx.get("key"), ctx.get("value"))));
 
         commandManager.command(commandManager.commandBuilder("skills")
                 .literal("reset")
@@ -511,6 +502,40 @@ public final class SkillsCommand {
         } catch (NumberFormatException e) {
             return raw;
         }
+    }
+
+    /**
+     * Saves a config key and reports whether it took effect live or needs a
+     * restart, so {@code /skills set} never claims success for a key the running
+     * server cannot apply.
+     *
+     * @param sender the command sender to report to
+     * @param key    the config key
+     * @param value  the raw value
+     */
+    void handleSetConfig(CommandSender sender, String key, String value) {
+        var config = plugin.getConfig();
+        config.set(key, parseConfigValue(value));
+        plugin.saveConfig();
+        if (requiresRestart(key)) {
+            sender.sendMessage(MINI_MESSAGE.deserialize("<yellow>Set <green>" + key
+                    + " <yellow>to <green>" + value
+                    + " <red>— requires a server restart to take effect."));
+            return;
+        }
+        plugin.reloadConfigSettings();
+        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set <yellow>" + key + " <green>to <yellow>" + value));
+    }
+
+    /**
+     * Whether a config key is read only at construction (e.g. the Hikari pool
+     * size) and therefore cannot be applied to the running server.
+     *
+     * @param key the config key
+     * @return true when a restart is required for the change to take effect
+     */
+    static boolean requiresRestart(String key) {
+        return "database.pool_size".equals(key);
     }
 
     private void showXpBossBar(Player player, SkillDefinition skill, PlayerProfile profile) {
