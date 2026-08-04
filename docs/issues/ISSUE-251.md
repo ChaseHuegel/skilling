@@ -6,8 +6,8 @@
 - **Severity:** Low (performance) — `LevelThresholds.table` takes a single global `synchronized (LOCK)` on a static `WeakHashMap` on every call (`LevelThresholds.java:41-50`), and `getLevelForXp` calls it on the hot path (per XP source, per ability, per PAPI placeholder). Correct under concurrency, but one global lock across all skills is a throughput smell.
 
 ## Implementation Requirements
-- [ ] Replace the global-lock `WeakHashMap` with a `ConcurrentHashMap` keyed by evaluator (per-evaluator `computeIfAbsent`, double-checked inside a `ConcurrentHashMap.compute` or `ConcurrentSkipListMap`), preserving the weak-collection-on-reload behavior (or document an alternative invalidation that keeps reloads safe).
-- [ ] Add a concurrency test proving parallel `getLevelForXp` calls across distinct skills do not serialize.
+- [x] Replace the global-lock `WeakHashMap` with a `ConcurrentHashMap` keyed by evaluator (per-evaluator `computeIfAbsent`, double-checked inside a `ConcurrentHashMap.compute` or `ConcurrentSkipListMap`), preserving the weak-collection-on-reload behavior (or document an alternative invalidation that keeps reloads safe).
+- [x] Add a concurrency test proving parallel `getLevelForXp` calls across distinct skills do not serialize.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -17,6 +17,6 @@
 - **Constraints:** Behavior must be bit-for-bit identical; reloads still evict stale tables (a new evaluator instance keys a new table — verify that still holds with the new structure).
 
 ## Verification & Definition of Done
-- [ ] No global lock remains on the lookup path.
-- [ ] Reload invalidation still works.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] No global lock remains on the lookup path.
+- [x] Reload invalidation still works.
+- [x] `./gradlew build` and `./gradlew test` pass.

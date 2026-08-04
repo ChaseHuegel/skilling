@@ -1,9 +1,9 @@
 package io.github.chasehuegel.skilling.engine;
 
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.lang.ref.WeakReference;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Precomputes and caches a skill's level thresholds so {@link SkillDefinition#getLevelForXp}
@@ -15,21 +15,30 @@ import java.util.WeakHashMap;
  * exact requirement for level 1 across all progression curves (e.g. a {@code linear} curve
  * registered with base {@code base_xp} and step {@code base_xp * 0.1} requires
  * {@code base_xp} at level 1). Tables are keyed by the evaluator instance and
- * {@code maxLevel}, and cached weakly: while a loaded {@code SkillDefinition} keeps its
- * evaluator alive the table is reused, and a reload that replaces evaluators lets old
- * entries be collected. This satisfies "invalidated on reload" without a manual cache clear.
+ * {@code maxLevel}, and the keys are held weakly: while a loaded {@code SkillDefinition}
+ * keeps its evaluator alive the table is reused, and a reload that replaces evaluators
+ * lets old entries be collected. This satisfies "invalidated on reload" without a manual
+ * cache clear.
  *
  * <p>Tables also record whether the truncated thresholds are non-decreasing, which lets
  * {@code getLevelForXp} binary-search the common monotonic curves while falling back to a
  * linear scan for arbitrary non-monotonic evaluators so behavior is preserved exactly.
+ *
+ * <p>The cache is lock-free: lookups and computations are per-evaluator, so distinct
+ * skills (and distinct max levels within a skill) never serialize on a global lock.
  */
 final class LevelThresholds {
 
     /** A level's thresholds plus whether the failure predicate is monotonic. */
     record Table(long[] thresholds, boolean[] unreachable, boolean sorted) {}
 
-    private static final Map<ParameterEvaluator, Map<Integer, Table>> CACHE = new WeakHashMap<>();
-    private static final Object LOCK = new Object();
+    /**
+     * Weak-keyed cache of threshold tables. The outer map is keyed by a {@link Key}
+     * that holds its evaluator in a {@link WeakReference}, preserving the old
+     * {@code WeakHashMap} reload behavior; the inner per-evaluator map is a
+     * {@link ConcurrentHashMap} so distinct skills and levels compute in parallel.
+     */
+    static final ConcurrentMap<Key, ConcurrentMap<Integer, Table>> CACHE = new ConcurrentHashMap<>();
 
     private LevelThresholds() {}
 
@@ -42,14 +51,17 @@ final class LevelThresholds {
      * @return the cached threshold table
      */
     static Table table(ParameterEvaluator evaluator, int maxLevel) {
-        synchronized (LOCK) {
-            Map<Integer, Table> byLevel = CACHE.computeIfAbsent(evaluator, k -> new HashMap<>());
-            Table cached = byLevel.get(maxLevel);
-            if (cached != null) return cached;
-            Table computed = compute(evaluator, maxLevel);
-            byLevel.put(maxLevel, computed);
-            return computed;
-        }
+        Key key = new Key(evaluator);
+        ConcurrentMap<Integer, Table> byLevel = CACHE.computeIfAbsent(key, k -> {
+            // Drop keys whose evaluator was garbage-collected (after a reload) so
+            // the weak cache cannot grow without bound.
+            CACHE.keySet().removeIf(Key::cleared);
+            return new ConcurrentHashMap<>();
+        });
+        // compute() is atomic per (evaluator, maxLevel): the mapping function runs
+        // at most once per key, and unrelated keys never wait on it.
+        return byLevel.compute(maxLevel, (level, existing) ->
+                existing != null ? existing : compute(evaluator, maxLevel));
     }
 
     private static Table compute(ParameterEvaluator evaluator, int maxLevel) {
@@ -74,5 +86,39 @@ final class LevelThresholds {
             prev = thresholds[idx];
         }
         return new Table(thresholds, unreachable, sorted);
+    }
+
+    /**
+     * Cache key wrapping the evaluator in a {@link WeakReference}. Equality is by
+     * evaluator identity, so a reload's fresh evaluator instance (even with identical
+     * parameters) keys a new table, and {@link #cleared()} lets the cache reclaim
+     * entries whose evaluator has been collected.
+     */
+    static final class Key {
+        private final WeakReference<ParameterEvaluator> ref;
+        private final int hash;
+
+        Key(ParameterEvaluator evaluator) {
+            this.ref = new WeakReference<>(evaluator);
+            this.hash = System.identityHashCode(evaluator);
+        }
+
+        boolean cleared() {
+            return ref.get() == null;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Key other)) return false;
+            ParameterEvaluator a = ref.get();
+            ParameterEvaluator b = other.ref.get();
+            return a != null && a == b;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
     }
 }
