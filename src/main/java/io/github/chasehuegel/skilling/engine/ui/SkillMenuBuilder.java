@@ -203,14 +203,14 @@ public final class SkillMenuBuilder {
                 ? (long) skill.progression().evaluator().evaluate(level, 0) : 0;
         long xpForNext = level < skill.maxLevel()
                 ? (long) skill.progression().evaluator().evaluate(level + 1, 0) : 0;
-        int barWidth = 100;
+        int barWidth = 20;
         double progress = xpForNext > xpForCurrent
                 ? (double) (currentXp - xpForCurrent) / (xpForNext - xpForCurrent) : 0;
         progress = Math.min(Math.max(progress, 0), 1);
         int filled = (int) Math.round(progress * barWidth);
         StringBuilder barStr = new StringBuilder().append('[');
         for (int i = 0; i < barWidth; i++) {
-            barStr.append(i < filled ? '|' : '.');
+            barStr.append(i < filled ? '█' : '░');
         }
         barStr.append(']');
         Component barFull;
@@ -278,8 +278,6 @@ public final class SkillMenuBuilder {
         }
 
         ItemStack item = new ItemStack(material);
-        item.editMeta(editMeta -> editMeta.setMaxStackSize(Math.clamp(skill.maxLevel(), 1, 99)));
-        item.setAmount(Math.clamp(level, 1, 99));
 
         item.editMeta(meta -> {
             TextColor skillColor = resolveColor(skill.display().color());
@@ -297,9 +295,12 @@ public final class SkillMenuBuilder {
                 meta.setCustomModelData(skill.display().customModelData());
             }
 
+            meta.setMaxStackSize(Math.clamp(skill.maxLevel(), 1, 99));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             PoisonPillTag.apply(meta);
         });
+
+        item.setAmount(Math.clamp(level, 1, 99));
 
         return item;
     }
