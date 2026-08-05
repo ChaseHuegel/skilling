@@ -4,7 +4,7 @@ display: { name: "Piety", icon: "minecraft:golden_apple", color: "PURPLE", style
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   # Bury bones: right-click dirt/grass/coarse dirt (vanilla #minecraft:dirt tag)
-  # while holding a bone grants piety XP; the bury_bones ability consumes the bone.
+  # while holding a bone grants piety XP. The bury_bones ability consumes the bone.
   - trigger: "player_interact"
     filters:
       - target: "#minecraft:dirt"
@@ -21,7 +21,7 @@ xp_sources:
   - trigger: "cure_villager"        # villager cure (dedicated trigger)
     reward: { constant: 60.0 }
   # Uniform R=60 from REPORT_XP-SOURCE-DESIGN §6 (Σ APM 27.8 -> 1,667 XP/min).
-  # entity_damage_taken XP removed — too broad; replaced by totem synergy.
+  # entity_damage_taken XP removed. Too broad. Replaced by totem synergy.
 abilities:
   - id: "holy_light"
     display_name: "Holy Light"
@@ -29,7 +29,7 @@ abilities:
     trigger: "resurrect"
     display: { lore: [ "&7Totem activation grants allies nearby Regeneration for {duration}s." ] }
     mechanics:
-      - type: "core:ally_aura"          # P2-5 (players only — was field_aura buffing mobs)
+      - type: "core:ally_aura"          # P2-5 (players only. Was field_aura buffing mobs)
         parameters:
           effect: { constant: "minecraft:regeneration" }   # P2-11
           radius: { linear: { base: 4.0, step: 0.05, max: 8.0 } }

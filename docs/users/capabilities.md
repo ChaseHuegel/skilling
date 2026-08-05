@@ -3,7 +3,7 @@
 ## Ability Cost & Cooldown Consumption
 
 An ability's item costs are deducted and its cooldown is applied **exactly once
-per activation attempt** — after the ability's requirements pass and at least
+per activation attempt**. This happens after the ability's requirements pass and at least
 one mechanic performs an activation. This rule applies uniformly to every
 mechanic:
 
@@ -17,8 +17,8 @@ mechanic:
   target, inapplicable state) and does not spend the cost or cooldown.
 - When an ability lists several mechanics, consumption happens once if **any**
   mechanic activates.
-- **Cooldowns persist across a quit/relog** — logging out does not reset an
-  active cooldown; it expires on its own timer. Only time lifts a cooldown.
+- **Cooldowns persist across a quit/relog.** Logging out does not reset an
+  active cooldown. It expires on its own timer. Only time lifts a cooldown.
 
 ## Built-In Mechanics
 
@@ -38,8 +38,8 @@ Multiplies block drops by a percentage chance on each break.
 
 Breaks connected blocks of the same type up to a limit (vein mining), expanding
 in all six directions (including up/down). Each chained block consumes 1 tool
-durability (respecting Unbreaking, with the tool breaking at max durability);
-chained blocks are broken without re-triggering XP or ability processing (only
+durability (respecting Unbreaking, with the tool breaking at max durability).
+Chained blocks are broken without re-triggering XP or ability processing (only
 the originating break awards XP).
 
 **Parameters:**
@@ -53,7 +53,7 @@ the originating break awards XP).
 ### core:level_break
 
 Like `core:chain_break`, but expands only on the XZ plane (four horizontal
-directions) and never along the Y axis — for vein/strip mining that must not
+directions) and never along the Y axis. This suits vein/strip mining that must not
 propagate up or down into adjacent layers. Same parameters and behavior as
 `core:chain_break` (per-block tool durability, `chain_limit` cap, no double XP
 for chained blocks).
@@ -71,7 +71,7 @@ for chained blocks).
 Chance to fully negate incoming damage (shield/armor "block" flavor).
 
 > **Note:** `core:block_damage`, `core:cancel_damage`, and `core:dodge` are aliases
-> of the same implementation — all three roll a `chance` (0-100%) to cancel an
+> of the same implementation. All three roll a `chance` (0-100%) to cancel an
 > incoming damage event. They are registered as separate keys purely for flavor:
 > `block_damage` reads as a shield/armor block, `cancel_damage` as a dodge/evade,
 > and `dodge` as an evasion.
@@ -104,7 +104,7 @@ Applies a potion effect to the damaged entity on hit.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:slowness`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `effect` | string | none | Namespaced potion effect key (e.g., `minecraft:slowness`). See [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `duration` | double | `3` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier (0 = level I) |
 
@@ -115,7 +115,7 @@ Applies a potion effect to the damaged entity on hit.
 Chance to completely cancel incoming damage (dodge/evade flavor).
 
 > **Note:** `core:cancel_damage`, `core:block_damage`, and `core:dodge` are aliases
-> of the same implementation — all three roll a `chance` (0-100%) to cancel an
+> of the same implementation. All three roll a `chance` (0-100%) to cancel an
 > incoming damage event. They are registered as separate keys purely for flavor:
 > `cancel_damage` reads as a dodge/evade, `block_damage` as a shield/armor block,
 > and `dodge` as an evasion.
@@ -136,10 +136,10 @@ Temporarily modifies a player attribute.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `attribute` | string | — | Namespaced attribute key (e.g., `minecraft:movement_speed`). Legacy numeric IDs (1-10) remain supported but are deprecated; see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `attribute` | string | none | Namespaced attribute key (e.g., `minecraft:movement_speed`). Legacy numeric IDs (1-10) remain supported but are deprecated. See [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `amount` | double | `0` | Modifier value |
 | `duration` | double | `5` | Duration in seconds |
-| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
+| `uuid` | string | random | Stable modifier UUID. Repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:armor_bonus
 
@@ -151,7 +151,7 @@ Applies a temporary armor bonus attribute modifier.
 |---|---|---|---|
 | `amount` | double | `0` | Additional armor points |
 | `duration` | double | `300` | Duration in seconds |
-| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
+| `uuid` | string | random | Stable modifier UUID. Repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:knockback_resist
 
@@ -163,7 +163,7 @@ Applies a temporary knockback resistance attribute modifier.
 |---|---|---|---|
 | `amount` | double | `0` | Knockback resistance (0-1) |
 | `duration` | double | `300` | Duration in seconds |
-| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
+| `uuid` | string | random | Stable modifier UUID. Repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:speed_bonus
 
@@ -175,14 +175,14 @@ Applies a temporary movement speed attribute modifier.
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Multiplicative speed multiplier (1.5 = 50% faster, not a percentage) |
 | `duration` | double | `300` | Duration in seconds |
-| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
+| `uuid` | string | random | Stable modifier UUID. Repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 **Event:** Fires on the trigger declared by the ability (e.g., `entity_damage_taken`, `consume_item`). Gives the player a temporary movement speed boost for the configured `duration`.
 
 ### core:modify_craft_output
 
 Multiplies the output of crafting recipes. The result slot is capped at one
-stack; any bonus overflow beyond it is granted as an extra stack in the player's
+stack. Any bonus overflow beyond it is granted as an extra stack in the player's
 inventory (or dropped on the ground if the inventory is full), so no bonus items
 are lost on shift-click batches.
 
@@ -250,7 +250,7 @@ Applies a potion effect to all living entities within a radius of the player, ex
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:poison`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `effect` | string | none | Namespaced potion effect key (e.g., `minecraft:poison`). See [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `radius` | double | `5` | Effect radius in blocks |
 | `duration` | double | `5` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
@@ -261,7 +261,7 @@ Applies a potion effect to all living entities within a radius of the player, ex
 ### core:projectile
 
 Launches a custom projectile from the player. Fires only on a right-click
-(right-click air or right-click block); a left-click is a no-op.
+(right-click air or right-click block). A left-click is a no-op.
 
 **Parameters:**
 
@@ -275,7 +275,7 @@ Launches a custom projectile from the player. Fires only on a right-click
 ### core:teleport
 
 Short-range teleport in the player's looking direction. Fires only on a
-right-click (right-click air or right-click block); a left-click is a no-op.
+right-click (right-click air or right-click block). A left-click is a no-op.
 
 **Parameters:**
 
@@ -306,9 +306,9 @@ Applies a directional velocity impulse (knockback) to the damaged entity, or to 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `force` | double | `0` | Horizontal impulse strength (velocity magnitude), clamped to [0, 3] |
-| `radius` | double | `0` | Radius in blocks, clamped to [0, 32]; `0` = single target only (the damaged entity) |
+| `radius` | double | `0` | Radius in blocks, clamped to [0, 32]. `0` = single target only (the damaged entity) |
 | `vertical` | double | `0.3` | Upward component added to the impulse, clamped to [0, 1.5] |
-| `targets` | string | `hostiles` | Which living entities receive the knockback: `hostiles` (default, monsters and angered neutrals), `allies`, or `all`; players are always excluded |
+| `targets` | string | `hostiles` | Which living entities receive the knockback: `hostiles` (default, monsters and angered neutrals), `allies`, or `all`. Players are always excluded |
 
 **Event:** `EntityDamageByEntityEvent` (single target) / `PlayerInteractEvent` (radial shove)
 
@@ -321,7 +321,7 @@ Triggers the vanilla shield raise-lockout cooldown on a target player, rendering
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `ticks` | double | `0` | Shield disable duration in ticks |
-| `target` | string | `victim` | Who gets disabled: `victim` (the damaged player on `EntityDamageByEntityEvent`; falls back to the activating player elsewhere), `attacker` (the player attacker, projectile shooters count; falls back to the activating player elsewhere), or `self` (always the activating player). A non-player victim/attacker is a safe no-op |
+| `target` | string | `victim` | Who gets disabled: `victim` (the damaged player on `EntityDamageByEntityEvent`. Falls back to the activating player elsewhere), `attacker` (the player attacker, projectile shooters count. Falls back to the activating player elsewhere), or `self` (always the activating player). A non-player victim/attacker is a safe no-op |
 
 **Event:** `EntityDamageByEntityEvent` / `PlayerInteractEvent`
 
@@ -335,7 +335,7 @@ Deals a melee hit using the base attack damage of the off-hand weapon to the ent
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Scales the off-hand weapon's base damage, clamped to [0, 4] |
 | `reach` | double | `4` | Maximum targeting distance in blocks, clamped to [0, 4.5] |
-| `targets` | string | `hostiles` | Which living entities may be struck: `hostiles` (default, monsters and angered neutrals), `allies`, or `all`; players are always excluded |
+| `targets` | string | `hostiles` | Which living entities may be struck: `hostiles` (default, monsters and angered neutrals), `allies`, or `all`. Players are always excluded |
 
 **Event:** `PlayerInteractEvent`
 
@@ -344,8 +344,9 @@ Deals a melee hit using the base attack damage of the off-hand weapon to the ent
 Chance to completely dodge incoming damage.
 
 > **Note:** `core:dodge`, `core:block_damage`, and `core:cancel_damage` are aliases
-> of the same implementation — all three roll a `chance` (0-100%) to cancel an
+> of the same implementation. All three roll a `chance` (0-100%) to cancel an
 > incoming damage event. They are registered as separate keys purely for flavor.
+> `dodge` reads as an evasion.
 
 **Parameters:**
 
@@ -370,15 +371,15 @@ Heals the player for a percentage of damage dealt.
 ### core:crowd_control
 
 Applies an AoE status effect to nearby enemies when damaging a target. This is
-the offensive counterpart to the buff auras: it defaults to `targets: hostiles`
-so a debuff lands only on monsters and angered neutrals — never on your own
+the offensive counterpart to the buff auras. It defaults to `targets: hostiles`
+so a debuff lands only on monsters and angered neutrals. It never lands on your own
 allies.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:poison`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `effect` | string | none | Namespaced potion effect key (e.g., `minecraft:poison`). See [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `duration` | double | `3` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
 | `radius` | double | `5` | Effect radius in blocks (clamped to [0, 32]) |
@@ -401,7 +402,7 @@ Instantly kills targets below a health threshold.
 ### core:auto_smelt
 
 Automatically smelts mined blocks (e.g. iron ore -> iron ingot). Each distinct
-drop type with a smelt mapping is converted independently — one smelted stack
+drop type with a smelt mapping is converted independently. One smelted stack
 per product, with unmapped drop types re-dropped unchanged, so multi-type blocks
 never merge or lose drops. Nugget/quartz drops (already the smelted product)
 pass through unchanged.
@@ -424,7 +425,7 @@ is cleared when the player quits or the plugin reloads.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `multiplier` | double | `1.0` | Multiplicative XP multiplier applied to all gains (1.5 = +50%, 2.0 = double; not a percentage increase) |
+| `multiplier` | double | `1.0` | Multiplicative XP multiplier applied to all gains (1.5 = +50%, 2.0 = double. Not a percentage increase) |
 | `duration` | double | `30.0` | Seconds the bonus lasts before expiring |
 
 **Event:** Fires on the trigger declared by the ability.
@@ -501,7 +502,7 @@ Applies the HASTE potion effect to the player, increasing mining/digging speed.
 | `amplifier` | double | `0` | Effect amplifier (0 = level I) |
 | `duration` | double | `300` | Duration in seconds |
 
-**Event:** Fires on the trigger declared by the ability. Applies the HASTE potion effect to the player, increasing mining/digging speed — not movement or placement speed.
+**Event:** Fires on the trigger declared by the ability. Applies the HASTE potion effect to the player, increasing mining/digging speed. It does not affect movement or placement speed.
 
 ### core:repair_discount
 
@@ -562,7 +563,7 @@ Applies a potion effect to the player and nearby living entities within a radius
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:regeneration`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `effect` | string | none | Namespaced potion effect key (e.g., `minecraft:regeneration`). See [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `radius` | double | `8` | Aura radius in blocks |
 | `duration` | double | `5` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
@@ -576,13 +577,13 @@ Applies a potion effect to the player and nearby living entities within a radius
 
 ### core:ally_aura
 
-Applies a potion effect to the casting player and all nearby **players** (allies) within a radius. Hostile mobs are never affected. A `radius: 0` config buffs nobody — the caster is only buffed as part of the aura, not unconditionally.
+Applies a potion effect to the casting player and all nearby **players** (allies) within a radius. Hostile mobs are never affected. A `radius: 0` config buffs nobody. The caster is only buffed as part of the aura, not unconditionally.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `effect` | string | — | Namespaced potion effect key (e.g., `minecraft:regeneration`); see [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `effect` | string | none | Namespaced potion effect key (e.g., `minecraft:regeneration`). See [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
 | `radius` | double | `8` | Aura radius in blocks (max 32) |
 | `duration` | double | `5` | Duration in seconds |
 | `amplifier` | double | `0` | Effect amplifier |
@@ -597,10 +598,10 @@ Triggers the vanilla item-stack cooldown animation on the activating player for 
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `material` | string | — | Namespaced material key (e.g., `minecraft:shield`, `minecraft:goat_horn`) |
+| `material` | string | none | Namespaced material key (e.g., `minecraft:shield`, `minecraft:goat_horn`) |
 | `ticks` | double | `0` | Cooldown duration in ticks |
 
-**Event:** Any — applies to the activating player
+**Event:** Any. Applies to the activating player
 
 ### core:modify_jump
 
@@ -612,7 +613,7 @@ Temporarily increases the player's jump strength.
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Jump multiplier (1.5 = 50% higher) |
 | `duration` | double | `300` | Duration in seconds |
-| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
+| `uuid` | string | random | Stable modifier UUID. Repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:block_particles
 
@@ -622,11 +623,11 @@ Spawns a configured particle burst at the event's clicked/broken/placed block. U
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `particle` | string | — | Namespaced particle identifier (e.g. `minecraft:happy_villager`, `minecraft:portal`) |
+| `particle` | string | none | Namespaced particle identifier (e.g. `minecraft:happy_villager`, `minecraft:portal`) |
 | `count` | double | `1` | Number of particles to spawn |
 | `speed` | double | `0` | Particle speed/extra |
 
-**Event:** `player_interact` (right-click on block), `block_break`, `block_place` — requires a block location; returns `false` (no-op) otherwise.
+**Event:** `player_interact` (right-click on block), `block_break`, `block_place`. Requires a block location. Returns `false` (no-op) otherwise.
 
 ### core:modify_attack_speed
 
@@ -638,7 +639,7 @@ Temporarily increases the player's attack speed for a configurable duration.
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Attack speed multiplier (1.2 = +20% faster) |
 | `duration` | double | `300` | Duration in seconds |
-| `uuid` | string | random | Stable modifier UUID; repeated activations with the same UUID replace the previous modifier instead of stacking |
+| `uuid` | string | random | Stable modifier UUID. Repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 **Event:** Fires on the trigger declared by the ability (temporary attack speed bonus).
 
@@ -658,8 +659,8 @@ attribute: { constant: "minecraft:movement_speed" }
 - **Legacy numeric IDs** (e.g., `19` for Poison, `4` for Movement Speed) remain
   supported for backward compatibility but are **deprecated** and log a warning on use.
 - **Unknown keys or IDs throw `IllegalArgumentException` at skill load time**
-  (fail-fast) so a typo is rejected while the skill file is parsed — never inside
-  an event handler mid-game. The same applies to the `material` parameter of
+  (fail-fast), so a typo is rejected while the skill file is parsed. This never happens
+  inside an event handler mid-game. The same applies to the `material` parameter of
   `core:set_cooldown` and the `particle` parameter of `core:block_particles`.
 
 > **Parameter bounds are also validated at load:** negative radii
@@ -673,11 +674,11 @@ attribute: { constant: "minecraft:movement_speed" }
 ## Built-In Triggers
 
 > **Bulk-operation scaling:** XP rewards for the `collect_xp`, `craft_item`, and
-> `furnace_extract` triggers are multiplied by the magnitude of the operation —
-> the number of XP orbs collected, the number of items crafted (including
+> `furnace_extract` triggers are multiplied by the magnitude of the operation.
+> The magnitude is the number of XP orbs collected, the number of items crafted (including
 > shift-click batch totals), or the number of items extracted from a furnace,
 > respectively. For example, a configured reward of 2 skill XP grants 6 skill XP
-> for a bulk of 3. `consume_item` is not bulk-scaled: eating grants the flat
+> for a bulk of 3. `consume_item` is not bulk-scaled. Eating grants the flat
 > configured reward once per item consumed. All other triggers grant the flat
 > configured reward.
 
@@ -699,9 +700,9 @@ attribute: { constant: "minecraft:movement_speed" }
 | `furnace_extract` | `FurnaceExtractEvent` | Extracting from a furnace |
 | `brew_potion` | `BrewEvent` | A brewing stand finishes brewing a batch |
 | `brew_start` | `BrewingStartEvent` | A brewing stand begins a new brewing cycle |
-| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) with the main hand only — the off-hand duplicate of a two-handed interaction is skipped so abilities fire once. A `target` filter matches the clicked block on right-click; left-clicks and air interactions never match a block target |
+| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) with the main hand only. The off-hand duplicate of a two-handed interaction is skipped so abilities fire once. A `target` filter matches the clicked block on right-click. Left-clicks and air interactions never match a block target |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
-| `fishing` | `PlayerFishEvent` | Successfully catching a fish (only the `CAUGHT_FISH` state dispatches; casts, bites, reels, and failed attempts do not) |
+| `fishing` | `PlayerFishEvent` | Successfully catching a fish. Only the `CAUGHT_FISH` state dispatches. Casts, bites, reels, and failed attempts do not |
 | `crop_grow` | `BlockGrowEvent` | Natural crop growth |
 | `breed_animals` | `EntityBreedEvent` | Breeding animals |
 | `sprint` | `PlayerToggleSprintEvent` | Player starts sprinting (release is not a trigger) |
@@ -718,7 +719,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `launch_projectile` | `ProjectileLaunchEvent` | Launching a projectile (trident, snowball, etc.) |
 | `projectile_hit` | `ProjectileHitEvent` | A projectile lands on a block or entity (use for impact-time mechanics like `core:projectile_return`) |
 | `resurrect` | `EntityResurrectEvent` | Totem of Undying activation |
-| `cure_villager` | `EntityTransformEvent` | A zombie villager finishes converting into a villager (reason `CURED`). Attribution follows the player who initiated the cure (`ZombieVillager.getConversionPlayer()`); a cure that completes after that player logs off grants nothing |
+| `cure_villager` | `EntityTransformEvent` | A zombie villager finishes converting into a villager (reason `CURED`). Attribution follows the player who initiated the cure (`ZombieVillager.getConversionPlayer()`). A cure that completes after that player logs off grants nothing |
 | `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
 
 ## Built-In State Filters
@@ -734,7 +735,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `is_on_fire` | *(none)* | Player is on fire |
 | `is_riding` | *(none)* | Player is riding a vehicle/mount |
 | `is_blocking` | *(none)* | Player is blocking with a shield |
-| `player_placed` | `true`, `false` | `false` matches blocks not placed by a player (natural blocks); `true` matches blocks a player placed. Values are validated at load |
+| `player_placed` | `true`, `false` | `false` matches blocks not placed by a player (natural blocks). `true` matches blocks a player placed. Values are validated at load |
 | `dimension` | `overworld`, `nether`, `end` | Player's current dimension |
 | `weather` | `clear`, `rain`, `thunder` | Current weather in player's world |
 | `time` | `day`, `night` | Time of day in player's world |
@@ -749,7 +750,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
 
 The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`
-custom tags (in `tags.yml`) reproduce the historical armor tiers as data; no
+custom tags (in `tags.yml`) reproduce the historical armor tiers as data. No
 tier knowledge is hard-coded in Java. `#c:unarmored` includes empty slots
 (`minecraft:air`), the elytra, and headwear.
 

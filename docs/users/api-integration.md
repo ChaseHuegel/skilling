@@ -71,8 +71,8 @@ import java.util.Map;
  * <p>YAML key: {@code myaddon:knockback}
  * <br>Params:
  * <ul>
- *   <li>{@code force} (double) — impulse strength, must be &gt; 0 to act</li>
- *   <li>{@code vertical} (double, optional, default 0.3) — upward component</li>
+ *   <li>{@code force} (double). Impulse strength, must be &gt; 0 to act</li>
+ *   <li>{@code vertical} (double, optional, default 0.3). Upward component</li>
  * </ul>
  */
 public class KnockbackMechanic implements SkillMechanic {
@@ -92,7 +92,7 @@ public class KnockbackMechanic implements SkillMechanic {
 }
 ```
 
-Register it in your plugin's `onEnable()` — passing the parameter names lets the
+Register it in your plugin's `onEnable()`. Passing the parameter names lets the
 engine validate ability YAMLs and drives the live registry:
 
 ```java
@@ -157,7 +157,7 @@ api.getRegistries().getTriggerRegistry().register("resurrect", ResurrectTrigger.
 
 ### Adding the Event Listener
 
-Registering the trigger only binds the key to an event class — the engine still needs
+Registering the trigger only binds the key to an event class. The engine still needs
 an `@EventHandler` to observe the event and call `dispatch()`. Add a listener mirroring
 the engine's own pattern (`SkillEventListener.onResurrect`):
 
@@ -212,7 +212,7 @@ sf.register("equipped", (p, e, v) -> {
 ```
 
 Armor gating is provided by the built-in `equipped_all` / `equipped_any` filters, which
-resolve their `value` as a material or `#...` tag through the cached `TagResolver` — no
+resolve their `value` as a material or `#...` tag through the cached `TagResolver`. No
 armor-tier knowledge lives in Java. The bundled `#c:light_armor`, `#c:medium_armor`,
 `#c:heavy_armor`, and `#c:unarmored` tags reproduce the historical tiers as data (see
 `tags.yml`). Custom filters accept any `value`
@@ -220,13 +220,13 @@ string and are available in both `requirements.state` and filter `state` fields.
 
 ### Constructor Requirements
 
-Both `SkillMechanic` and `SkillTrigger` implementations **must** have a public no-argument constructor. The registries use `Class::newInstance()` to instantiate them at runtime; this is **validated at registration time** (fail-fast), so a class without a public no-arg constructor is rejected the moment you call `register(...)`, not on first use. `ParameterEvaluator` implementations can be registered either as instances (no constructor constraint) or as classes (which must have a public no-arg constructor).
+Both `SkillMechanic` and `SkillTrigger` implementations **must** have a public no-argument constructor. The registries use `Class::newInstance()` to instantiate them at runtime. This is **validated at registration time** (fail-fast). A class without a public no-arg constructor is rejected the moment you call `register(...)`, not on first use. `ParameterEvaluator` implementations can be registered either as instances (no constructor constraint) or as classes. Classes must have a public no-arg constructor.
 
 ## Ability Schema: The `trigger` Field
 
 Every ability **must** declare exactly one `trigger` key that binds it to a single event
 dispatch (e.g., `block_break`, `entity_damage_taken`, `player_interact`). This is a
-**required** field — omitting it throws `IllegalArgumentException` during skill loading
+**required** field. Omitting it throws `IllegalArgumentException` during skill loading
 (fail-fast), so custom abilities shipped with your addon must always set it:
 
 ```yaml
@@ -265,10 +265,10 @@ cooldown evaluator against `(level, unlockLevel)` before the cooldown check.
 ## `block_damage` vs `cancel_damage`
 
 Both built-in mechanics are functionally identical: they roll a `chance` (0-100%) to
-negate an incoming damage event. They are kept as separate keys purely for flavor —
+negate an incoming damage event. They are kept as separate keys purely for flavor.
 `core:block_damage` reads as a shield/armor block (used by armor and shield skills)
 while `core:cancel_damage` reads as a dodge/evade (used by evasion skills). Do not
-merge them in your skill packs; pick the key that matches the ability's flavor.
+merge them in your skill packs. Pick the key that matches the ability's flavor.
 
 ## Registering a Custom Evaluator
 
@@ -333,18 +333,18 @@ Example: `%skilling_evaluator_mining_geologist_yield_chance%` returns the curren
 | `getRequirementEngine()` | `RequirementEngine` | Check/consume pipeline |
 | `getFeedbackDebouncer()` | `FeedbackDebouncer` | Spam throttle |
 | `getBossBarPool()` | `BossBarPool` | LRU Boss Bar cache |
-| `getProfile(UUID)` | `PlayerProfileView` | Read-only view of a player's profile (XP queries only); synchronous in-memory cache lookup, returns null if not loaded. The mutable engine profile is never exposed to addons. |
+| `getProfile(UUID)` | `PlayerProfileView` | Read-only view of a player's profile (XP queries only). Synchronous in-memory cache lookup, returns null if not loaded. The mutable engine profile is never exposed to addons. |
 
 ### Registries
 
 | Method | Description |
 |---|---|
-| `registerMechanic(String, Class<? extends SkillMechanic>)` | Register a SkillMechanic implementation; public no-arg constructor validated at registration |
-| `registerTrigger(String, Class<? extends SkillTrigger>)` | Register a SkillTrigger implementation; public no-arg constructor validated at registration |
+| `registerMechanic(String, Class<? extends SkillMechanic>)` | Register a SkillMechanic implementation. Public no-arg constructor validated at registration |
+| `registerTrigger(String, Class<? extends SkillTrigger>)` | Register a SkillTrigger implementation. Public no-arg constructor validated at registration |
 | `registerEvaluator(String, Class<? extends ParameterEvaluator>)` | Register a ParameterEvaluator implementation by class |
 | `registerEvaluator(String, Object)` | Register a ParameterEvaluator instance (deprecated) |
 | `getMechanicRegistry()` | Direct access to mechanic registry |
 | `getTriggerRegistry()` | Direct access to trigger registry |
 | `getEvaluatorRegistry()` | Direct access to evaluator registry |
 
-All registries return **immutable snapshots** from read methods (`keys()`, `getAllParameterNames()`) and **copy** caller-supplied parameter-name lists defensively, so returned collections and later caller mutation can never corrupt registry state. Duplicate keys and classes lacking a public no-arg constructor fail fast with `IllegalArgumentException`.
+All registries return **immutable snapshots** from read methods (`keys()`, `getAllParameterNames()`) and **copy** caller-supplied parameter-name lists defensively. Returned collections and later caller mutation can never corrupt registry state. Duplicate keys and classes lacking a public no-arg constructor fail fast with `IllegalArgumentException`.

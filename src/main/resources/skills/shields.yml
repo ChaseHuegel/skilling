@@ -5,7 +5,7 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage_taken"
     filters: [ { state: "is_blocking" } ]
-    reward: { constant: 23.0 }      # per raw damage point (5 ≈ 2.5-heart hit); damage-scaled
+    reward: { constant: 23.0 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
     scaling: damage
   - trigger: "entity_kill"
     filters: [ { state: "is_blocking" } ]

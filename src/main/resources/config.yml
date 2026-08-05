@@ -1,5 +1,5 @@
 # ==========================================
-# Skilling — Global Configuration
+# Skilling: Global Configuration
 # ==========================================
 
 database:
@@ -20,7 +20,7 @@ debouncer:
   interval_ms: 500
 
 # Enable verbose console logging for runtime troubleshooting
-# WARNING: Will produce significant log output; use only for debugging
+# WARNING: Produces significant log output. Use only for debugging
 debug_logging: false
 
 titles:
@@ -28,7 +28,7 @@ titles:
   stay_duration: 5000
 
 # ============================================================================
-# Branding — every in-game visual element.
+# Branding: every in-game visual element.
 # ============================================================================
 # Templates use legacy color codes (&0-&f, &l, &o, &#rrggbb for hex) and
 # {placeholder} tokens. Tokens whose values are unknown are left verbatim.
@@ -36,7 +36,7 @@ titles:
 #   - {lore} / {abilities} / {ability} are multi-line inserts: a template line
 #     holding such a token is dropped when the insert has no content.
 # The engine adds no hardcoded spacing between template lines or ability
-# blocks — blank lines in the templates are intentional.
+# blocks. Blank lines in the templates are intentional.
 branding:
   # Full skill tooltip (shown on the skill icon and via /skills <skill>).
   # Available: {level} {max_level} {bar} {xp_into} {xp_needed} {xp_total}
@@ -51,7 +51,7 @@ branding:
     - ""
     - "{abilities}"
   # XP progress bar rendered for the {bar} token. Each unit string may carry
-  # its own color codes; width is the character width (1-200). At max level the
+  # its own color codes. Width is the character width (1-200). At max level the
   # bar renders full and {xp_needed} equals {xp_into} (reads "XP: 5 / 5").
   bar_template:
     width: 20
@@ -102,7 +102,7 @@ branding:
   guide_book:
     name: "&6Skills Guide"
     lore: "&7Right-click to open your skills"
-  # XP boss bar. title_format supports {color} {name} {level} {into} {needed};
+  # XP boss bar. title_format supports {color} {name} {level} {into} {needed}.
   # default_color/default_style apply before a skill's own color/style overrides.
   boss_bar:
     title_format: "{color}{name} &7- &f{level}"
@@ -133,7 +133,7 @@ crop_grow:
   # Radius (in blocks) to search for nearby players when a crop grows naturally
   search_radius: 10
 
-# Skills Guide Book — a craftable item that opens the skill menu on right-click
+# Skills Guide Book: a craftable item that opens the skill menu on right-click
 # Recipe: book + compass = enchanted book
 skills_guide_book:
   enabled: true
@@ -149,7 +149,7 @@ web:
   enabled: false
   # Port to listen on (use a port > 1024 on Linux)
   port: 8082
-  # Address to bind. "0.0.0.0" listens on all interfaces; "127.0.0.1" restricts
+  # Address to bind. "0.0.0.0" listens on all interfaces. "127.0.0.1" restricts
   # the GUI to this machine only (recommended without a reverse proxy).
   bind_address: "0.0.0.0"
   # Basic authentication credentials
@@ -164,7 +164,7 @@ web:
   # client's failed attempts cannot lock out everyone behind the proxy.
   behind_proxy: false
   # Cross-origin origins allowed to read the admin API. The frontend is served
-  # same-origin, so this is normally empty; add entries (e.g. the Vite dev
+  # same-origin, so this is normally empty. Add entries (e.g. the Vite dev
   # server "http://localhost:5173") only when accessing from another origin.
   # Unlisted origins get no Access-Control-Allow-Origin header and are blocked.
   allowed_origins: []

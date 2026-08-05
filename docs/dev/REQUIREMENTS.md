@@ -2,7 +2,7 @@
 
 ## 1. Environment & Tech Stack
 
-The plugin will be built as a modern, high-performance rules engine designed exclusively for the Paper server ecosystem.
+The plugin is a rules engine built exclusively for the Paper server ecosystem.
 
 | Component | Requirement |
 | --- | --- |
@@ -18,7 +18,7 @@ The plugin will be built as a modern, high-performance rules engine designed exc
 
 ## 2. Core Architectural Patterns
 
-The system avoids hardcoded logic by adopting a composition-over-inheritance model, treating skills as data.
+The system treats skills as data. It uses composition instead of inheritance to avoid hardcoded logic.
 
 * **Registry Pattern:** All triggers, mechanics, and parameter evaluators must be registered in central singleton managers during plugin initialization (`onEnable`).
 * **Decoupled State:** Gameplay logic must operate entirely in-memory. The Bukkit main thread is strictly forbidden from executing blocking I/O database queries.
@@ -29,7 +29,7 @@ The system avoids hardcoded logic by adopting a composition-over-inheritance mod
 
 ## 3. Data Persistence & Lifecycle
 
-Database operations must be designed to maintain 20 TPS (Ticks Per Second) under heavy concurrent load.
+Database operations must maintain 20 TPS (Ticks Per Second) under heavy concurrent load.
 
 ### Database Schema
 
@@ -59,7 +59,7 @@ The engine acts as a parser mapping YAML definitions to executable Java interfac
 
 ## 5. UI/UX & Security Requirements
 
-User interfaces must be dynamically generated, performant, and cryptographically secured against network race conditions.
+User interfaces must be dynamically generated and secured against network race conditions.
 
 ### Hierarchical GUIs
 
@@ -85,10 +85,10 @@ User interfaces must be dynamically generated, performant, and cryptographically
 Administrative commands must execute safely without corrupting the async data pipeline.
 
 * **Subcommand Routing:** Use Incendo Cloud's annotation-driven command builder with `cloud-paper` for argument casting and permission node routing.
-* **Single Command Tree:** All functionality lives under `/skills` — no separate `/skillsadmin` root. A bare `/skills` opens the player's skill overview UI.
+* **Single Command Tree:** All functionality lives under `/skills`. There is no separate `/skillsadmin` root. A bare `/skills` opens the player's skill overview UI.
 * **Dynamic Tab Completion:** Skill ID arguments must auto-complete by querying the live `SkillRegistry`, ensuring custom YAML skills appear instantly.
-* **Offline Player Handling:** Admin commands targeting offline players must execute directly against the database and flag the row to trigger UI fanfare upon their next login.
-* **Deterministic Reloads:** The `/skills reload` command must follow a strict lockdown sequence: freeze interactions, close active GUIs, flush the database, rebuild registries, invalidate UI caches, and unlock interactions.
+* **Offline Player Handling:** Admin commands targeting offline players must execute directly against the database. They must flag the row to trigger UI fanfare upon their next login.
+* **Deterministic Reloads:** The `/skills reload` command must follow a strict lockdown sequence. The sequence is: freeze interactions, close active GUIs, flush the database, rebuild registries, invalidate UI caches, and unlock interactions.
 
 ---
 

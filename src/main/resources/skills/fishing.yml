@@ -23,7 +23,7 @@ xp_sources:
       constant: 138.9
   # Treasure-catch source deferred (the fishing trigger fires once per caught
   # fish via the CAUGHT_FISH state gate, but treasure is a loot-table subset of
-  # that catch, not a distinct event); two sources used.
+  # that catch, not a distinct event). Two sources used.
   # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=139 exceeds the ~60/action ceiling.
 
 abilities:

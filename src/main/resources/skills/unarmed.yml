@@ -5,14 +5,14 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
     filters: [ { state: "hand:empty" } ]
-    reward: { constant: 34.0 }      # per raw damage point (2 ≈ unarmed punch); damage-scaled
+    reward: { constant: 34.0 }      # per raw damage point (2 ≈ unarmed punch). Damage-scaled
     scaling: damage
   - trigger: "entity_kill"
     filters: [ { state: "hand:empty" } ]
     reward: { constant: 68.0 }
   - trigger: "entity_damage_taken"
     filters: [ { state: "equipped_all:#c:unarmored" } ]   # armor:empty (no armor worn)
-    reward: { constant: 13.6 }      # per raw damage point (5 ≈ 2.5-heart hit); damage-scaled
+    reward: { constant: 13.6 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
     scaling: damage
 abilities:
   - id: "iron_fist"

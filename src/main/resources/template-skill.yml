@@ -2,7 +2,7 @@
 # SKILL CONFIGURATION TEMPLATE
 # ==========================================
 id: "mining"
-max_level: 100                # Max level (1..10000; larger values are rejected at load)
+max_level: 100                # Max level (1..10000. Larger values are rejected at load)
 
 # ----------------------------------------
 # UI & VISUAL IDENTITY
@@ -44,9 +44,9 @@ xp_sources:
       constant: 2.0
 
   # Optional "scaling: damage" makes the reward proportional to the amount of
-  # damage on the event (raw base, pre-mitigation; 1.0 = half heart). Only valid
-  # on damage triggers (fall_damage, entity_damage_taken, entity_damage);
-  # rejected at load on any other trigger. Omit for a flat reward.
+  # damage on the event (raw base, pre-mitigation. 1.0 = half heart). Only valid
+  # on damage triggers (fall_damage, entity_damage_taken, entity_damage).
+  # Rejected at load on any other trigger. Omit for a flat reward.
   # - trigger: "fall_damage"
   #   reward:
   #     constant: 25.0
@@ -118,7 +118,7 @@ abilities:
         - action: "cost"
           tag: "minecraft:coal"
           amount: 1                             # Example of consuming an item fuel source
-      # Exhaustion (hunger) requirement — deducted on ability use
+      # Exhaustion (hunger) requirement. Deducted on ability use
       # amount: hunger points to consume (0-20)
       # minimum: minimum hunger level required to activate
       exhaustion:
@@ -156,7 +156,7 @@ abilities:
       # Note: exhaustion param is no longer in chain_break.
       # Use the requirements.exhaustion block instead.
 
-    # core:level_break is the XZ-plane-only variant of core:chain_break — it
+    # core:level_break is the XZ-plane-only variant of core:chain_break. It
     # breaks connected same-type blocks in the same horizontal layer only and
     # never propagates up or down the Y axis. Same params (chain_limit) and
     # behavior (per-block tool durability, no double XP for chained blocks).
@@ -165,7 +165,7 @@ abilities:
     #       chain_limit: { constant: 8 }
 
     # Some mechanics take namespaced string constants (effect, attribute, material).
-    # Use a quoted constant value; the raw string is passed through verbatim:
+    # Use a quoted constant value. The raw string is passed through verbatim:
     #   - type: "core:apply_status"
     #     parameters:
     #       effect: { constant: "minecraft:poison" }

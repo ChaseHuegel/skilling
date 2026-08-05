@@ -4,8 +4,7 @@
 
 ### Pillar I: Non-Destructive Integrity (The "Clean Unplug" Rule)
 
-* **Zero World Corruption:** No ability may permanently alter world geometry, place non-vanilla blocks, or write custom tile entity data that depends on the plugin to exist.
-* **Vanilla Container Safety:** Never alter container sizes, slot layouts, or inventory interfaces via custom GUIs. Storage utilities must use standard vanilla containers or temporary virtual windows (e.g., opening a portable crafting table/Ender chest GUI directly) to prevent item loss if the plugin is uninstalled.
+* **Zero World Corruption:** No ability may permanently alter world geometry. No ability may place non-vanilla blocks. No ability may write custom tile entity data that depends on the plugin to exist.* **Vanilla Container Safety:** Never alter container sizes, slot layouts, or inventory interfaces via custom GUIs. Storage utilities must use standard vanilla containers or temporary virtual windows (e.g., opening a portable crafting table/Ender chest GUI directly) to prevent item loss if the plugin is uninstalled.
 * **Native Event Execution:** World-modifying mechanics (e.g., vein mining or tree felling) must run as standard player `BlockBreakEvent` passes, respecting normal tool durability, enchantments, and drop tables.
 
 ### Pillar II: Aesthetic & Mechanical Restraint
@@ -26,14 +25,14 @@
 ### Pillar V: Event-Driven Engine (Paper API Native Strictness)
 
 * **Zero Constant Ticking Tasks:** Avoid `BukkitRunnable` tasks that run every tick to check player surroundings, scan chunks, or update block states.
-* **Player-Centric Effects:** Modify *Player* or *Target Entity* properties directly (status effects, standard damage source calls, held item durability) rather than hacking NMS tile entities (e.g., modifying Beacon block tick ranges) or spamming block-outline packets.
+* **Player-Centric Effects:** Modify *Player* or *Target Entity* properties directly (status effects, standard damage source calls, held item durability). Do not hack NMS tile entities (e.g., modifying Beacon block tick ranges) or spam block-outline packets.
 * **Clean Event Listeners:** All abilities must execute strictly inside standard Paper API event listeners (`BlockBreakEvent`, `EntityDamageByEntityEvent`, `PlayerInteractEvent`, `GenericGameEvent`) running in $O(1)$ time.
 
 ---
 
 ## 2. Dual-Layer Progression & Mathematical Curves
 
-Progression across Levels 1–100 is split into two distinct scalar layers to maintain continuous sense of growth:
+Progression across Levels 1 to 100 is split into two distinct scalar layers to maintain continuous sense of growth:
 
 ### A. The Primary Scalar (Core Linear Engine)
 
@@ -47,8 +46,8 @@ $$\text{Value} = (\text{PlayerLevel}) \times \text{PrimaryStep}$$
 
 ### B. Secondary Scalars (Milestone Sub-Scaling)
 
-* **Role:** Every milestone ability (L15, L25, L50, L75, L100) possesses its own secondary formula that grows in potency from its unlock point up to Level 100.
-* **No Static Milestones:** No ability unlock remains mathematically binary; parameters like cooldowns, durations, radii, or proc chances grow as the player levels past the unlock threshold.
+* **Role:** Every milestone ability (L15, L25, L50, L75, L100) has its own secondary formula. This formula grows in potency from its unlock point up to Level 100.
+* **No Static Milestones:** No ability unlock remains mathematically binary. Parameters like cooldowns, durations, radii, or proc chances grow as the player levels past the unlock threshold.
 * **Standard Evaluation Formulas for Configs:**
 * **Linear Sub-Growth:**
 
@@ -67,7 +66,7 @@ $$\text{Cooldown} = \text{BaseCD} - \left( \frac{\text{PlayerLevel} - \text{Unlo
 
 ## 3. Milestone Progression Template
 
-Every skill strictly adheres to a **6-tier milestone progression** spanning **Levels 1 to 100**.
+Every skill strictly follows a **6-tier milestone progression** spanning **Levels 1 to 100**.
 
 | Milestone | Tier Type | Target Design Role | Example Function |
 | --- | --- | --- | --- |
@@ -82,7 +81,7 @@ Every skill strictly adheres to a **6-tier milestone progression** spanning **Le
 
 ## 4. Input & Trigger Standard
 
-Active abilities strictly utilize native vanilla player inputs to prevent client-mod dependencies or keybind clutter:
+Active abilities strictly use native vanilla player inputs to prevent client-mod dependencies or keybind clutter:
 
 1. **Tool / Catalyst Stance (`Shift + Right-Click` with Item):** Prepares or executes a timed active buff or instantaneous action.
 2. **Directional Intersect (`Sneak + Left-Click` on Block/Target):** Triggers contextual block or target interactions.

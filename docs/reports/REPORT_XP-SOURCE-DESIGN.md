@@ -1,4 +1,4 @@
-# REPORT: XP-Source Design — Multi-Source, 50-Hour-to-100 Target
+# REPORT: XP-Source Design: Multi-Source, 50-Hour-to-100 Target
 
 **Owning ticket:** [ISSUE-177](../issues/ISSUE-177.md)
 **Date:** 2026-08-02
@@ -49,7 +49,7 @@ All skills share `progression: { curve: polynomial, base_xp: 50, exponent: 2.5 }
 
 **13 of 32 skills are single-source**, and the armor/tanking cluster is both single-source
 and under-rewarded. `REPORT_XP-CURVE.md` §3 measured the spread: 388 h (`riding`) to
-8,333 h (`alchemy`), median ~1,070 h — a 21.5× band.
+8,333 h (`alchemy`), median ~1,070 h. This is a 21.5× band.
 
 ## 2. The 50-hour target math and the curve decision
 
@@ -65,18 +65,18 @@ the ~500 h band recommended in `REPORT_XP-CURVE.md` §7.1. A strict, uniform 50 
 skill forces reward constants that are mechanically absurd for low-frequency skills
 (e.g. 667 XP per `alchemy` brew batch, 256 XP per `husbandry` breed).
 
-**Recommendation: (c) hybrid — keep the shared curve, compute rewards from the 50 h
-target, and prefer *adding high-frequency sources* over inflated per-action rewards.**
+**Recommendation: (c) hybrid.** Keep the shared curve, compute rewards from the 50 h
+target, and prefer *adding high-frequency sources* over inflated per-action rewards.
 
 - Keep the polynomial curve untouched (brand consistency, milestone fractions, the
   RuneScape-style tail are design pillars).
 - For each skill, compute the uniform per-action rate `R = 1,667 / Σ APM` over the skill's
   (expanded) source set. This is the transparent, back-computed constant.
 - **Outlier rule:** if `R` exceeds a sanity ceiling (≈60 XP/action for repeatable actions,
-  ≈150 XP/action for rare batches/kills), the skill's assumed action rate is too low —
-  **add another high-frequency source** (gathering, crafting, placement) to raise Σ APM and
+  ≈150 XP/action for rare batches/kills), the skill's assumed action rate is too low.
+  **Add another high-frequency source** (gathering, crafting, placement) to raise Σ APM and
   pull `R` down, rather than inflating the existing constant. Skills that *cannot* be made
-  high-frequency (e.g. `alchemy`) accept a longer effective time (≈80–120 h) — this is the
+  high-frequency (e.g. `alchemy`) accept a longer effective time (≈80-120 h). This is the
   honest residual gap and is documented per skill.
 
 ## 3. Reward formula
@@ -88,14 +88,14 @@ APM_i = actions/minute for source i (REPORT_XP-CURVE §2.3 table)
 ```
 
 - **Bulk-scaled triggers** (`furnace_extract` pays per item, `collect_xp` per orb):
-  `R` is the per-item/per-orb rate; the per-action yield is `R × itemsPerAction`.
-- Reward is split **uniformly**; a rarity-weighted variant (allocate the XP/min budget
+  `R` is the per-item/per-orb rate. The per-action yield is `R × itemsPerAction`.
+- Reward is split **uniformly**. A rarity-weighted variant (allocate the XP/min budget
   across sources before dividing by APM) is a valid refinement for rare-event skills
   (`resurrect`, `tame`, villager cure) where the uniform method over-rewards common sources.
 
 ## 4. Per-skill expanded source design (primary + secondary + tertiary)
 
-`R` values are the uniform 50 h constants (one decimal). "XP/min" is the modelled sustained
+`R` values are the uniform 50 h constants (one decimal). "XP/min" is the modeled sustained
 yield (sum of `R × APM`), which equals ≈1,667 for every skill by construction.
 
 | Skill | Sources (trigger / filters) | APM | R | XP/min |
@@ -134,10 +134,10 @@ yield (sum of `R × APM`), which equals ≈1,667 for every skill by construction
 | `woodcutting` | `block_break` logs · `block_break` leaves · `craft_item` planks | 18/20/8 | 36.2 | 1,667 |
 
 **Outliers flagged by the sanity rule** (R > 60/action): `alchemy` (667), `husbandry` (256),
-`fishing` (133), `cooking` (128), all armor/tanking skills (93–119). For these, execution
+`fishing` (133), `cooking` (128), all armor/tanking skills (93-119). For these, execution
 tickets should **add high-frequency sources first** (gather herbs for `alchemy`, shear/
 wool loops for `husbandry`, `block_place`/`craft_item` loops for the armor skills) to pull
-R down, and only then accept a residual ~80–120 h effective time rather than inflating a
+R down, and only then accept a residual ~80-120 h effective time rather than inflating a
 single action to absurd levels.
 
 ## 5. Tag expansion (`src/main/resources/tags.yml`)
@@ -172,54 +172,54 @@ Five sources (primary + 4):
 
 Σ APM = 27.8 → **R = 1,666.7 / 27.8 ≈ 60.0** per action. This is the derived constant for
 every piety source under the 50 h target. Note the tension with ISSUE-176, which shipped
-bury at **6 XP**: the 50 h target implies **10×** that (60 XP) — the execution ticket should
+bury at **6 XP**. The 50 h target implies **10×** that (60 XP). The execution ticket should
 either adopt the derived constant or keep bury low and lean on the two high-frequency
 sources (bury 600/min + holy placement 900/min) to carry the skill.
 
 ## 7. Engine capability gaps the plan depends on
 
-1. **`target_type` on `entity_kill` / `EntityDeathEvent`** — today the `target_type` state
+1. **`target_type` on `entity_kill` / `EntityDeathEvent`.** Today the `target_type` state
    filter only matches `EntityDamageByEntityEvent` (`Skilling.java:424-431`). Undead-kill
    sourcing needs it extended to `EntityDeathEvent` (or a `target` entity-type filter on
    `entity_kill`).
-2. **Villager-cure trigger** — no trigger exists. Paper exposes a villager-cure event
-   (verify exact class on the target API); otherwise model it as `player_interact` with a
+2. **Villager-cure trigger.** No trigger exists. Paper exposes a villager-cure event
+   (verify exact class on the target API). Otherwise model it as `player_interact` with a
    `#c:zombie_villagers`-style target + `hand`/`tool` golden-apple filter.
-3. **`dualwield:offhand_attack` / `dualwield:offhand_block_break`** — new triggers from
+3. **`dualwield:offhand_attack` / `dualwield:offhand_block_break`.** New triggers from
    ISSUE-175 (with base-dispatch suppression).
-4. **Block-target filters on `player_interact`** — shipped in ISSUE-176 (bury).
-5. **`repair` trigger / `furnace_extract` bulk semantics** — `repair` exists
-   (`PrepareAnvilEvent`); furnace constants must be tuned to the per-item scalar
+4. **Block-target filters on `player_interact`.** Shipped in ISSUE-176 (bury).
+5. **`repair` trigger / `furnace_extract` bulk semantics.** `repair` exists
+   (`PrepareAnvilEvent`). Furnace constants must be tuned to the per-item scalar
    (REPORT_XP-CURVE §7.2 P2).
 
 **Follow-up implementation tickets (backlog):**
 - `feat(skills)`: rework the 13 single-source skills to the multi-source table above.
 - `feat(skills)`: apply the derived reward constants to all 32 skills (one ticket per
   cluster: combat / gathering / crafting / tanking).
-- `feat(engine)`: extend `target_type` to `EntityDeathEvent`; add villager-cure trigger;
-  add the §5 `c:` tags to `tags.yml`.
+- `feat(engine)`: extend `target_type` to `EntityDeathEvent`. Add villager-cure trigger.
+  Add the §5 `c:` tags to `tags.yml`.
 - `feat(skills)`: `piety` adopt the §6 source set (with ISSUE-176's bury retained).
 
 ## 8. Reconciliation with REPORT_XP-CURVE.md
 
-- **Curve:** unchanged (5M XP; milestone fractions 3 %/18 %/49 %/100 % preserved), matching
+- **Curve:** unchanged (5M XP. Milestone fractions 3 %/18 %/49 %/100 % preserved), matching
   the framework's milestone pacing. At 50 h: level 25 ≈ 1.5 h, level 50 ≈ 9 h, level 75 ≈
   24.5 h, level 100 = 50 h.
 - **Rewards:** this plan deliberately supersedes the ~500 h band in REPORT_XP-CURVE §7.1 with
   the sprint's 50 h directive (~10× higher constants). The two reports agree on the *method*
   (§7.3 back-computation) and on the *findings* (single-source and tanking skills are the
-  problem); they differ only on the target time, which is an explicit product decision.
+  problem). They differ only on the target time, which is an explicit product decision.
 - **Outlier skills** (`alchemy`, `husbandry`, armor/tanking) remain the hardest to reach
-  50 h; the hybrid rule keeps their constants within a defensible ceiling and documents a
-  residual 80–120 h effective time.
+  50 h. The hybrid rule keeps their constants within a defensible ceiling and documents a
+  residual 80-120 h effective time.
 
 ## Verification of DoD
 
-- [x] All 32 skills covered with an expanded (primary + secondary + tertiary) source set — §4.
+- [x] All 32 skills covered with an expanded (primary + secondary + tertiary) source set. §4.
 - [x] 50 h reward math and per-source reward-constant table (skill → trigger → filter →
-      reward → XP/min) — §2, §3, §4.
+      reward → XP/min). §2, §3, §4.
 - [x] Fully-worked `piety` example (bury via ISSUE-176, undead kills, villager curing, totem
-      activations, holy-block placement) — §6.
-- [x] `tags.yml` additions and engine-capability gaps + follow-up tickets — §5, §7.
-- [x] Reconciled with REPORT_XP-CURVE.md (milestone pacing, action-rate table) — §8.
-- [x] Clean Markdown; no production code changed by this ticket.
+      activations, holy-block placement). §6.
+- [x] `tags.yml` additions and engine-capability gaps + follow-up tickets. §5, §7.
+- [x] Reconciled with REPORT_XP-CURVE.md (milestone pacing, action-rate table). §8.
+- [x] Clean Markdown. No production code changed by this ticket.

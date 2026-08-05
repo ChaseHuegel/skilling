@@ -44,8 +44,8 @@ xp_sources:
 ### progression
 
 Every curve is derived from `base_xp` (plus `exponent` for polynomial). A
-`linear` curve uses step `base_xp * 0.1`; a `constant` curve returns `base_xp`
-for every level. There are no other per-curve keys — the web GUI and the engine
+`linear` curve uses step `base_xp * 0.1`. A `constant` curve returns `base_xp`
+for every level. There are no other per-curve keys. The web GUI and the engine
 share this single schema.
 
 | Key | Type | Default | Description |
@@ -63,7 +63,7 @@ Each entry defines an action that grants XP.
 | `trigger` | Yes | string | Event trigger key (e.g., `block_break`, `entity_kill`, `craft_item`) |
 | `filters` | No | list | Conditions that must be met |
 | `reward` | Yes | section | XP reward evaluator |
-| `scaling` | No | string | `damage` to multiply the reward by the event's raw base damage (see below); omitted for a flat reward |
+| `scaling` | No | string | `damage` to multiply the reward by the event's raw base damage (see below). Omitted for a flat reward |
 
 #### filters
 
@@ -119,15 +119,15 @@ holds such an item.
 #### reward
 
 Uses evaluator syntax (see Evaluators below). A scalar value (e.g. `reward: 50`)
-is rejected at load with an `IllegalArgumentException`; it must be an evaluator
+is rejected at load with an `IllegalArgumentException`. It must be an evaluator
 block such as `reward: { constant: 50 }`.
 
 #### scaling
 
 The optional `scaling: damage` value multiplies the configured `reward` by the
 raw base damage of the triggering event (`getDamage()`, pre-mitigation, in
-half-hearts: a 5-heart fall is `10.0`). It is only valid on damage triggers —
-`fall_damage`, `entity_damage_taken`, and `entity_damage` (outgoing) — and is
+half-hearts: a 5-heart fall is `10.0`). It is only valid on damage triggers
+(`fall_damage`, `entity_damage_taken`, and `entity_damage` outgoing). It is
 rejected at load with an `IllegalArgumentException` on any other trigger, so a
 typo cannot silently disable a source. Example:
 
@@ -139,7 +139,7 @@ xp_sources:
 ```
 
 A source with `scaling: damage` grants `round(reward × damage × global modifier)`
-XP; a non-positive result (e.g. a fully-negated hit) grants nothing. Omit
+XP. A non-positive result (e.g. a fully-negated hit) grants nothing. Omit
 `scaling` for the default flat reward.
 
 ### abilities
@@ -151,7 +151,7 @@ Each entry defines an unlockable ability with mechanics.
 | `id` | Yes | string | Unique ability identifier |
 | `display_name` | No | string | Human-readable name (default: same as `id`) |
 | `unlock_level` | No | int | Level required to unlock (default: 1) |
-| `trigger` | Yes | string | The event that activates this ability. Each ability must declare exactly one trigger key that determines which event dispatch activates it. See the Triggers table in [capabilities.md](capabilities.md) for valid keys. This field is required and fail-fast validated — omitting it throws `IllegalArgumentException` during skill loading. The trigger must match the mechanic's expected event (see [capabilities.md](capabilities.md) for each mechanic's event) |
+| `trigger` | Yes | string | The event that activates this ability. Each ability must declare exactly one trigger key that determines which event dispatch activates it. See the Triggers table in [capabilities.md](capabilities.md) for valid keys. This field is required and fail-fast validated. Omitting it throws `IllegalArgumentException` during skill loading. The trigger must match the mechanic's expected event (see [capabilities.md](capabilities.md) for each mechanic's event) |
 | `display` | No | section | UI lore configuration |
 | `requirements` | No | section | Pre-execution requirements |
 | `on_failure` | No | section | Failure feedback overrides |
@@ -176,7 +176,7 @@ Each key supports the same sub-keys as `feedback` (`action_bar`, `sounds`).
 | `cooldown` | double *or* evaluator | `0` | Cooldown in seconds between uses. Accepts a plain number or evaluator syntax (see below) |
 | `state` | list | `[]` | Required player states |
 | `items` | list | `[]` | Item requirements |
-| `exhaustion` | section | — | Hunger/food cost for ability activation |
+| `exhaustion` | section | none | Hunger/food cost for ability activation |
 
 The `cooldown` field accepts full evaluator syntax in addition to a plain double,
 enabling inverse-cooldown sub-scaling as the player levels up:
@@ -188,15 +188,15 @@ requirements:
 ```
 
 A scalar (e.g., `5.0`) is equivalent to `constant: 5.0`. Use `linear` with a
-negative `step` for inverse-cooldown sub-scaling — the cooldown shrinks as the
+negative `step` for inverse-cooldown sub-scaling. The cooldown shrinks as the
 player levels up.
 
 ##### exhaustion
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `amount` | double | — | Hunger points to consume on use (0-20) |
-| `minimum` | double | — | Minimum food level required to activate, inclusive (0-20); a food level equal to `minimum` passes |
+| `amount` | double | none | Hunger points to consume on use (0-20) |
+| `minimum` | double | none | Minimum food level required to activate, inclusive (0-20). A food level equal to `minimum` passes |
 
 ##### items
 
@@ -214,7 +214,7 @@ player levels up.
 |---|---|---|
 | `type` | string | Mechanic registry key (e.g., `core:yield_multiplier`) |
 | `filters` | list | Material/state filters |
-| `parameters` | section | Evaluator parameters for the mechanic. Every parameter must be an evaluator block (e.g. `yield_chance: { constant: 2 }`); a scalar value (e.g. `yield_chance: 2`) is rejected at load |
+| `parameters` | section | Evaluator parameters for the mechanic. Every parameter must be an evaluator block (e.g. `yield_chance: { constant: 2 }`). A scalar value (e.g. `yield_chance: 2`) is rejected at load |
 
 #### feedback
 
@@ -286,7 +286,7 @@ When a mechanic accepts an `effect` parameter (e.g., `core:apply_status`), use a
 **namespaced key** like `minecraft:poison` rather than a legacy numeric ID (e.g., `19`).
 The same applies to the `attribute` parameter on `core:modify_attribute`
 (e.g., `minecraft:movement_speed` instead of `4`). Numeric IDs are deprecated and log
-a warning on use; unknown keys fail fast at load time. See [capabilities.md](capabilities.md)
+a warning on use. Unknown keys fail fast at load time. See [capabilities.md](capabilities.md)
 for the full list of mechanics and their parameters.
 
 ## Full Annotated Example
@@ -375,9 +375,9 @@ parameters that take a potion effect use namespaced keys.
 
 **Ability lore convention:** any ability with a `requirements:` block must surface
 its costs and conditions in its lore so players see them before using the ability.
-A `&7Costs` line lists what the ability consumes (exhaustion hunger, `cost` items)
-and an `&8Requires` line lists the activation conditions (states, held items,
-cooldown, minimum hunger) — keep both in sync with the YAML.
+A `&7Costs` line lists what the ability consumes (exhaustion hunger, `cost` items).
+An `&8Requires` line lists the activation conditions (states, held items,
+cooldown, minimum hunger). Keep both in sync with the YAML.
 
 **Placeholder resolution:** ability lore placeholders resolve against the
 union of that ability's mechanic parameter keys. For example, a

@@ -12,7 +12,7 @@ xp_sources:
     filters: [ { target: "#c:potions" } ]
     reward: { constant: 666.7 }
   # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=667 far exceeds the ~150/action rare
-  # ceiling; brewing cannot be made high-frequency, so this is the accepted residual gap.
+  # ceiling. Brewing cannot be made high-frequency, so this is the accepted residual gap.
 abilities:
   - id: "rapid_brewing"
     display_name: "Rapid Brewing"

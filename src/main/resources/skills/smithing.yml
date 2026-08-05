@@ -4,7 +4,7 @@ display: { name: "Smithing", icon: "minecraft:anvil", color: "YELLOW", style: "S
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "craft_item"
-    filters: [ { target: "#c:tools" } ]   # representative; tools/armor only
+    filters: [ { target: "#c:tools" } ]   # representative. Tools/armor only
     reward: { constant: 64.1 }
   - trigger: "furnace_extract"
     filters: [ { target: "#minecraft:iron_ores" } ]

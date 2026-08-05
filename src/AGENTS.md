@@ -1,6 +1,6 @@
 # AI Agent Instructions for Skilling Engine Core (src)
 
-This is the Java plugin backend of Skilling — the data-driven rules engine. It is the closest DOX contract for all work under `src/`. Read the root `AGENTS.md` for project-wide rules, then use this file for local engine rules.
+This is the Java plugin backend of Skilling, the data-driven rules engine. It is the closest DOX contract for all work under `src/`. Read the root `AGENTS.md` for project-wide rules, then use this file for local engine rules.
 
 ## Purpose
 
@@ -8,11 +8,11 @@ Implement the PaperMC rules engine with **zero hardcoded skills, levels, or abil
 
 ## Ownership
 
-- `src/main/java/io/github/chasehuegel/skilling/engine/**` — core engine (parsing, registries, profiles, db, requirements, mechanics, triggers, evaluators, tags, ui, feedback, command, lockdown, listeners, events, integration). This includes `engine/ui/branding/**` — the config-driven in-game branding renderer (`BrandingConfig`, `TemplateRenderer`, `SkillColorCode`).
-- `src/main/java/io/github/chasehuegel/skilling/api/**` — main plugin-side API impl/registries (the public API interfaces themselves are owned by `skilling-api/AGENTS.md`).
-- `src/main/resources/**` — `plugin.yml`/`paper-plugin.yml`, default `config.yml`, `tags.yml`, and bundled skill YAML.
-- `src/test/**` — JUnit 5 unit tests.
-- **NOT owned:** `io.github.chasehuegel.skilling.web` — the Web GUI backend package is owned by `web/AGENTS.md`.
+- `src/main/java/io/github/chasehuegel/skilling/engine/**`: core engine (parsing, registries, profiles, db, requirements, mechanics, triggers, evaluators, tags, ui, feedback, command, lockdown, listeners, events, integration). This includes `engine/ui/branding/**`, the config-driven in-game branding renderer (`BrandingConfig`, `TemplateRenderer`, `SkillColorCode`).
+- `src/main/java/io/github/chasehuegel/skilling/api/**`: main plugin-side API impl/registries (the public API interfaces themselves are owned by `skilling-api/AGENTS.md`).
+- `src/main/resources/**`: `plugin.yml`/`paper-plugin.yml`, default `config.yml`, `tags.yml`, and bundled skill YAML.
+- `src/test/**`: JUnit 5 unit tests.
+- **NOT owned:** `io.github.chasehuegel.skilling.web`. The Web GUI backend package is owned by `web/AGENTS.md`.
 
 ## Local Contracts
 
@@ -35,12 +35,12 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 2. `mechanic.execute(...)`: Run the logic if the check passes.
 3. `requirements.consume(player)`: Deduct items and apply cooldowns only after successful execution.
 
-* **State-key validation:** `state:` references in XP-source filters, mechanic filters, and requirement states are validated against the `StateFilterRegistry` at load (fail-fast) — unknown keys, malformed `player_placed` values, and unresolvable `biome` values are rejected during YAML parsing. `SkillManager` takes the registry in its constructor; `TestSkillManager` registers the built-in filters so bundled-skill parsing passes.
+* **State-key validation:** `state:` references in XP-source filters, mechanic filters, and requirement states are validated against the `StateFilterRegistry` at load (fail-fast). Unknown keys, malformed `player_placed` values, and unresolvable `biome` values are rejected during YAML parsing. `SkillManager` takes the registry in its constructor. `TestSkillManager` registers the built-in filters so bundled-skill parsing passes.
 
 ### 4. UI & Inventory Security
 * **Lazy Instantiation:** Build Bukkit `Inventory` objects on-demand and cache them in the `PlayerProfile`. Invalidate the cache entirely when a player's level changes.
 * **Dynamic Lore:** Use `LoreResolver` to inject live math from `ParameterEvaluator` outputs into strings. Never hardcode `{placeholder}` values.
-* **Branding:** All in-game visual elements (skill lore templates, XP bar, ability lines, level-up/unlock messaging, GUI chrome, guide book, boss bar text, command feedback) are rendered from the `branding` section of `config.yml` by `engine/ui/branding/TemplateRenderer`. Templates are legacy `&`-code strings with `{placeholder}` tokens; `{color}` resolves the skill's own `display.color`. Templates render verbatim — never inject hardcoded spacing/separators between template lines or ability blocks. Fail-fast on malformed branding values during load/reload.
+* **Branding:** All in-game visual elements are rendered from the `branding` section of `config.yml` by `engine/ui/branding/TemplateRenderer`. These elements are skill lore templates, the XP bar, ability lines, level-up/unlock messaging, GUI chrome, the guide book, boss bar text, and command feedback. Templates are legacy `&`-code strings with `{placeholder}` tokens. `{color}` resolves the skill's own `display.color`. Templates render verbatim. Never inject hardcoded spacing/separators between template lines or ability blocks. Fail-fast on malformed branding values during load/reload.
 * **Anti-Dupe (Poison Pill):** Every UI `ItemStack` must be tagged with a hidden byte via Paper's `PersistentDataContainer`. The global inventory listener must `setCancelled(true)` on all clicks/drags in custom holders and vaporize any tagged item found outside the UI.
 
 ### 5. Configs & Tags
@@ -51,14 +51,14 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 
 ### 6. Command & Administration
 * Use Incendo Cloud for command registration, argument casting, and permission routing.
-* All functionality lives under a single `/skills` command tree — no separate `/skillsadmin`.
+* All functionality lives under a single `/skills` command tree. There is no separate `/skillsadmin`.
 * A bare `/skills` (no arguments) opens the player's skill overview UI.
 * Skill IDs auto-complete by querying the live `SkillRegistry`.
 * Admin commands targeting offline players must execute directly against the database and flag the row for fanfare on next login.
 * `/skills reload` follows a strict lockdown sequence: freeze interactions, close GUIs, flush DB, rebuild registries, invalidate UI caches, unlock.
 
 ### 7. Java Code Documentation
-* **Javadoc is required** on all public API methods, interfaces, abstract classes, and non-trivial overrides. Keep it concise: explain *what* and *why*, not *how*.
+* **Javadoc is required** on all public API methods, interfaces, abstract classes, and non-trivial overrides. Keep it concise. Explain *what* and *why*, not *how*.
 * **Avoid inline comments that restate the code.** Bad: `x += 1; // increment x by 1`. Good: `x += 1; // shift window start to exclude the just-consumed entry`.
 * **Use inline comments only** to explain non-obvious edge cases, performance considerations, or why a seemingly wrong approach was chosen.
 * Every `SkillMechanic`, `SkillTrigger`, and `ParameterEvaluator` implementation must have a class-level Javadoc explaining its purpose, YAML key, and required/optional parameters.
@@ -75,21 +75,21 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 
 ## Work Guidance
 
-* Deep architecture specs live in `docs/dev/DESIGN.md` (module layout, execution pipeline, UI architecture) and `docs/dev/REQUIREMENTS.md` (tech requirements, schema, async pipeline). Read them for design context; this file is the binding contract.
-* The content design framework (milestones, scaling curves, vanilla-restraint pillars) lives in `docs/dev/SKILL-DESIGN-FRAMEWORK.md` — apply it when authoring bundled skill YAML.
+* Deep architecture specs live in `docs/dev/DESIGN.md` (module layout, execution pipeline, UI architecture) and `docs/dev/REQUIREMENTS.md` (tech requirements, schema, async pipeline). Read them for design context. This file is the binding contract.
+* The content design framework (milestones, scaling curves, vanilla-restraint pillars) lives in `docs/dev/SKILL-DESIGN-FRAMEWORK.md`. Apply it when authoring bundled skill YAML.
 * The skill YAML schema template is `docs/dev/template-skill.yml`.
 * Follow the issue workflow and validation gate in root `AGENTS.md` when resolving `docs/issues/INDEX.md` items.
 
 ## Verification
 
-* `./gradlew build` — must pass after every phase.
-* `./gradlew test` — JUnit 5; must pass after every phase.
+* `./gradlew build` must pass after every phase.
+* `./gradlew test` (JUnit 5) must pass after every phase.
 * **What to Test:** Every `ParameterEvaluator` implementation, the `RequirementEngine` check/consume lifecycle, `TagResolver` resolution, and `LoreResolver` placeholder injection must have unit tests.
 * Tests live in `src/test/` mirroring the main source tree.
-* **Registry bootstrap:** Bukkit's `Registry` static initializer runs once per JVM and fails in a plain-JUnit JVM unless a `RegistryAccess` is present. `src/test/.../testutil/FakeRegistryAccess.java` is installed via `src/test/resources/META-INF/services/` so registry-backed constants (`Attribute.MAX_HEALTH`, `Material.getMaxDurability()`, enchantments) initialize regardless of test ordering. Do not mock `ItemType`; the fake returns `null` for ITEM entries because `Material.getMaxDurability()` treats that as "no durability". Tests that install their own `mockStatic(RegistryAccess.class)` must keep their `getRegistry` answers type-aware (delegate non-owned keys to `FakeRegistryAccess.registryFor(...)`) so a per-test fake cannot poison another registry during class-init.
+* **Registry bootstrap:** Bukkit's `Registry` static initializer runs once per JVM and fails in a plain-JUnit JVM unless a `RegistryAccess` is present. `src/test/.../testutil/FakeRegistryAccess.java` is installed via `src/test/resources/META-INF/services/` so registry-backed constants (`Attribute.MAX_HEALTH`, `Material.getMaxDurability()`, enchantments) initialize regardless of test ordering. Do not mock `ItemType`. The fake returns `null` for ITEM entries because `Material.getMaxDurability()` treats that as "no durability". Tests that install their own `mockStatic(RegistryAccess.class)` must keep their `getRegistry` answers type-aware (delegate non-owned keys to `FakeRegistryAccess.registryFor(...)`) so a per-test fake cannot poison another registry during class-init.
 
 ## Child DOX Index
 
 | Path | Scope |
 |---|---|
-| `web/AGENTS.md` | The Java backend package `io.github.chasehuegel.skilling.web` physically lives under this tree (`src/main/java/.../web/**`) but is owned by `web/AGENTS.md`; route web-edit work there. |
+| `web/AGENTS.md` | The Java backend package `io.github.chasehuegel.skilling.web` physically lives under this tree (`src/main/java/.../web/**`) but is owned by `web/AGENTS.md`. Route web-edit work there. |

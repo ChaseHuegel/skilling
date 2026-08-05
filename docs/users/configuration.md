@@ -29,7 +29,7 @@ Controls every in-game visual element. Templates use legacy color codes (`&0-&f`
 | `branding.bar_template.empty` | string | `&8█` | Per-unit empty bar string |
 | `branding.bar_template.start` | string | `&7[` | Left bracket string |
 | `branding.bar_template.end` | string | `&7]` | Right bracket string |
-| `branding.abilities_template` | string[] | `["{ability}", ""]` | Repeated per ability; no separator is injected between blocks |
+| `branding.abilities_template` | string[] | `["{ability}", ""]` | Repeated per ability. No separator is injected between blocks |
 | `branding.ability_type_template.active` | string | `&8Active` | `{type}` for active abilities |
 | `branding.ability_type_template.passive` | string | `&8Passive` | `{type}` for passive abilities |
 | `branding.ability_locked_template` | string[] | see below | Template for locked abilities |
@@ -72,8 +72,8 @@ Controls every in-game visual element. Templates use legacy color codes (`&0-&f`
 | `{xp_needed}` | skill_template | XP needed for the next level (equals `{xp_into}` at max level, so it reads `XP: 5 / 5`) |
 | `{xp_total}` | skill_template | Total XP |
 | `{color}` | most templates | The skill's own `display.color` as a legacy code |
-| `{lore}` | skill_template, ability templates | Skill/ability lore lines; a line holding `{lore}` is dropped when empty |
-| `{abilities}` | skill_template | `abilities_template` repeated per ability; dropped when the skill has none |
+| `{lore}` | skill_template, ability templates | Skill/ability lore lines. A line holding `{lore}` is dropped when empty |
+| `{abilities}` | skill_template | `abilities_template` repeated per ability. Dropped when the skill has none |
 | `{ability}` | abilities_template | The locked or unlocked ability template block |
 | `{name}` | ability templates, level_up, ability_unlock, gui, ready_message | Skill or ability display name |
 | `{type}` | ability templates, ability_unlock | `Active`/`Passive` from `ability_type_template` |
@@ -82,7 +82,7 @@ Controls every in-game visual element. Templates use legacy color codes (`&0-&f`
 | `{into}` / `{needed}` | boss_bar.title_format | XP into / needed for the current level |
 | `{command}` / `{description}` / `{usage}` / `{title}` | command templates | Command feedback pieces |
 
-Defaults reproduce the plugin's original look. The engine renders templates verbatim — no spacing or separators are injected between lines or ability blocks, so blank lines in the templates are intentional. `bar_template.width` must be 1-200, bar strings must be non-blank, and `boss_bar` color/style must be valid Bukkit `BarColor`/`BarStyle` names; invalid values fail fast on load/reload.
+Defaults reproduce the plugin's original look. The engine renders templates verbatim. No spacing or separators are injected between lines or ability blocks, so blank lines in the templates are intentional. `bar_template.width` must be 1-200, bar strings must be non-blank, and `boss_bar` color/style must be valid Bukkit `BarColor`/`BarStyle` names. Invalid values fail fast on load/reload.
 
 ### bossbar
 
@@ -131,9 +131,9 @@ Defaults reproduce the plugin's original look. The engine renders templates verb
 | `web.username` | string | `admin` | Basic auth username |
 | `web.password` | string | `skilling` | Basic auth password. The shipped default is replaced by a generated random password the first time the web GUI is enabled. |
 | `web.behind_proxy` | bool | `false` | Set `true` when a trusted reverse proxy (nginx, Caddy) sits in front and sets `X-Forwarded-For`. Rate limiting then keys on the real client IP (the right-most forwarded entry) instead of the proxy's address, so one client's failed attempts cannot lock out everyone behind the proxy. |
-| `web.allowed_origins` | list | `[]` | Cross-origin origins allowed to read the admin API. The frontend is served same-origin, so this is normally empty; add entries (e.g. `http://localhost:5173` for the Vite dev server) only when accessing from another origin. Unlisted origins get no `Access-Control-Allow-Origin` header and are blocked. |
+| `web.allowed_origins` | list | `[]` | Cross-origin origins allowed to read the admin API. The frontend is served same-origin, so this is normally empty. Add entries (e.g. `http://localhost:5173` for the Vite dev server) only when accessing from another origin. Unlisted origins get no `Access-Control-Allow-Origin` header and are blocked. |
 
-The web GUI uses Basic auth over plaintext HTTP, so credentials are base64-encoded, not encrypted. Put the GUI behind a TLS-terminating reverse proxy (nginx, Caddy) or bind to `127.0.0.1` in production. Failed logins are rate-limited per client IP (locked out after 10 failures within 15 minutes). Changing `web.port`, `web.username`, or `web.password` requires editing `config.yml` and restarting the server; the web UI rejects such changes with a "requires restart" message. Saving config from the web UI preserves every key the editor does not model (e.g. `setup.first_run`); only the edited keys are written.
+The web GUI uses Basic auth over plaintext HTTP, so credentials are base64-encoded, not encrypted. Put the GUI behind a TLS-terminating reverse proxy (nginx, Caddy) or bind to `127.0.0.1` in production. Failed logins are rate-limited per client IP (locked out after 10 failures within 15 minutes). Changing `web.port`, `web.username`, or `web.password` requires editing `config.yml` and restarting the server. The web UI rejects such changes with a "requires restart" message. Saving config from the web UI preserves every key the editor does not model (e.g. `setup.first_run`). Only the edited keys are written.
 
 ## tags.yml
 

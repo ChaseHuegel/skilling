@@ -5,16 +5,16 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
     filters: [ { tool: "#c:heavy_weapons" } ]       # FIX: was target
-    reward: { constant: 8.4 }       # per raw damage point (7.5 ≈ heavy hit); damage-scaled
+    reward: { constant: 8.4 }       # per raw damage point (7.5 ≈ heavy hit). Damage-scaled
     scaling: damage
   - trigger: "entity_kill"
     filters: [ { tool: "#c:heavy_weapons" } ]
     reward: { constant: 62.9 }
-  # Sweep-hit filter not implemented (REPORT_XP-SOURCE-DESIGN §4); substituted
+  # Sweep-hit filter not implemented (REPORT_XP-SOURCE-DESIGN §4). Substituted
   # being-hit while wielding a heavy weapon, the same ~6 APM class, so R stays 62.9.
   - trigger: "entity_damage_taken"
     filters: [ { tool: "#c:heavy_weapons" } ]
-    reward: { constant: 12.6 }      # per raw damage point (5 ≈ 2.5-heart hit); damage-scaled
+    reward: { constant: 12.6 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
     scaling: damage
 abilities:
   - id: "heavy_strikes"

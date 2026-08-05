@@ -7,7 +7,7 @@ xp_sources:
     reward: { constant: 69.4 }
   - trigger: "entity_damage"
     filters: [ { state: "is_riding" } ]
-    reward: { constant: 9.9 }       # per raw damage point (7 ≈ mounted hit); damage-scaled
+    reward: { constant: 9.9 }       # per raw damage point (7 ≈ mounted hit). Damage-scaled
     scaling: damage
   - trigger: "player_tame"
     reward: { constant: 69.4 }

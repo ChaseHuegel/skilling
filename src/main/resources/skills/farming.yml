@@ -10,9 +10,9 @@ xp_sources:
     filters: [ { target: "#c:crops" }, { state: "player_placed:false" } ]
     reward: { constant: 24.5 }
   - trigger: "craft_item"
-    filters: [ { target: "minecraft:bread" } ]   # wheat is not a craft result; bread is the wheat product
+    filters: [ { target: "minecraft:bread" } ]   # wheat is not a craft result. Bread is the wheat product
     reward: { constant: 24.5 }
-  # crop_grow removed: unbounded free XP source — replaced by harvest XP only
+  # crop_grow removed: unbounded free XP source. Replaced by harvest XP only
 abilities:
   - id: "green_thumb"
     display_name: "Green Thumb"

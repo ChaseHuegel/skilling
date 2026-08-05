@@ -23,7 +23,7 @@ display:
 progression:
   curve: "polynomial"           # Evaluator type: polynomial | linear | constant (or a registered custom curve)
   # Every curve is derived from these two keys only:
-  base_xp: 50                   # XP required for level 1 (linear step = base_xp * 0.1; constant value = base_xp)
+  base_xp: 50                   # XP required for level 1 (linear step = base_xp * 0.1. Constant value = base_xp)
   exponent: 2.5                 # Exponent for the polynomial curve (ignored by linear/constant)
 
 # ----------------------------------------
@@ -118,9 +118,9 @@ abilities:
         - action: "cost"
           tag: "minecraft:coal"
           amount: 1                             # Example of consuming an item fuel source
-      # Exhaustion (hunger) requirement — deducted on ability use
+      # Exhaustion (hunger) requirement. Deducted on ability use
       # amount: hunger points to consume (0-20)
-      # minimum: minimum hunger level required to activate (inclusive; food level
+      # minimum: minimum hunger level required to activate (inclusive. Food level
       #           equal to minimum passes) (0-20)
       exhaustion:
         amount: 2.0
@@ -155,7 +155,7 @@ abilities:
 
     # -- STRING PARAMETERS --
     # Some mechanics take namespaced string constants (effect, attribute, material).
-    # Use a quoted constant value; the raw string is passed through verbatim:
+    # Use a quoted constant value. The raw string is passed through verbatim:
     # mechanics:
     #   - type: "core:apply_status"
     #     parameters:

@@ -1,24 +1,24 @@
 ### Project Summary
 
-**Skilling** is a high-performance, purely data-driven RPG skills engine built for modern PaperMC servers. Unlike traditional skill plugins that hardcode abilities, progression curves, and skill trees into the Java backend, Skilling acts as a modular rules engine. It provides a robust library of event triggers, mechanical effects, and parameter evaluators, allowing server owners and designers to build complex, 1-to-100 skill webs entirely via YAML configuration. It features asynchronous SQLite data saving, dynamic GUI generation, and a rigorous Requirements Engine to gate ability activations—all optimized to maintain a flawless 20 TPS under heavy multiplayer load.
+**Skilling** is a purely data-driven RPG skills engine for modern PaperMC servers. Traditional skill plugins hardcode abilities, progression curves, and skill trees into the Java backend. Skilling does not. It acts as a modular rules engine. It provides a library of event triggers, mechanical effects, and parameter evaluators. Server owners and designers use them to build complex, 1-to-100 skill webs entirely through YAML configuration. It features asynchronous SQLite data saving, dynamic GUI generation, and a Requirements Engine that gates ability activations. Together these maintain 20 TPS under heavy multiplayer load.
 
 ---
 
 # Skilling ⛏️✨
 
-Skilling is a next-generation, fully data-driven vanilla+ skills engine for modern PaperMC servers. It brings the architectural flexibility of an Entity-Component-System (ECS) to Minecraft gameplay mechanics. 
+Skilling is a fully data-driven vanilla+ skills engine for modern PaperMC servers. It brings the architectural flexibility of an Entity-Component-System (ECS) to Minecraft gameplay mechanics.
 
-There are zero hardcoded skills, levels, or abilities in this plugin. Instead, Skilling provides a highly optimized backend of **Triggers**, **Mechanics**, and **Evaluators**. Server designers construct their entire skill web—from gathering yields and custom active abilities to dynamic progression curves—entirely through YAML.
+There are zero hardcoded skills, levels, or abilities in this plugin. Instead, Skilling provides an optimized backend of **Triggers**, **Mechanics**, and **Evaluators**. Server designers construct their entire skill web through YAML. This covers gathering yields, custom active abilities, and dynamic progression curves.
 
 ## 🚀 Core Features
 
 * **100% Data-Driven Architecture:** Define skills, custom XP curves, milestone abilities, and custom item tags via YAML without touching a single line of Java.
-* **Dynamic Parameter Evaluators:** Progression isn't limited to flat numbers. Use Linear, Milestone (tiered), Constant, or Random evaluators to smoothly scale ability power (e.g., cooldowns, damage, AoE size) based on the player's exact level.
+* **Dynamic Parameter Evaluators:** Progression is not limited to flat numbers. Use Linear, Milestone (tiered), Constant, or Random evaluators to scale ability power (e.g., cooldowns, damage, AoE size) based on the player's exact level.
 * **The Requirements Engine:** Gate abilities behind complex conditions. Require players to have specific items, consume resources, wait out cooldowns, or hold certain states (e.g., sneaking) before an ability fires.
-* **High-Performance Persistence:** Powered by SQLite in WAL (Write-Ahead Logging) mode and HikariCP connection pooling. Gameplay state is cached in-memory and asynchronously batched, ensuring database I/O never blocks the main server thread.
+* **Fast Persistence:** Powered by SQLite in WAL (Write-Ahead Logging) mode and HikariCP connection pooling. Gameplay state is cached in-memory and asynchronously batched. Database I/O never blocks the main server thread.
 * **Smart UI & Feedback:**
   * **Dynamic Chest GUIs:** Menus build themselves from your configs. Lore automatically parses and displays the math for a player's current level.
-  * **Boss Bar Pool:** Real-time XP tracking utilizing a Least Recently Used (LRU) pool to manage screen real estate elegantly.
+  * **Boss Bar Pool:** Real-time XP tracking uses a Least Recently Used (LRU) pool to manage screen space.
   * **Data-Driven Fanfare:** Configure custom particles, sounds, and action bar text for level-ups and ability activations directly in your YAML.
 
 ## 🛠️ For Server Owners & Designers
@@ -86,6 +86,6 @@ Once registered, server owners can immediately use `type: "myaddon:lifesteal"` i
 
 ## ⚙️ Technical Requirements
 
-* **Target API:** Latest Paper API (Utilizes native component APIs for UI max-stack sizes and custom model data).
+* **Target API:** Latest Paper API (Uses native component APIs for UI max-stack sizes and custom model data).
 * **Java:** Java 21 LTS
 * **Database:** SQLite (embedded, no external SQL server required).

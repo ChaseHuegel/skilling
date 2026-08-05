@@ -10,7 +10,7 @@ xp_sources:
     reward: { constant: 25.8 }
   - trigger: "enchant_item"
     reward: { constant: 25.8 }
-  # player_interact XP removed — was XP for existing
+  # player_interact XP removed. Was XP for existing
 abilities:
   - id: "arcane_missile"
     display_name: "Arcane Missile"

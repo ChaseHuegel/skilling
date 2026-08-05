@@ -2,7 +2,7 @@
 
 ## 1. Core Philosophy & Engine Architecture
 
-The plugin operates as a decoupled rules engine. The Java backend contains zero hardcoded skills, levels, or abilities. Instead, it provides a library of **Triggers**, **Mechanics**, and **Evaluators**. The YAML configuration files act as the designers, wiring these components together into playable content.
+The plugin operates as a decoupled rules engine. The Java backend contains zero hardcoded skills, levels, or abilities. Instead, it provides a library of **Triggers**, **Mechanics**, and **Evaluators**. The YAML configuration files act as the designers. They wire these components together into playable content.
 
 ### The Registry Pattern
 
@@ -98,7 +98,7 @@ custom_tags:
 
 ## 3. State Management & Data Persistence
 
-To maintain maximum server tick rates under heavy I/O loads, the system decouples gameplay state from the database using asynchronous batching.
+To maintain server tick rates under heavy I/O loads, the system decouples gameplay state from the database using asynchronous batching.
 
 ### In-Memory State
 
@@ -109,7 +109,7 @@ To maintain maximum server tick rates under heavy I/O loads, the system decouple
 ### SQLite Implementation
 
 * **WAL Mode:** Write-Ahead Logging allows concurrent reads alongside a single asynchronous writer.
-* **Event Queue:** A scheduled async Bukkit task periodically drains the dirty cache and executes a batched `UPSERT` transaction, ensuring zero main-thread blocking.
+* **Event Queue:** A scheduled async Bukkit task periodically drains the dirty cache and executes a batched `UPSERT` transaction, keeping the main thread free.
 
 ## 4. The Execution Pipeline
 
@@ -138,14 +138,14 @@ The UI is dynamically generated from the YAML files and heavily protected agains
 
 * **Lazy Instantiation:** Menus are built once upon request and cached in the player's session. The cache is immediately invalidated and rebuilt when the player gains a level.
 * **Dynamic Lore Injection:** The UI generator parses string placeholders (e.g., `{chain_limit}`) and runs them through the Parameter Evaluators to display exact, real-time math based on the player's current level.
-* **Branding Templates:** Skill lore, the XP bar, ability lines, level-up/unlock messaging, GUI chrome, the guide book, boss bar text, and command feedback are all rendered from the `branding` section of `config.yml` by `engine/ui/branding/TemplateRenderer`. Templates are legacy `&`-code strings with `{placeholder}` tokens; `{color}` resolves the skill's own `display.color`. Templates render verbatim (no hardcoded spacing) and are re-parsed on reload.
-* **Icon State:** Icons utilize custom model data. The `ItemStack` amount dynamically reflects the player's exact level (1-100) utilizing Paper's max-stack-size component.
+* **Branding Templates:** All brandable in-game elements are rendered from the `branding` section of `config.yml` by `engine/ui/branding/TemplateRenderer`. These elements are skill lore, the XP bar, ability lines, level-up/unlock messaging, GUI chrome, the guide book, boss bar text, and command feedback. Templates are legacy `&`-code strings with `{placeholder}` tokens. `{color}` resolves the skill's own `display.color`. Templates render verbatim (no hardcoded spacing) and are re-parsed on reload.
+* **Icon State:** Icons use custom model data. The `ItemStack` amount dynamically reflects the player's exact level (1-100) using Paper's max-stack-size component.
 * **Security (Double Defense):** Strict inventory event routing denies all shift-clicks, number-key swaps, and offhand swaps. A `PersistentDataContainer` byte-tag acts as a poison pill, vaporizing any UI item that accidentally glitches into the game world.
 
 ### Real-Time UX (Boss Bars)
 
 * **LRU Pool:** A Least Recently Used cache limits the screen to a configurable maximum of active Boss Bars (default: 2).
-* **Global Ticker:** A single 1-tick repeating task iterates through online players, decrementing the Time-To-Live (TTL) on active bars and fading them out to prevent object instantiation bloat.
+* **Global Ticker:** A single 1-tick repeating task iterates through online players. It decrements the Time-To-Live (TTL) on active bars and fades them out to prevent object instantiation bloat.
 
 ---
 
@@ -155,8 +155,8 @@ All commands use Incendo Cloud for registration, argument parsing, and permissio
 
 | Command | Permission | Description |
 |---|---|---|
-| `/skills` | — | Opens the player's skill overview UI (lazy-built from YAML configs) |
-| `/skills progress [skill]` | — | Shows current level, XP, and next-level progress in chat |
+| `/skills` | none | Opens the player's skill overview UI (lazy-built from YAML configs) |
+| `/skills progress [skill]` | none | Shows current level, XP, and next-level progress in chat |
 | `/skills reload` | `skilling.admin` | Full lockdown reload (see below) |
 | `/skills setlevel <player> <skill> <level>` | `skilling.admin` | Override a player's level |
 | `/skills addxp <player> <skill> <amount>` | `skilling.admin` | Grant XP to a player |
@@ -166,12 +166,12 @@ All commands use Incendo Cloud for registration, argument parsing, and permissio
 
 The `/skills reload` command follows a deterministic six-phase sequence:
 
-1. **Freeze** — Set an atomic `reloading` flag. All event listeners check this flag and short-circuit interactions.
-2. **Close GUIs** — Force-close all open skill menus for online players.
-3. **Flush DB** — Synchronously drain the dirty profile cache to SQLite.
-4. **Rebuild Registries** — Clear and re-parse all YAML skill definitions, evaluators, and tag maps.
-5. **Invalidate Caches** — Clear all `PlayerProfile` UI inventory caches.
-6. **Unlock** — Clear the `reloading` flag to resume normal operation.
+1. **Freeze.** Set an atomic `reloading` flag. All event listeners check this flag and short-circuit interactions.
+2. **Close GUIs.** Force-close all open skill menus for online players.
+3. **Flush DB.** Synchronously drain the dirty profile cache to SQLite.
+4. **Rebuild Registries.** Clear and re-parse all YAML skill definitions, evaluators, and tag maps.
+5. **Invalidate Caches.** Clear all `PlayerProfile` UI inventory caches.
+6. **Unlock.** Clear the `reloading` flag to resume normal operation.
 
 ### Offline Player Targeting
 
@@ -186,7 +186,7 @@ All non-Bukkit logic must be covered by JUnit 5 unit tests.
 | Component | What to Test |
 |---|---|
 | `ParameterEvaluator` implementations | Boundary values, edge cases (level=0, level=max), min/max clamping |
-| `RequirementEngine` | Check returns `RequirementResult` on pass/fail; Consume deducts items correctly; Consume fails when inventory lacks items |
+| `RequirementEngine` | Check returns `RequirementResult` on pass/fail. Consume deducts items correctly. Consume fails when inventory lacks items |
 | `TagResolver` | Vanilla `#minecraft:` resolution, custom `#c:` tag resolution, fallback behavior |
 | `LoreResolver` | `{placeholder}` injection matches evaluator output, missing placeholder handling |
 | `ConfigurationParser` / `SkillManager` | Malformed YAML throws `IllegalArgumentException`, well-formed YAML produces correct `SkillDefinition` tree |
@@ -219,7 +219,7 @@ The engine will ship with default YAML configurations mapping out a 32-skill web
 
 Focuses on resource generation and block-state manipulation.
 
-* **Mining, Woodcutting, Digging:** Utilizes `yield_multiplier` and `chain_break` mechanics. Tags distinguish ores from logs and dirt.
+* **Mining, Woodcutting, Digging:** Uses `yield_multiplier` and `chain_break` mechanics. Tags distinguish ores from logs and dirt.
 * **Farming, Herbalism:** Hooks into crop growth ticks, right-click replanting, and localized flora generation.
 * **Husbandry:** Modifies mob breeding chances and taming success rates.
 
@@ -227,7 +227,7 @@ Focuses on resource generation and block-state manipulation.
 
 Focuses on dynamic entity damage manipulation and attribute modifiers.
 
-* **Heavy Weapons, Light Weapons, Unarmed:** Utilizes `modify_damage` (armor piercing, backstabs) and applies temporary status effects (slowness, bleed).
+* **Heavy Weapons, Light Weapons, Unarmed:** Uses `modify_damage` (armor piercing, backstabs) and applies temporary status effects (slowness, bleed).
 * **Archery, Throwing:** Modifies projectile velocity, gravity, and item return mechanics.
 * **One Handed, Dual Wield:** Checks equipment slot states to grant dynamic `generic.attack_speed` and AoE sweep particles.
 
@@ -235,15 +235,15 @@ Focuses on dynamic entity damage manipulation and attribute modifiers.
 
 Focuses on survivability, avoidance, and kinetic mitigation.
 
-* **Shields, Heavy Armor:** Utilizes knockback resistance modifiers, directional damage blocking, and entity repulsion.
-* **Light Armor, Medium Armor, Unarmored:** Utilizes `cancel_damage` (evasion), permanent step-assist attributes, and temporary speed buffs.
+* **Shields, Heavy Armor:** Uses knockback resistance modifiers, directional damage blocking, and entity repulsion.
+* **Light Armor, Medium Armor, Unarmored:** Uses `cancel_damage` (evasion), permanent step-assist attributes, and temporary speed buffs.
 
 ### Crafting & Trade (Yellow, Segmented Boss Bars)
 
 Focuses on inventory manipulation and block metadata.
 
 * **Smithing, Carpentry, Masonry, Tailoring:** Hooks into `CraftItemEvent` and `FurnaceExtractEvent` to multiply outputs and inject NBT tags (e.g., bonus durability).
-* **Building:** Utilizes mid-air block placement vectors and structural blast-resistance injection.
+* **Building:** Uses mid-air block placement vectors and structural blast-resistance injection.
 * **Cooking:** Injects dynamic saturation values into crafted foods and allows potion-effect infusion.
 
 ### Arcane & Support (Purple, Segmented Boss Bars)
@@ -251,7 +251,7 @@ Focuses on inventory manipulation and block metadata.
 Focuses on environmental control and area-of-effect buffs.
 
 * **Alchemy, Enchanting:** Modifies brew times, potion duration tags, and XP/Lapis costs.
-* **Piety, Bard:** Utilizes AoE status effect clouds, neutral mob aggro cancellation, and Jukebox/Note Block interaction tracking.
+* **Piety, Bard:** Uses AoE status effect clouds, neutral mob aggro cancellation, and Jukebox/Note Block interaction tracking.
 * **Wizardry:** Consumes player XP to cast custom projectile vectors and short-range teleports.
 
 ### Mobility & Exploration (White, Solid Boss Bars)

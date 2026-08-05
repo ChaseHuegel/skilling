@@ -5,7 +5,7 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
     filters: [ { target: "#minecraft:arrows" } ]
-    reward: { constant: 6.4 }       # per raw damage point (8 ≈ full-charge arrow); damage-scaled
+    reward: { constant: 6.4 }       # per raw damage point (8 ≈ full-charge arrow). Damage-scaled
     scaling: damage
   - trigger: "entity_kill"
     filters: [ { target: "#minecraft:arrows" } ]

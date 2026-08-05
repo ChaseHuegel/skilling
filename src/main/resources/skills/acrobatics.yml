@@ -4,14 +4,14 @@ display: { name: "Acrobatics", icon: "minecraft:feather", color: "WHITE", style:
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "fall_damage"
-    reward: { constant: 14.0 }      # per raw damage point (8 ≈ 4-heart fall); damage-scaled
+    reward: { constant: 14.0 }      # per raw damage point (8 ≈ 4-heart fall). Damage-scaled
     scaling: damage
   - trigger: "launch_projectile"
     filters: [ { target: "minecraft:ender_pearl" } ]
     reward: { constant: 111.1 }
-  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=111 exceeds the ~60/action ceiling;
-  # accepted residual gap (tanking skills are inherently frequency-capped).
-  # sprint/sneak XP removed — trivial toggle spam
+  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=111 exceeds the ~60/action ceiling.
+  # Accepted residual gap (tanking skills are inherently frequency-capped).
+  # sprint/sneak XP removed (trivial toggle spam)
 abilities:
   - id: "light_feet"
     display_name: "Light Feet"

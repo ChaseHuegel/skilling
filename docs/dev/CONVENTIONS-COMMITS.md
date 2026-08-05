@@ -1,4 +1,4 @@
-# Conventional Commits — Agent Spec
+# Conventional Commits, Agent Spec
 
 This file defines the commit convention for this repository. **All commits MUST follow this spec.**
 
@@ -47,17 +47,17 @@ This file defines the commit convention for this repository. **All commits MUST 
 | `test` | Adding/updating tests |
 | `revert` | Reverting a previous commit |
 
-## Breaking Changes — Two Forms
+## Breaking Changes: Two Forms
 
 1. `feat(api)!: drop support for Node 6`
 2. Footer: `BREAKING CHANGE: environment variables now take precedence`
 
 `BREAKING-CHANGE` is synonymous with `BREAKING CHANGE` in footers.
 
-> **Project note:** Skilling is greenfield with no production use; breaking changes are
+> **Project note:** Skilling is greenfield with no production use. Breaking changes are
 > allowed and expected (see root `AGENTS.md`). When a change is intentionally breaking,
-> signal it with the `!` marker or `BREAKING CHANGE` footer so the version bump is accurate —
-> never avoid a breaking change for compatibility reasons.
+> signal it with the `!` marker or `BREAKING CHANGE` footer so the version bump is accurate.
+> Never avoid a breaking change for compatibility reasons.
 
 ## Examples
 

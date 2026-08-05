@@ -1,4 +1,4 @@
-# REPORT_CUSTOM-ITEMS.md — Supporting Custom Items in Tags & Filters
+# REPORT_CUSTOM-ITEMS.md: Supporting Custom Items in Tags & Filters
 
 **Status:** Research report (no production changes applied)
 **Issue:** [ISSUE-183](../issues/ISSUE-183.md)
@@ -29,7 +29,7 @@ behaves without a manual.**
 
 - **`CustomTagLoader`** (`engine/tag/CustomTagLoader.java`) parses `tags.yml` `custom_tags:` into
   `Map<String, EnumSet<Material>>`. Entries are material names (`minecraft:coal`) or tag
-  cross-references (`#minecraft:logs`, `#c:ores`); the loader flattens recursively at load and
+  cross-references (`#minecraft:logs`, `#c:ores`). The loader flattens recursively at load and
   throws on unknown materials/tags (fail-fast).
 - **`TagResolver`** (`engine/tag/TagResolver.java`) wraps the loader with a
   `Map<String, EnumSet<Material>> resolvedCache`. It supports `#minecraft:<tag>`,
@@ -44,13 +44,13 @@ behaves without a manual.**
 
 | Path | Where it matches | Custom-item gap |
 |---|---|---|
-| `SkillEventListener.matchFilter` (`target:`) | `resolveEventMaterial(event)` → `Material`, then `resolvedSet.contains(material)` | The **event** only exposes a `Material`, never the item instance. For `block_break`/`block_place` that's fine (blocks are materials); for `player_interact`/`consume_item`/`craft_item` the *stack* exists but is discarded down to its `Material`. |
+| `SkillEventListener.matchFilter` (`target:`) | `resolveEventMaterial(event)` → `Material`, then `resolvedSet.contains(material)` | The **event** only exposes a `Material`, never the item instance. For `block_break`/`block_place` that is fine (blocks are materials). For `player_interact`/`consume_item`/`craft_item` the *stack* exists but is discarded down to its `Material`. |
 | `SkillEventListener.matchFilter` (`tool:`) | `player.getInventory().getItemInMainHand().getType()` | Drops the held `ItemStack` to a `Material`. |
 | `RequirementEngine.countItems/removeItems` | `slotItems(player, slot)` then `resolved.contains(item.getType())` | The full `ItemStack` is available but only its `getType()` is consulted. |
 | `equipped_all`/`equipped_any` (armor states) | armor slot `Material` in resolved set | Same: item instance discarded. |
 
 **Conclusion:** every hot path already has the `ItemStack` in hand except the *block* event paths.
-The engine flattens to materials for speed; custom-item support is fundamentally about *not
+The engine flattens to materials for speed. Custom-item support is fundamentally about *not
 discarding the instance* in the paths where it exists, plus a way to express instance criteria.
 
 ---
@@ -64,26 +64,26 @@ namespace**, e.g. `skilling:tags`. The value is a `List<String>` of tag names. A
 `#c:my_tag` if `skilling:tags` contains `my_tag` (namespace prefix elided, mirroring `#c:`).
 
 ```yaml
-# tags.yml — no change needed to reference PDC-tagged items
+# tags.yml: no change needed to reference PDC-tagged items
 custom_tags:
   masterwork:
     - "pdc:masterwork"            # NEW entry kind: matches items carrying skilling:tags contains "masterwork"
 ```
 
-**How admins add the metadata** (Skilling stays solution-agnostic; it only *reads* the key):
+**How admins add the metadata** (Skilling stays solution-agnostic. It only *reads* the key):
 
 - **Commands (`/data`, plugin commands):** `/data merge entity @s ...` or the item-granting
   plugin sets `skilling:tags`. Example via a datapack function:
   ```mcfunction
   give @s minecraft:diamond_sword{custom_model_data:123,skilling:{tags:["masterwork","c:heavy_weapon"]}}
   ```
-- **Datapack item components:** `minecraft:custom_data` is a lossless PDC carrier; any plugin or
+- **Datapack item components:** `minecraft:custom_data` is a lossless PDC carrier. Any plugin or
   datapack writing `{skilling:{tags:[...]}}` into `custom_data` is matched with zero integration.
 - **Plugins (via `SkillingAPI`):** expose a tiny helper `SkillingAPI.tagItem(ItemStack, String...)`
   that writes `skilling:tags` so addons do not hand-roll the key.
 
-**Why PDC:** it is the Paper-native, type-safe, version-portable way to attach data; it survives
-saves; it is exactly what `custom_data` maps to. It keeps Skilling's surface a *read-only*
+**Why PDC:** it is the Paper-native, type-safe, version-portable way to attach data. It survives
+saves. It is exactly what `custom_data` maps to. It keeps Skilling's surface a *read-only*
 convention rather than an integration API.
 
 ### 3.2 Concrete examples by creation method
@@ -103,11 +103,11 @@ Current entry kinds: `minecraft:material`, `#minecraft:tag`, `#c:tag`. Proposed 
 
 | Entry syntax | Meaning | Readability | Notes |
 |---|---|---|---|
-| `pdc:<name>` | Item's `skilling:tags` PDC list contains `<name>` | High | Canonical custom-item match; needs the metadata standard (§3). |
+| `pdc:<name>` | Item's `skilling:tags` PDC list contains `<name>` | High | Canonical custom-item match. Needs the metadata standard (§3). |
 | `name:<pattern>` | Item display name matches (regex or glob) | High | `name:*Greatsword`, `name:Masterwork Sword`. Cheap when cached against a regex `Pattern`. |
 | `ench:<enchantment>` | Item carries the enchantment | Medium | e.g. `ench:sharpness`. Requires inspecting `ItemMeta.getEnchants()`. |
-| `potion:<effect>` | Item is a potion with the effect | Medium | Niche; only for `potion` items. |
-| `nbt:<path>=<value>` | Raw NBT path match | Low | Powerful but unreadable — **avoid** as a primary syntax; keep behind `pdc:`/`name:` where possible. |
+| `potion:<effect>` | Item is a potion with the effect | Medium | Niche. Only for `potion` items. |
+| `nbt:<path>=<value>` | Raw NBT path match | Low | Expressive but unreadable. **Avoid** as a primary syntax. Keep behind `pdc:`/`name:` where possible. |
 
 **Composition:** entries compose with the existing material/tag entries in the same list. Semantics
 should be **OR within a tag** (an item matches `#c:my_tag` if *any* entry matches), consistent with
@@ -116,7 +116,7 @@ single readable list.
 
 **Validation / fail-fast:** each new entry kind is validated at load:
 - `pdc:<name>`: any non-empty name is valid (no compile-time material to check).
-- `name:<pattern>`: the regex/glob is compiled at load; a malformed pattern throws
+- `name:<pattern>`: the regex/glob is compiled at load. A malformed pattern throws
   `IllegalArgumentException`.
 - `ench:<id>`: resolved against `Registry.ENCHANTMENT` at load (fail-fast, like materials).
 
@@ -129,7 +129,7 @@ single readable list.
 ### 5.1 The core problem
 
 `EnumSet<Material>` pre-flattening gives O(1) event dispatch, but **instance criteria
-(`pdc:`, `name:`, `ench:`) cannot be pre-flattened to materials** — two diamond swords differ.
+(`pdc:`, `name:`, `ench:`) cannot be pre-flattened to materials**. Two diamond swords differ.
 The engine must fall back to *item-instance* matching on the hot path, which is `O(1)` per tag
 but requires touching `ItemMeta` (a PDC read or a `getDisplayName()`), not just `getType()`.
 
@@ -143,24 +143,24 @@ to `EnumSet<Material>` and never touches item meta). Add an **instance tier**:
    `pdc:`/`name:`/`ench:`, the tag is marked "instance-based" and carries:
    - its material set (still used as a fast pre-filter, if any material entries exist), plus
    - an ordered list of `ItemMatcher` predicates (compiled `Pattern`s, PDC key checks, enchant checks).
-2. **Event path.** `matchFilter`/`countItems` first do the material `contains` check; **only if a
+2. **Event path.** `matchFilter`/`countItems` first do the material `contains` check. **Only if a
    material entry matches** do they evaluate the instance predicates against the `ItemStack`.
    This means the common case (vanilla material in a mixed tag) still short-circuits, and an
    instance-heavy tag only pays `getItemMeta()` when the material already passed.
 3. **Caching the expensive parts.**
    - `name:` regexes are compiled once at load (no per-event `Pattern.compile`).
-   - `ItemMeta.getDisplayName()` / PDC reads are inherently per-stack; bound them by only running
+   - `ItemMeta.getDisplayName()` / PDC reads are inherently per-stack. Bound them by only running
      the instance tier after the material pre-filter, and by checking *cheapest* predicates first
      (PDC key presence before name regex).
 4. **Inventory scans (`countItems`/`removeItems`).** These already iterate slot stacks. The
    per-stack cost is one material `contains` plus, for instance tags, one `getItemMeta()` call.
-   For a 36-slot hotbar scan that is ≤36 meta reads *only when the tag has instance entries*;
-   pure-material requirements stay free.
+   For a 36-slot hotbar scan that is ≤36 meta reads *only when the tag has instance entries*.
+   Pure-material requirements stay free.
 
 **Quantified expectation:** a server with zero custom items sees **zero** hot-path change
 (every tag remains `EnumSet`). A server using `pdc:` tags pays one `getItemMeta()` per candidate
 stack per event, which is within the engine's 20 TPS budget for reasonable stack counts and is
-not re-resolution (the *definitions* are cached; only the per-stack read is live).
+not re-resolution. The *definitions* are cached. Only the per-stack read is live.
 
 ### 5.3 No double-work on chain/harvest paths
 
@@ -183,7 +183,7 @@ custom_tags:
 ```
 
 Keep a **one-line comment convention** at the top of `tags.yml` documenting the entry kinds, so
-the file is self-describing. Every entry kind is a single token; no nested YAML.
+the file is self-describing. Every entry kind is a single token. No nested YAML.
 
 ### 6.2 Validation & fail-fast
 
@@ -201,7 +201,7 @@ the file is self-describing. Every entry kind is a single token; no nested YAML.
 - For `name:` mode, render a text input with a live "matches N items named like this" preview
   hint and regex escaping guidance.
 - The API `/api/tags` payload must round-trip the new entry kinds verbatim (they are plain
-  strings; the backend already treats tag entries opaquely until `CustomTagLoader` parses them).
+  strings. The backend already treats tag entries opaquely until `CustomTagLoader` parses them).
 
 ---
 
@@ -214,11 +214,11 @@ feature.
 
 Suggested follow-up issues (not in this report's scope):
 
-1. **`feat(engine):` two-tier tag resolver** — `ItemMatcher` predicates, load-time
+1. **`feat(engine):` two-tier tag resolver.** `ItemMatcher` predicates, load-time
    classification, instance-tier evaluation only after the material pre-filter (§5.2).
 2. **`feat(api):` `SkillingAPI.tagItem`** helper writing `skilling:tags` (§3.1).
 3. **`feat(web):` TagListEditor entry-kind modes** (§6.3).
-4. **`docs(users):` tags.yml entry-kind reference** — one comment block at the top of
+4. **`docs(users):` tags.yml entry-kind reference.** One comment block at the top of
    `src/main/resources/tags.yml` and a `capabilities.md` section.
 5. **`test(engine):`** unit tests for mixed tags (material pre-filter + instance predicates),
    `name:` regex compilation fail-fast, and PDC-based matching across `matchFilter`,
@@ -228,11 +228,11 @@ Suggested follow-up issues (not in this report's scope):
 
 ## 8. Verification of DoD
 
-- [x] Current tag/filter/requirement resolution flow mapped and material-only limitation pinpointed — §2.
-- [x] Metadata standard proposed (PDC `skilling:tags`) with concrete examples for commands/datapacks/plugins — §3.
-- [x] Tag-entry syntax extensions proposed and justified, with composition and validation — §4.
-- [x] Performance model evaluated: two-tier matcher, pre-filter + instance tier, caching — §5.
-- [x] Authoring ergonomics addressed: readability, fail-fast, web editor UX — §6.
+- [x] Current tag/filter/requirement resolution flow mapped and material-only limitation pinpointed. §2.
+- [x] Metadata standard proposed (PDC `skilling:tags`) with concrete examples for commands/datapacks/plugins. §3.
+- [x] Tag-entry syntax extensions proposed and justified, with composition and validation. §4.
+- [x] Performance model evaluated: two-tier matcher, pre-filter + instance tier, caching. §5.
+- [x] Authoring ergonomics addressed: readability, fail-fast, web editor UX. §6.
 - [x] No production code changes (research only).
 
 **Cross-reference:** [ISSUE-183](../issues/ISSUE-183.md).

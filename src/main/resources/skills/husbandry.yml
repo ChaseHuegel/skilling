@@ -10,7 +10,7 @@ xp_sources:
   - trigger: "player_tame"
     reward: { constant: 256.4 }
   # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=256 exceeds the ~60/action ceiling.
-  # breed/shear/tame are inherently frequency-capped; the honest residual is
+  # breed/shear/tame are inherently frequency-capped. The honest residual is
   # ~80-120 h rather than inflating a single action absurdly.
 abilities:
   - id: "animal_bond"

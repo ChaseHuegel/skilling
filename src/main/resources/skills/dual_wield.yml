@@ -5,13 +5,13 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
     filters: [ { state: "offhand:weapon" } ]
-    reward: { constant: 0.9 }       # per raw damage point (7 ≈ weapon hit); damage-scaled
+    reward: { constant: 0.9 }       # per raw damage point (7 ≈ weapon hit). Damage-scaled
     scaling: damage
   - trigger: "entity_kill"
     filters: [ { state: "offhand:weapon" } ]
     reward: { constant: 25.0 }
   # Two-source by design: no DualWield plugin dependency and no tertiary source
-  # (product decision). Accepted outlier per REPORT_XP-SOURCE-DESIGN §2 — R≈81
+  # (product decision). Accepted outlier per REPORT_XP-SOURCE-DESIGN §2. R≈81
   # exceeds the ~60/action ceiling, so effective time stays ~490 h at these
   # constants. Do not inflate per-action rewards to force the 50 h target.
 abilities:
