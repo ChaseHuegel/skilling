@@ -210,17 +210,17 @@ public final class SkillMenuBuilder {
         int filled = (int) Math.round(progress * barWidth);
         StringBuilder barStr = new StringBuilder().append('[');
         for (int i = 0; i < barWidth; i++) {
-            barStr.append(i < filled ? '█' : '░');
+            barStr.append(i < filled ? '█' : '█');
         }
         barStr.append(']');
         Component barFull;
         if (filled > 0) {
             Component filledPart = Component.text(barStr.substring(1, 1 + filled), NamedTextColor.GREEN);
-            barFull = Component.text("[").color(NamedTextColor.GRAY)
+            barFull = Component.text("[").color(NamedTextColor.DARK_GRAY)
                     .append(filledPart)
-                    .append(Component.text(barStr.substring(1 + filled), NamedTextColor.GRAY));
+                    .append(Component.text(barStr.substring(1 + filled), NamedTextColor.DARK_GRAY));
         } else {
-            barFull = Component.text(barStr.toString(), NamedTextColor.GRAY);
+            barFull = Component.text(barStr.toString(), NamedTextColor.DARK_GRAY);
         }
         lore.add(barFull);
 
