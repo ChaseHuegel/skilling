@@ -9,9 +9,6 @@ xp_sources:
   - trigger: "block_break"
     filters: [ { target: "#c:ores" }, { state: "player_placed:false" } ]
     reward: { constant: 40.5 }
-  - trigger: "block_break"
-    filters: [ { target: "#minecraft:deepslate" }, { state: "player_placed:false" } ]
-    reward: { constant: 40.5 }
 abilities:
   - id: "geologist"
     display_name: "Geologist"
