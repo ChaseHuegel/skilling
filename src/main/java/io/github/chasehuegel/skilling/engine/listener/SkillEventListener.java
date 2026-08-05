@@ -20,9 +20,6 @@ import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarStyle;
-import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
@@ -38,9 +35,6 @@ import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.persistence.PersistentDataType;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -639,11 +633,19 @@ public final class SkillEventListener implements Listener {
                         .clampCooldownSeconds(cdSec) * 20);
                 plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                     if (player.isOnline()) {
-                        String readyMsg = "<green>✦ " + ability.displayName() + " is ready!</green>";
-                        player.sendMessage(MiniMessage.miniMessage().deserialize(readyMsg));
-                        player.sendActionBar(net.kyori.adventure.text.Component.text(
-                                "✦ " + ability.displayName() + " is ready!",
-                                NamedTextColor.GREEN));
+                        var branding = plugin.getBranding();
+                        String color = "&f";
+                        try {
+                            String skillColor = skill.display() != null ? skill.display().color() : null;
+                            String code = io.github.chasehuegel.skilling.engine.ui.branding.SkillColorCode.toLegacyCode(skillColor);
+                            if (code != null) color = code;
+                        } catch (IllegalArgumentException ignored) {}
+                        String ready = io.github.chasehuegel.skilling.engine.ui.branding.TemplateRenderer.renderLine(
+                                branding.abilityFeedback().readyMessage(),
+                                Map.of("name", ability.displayName(), "color", color));
+                        Component readyComponent = io.github.chasehuegel.skilling.engine.ui.branding.TemplateRenderer.toComponent(ready);
+                        player.sendMessage(readyComponent);
+                        player.sendActionBar(readyComponent);
                     }
                 }, delayTicks);
             }

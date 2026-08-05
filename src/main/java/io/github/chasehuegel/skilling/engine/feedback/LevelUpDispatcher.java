@@ -5,11 +5,12 @@ import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.profile.PlayerPreferences;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
+import io.github.chasehuegel.skilling.engine.ui.branding.BrandingConfig;
+import io.github.chasehuegel.skilling.engine.ui.branding.SkillColorCode;
+import io.github.chasehuegel.skilling.engine.ui.branding.TemplateRenderer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
@@ -21,10 +22,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 public final class LevelUpDispatcher {
-
-    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     private static final org.bukkit.Color[] BRIGHT_COLORS = {
             org.bukkit.Color.RED, org.bukkit.Color.ORANGE, org.bukkit.Color.YELLOW,
@@ -52,9 +52,6 @@ public final class LevelUpDispatcher {
         // bossbar.max_active <= 0 disables the XP boss bar entirely.
         if (bar == null) return;
 
-        TextColor textColor = resolveBarColor(skill.display() != null ? skill.display().color() : null);
-        Component title;
-
         long xpForCurrent = (long) skill.progression().evaluator().evaluate(level, 0);
         long xpForNext = (long) skill.progression().evaluator().evaluate(level + 1, 0);
         long intoLevel = totalXp - xpForCurrent;
@@ -65,11 +62,14 @@ public final class LevelUpDispatcher {
         double progress = needed > 0 ? Math.min(Math.max((double) intoLevel / needed, 0.0), 1.0) : 0;
         bar.setProgress(progress);
 
-        Component nameComp = Component.text(displayName,
-                textColor != null ? textColor : NamedTextColor.WHITE);
-        title = nameComp
-                .append(Component.text(" - ", NamedTextColor.GRAY))
-                .append(Component.text(String.valueOf(level), NamedTextColor.WHITE));
+        BrandingConfig branding = branding(plugin);
+        Map<String, String> scalars = Map.of(
+                "color", skillColorCode(skill),
+                "name", displayName,
+                "level", String.valueOf(level),
+                "into", String.valueOf(intoLevel),
+                "needed", String.valueOf(needed));
+        Component title = renderMessage(branding.bossBar().titleFormat(), scalars);
         if (plugin.isDebugLogging()) {
             title = title
                     .append(Component.text(" (", NamedTextColor.GRAY))
@@ -100,15 +100,21 @@ public final class LevelUpDispatcher {
                 .filter(a -> a.unlockLevel() == newLevel)
                 .toList();
 
-        String levelUpMsg = "<yellow>" + displayName + " increased to " + newLevel + "</yellow>";
+        BrandingConfig branding = branding(plugin);
+        Map<String, String> skillScalars = Map.of(
+                "name", displayName,
+                "level", String.valueOf(newLevel),
+                "player", player.getName(),
+                "color", skillColorCode(skill));
+
         PlayerPreferences prefs = getPreferences(player, plugin);
         if (prefs.logLevels()) {
-            player.sendMessage(MINI_MESSAGE.deserialize(levelUpMsg));
+            player.sendMessage(renderMessage(branding.levelUp().message(), skillScalars));
         }
         int stayMs = plugin.getTitleStayDuration();
         player.showTitle(Title.title(
-                MINI_MESSAGE.deserialize("<gold><bold>Level up!</bold></gold>"),
-                MINI_MESSAGE.deserialize("<yellow>" + displayName + " increased to " + newLevel + "</yellow>"),
+                renderMessage(branding.levelUp().title(), Map.of()),
+                renderMessage(branding.levelUp().subtitle(), skillScalars),
                 Title.Times.times(
                         Duration.ofMillis(500),
                         Duration.ofMillis(stayMs),
@@ -123,15 +129,20 @@ public final class LevelUpDispatcher {
                 // The player may log out before the delayed announcement fires;
                 // touching a disconnected reference throws on the main thread.
                 if (!player.isOnline()) return;
-                Component line = SkillMenuBuilder.formatAbilityLine(unlockedAbilities.get(idx), newLevel);
-                    String unlockMsg = "<gray>[</gray><aqua>Ability Unlocked!</aqua><gray>]</gray> ";
+                SkillDefinition.Ability ability = unlockedAbilities.get(idx);
+                boolean active = SkillMenuBuilder.isActiveAbility(ability, newLevel);
+                String type = active ? branding.abilityType().active() : branding.abilityType().passive();
+                Map<String, String> abilityScalars = Map.of(
+                        "name", ability.displayName() != null ? ability.displayName() : ability.id(),
+                        "type", type);
                 if (prefs.logUnlocks()) {
-                    player.sendMessage(MINI_MESSAGE.deserialize(unlockMsg)
-                            .append(withAbilityLoreHover(line, unlockedAbilities.get(idx), newLevel)));
+                    Component message = renderMessage(branding.abilityUnlock().message(), abilityScalars);
+                    player.sendMessage(withAbilityLoreHover(message, ability, newLevel));
                 }
                 player.showTitle(Title.title(
-                        MINI_MESSAGE.deserialize("<gold><bold>New unlock!</bold></gold>"),
-                        line.colorIfAbsent(NamedTextColor.WHITE),
+                        renderMessage(branding.abilityUnlock().title(), Map.of()),
+                        renderMessage(branding.abilityUnlock().subtitle(), abilityScalars)
+                                .colorIfAbsent(NamedTextColor.WHITE),
                         Title.Times.times(
                                 java.time.Duration.ZERO,
                                 java.time.Duration.ofMillis(1500),
@@ -148,17 +159,12 @@ public final class LevelUpDispatcher {
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
                     org.bukkit.SoundCategory.PLAYERS, 1.0f, 1.2f);
 
-            String skillColorName = skill.display() != null && skill.display().color() != null
-                    ? mmColorName(skill.display().color()) : "green";
-            String maxSubMsg = player.getName() + " reached "
-                    + "<light green>" + newLevel + " </light green>"
-                    + "<" + skillColorName + ">"
-                    + displayName + "</" + skillColorName + ">";
+            Component maxedMessage = renderMessage(branding.levelUp().maxedMessage(), skillScalars);
             for (Player online : Bukkit.getOnlinePlayers()) {
                 if (!online.equals(player) || plugin.isDebugLogging()) {
                     online.showTitle(Title.title(
                             Component.empty(),
-                            MINI_MESSAGE.deserialize(maxSubMsg),
+                            maxedMessage,
                             Title.Times.times(
                                     Duration.ofMillis(500),
                                     Duration.ofMillis(3500),
@@ -174,11 +180,8 @@ public final class LevelUpDispatcher {
                 }
             }
 
-            Component broadcastComponent = MINI_MESSAGE.deserialize(
-                    player.getName() + " has reached max level "
-                    + "<" + skillColorName + ">[" + displayName + "]</" + skillColorName + ">");
             for (Player online : Bukkit.getOnlinePlayers()) {
-                online.sendMessage(broadcastComponent);
+                online.sendMessage(maxedMessage);
             }
         } else if (major) {
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE,
@@ -227,6 +230,25 @@ public final class LevelUpDispatcher {
         return line.hoverEvent(HoverEvent.showText(tooltip));
     }
 
+    private static Component renderMessage(String template, Map<String, String> scalars) {
+        return TemplateRenderer.toComponent(TemplateRenderer.renderLine(template, scalars));
+    }
+
+    private static BrandingConfig branding(Skilling plugin) {
+        BrandingConfig branding = plugin.getBranding();
+        return branding != null ? branding : BrandingConfig.DEFAULT;
+    }
+
+    private static String skillColorCode(SkillDefinition skill) {
+        try {
+            String color = skill.display() != null ? skill.display().color() : null;
+            String code = SkillColorCode.toLegacyCode(color);
+            return code != null ? code : "&f";
+        } catch (IllegalArgumentException e) {
+            return "&f";
+        }
+    }
+
     private static PlayerPreferences getPreferences(Player player, Skilling plugin) {
         PlayerProfile profile = plugin.getProfileManager().getProfile(player.getUniqueId());
         return profile != null ? profile.getPreferences() : PlayerPreferences.DEFAULTS;
@@ -256,28 +278,6 @@ public final class LevelUpDispatcher {
             meta.setPower(1);
             fw.setFireworkMeta(meta);
         }
-    }
-
-    public static TextColor resolveBarColor(String colorName) {
-        if (colorName == null || colorName.isBlank()) return null;
-        return switch (colorName.toUpperCase()) {
-            case "PINK" -> NamedTextColor.LIGHT_PURPLE;
-            case "PURPLE" -> NamedTextColor.DARK_PURPLE;
-            case "RED" -> NamedTextColor.RED;
-            case "GREEN" -> NamedTextColor.GREEN;
-            case "BLUE" -> NamedTextColor.BLUE;
-            case "WHITE" -> NamedTextColor.WHITE;
-            case "YELLOW" -> NamedTextColor.YELLOW;
-            default -> null;
-        };
-    }
-
-    public static String mmColorName(String barColorName) {
-        return switch (barColorName.toUpperCase()) {
-            case "PINK" -> "light_purple";
-            case "PURPLE" -> "dark_purple";
-            default -> barColorName.toLowerCase();
-        };
     }
 
     public static int getLevelForXp(SkillDefinition skill, long xp) {

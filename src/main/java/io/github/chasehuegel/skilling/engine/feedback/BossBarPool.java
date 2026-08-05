@@ -1,6 +1,8 @@
 package io.github.chasehuegel.skilling.engine.feedback;
 
 import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import java.util.*;
@@ -31,18 +33,34 @@ public final class BossBarPool {
 
     private volatile int maxActive;
     private volatile int fadeTicks;
+    private volatile BarColor defaultColor;
+    private volatile BarStyle defaultStyle;
     private final Map<String, BossBar> cache;
     private final Map<String, Long> ttlMap;
 
     /**
-     * Constructs a new BossBar pool.
+     * Constructs a new BossBar pool with the default white/solid bar styling.
      *
      * @param maxActive maximum number of active Boss Bars per player
      * @param fadeTicks tick duration for the fade-out animation (TTL)
      */
     public BossBarPool(int maxActive, int fadeTicks) {
+        this(maxActive, fadeTicks, BarColor.WHITE, BarStyle.SOLID);
+    }
+
+    /**
+     * Constructs a new BossBar pool.
+     *
+     * @param maxActive    maximum number of active Boss Bars per player
+     * @param fadeTicks    tick duration for the fade-out animation (TTL)
+     * @param defaultColor BarColor for pool-created bars before a skill overrides it
+     * @param defaultStyle BarStyle for pool-created bars before a skill overrides it
+     */
+    public BossBarPool(int maxActive, int fadeTicks, BarColor defaultColor, BarStyle defaultStyle) {
         this.maxActive = maxActive;
         this.fadeTicks = fadeTicks;
+        this.defaultColor = defaultColor;
+        this.defaultStyle = defaultStyle;
         this.cache = Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true));
         this.ttlMap = new ConcurrentHashMap<>();
     }
@@ -63,6 +81,24 @@ public final class BossBarPool {
      */
     public void setFadeTicks(int fadeTicks) {
         this.fadeTicks = fadeTicks;
+    }
+
+    /**
+     * Sets the default BarColor for pool-created bars (from config) at runtime.
+     *
+     * @param defaultColor the default bar color
+     */
+    public void setDefaultColor(BarColor defaultColor) {
+        this.defaultColor = defaultColor;
+    }
+
+    /**
+     * Sets the default BarStyle for pool-created bars (from config) at runtime.
+     *
+     * @param defaultStyle the default bar style
+     */
+    public void setDefaultStyle(BarStyle defaultStyle) {
+        this.defaultStyle = defaultStyle;
     }
 
     /**
@@ -99,7 +135,7 @@ public final class BossBarPool {
                 ttlMap.remove(eldest);
                 hideBar(evicted);
             }
-            bar = Bukkit.createBossBar("", org.bukkit.boss.BarColor.WHITE, org.bukkit.boss.BarStyle.SOLID);
+            bar = Bukkit.createBossBar("", defaultColor, defaultStyle);
             bar.addPlayer(player);
             cache.put(key, bar);
             ttlMap.put(key, (long) fadeTicks);

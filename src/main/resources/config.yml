@@ -27,6 +27,98 @@ titles:
   # Duration (ms) for the main level-up title's stay phase before fade-out
   stay_duration: 5000
 
+# ============================================================================
+# Branding — every in-game visual element.
+# ============================================================================
+# Templates use legacy color codes (&0-&f, &l, &o, &#rrggbb for hex) and
+# {placeholder} tokens. Tokens whose values are unknown are left verbatim.
+#   - {color} resolves to each skill's own display.color (as a legacy code).
+#   - {lore} / {abilities} / {ability} are multi-line inserts: a template line
+#     holding such a token is dropped when the insert has no content.
+# The engine adds no hardcoded spacing between template lines or ability
+# blocks — blank lines in the templates are intentional.
+branding:
+  # Full skill tooltip (shown on the skill icon and via /skills <skill>).
+  # Available: {level} {max_level} {bar} {xp_into} {xp_needed} {xp_total}
+  #            {color} {lore} {abilities}
+  skill_template:
+    - "&aLevel {level} / {max_level}"
+    - "{bar}"
+    - "&aXP: {xp_into} / {xp_needed}"
+    - "{color}Total XP: {xp_total}"
+    - "&7▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔"
+    - "{lore}"
+    - ""
+    - "{abilities}"
+  # XP progress bar rendered for the {bar} token. Each unit string may carry
+  # its own color codes; width is the character width (1-200). At max level the
+  # bar renders full and {xp_needed} equals {xp_into} (reads "XP: 5 / 5").
+  bar_template:
+    width: 20
+    filled: "&a█"
+    empty: "&8█"
+    start: "&7["
+    end: "&7]"
+  # Repeated once per ability, in order, with no separator injected. {ability}
+  # expands to the locked or unlocked ability template.
+  abilities_template:
+    - "{ability}"
+    - ""
+  # The {type} token used by the ability templates.
+  ability_type_template:
+    active: "&8Active"
+    passive: "&8Passive"
+  # Available: {name} {level} (unlock level) {type} {lore} {color}
+  ability_locked_template:
+    - "&c❌ {level} &8· {name} &8· {type}"
+    - "{lore}"
+  ability_unlocked_template:
+    - "&a✔ {name} &8· {type}"
+    - "{lore}"
+  # Level-up feedback. Available: {name} {level} {player} {color}
+  level_up:
+    title: "&6Level up!"
+    subtitle: "{color}{name} &aincreased to {level}"
+    message: "&fYou leveled up &a[{name} {level}]"
+    maxed_message: "&f{player} has reached max level {color}[{name}]"
+  # Ability-unlock feedback. Available: {name} {type}
+  ability_unlock:
+    title: "&6Unlocked!"
+    subtitle: "&a✔ {name} &8· {type}"
+    message: "&fYou unlocked the ability &a[{name} &8· {type}&a]"
+  # Shown when a cooldown expires. Available: {name} {color}
+  ability_feedback:
+    ready_message: "&a✦ {color}{name} &ais ready!"
+  # GUI chrome not covered by gui.yml (paginated page titles come from gui.yml).
+  # Available: {name} {color} {count}
+  gui:
+    title: "&6Skills"
+    prev_page: "&6◀ Prev Page"
+    next_page: "&6Next Page ▶"
+    page_count: "&7{count} skill(s)"
+    skill_name_unlocked: "&a{name}"
+    skill_name_locked: "&7{name} &8· Locked"
+  # Craftable Skills Guide book item.
+  guide_book:
+    name: "&6Skills Guide"
+    lore: "&7Right-click to open your skills"
+  # XP boss bar. title_format supports {color} {name} {level} {into} {needed};
+  # default_color/default_style apply before a skill's own color/style overrides.
+  boss_bar:
+    title_format: "{color}{name} &7- &f{level}"
+    default_color: "white"
+    default_style: "solid"
+  # /skills command feedback. Available: {message} {command} {description}
+  # {usage} {title}
+  command:
+    header: "&6=== {title} ==="
+    command: "&e{command}"
+    description: "&f{description}"
+    usage: "&eUsage: {usage}"
+    success: "&a{message}"
+    error: "&c{message}"
+    info: "&7{message}"
+
 # Global XP multiplier applied to all XP gains. Default: 1.0
 global_xp_modifier: 1.0
 

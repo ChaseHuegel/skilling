@@ -10,9 +10,9 @@ import io.github.chasehuegel.skilling.engine.profile.PlayerPreferences;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
+import io.github.chasehuegel.skilling.engine.ui.branding.BrandingConfig;
+import io.github.chasehuegel.skilling.engine.ui.branding.TemplateRenderer;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -26,11 +26,10 @@ import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.parser.standard.StringParser;
 import org.incendo.cloud.parser.standard.BooleanParser;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.UUID;
 
 public final class SkillsCommand {
-
-    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     private final Skilling plugin;
     private final SkillManager skillManager;
@@ -59,7 +58,7 @@ public final class SkillsCommand {
         commandManager.exceptionController().registerHandler(
                 InvalidSyntaxException.class,
                 ctx -> ctx.context().sender().source().sendMessage(
-                        MINI_MESSAGE.deserialize("<red>Invalid syntax. Usage: <yellow>/skills <command> [arguments]")));
+                        render("error", Map.of("message", "Invalid syntax. Usage: /skills <command> [arguments]"))));
         commandManager.exceptionController().registerHandler(
                 ArgumentParseException.class,
                 ctx -> {
@@ -67,7 +66,7 @@ public final class SkillsCommand {
                             ? ctx.exception().getCause().getMessage()
                             : ctx.exception().getMessage();
                     ctx.context().sender().source().sendMessage(
-                            MINI_MESSAGE.deserialize("<red>" + MINI_MESSAGE.escapeTags(msg != null ? msg : "Invalid argument")));
+                            render("error", Map.of("message", msg != null ? msg : "Invalid argument")));
                 });
 
         var skills = commandManager.commandBuilder("skills");
@@ -80,7 +79,7 @@ public final class SkillsCommand {
                     CommandSender commandSender = sender.source();
                     String skillId = ctx.getOrDefault("skill", null);
                     if (!(commandSender instanceof Player player)) {
-                        commandSender.sendMessage(MINI_MESSAGE.deserialize("<red>Only players can use this command."));
+                        commandSender.sendMessage(render("error", Map.of("message", "Only players can use this command.")));
                         return;
                     }
                     if (skillId == null) {
@@ -97,24 +96,24 @@ public final class SkillsCommand {
                 .handler(ctx -> {
                     CommandSender sender = ctx.sender().source();
                     sender.sendMessage(Component.empty());
-                    sender.sendMessage(Component.text("=== Skills Commands ===", NamedTextColor.GOLD));
-                    sender.sendMessage(Component.text("/skills", NamedTextColor.YELLOW)
-                            .append(Component.text(" - Open the skill overview menu, or show skill progress with a skill name", NamedTextColor.WHITE)));
-                    sender.sendMessage(Component.text("/skills help", NamedTextColor.YELLOW)
-                            .append(Component.text(" - Show this help", NamedTextColor.WHITE)));
-                    sender.sendMessage(Component.text("/skills log <type> <true/false>", NamedTextColor.YELLOW)
-                            .append(Component.text(" - Set logging preferences (xp, levels, unlocks, abilities)", NamedTextColor.WHITE)));
+                    sender.sendMessage(render("header", Map.of("title", "Skills Commands")));
+                    sender.sendMessage(render("command", Map.of("command", "/skills"))
+                            .append(render("description", Map.of("description", " - Open the skill overview menu, or show skill progress with a skill name"))));
+                    sender.sendMessage(render("command", Map.of("command", "/skills help"))
+                            .append(render("description", Map.of("description", " - Show this help"))));
+                    sender.sendMessage(render("command", Map.of("command", "/skills log <type> <true/false>"))
+                            .append(render("description", Map.of("description", " - Set logging preferences (xp, levels, unlocks, abilities)"))));
                     if (sender.hasPermission("skilling.admin")) {
-                        sender.sendMessage(Component.text("/skills set <key> <value>", NamedTextColor.YELLOW)
-                                .append(Component.text(" - Modify a config value at runtime", NamedTextColor.WHITE)));
-                        sender.sendMessage(Component.text("/skills reload", NamedTextColor.YELLOW)
-                                .append(Component.text(" - Reload the plugin configuration and skills", NamedTextColor.WHITE)));
-                        sender.sendMessage(Component.text("/skills setlevel <player> <skill> <level>", NamedTextColor.YELLOW)
-                                .append(Component.text(" - Set a player's skill level", NamedTextColor.WHITE)));
-                        sender.sendMessage(Component.text("/skills addxp <player> <skill> <amount>", NamedTextColor.YELLOW)
-                                .append(Component.text(" - Add XP to a player's skill", NamedTextColor.WHITE)));
-                        sender.sendMessage(Component.text("/skills reset <player> [skill]", NamedTextColor.YELLOW)
-                                .append(Component.text(" - Reset a player's skill(s). Omit skill to reset all.", NamedTextColor.WHITE)));
+                        sender.sendMessage(render("command", Map.of("command", "/skills set <key> <value>"))
+                                .append(render("description", Map.of("description", " - Modify a config value at runtime"))));
+                        sender.sendMessage(render("command", Map.of("command", "/skills reload"))
+                                .append(render("description", Map.of("description", " - Reload the plugin configuration and skills"))));
+                        sender.sendMessage(render("command", Map.of("command", "/skills setlevel <player> <skill> <level>"))
+                                .append(render("description", Map.of("description", " - Set a player's skill level"))));
+                        sender.sendMessage(render("command", Map.of("command", "/skills addxp <player> <skill> <amount>"))
+                                .append(render("description", Map.of("description", " - Add XP to a player's skill"))));
+                        sender.sendMessage(render("command", Map.of("command", "/skills reset <player> [skill]"))
+                                .append(render("description", Map.of("description", " - Reset a player's skill(s). Omit skill to reset all."))));
                     }
                 }));
 
@@ -122,10 +121,8 @@ public final class SkillsCommand {
                 .literal("log")
                 .permission("skilling.use")
                 .handler(ctx -> {
-                    ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize(
-                            "<yellow>Usage: /skills log <type> <true/false></yellow>"));
-                    ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize(
-                            "<gray>Types: xp, levels, unlocks, abilities</gray>"));
+                    ctx.sender().source().sendMessage(render("usage", Map.of("usage", "/skills log <type> <true/false>")));
+                    ctx.sender().source().sendMessage(render("info", Map.of("message", "Types: xp, levels, unlocks, abilities")));
                 }));
 
         commandManager.command(commandManager.commandBuilder("skills")
@@ -137,7 +134,7 @@ public final class SkillsCommand {
                     Source sender = ctx.sender();
                     CommandSender commandSender = sender.source();
                     if (!(commandSender instanceof Player player)) {
-                        commandSender.sendMessage(MINI_MESSAGE.deserialize("<red>Only players can use this command."));
+                        commandSender.sendMessage(render("error", Map.of("message", "Only players can use this command.")));
                         return;
                     }
                     String type = ctx.get("type");
@@ -156,7 +153,8 @@ public final class SkillsCommand {
                         // worker persists preferences on the next flush instead of
                         // blocking the command thread with a synchronous INSERT.
                         profile.setPreferences(updated);
-                        player.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + type + " logging to " + value));
+                        player.sendMessage(render("success", Map.of("message",
+                                "Set " + type + " logging to " + value)));
                     }
                 }));
 
@@ -164,7 +162,7 @@ public final class SkillsCommand {
                 .literal("reload")
                 .permission("skilling.admin")
                 .handler(ctx -> {
-                    ctx.sender().source().sendMessage(MINI_MESSAGE.deserialize("<yellow>Reloading Skilling..."));
+                    ctx.sender().source().sendMessage(render("info", Map.of("message", "Reloading Skilling...")));
                     // The reload completes asynchronously (DB flush on a worker,
                     // then the rebuild back on the main thread); report completion
                     // on the main thread so the admin is told when it actually
@@ -172,9 +170,9 @@ public final class SkillsCommand {
                     CommandSender source = ctx.sender().source();
                     lockdownManager.reloadAsync().whenComplete((v, ex) ->
                             Bukkit.getScheduler().runTask(plugin, () ->
-                                    source.sendMessage(MINI_MESSAGE.deserialize(ex == null
-                                            ? "<green>Skilling reloaded."
-                                            : "<red>Skilling reload failed. Check the console."))));
+                                    source.sendMessage(ex == null
+                                            ? render("success", Map.of("message", "Skilling reloaded."))
+                                            : render("error", Map.of("message", "Skilling reload failed. Check the console.")))));
                 }));
 
         commandManager.command(commandManager.commandBuilder("skills")
@@ -234,45 +232,45 @@ public final class SkillsCommand {
                     .orElse(null);
         }
         if (def == null) {
-            player.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: <white>" + input));
+            player.sendMessage(render("error", Map.of("message", "Unknown skill: " + input)));
             return;
         }
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
         if (profile == null) {
-            player.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded."));
+            player.sendMessage(render("error", Map.of("message", "Profile not loaded.")));
             return;
         }
         String name = def.display() != null && def.display().name() != null
                 ? def.display().name() : def.id();
         player.sendMessage(Component.empty());
-        player.sendMessage(Component.text("=== " + name + " ===", NamedTextColor.GOLD));
+        player.sendMessage(render("header", Map.of("title", name)));
         for (Component line : skillMenuBuilder.buildSkillLore(def, profile)) {
             player.sendMessage(line);
         }
     }
 
-    private static final String USAGE_SETLEVEL = "<yellow>Usage: /skills setlevel <player> <skill> <level></yellow>";
-    private static final String USAGE_ADDXP = "<yellow>Usage: /skills addxp <player> <skill> <amount></yellow>";
-    private static final String USAGE_RESET = "<yellow>Usage: /skills reset <player> [<skill>]</yellow>";
+    private static final String USAGE_SETLEVEL = "/skills setlevel <player> <skill> <level>";
+    private static final String USAGE_ADDXP = "/skills addxp <player> <skill> <amount>";
+    private static final String USAGE_RESET = "/skills reset <player> [<skill>]";
 
     private void setLevel(CommandSender sender, String playerName, String skillId, int level) {
         if (level < 0) {
-            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_SETLEVEL));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Level must be a non-negative integer."));
+            sendUsage(sender, USAGE_SETLEVEL);
+            sender.sendMessage(render("error", Map.of("message", "Level must be a non-negative integer.")));
             return;
         }
         Player target = Bukkit.getPlayer(playerName);
         if (target != null) {
             PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
             if (profile == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_SETLEVEL));
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + playerName + "."));
+                sendUsage(sender, USAGE_SETLEVEL);
+                sender.sendMessage(render("error", Map.of("message", "Profile not loaded for " + playerName + ".")));
                 return;
             }
             SkillDefinition def = skillManager.getSkill(skillId);
             if (def == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_SETLEVEL));
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
+                sendUsage(sender, USAGE_SETLEVEL);
+                sender.sendMessage(render("error", Map.of("message", "Unknown skill: " + skillId)));
                 return;
             }
             int oldLevel = def.getLevelForXp(profile.getXp(skillId));
@@ -280,7 +278,8 @@ public final class SkillsCommand {
             profile.setXp(skillId, xp);
             profile.invalidatePageCache();
             int actualLevel = def.getLevelForXp(profile.getXp(skillId));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + actualLevel + "."));
+            sender.sendMessage(render("success", Map.of("message",
+                    "Set " + playerName + "'s " + skillId + " to level " + actualLevel + ".")));
             showXpBossBar(target, def, profile);
             if (actualLevel > oldLevel) {
                 broadcastLevelUp(target, def, actualLevel);
@@ -293,15 +292,15 @@ public final class SkillsCommand {
     private void handleOfflineSetLevel(CommandSender sender, String playerName, String skillId, int level) {
         SkillDefinition def = skillManager.getSkill(skillId);
         if (def == null) {
-            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_SETLEVEL));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
+            sendUsage(sender, USAGE_SETLEVEL);
+            sender.sendMessage(render("error", Map.of("message", "Unknown skill: " + skillId)));
             return;
         }
         long xp = (long) def.progression().evaluator().evaluate(level, 0);
         var offlinePlayer = Bukkit.getOfflinePlayer(playerName);
         if (!offlinePlayer.hasPlayedBefore()) {
-            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_SETLEVEL));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Player not found: " + playerName));
+            sendUsage(sender, USAGE_SETLEVEL);
+            sender.sendMessage(render("error", Map.of("message", "Player not found: " + playerName)));
             return;
         }
         UUID uuid = offlinePlayer.getUniqueId();
@@ -316,7 +315,8 @@ public final class SkillsCommand {
                 live.invalidatePageCache();
                 live.addPendingFanfare(skillId);
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + level + " (live profile, fanfare pending).")));
+                    sender.sendMessage(render("success", Map.of("message",
+                            "Set " + playerName + "'s " + skillId + " to level " + level + " (live profile, fanfare pending)."))));
                 return;
             }
             String uuidStr = uuid.toString();
@@ -338,39 +338,41 @@ public final class SkillsCommand {
                     joined.addPendingFanfare(skillId);
                 }
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set " + playerName + "'s " + skillId + " to level " + level + " (offline, fanfare pending).")));
+                    sender.sendMessage(render("success", Map.of("message",
+                            "Set " + playerName + "'s " + skillId + " to level " + level + " (offline, fanfare pending)."))));
             } catch (Exception e) {
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage())));
+                    sender.sendMessage(render("error", Map.of("message", "Database error: " + e.getMessage()))));
             }
         });
     }
 
     private void addXp(CommandSender sender, String playerName, String skillId, int amount) {
         if (amount < 0) {
-            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_ADDXP));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Amount must be a non-negative integer."));
+            sendUsage(sender, USAGE_ADDXP);
+            sender.sendMessage(render("error", Map.of("message", "Amount must be a non-negative integer.")));
             return;
         }
         Player target = Bukkit.getPlayer(playerName);
         if (target != null) {
             PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
             if (profile == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_ADDXP));
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + playerName + "."));
+                sendUsage(sender, USAGE_ADDXP);
+                sender.sendMessage(render("error", Map.of("message", "Profile not loaded for " + playerName + ".")));
                 return;
             }
             SkillDefinition def = skillManager.getSkill(skillId);
             if (def == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_ADDXP));
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
+                sendUsage(sender, USAGE_ADDXP);
+                sender.sendMessage(render("error", Map.of("message", "Unknown skill: " + skillId)));
                 return;
             }
             int oldLevel = def.getLevelForXp(profile.getXp(skillId));
             profile.addXp(skillId, amount);
             profile.invalidatePageCache();
             int newLevel = def.getLevelForXp(profile.getXp(skillId));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + "."));
+            sender.sendMessage(render("success", Map.of("message",
+                    "Added " + amount + " XP to " + playerName + "'s " + skillId + ".")));
             showXpBossBar(target, def, profile);
             if (newLevel > oldLevel) {
                 broadcastLevelUp(target, def, newLevel);
@@ -383,14 +385,14 @@ public final class SkillsCommand {
     private void handleOfflineAddXp(CommandSender sender, String playerName, String skillId, int amount) {
         SkillDefinition def = skillManager.getSkill(skillId);
         if (def == null) {
-            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_ADDXP));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Unknown skill: " + skillId));
+            sendUsage(sender, USAGE_ADDXP);
+            sender.sendMessage(render("error", Map.of("message", "Unknown skill: " + skillId)));
             return;
         }
         var offlinePlayer = Bukkit.getOfflinePlayer(playerName);
         if (!offlinePlayer.hasPlayedBefore()) {
-            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_ADDXP));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Player not found: " + playerName));
+            sendUsage(sender, USAGE_ADDXP);
+            sender.sendMessage(render("error", Map.of("message", "Player not found: " + playerName)));
             return;
         }
         UUID uuid = offlinePlayer.getUniqueId();
@@ -403,7 +405,8 @@ public final class SkillsCommand {
                 live.invalidatePageCache();
                 live.addPendingFanfare(skillId);
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + " (live profile, fanfare pending).")));
+                    sender.sendMessage(render("success", Map.of("message",
+                            "Added " + amount + " XP to " + playerName + "'s " + skillId + " (live profile, fanfare pending)."))));
                 return;
             }
             String uuidStr = uuid.toString();
@@ -425,10 +428,11 @@ public final class SkillsCommand {
                     joined.addPendingFanfare(skillId);
                 }
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Added " + amount + " XP to " + playerName + "'s " + skillId + " (offline, fanfare pending).")));
+                    sender.sendMessage(render("success", Map.of("message",
+                            "Added " + amount + " XP to " + playerName + "'s " + skillId + " (offline, fanfare pending)."))));
             } catch (Exception e) {
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage())));
+                    sender.sendMessage(render("error", Map.of("message", "Database error: " + e.getMessage()))));
             }
         });
     }
@@ -438,22 +442,22 @@ public final class SkillsCommand {
         if (target != null) {
             PlayerProfile profile = profileManager.getProfile(target.getUniqueId());
             if (profile == null) {
-                sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_RESET));
-                sender.sendMessage(MINI_MESSAGE.deserialize("<red>Profile not loaded for " + playerName + "."));
+                sendUsage(sender, USAGE_RESET);
+                sender.sendMessage(render("error", Map.of("message", "Profile not loaded for " + playerName + ".")));
                 return;
             }
             if (skillId != null) {
                 profile.setXp(skillId, 0);
                 profile.invalidatePageCache();
                 bossBarPool.remove(target, skillId);
-                sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset " + playerName + "'s " + skillId + "."));
+                sender.sendMessage(render("success", Map.of("message", "Reset " + playerName + "'s " + skillId + ".")));
             } else {
                 for (String id : new HashSet<>(profile.getXpMap().keySet())) {
                     profile.setXp(id, 0);
                 }
                 profile.invalidatePageCache();
                 bossBarPool.removeAll(target);
-                sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset all skills for " + playerName + "."));
+                sender.sendMessage(render("success", Map.of("message", "Reset all skills for " + playerName + ".")));
             }
         } else {
             handleOfflineReset(sender, playerName, skillId);
@@ -463,8 +467,8 @@ public final class SkillsCommand {
     private void handleOfflineReset(CommandSender sender, String playerName, String skillId) {
         var offlinePlayer = Bukkit.getOfflinePlayer(playerName);
         if (!offlinePlayer.hasPlayedBefore()) {
-            sender.sendMessage(MINI_MESSAGE.deserialize(USAGE_RESET));
-            sender.sendMessage(MINI_MESSAGE.deserialize("<red>Player not found: " + playerName));
+            sendUsage(sender, USAGE_RESET);
+            sender.sendMessage(render("error", Map.of("message", "Player not found: " + playerName)));
             return;
         }
         String uuid = offlinePlayer.getUniqueId().toString();
@@ -478,7 +482,8 @@ public final class SkillsCommand {
                         stmt.executeUpdate();
                     }
                     Bukkit.getScheduler().runTask(plugin, () ->
-                        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset " + playerName + "'s " + skillId + " (offline).")));
+                        sender.sendMessage(render("success", Map.of("message",
+                                "Reset " + playerName + "'s " + skillId + " (offline)."))));
                 } else {
                     String sql = "DELETE FROM player_skills WHERE player_uuid = ?";
                     try (var stmt = conn.prepareStatement(sql)) {
@@ -486,11 +491,12 @@ public final class SkillsCommand {
                         stmt.executeUpdate();
                     }
                     Bukkit.getScheduler().runTask(plugin, () ->
-                        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reset all skills for " + playerName + " (offline).")));
+                        sender.sendMessage(render("success", Map.of("message",
+                                "Reset all skills for " + playerName + " (offline)."))));
                 }
             } catch (Exception e) {
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MINI_MESSAGE.deserialize("<red>Database error: " + e.getMessage())));
+                    sender.sendMessage(render("error", Map.of("message", "Database error: " + e.getMessage()))));
             }
         });
     }
@@ -520,13 +526,12 @@ public final class SkillsCommand {
         config.set(key, parseConfigValue(value));
         plugin.saveConfig();
         if (requiresRestart(key)) {
-            sender.sendMessage(MINI_MESSAGE.deserialize("<yellow>Set <green>" + key
-                    + " <yellow>to <green>" + value
-                    + " <red>— requires a server restart to take effect."));
+            sender.sendMessage(render("info", Map.of("message",
+                    "Set " + key + " to " + value + " requires a server restart to take effect.")));
             return;
         }
         plugin.reloadConfigSettings();
-        sender.sendMessage(MINI_MESSAGE.deserialize("<green>Set <yellow>" + key + " <green>to <yellow>" + value));
+        sender.sendMessage(render("success", Map.of("message", "Set " + key + " to " + value)));
     }
 
     /**
@@ -538,6 +543,37 @@ public final class SkillsCommand {
      */
     static boolean requiresRestart(String key) {
         return "database.pool_size".equals(key);
+    }
+
+    private void sendUsage(CommandSender sender, String usage) {
+        sender.sendMessage(render("usage", Map.of("usage", usage)));
+    }
+
+    /**
+     * Renders a command feedback template from the active branding config.
+     *
+     * @param role    the template role (header, command, description, usage,
+     *                success, error, info)
+     * @param scalars placeholder values for the template
+     * @return the rendered component
+     */
+    private Component render(String role, Map<String, String> scalars) {
+        BrandingConfig.Command cmd = currentCommand();
+        String template = switch (role) {
+            case "header" -> cmd.header();
+            case "command" -> cmd.command();
+            case "description" -> cmd.description();
+            case "usage" -> cmd.usage();
+            case "success" -> cmd.success();
+            case "error" -> cmd.error();
+            default -> cmd.info();
+        };
+        return TemplateRenderer.toComponent(TemplateRenderer.renderLine(template, scalars));
+    }
+
+    private BrandingConfig.Command currentCommand() {
+        BrandingConfig branding = plugin.getBranding();
+        return (branding != null ? branding : BrandingConfig.DEFAULT).command();
     }
 
     private void showXpBossBar(Player player, SkillDefinition skill, PlayerProfile profile) {

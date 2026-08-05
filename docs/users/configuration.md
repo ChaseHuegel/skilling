@@ -17,6 +17,73 @@ Global settings for the Skilling engine.
 |---|---|---|---|
 | `titles.stay_duration` | int | `5000` | Milliseconds a title message remains visible before fading |
 
+### branding
+
+Controls every in-game visual element. Templates use legacy color codes (`&0-&f`, `&l`, `&o`, `&#rrggbb` for hex) and `{placeholder}` tokens. Tokens whose values are unknown are left verbatim. `{color}` resolves to each skill's own `display.color` as a legacy code.
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `branding.skill_template` | string[] | see below | Full skill tooltip, one line per rendered lore line |
+| `branding.bar_template.width` | int | `20` | XP bar character width (1-200) |
+| `branding.bar_template.filled` | string | `&a█` | Per-unit filled bar string |
+| `branding.bar_template.empty` | string | `&8█` | Per-unit empty bar string |
+| `branding.bar_template.start` | string | `&7[` | Left bracket string |
+| `branding.bar_template.end` | string | `&7]` | Right bracket string |
+| `branding.abilities_template` | string[] | `["{ability}", ""]` | Repeated per ability; no separator is injected between blocks |
+| `branding.ability_type_template.active` | string | `&8Active` | `{type}` for active abilities |
+| `branding.ability_type_template.passive` | string | `&8Passive` | `{type}` for passive abilities |
+| `branding.ability_locked_template` | string[] | see below | Template for locked abilities |
+| `branding.ability_unlocked_template` | string[] | see below | Template for unlocked abilities |
+| `branding.level_up.title` | string | `&6Level up!` | Level-up title |
+| `branding.level_up.subtitle` | string | `{color}{name} &aincreased to {level}` | Level-up subtitle |
+| `branding.level_up.message` | string | `&fYou leveled up &a[{name} {level}]` | Level-up chat message |
+| `branding.level_up.maxed_message` | string | `&f{player} has reached max level {color}[{name}]` | Broadcast at max level |
+| `branding.ability_unlock.title` | string | `&6Unlocked!` | Ability-unlock title |
+| `branding.ability_unlock.subtitle` | string | `&a✔ {name} &8· {type}` | Ability-unlock subtitle |
+| `branding.ability_unlock.message` | string | `&fYou unlocked the ability &a[{name} &8· {type}&a]` | Ability-unlock chat message |
+| `branding.ability_feedback.ready_message` | string | `&a✦ {color}{name} &ais ready!` | Cooldown-ready chat + action bar |
+| `branding.gui.title` | string | `&6Skills` | Flat-layout chest title (paginated titles come from `gui.yml`) |
+| `branding.gui.prev_page` | string | `&6◀ Prev Page` | Previous-page arrow name |
+| `branding.gui.next_page` | string | `&6Next Page ▶` | Next-page arrow name |
+| `branding.gui.page_count` | string | `&7{count} skill(s)` | Page indicator count line |
+| `branding.gui.skill_name_unlocked` | string | `&a{name}` | Unlocked skill icon name |
+| `branding.gui.skill_name_locked` | string | `&7{name} &8· Locked` | Locked skill icon name |
+| `branding.guide_book.name` | string | `&6Skills Guide` | Guide book display name |
+| `branding.guide_book.lore` | string | `&7Right-click to open your skills` | Guide book lore line |
+| `branding.boss_bar.title_format` | string | `{color}{name} &7- &f{level}` | Boss bar title text |
+| `branding.boss_bar.default_color` | string | `white` | `BarColor` name for pool-created bars |
+| `branding.boss_bar.default_style` | string | `solid` | `BarStyle` name for pool-created bars |
+| `branding.command.header` | string | `&6=== Skills Commands ===` | `/skills help` header |
+| `branding.command.command` | string | `&e{command}` | Help command line |
+| `branding.command.description` | string | `&f{description}` | Help description |
+| `branding.command.usage` | string | `&eUsage: {usage}` | Usage line |
+| `branding.command.success` | string | `&a{message}` | Success feedback |
+| `branding.command.error` | string | `&c{message}` | Error feedback |
+| `branding.command.info` | string | `&7{message}` | Informational feedback |
+
+**Placeholders**
+
+| Token | Available in | Meaning |
+|---|---|---|
+| `{level}` | skill_template, level_up | Current level |
+| `{max_level}` | skill_template | Skill max level |
+| `{bar}` | skill_template | Rendered XP bar |
+| `{xp_into}` | skill_template | XP into the current level |
+| `{xp_needed}` | skill_template | XP needed for the next level (equals `{xp_into}` at max level, so it reads `XP: 5 / 5`) |
+| `{xp_total}` | skill_template | Total XP |
+| `{color}` | most templates | The skill's own `display.color` as a legacy code |
+| `{lore}` | skill_template, ability templates | Skill/ability lore lines; a line holding `{lore}` is dropped when empty |
+| `{abilities}` | skill_template | `abilities_template` repeated per ability; dropped when the skill has none |
+| `{ability}` | abilities_template | The locked or unlocked ability template block |
+| `{name}` | ability templates, level_up, ability_unlock, gui, ready_message | Skill or ability display name |
+| `{type}` | ability templates, ability_unlock | `Active`/`Passive` from `ability_type_template` |
+| `{player}` | level_up | The leveling player's name |
+| `{count}` | gui.page_count | Number of skills on the page |
+| `{into}` / `{needed}` | boss_bar.title_format | XP into / needed for the current level |
+| `{command}` / `{description}` / `{usage}` / `{title}` | command templates | Command feedback pieces |
+
+Defaults reproduce the plugin's original look. The engine renders templates verbatim — no spacing or separators are injected between lines or ability blocks, so blank lines in the templates are intentional. `bar_template.width` must be 1-200, bar strings must be non-blank, and `boss_bar` color/style must be valid Bukkit `BarColor`/`BarStyle` names; invalid values fail fast on load/reload.
+
 ### bossbar
 
 | Key | Type | Default | Description |

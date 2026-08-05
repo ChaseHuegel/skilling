@@ -8,7 +8,7 @@ Implement the PaperMC rules engine with **zero hardcoded skills, levels, or abil
 
 ## Ownership
 
-- `src/main/java/io/github/chasehuegel/skilling/engine/**` — core engine (parsing, registries, profiles, db, requirements, mechanics, triggers, evaluators, tags, ui, feedback, command, lockdown, listeners, events, integration).
+- `src/main/java/io/github/chasehuegel/skilling/engine/**` — core engine (parsing, registries, profiles, db, requirements, mechanics, triggers, evaluators, tags, ui, feedback, command, lockdown, listeners, events, integration). This includes `engine/ui/branding/**` — the config-driven in-game branding renderer (`BrandingConfig`, `TemplateRenderer`, `SkillColorCode`).
 - `src/main/java/io/github/chasehuegel/skilling/api/**` — main plugin-side API impl/registries (the public API interfaces themselves are owned by `skilling-api/AGENTS.md`).
 - `src/main/resources/**` — `plugin.yml`/`paper-plugin.yml`, default `config.yml`, `tags.yml`, and bundled skill YAML.
 - `src/test/**` — JUnit 5 unit tests.
@@ -40,6 +40,7 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 ### 4. UI & Inventory Security
 * **Lazy Instantiation:** Build Bukkit `Inventory` objects on-demand and cache them in the `PlayerProfile`. Invalidate the cache entirely when a player's level changes.
 * **Dynamic Lore:** Use `LoreResolver` to inject live math from `ParameterEvaluator` outputs into strings. Never hardcode `{placeholder}` values.
+* **Branding:** All in-game visual elements (skill lore templates, XP bar, ability lines, level-up/unlock messaging, GUI chrome, guide book, boss bar text, command feedback) are rendered from the `branding` section of `config.yml` by `engine/ui/branding/TemplateRenderer`. Templates are legacy `&`-code strings with `{placeholder}` tokens; `{color}` resolves the skill's own `display.color`. Templates render verbatim — never inject hardcoded spacing/separators between template lines or ability blocks. Fail-fast on malformed branding values during load/reload.
 * **Anti-Dupe (Poison Pill):** Every UI `ItemStack` must be tagged with a hidden byte via Paper's `PersistentDataContainer`. The global inventory listener must `setCancelled(true)` on all clicks/drags in custom holders and vaporize any tagged item found outside the UI.
 
 ### 5. Configs & Tags

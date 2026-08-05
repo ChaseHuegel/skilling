@@ -50,6 +50,77 @@
                 <span class="field-note">When disabled, the recipe and listener are not registered</span>
             </ConfigSection>
 
+            <ConfigSection title="Branding — Skill Tooltip" description="Legacy &amp; color codes; {placeholders} are filled live">
+                <TemplateListInput v-model="config.branding.skillTemplate" label="Skill Template" :rows="8" />
+                <span class="field-note">Tokens: {level} {max_level} {bar} {xp_into} {xp_needed} {xp_total} {color} {lore} {abilities}</span>
+                <TemplateListInput v-model="config.branding.abilitiesTemplate" label="Abilities Template" :rows="2" />
+                <span class="field-note">Repeated per ability; {ability} expands to the locked/unlocked template</span>
+                <AppInput v-model.number="config.branding.barTemplate.width" type="number" label="Bar Width" :min="1" :max="200" />
+                <AppInput v-model="config.branding.barTemplate.filled" type="text" label="Bar Filled" />
+                <AppInput v-model="config.branding.barTemplate.empty" type="text" label="Bar Empty" />
+                <AppInput v-model="config.branding.barTemplate.start" type="text" label="Bar Start" />
+                <AppInput v-model="config.branding.barTemplate.end" type="text" label="Bar End" />
+                <span class="field-note">Per-unit strings may carry their own color codes</span>
+            </ConfigSection>
+
+            <ConfigSection title="Branding — Abilities" description="Locked vs unlocked ability lines and Active/Passive type text">
+                <AppInput v-model="config.branding.abilityType.active" type="text" label="Active Type" />
+                <AppInput v-model="config.branding.abilityType.passive" type="text" label="Passive Type" />
+                <TemplateListInput v-model="config.branding.abilityLockedTemplate" label="Locked Template" :rows="2" />
+                <span class="field-note">Tokens: {name} {level} {type} {lore}</span>
+                <TemplateListInput v-model="config.branding.abilityUnlockedTemplate" label="Unlocked Template" :rows="2" />
+            </ConfigSection>
+
+            <ConfigSection title="Branding — Level Up" description="Level-up titles and chat messages">
+                <AppInput v-model="config.branding.levelUp.title" type="text" label="Title" />
+                <AppInput v-model="config.branding.levelUp.subtitle" type="text" label="Subtitle" />
+                <AppInput v-model="config.branding.levelUp.message" type="text" label="Message" />
+                <AppInput v-model="config.branding.levelUp.maxedMessage" type="text" label="Maxed Message" />
+                <span class="field-note">Tokens: {name} {level} {player} {color}</span>
+            </ConfigSection>
+
+            <ConfigSection title="Branding — Ability Unlock &amp; Ready" description="Ability-unlock announcements and cooldown-ready feedback">
+                <AppInput v-model="config.branding.abilityUnlock.title" type="text" label="Title" />
+                <AppInput v-model="config.branding.abilityUnlock.subtitle" type="text" label="Subtitle" />
+                <AppInput v-model="config.branding.abilityUnlock.message" type="text" label="Message" />
+                <span class="field-note">Tokens: {name} {type}</span>
+                <AppInput v-model="config.branding.abilityFeedback.readyMessage" type="text" label="Ready Message" />
+                <span class="field-note">Tokens: {name} {color}</span>
+            </ConfigSection>
+
+            <ConfigSection title="Branding — GUI" description="Chest title, navigation, and skill icon names">
+                <AppInput v-model="config.branding.gui.title" type="text" label="Chest Title" />
+                <AppInput v-model="config.branding.gui.prevPage" type="text" label="Previous Page Arrow" />
+                <AppInput v-model="config.branding.gui.nextPage" type="text" label="Next Page Arrow" />
+                <AppInput v-model="config.branding.gui.pageCount" type="text" label="Page Count" />
+                <AppInput v-model="config.branding.gui.skillNameUnlocked" type="text" label="Unlocked Skill Name" />
+                <AppInput v-model="config.branding.gui.skillNameLocked" type="text" label="Locked Skill Name" />
+                <span class="field-note">Tokens: {name} {color} {count}</span>
+            </ConfigSection>
+
+            <ConfigSection title="Branding — Guide Book" description="The craftable Skills Guide item">
+                <AppInput v-model="config.branding.guideBook.name" type="text" label="Name" />
+                <AppInput v-model="config.branding.guideBook.lore" type="text" label="Lore" />
+            </ConfigSection>
+
+            <ConfigSection title="Branding — Boss Bar" description="XP bar title text and default color/style">
+                <AppInput v-model="config.branding.bossBar.titleFormat" type="text" label="Title Format" />
+                <span class="field-note">Tokens: {color} {name} {level} {into} {needed}</span>
+                <AppInput v-model="config.branding.bossBar.defaultColor" type="text" label="Default BarColor" />
+                <AppInput v-model="config.branding.bossBar.defaultStyle" type="text" label="Default BarStyle" />
+            </ConfigSection>
+
+            <ConfigSection title="Branding — Commands" description="/skills command feedback">
+                <AppInput v-model="config.branding.command.header" type="text" label="Header" />
+                <AppInput v-model="config.branding.command.command" type="text" label="Command Line" />
+                <AppInput v-model="config.branding.command.description" type="text" label="Description" />
+                <AppInput v-model="config.branding.command.usage" type="text" label="Usage" />
+                <AppInput v-model="config.branding.command.success" type="text" label="Success" />
+                <AppInput v-model="config.branding.command.error" type="text" label="Error" />
+                <AppInput v-model="config.branding.command.info" type="text" label="Info" />
+                <span class="field-note">Tokens: {message} {command} {description} {usage} {title}</span>
+            </ConfigSection>
+
             <ConfigSection title="Web Server" description="Built-in administration interface">
                 <AppInput v-model="config.web.enabled" type="checkbox" label="Enabled" />
                 <span class="field-note">Requires server restart to take effect</span>
@@ -109,6 +180,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
 import ConfigSection from '../components/config/ConfigSection.vue';
+import TemplateListInput from '../components/config/TemplateListInput.vue';
 import AppInput from '../components/common/AppInput.vue';
 import StickyActionBanner from '../components/common/StickyActionBanner.vue';
 
@@ -130,6 +202,45 @@ const config = reactive({
     globalXpModifier: 1.0,
     cropGrow: { searchRadius: 10 },
     skillsGuideBook: { enabled: true },
+    branding: {
+        skillTemplate: ['&aLevel {level} / {max_level}', '{bar}', '&aXP: {xp_into} / {xp_needed}', '{color}Total XP: {xp_total}', '&7▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔', '{lore}', '', '{abilities}'],
+        barTemplate: { width: 20, filled: '&a█', empty: '&8█', start: '&7[', end: '&7]' },
+        abilitiesTemplate: ['{ability}', ''],
+        abilityType: { active: '&8Active', passive: '&8Passive' },
+        abilityLockedTemplate: ['&c❌ {level} &8· {name} &8· {type}', '{lore}'],
+        abilityUnlockedTemplate: ['&a✔ {name} &8· {type}', '{lore}'],
+        levelUp: {
+            title: '&6Level up!',
+            subtitle: '{color}{name} &aincreased to {level}',
+            message: '&fYou leveled up &a[{name} {level}]',
+            maxedMessage: '&f{player} has reached max level {color}[{name}]',
+        },
+        abilityUnlock: {
+            title: '&6Unlocked!',
+            subtitle: '&a✔ {name} &8· {type}',
+            message: '&fYou unlocked the ability &a[{name} &8· {type}&a]',
+        },
+        abilityFeedback: { readyMessage: '&a✦ {color}{name} &ais ready!' },
+        gui: {
+            title: '&6Skills',
+            prevPage: '&6◀ Prev Page',
+            nextPage: '&6Next Page ▶',
+            pageCount: '&7{count} skill(s)',
+            skillNameUnlocked: '&a{name}',
+            skillNameLocked: '&7{name} &8· Locked',
+        },
+        guideBook: { name: '&6Skills Guide', lore: '&7Right-click to open your skills' },
+        bossBar: { titleFormat: '{color}{name} &7- &f{level}', defaultColor: 'white', defaultStyle: 'solid' },
+        command: {
+            header: '&6=== {title} ===',
+            command: '&e{command}',
+            description: '&f{description}',
+            usage: '&eUsage: {usage}',
+            success: '&a{message}',
+            error: '&c{message}',
+            info: '&7{message}',
+        },
+    },
     web: { enabled: false, port: 8082, username: 'admin', password: 'skilling' },
 });
 

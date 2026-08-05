@@ -11,7 +11,6 @@ import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BossBar;
@@ -79,41 +78,6 @@ class LevelUpDispatcherTest {
     @Test
     void randomBrightColorReturnsNonNull() {
         assertNotNull(LevelUpDispatcher.randomBrightColor());
-    }
-
-    @Test
-    void resolveBarColorNullReturnsNull() {
-        assertNull(LevelUpDispatcher.resolveBarColor(null));
-    }
-
-    @Test
-    void resolveBarColorBlankReturnsNull() {
-        assertNull(LevelUpDispatcher.resolveBarColor(""));
-    }
-
-    @Test
-    void resolveBarColorRedReturnsNamedTextColorRed() {
-        assertEquals(NamedTextColor.RED, LevelUpDispatcher.resolveBarColor("RED"));
-    }
-
-    @Test
-    void resolveBarColorBlueReturnsNamedTextColorBlue() {
-        assertEquals(NamedTextColor.BLUE, LevelUpDispatcher.resolveBarColor("BLUE"));
-    }
-
-    @Test
-    void mmColorNamePinkReturnsLightPurple() {
-        assertEquals("light_purple", LevelUpDispatcher.mmColorName("PINK"));
-    }
-
-    @Test
-    void mmColorNamePurpleReturnsDarkPurple() {
-        assertEquals("dark_purple", LevelUpDispatcher.mmColorName("PURPLE"));
-    }
-
-    @Test
-    void mmColorNameRedReturnsRed() {
-        assertEquals("red", LevelUpDispatcher.mmColorName("RED"));
     }
 
     @Test

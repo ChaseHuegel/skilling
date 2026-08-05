@@ -138,6 +138,7 @@ The UI is dynamically generated from the YAML files and heavily protected agains
 
 * **Lazy Instantiation:** Menus are built once upon request and cached in the player's session. The cache is immediately invalidated and rebuilt when the player gains a level.
 * **Dynamic Lore Injection:** The UI generator parses string placeholders (e.g., `{chain_limit}`) and runs them through the Parameter Evaluators to display exact, real-time math based on the player's current level.
+* **Branding Templates:** Skill lore, the XP bar, ability lines, level-up/unlock messaging, GUI chrome, the guide book, boss bar text, and command feedback are all rendered from the `branding` section of `config.yml` by `engine/ui/branding/TemplateRenderer`. Templates are legacy `&`-code strings with `{placeholder}` tokens; `{color}` resolves the skill's own `display.color`. Templates render verbatim (no hardcoded spacing) and are re-parsed on reload.
 * **Icon State:** Icons utilize custom model data. The `ItemStack` amount dynamically reflects the player's exact level (1-100) utilizing Paper's max-stack-size component.
 * **Security (Double Defense):** Strict inventory event routing denies all shift-clicks, number-key swaps, and offhand swaps. A `PersistentDataContainer` byte-tag acts as a poison pill, vaporizing any UI item that accidentally glitches into the game world.
 

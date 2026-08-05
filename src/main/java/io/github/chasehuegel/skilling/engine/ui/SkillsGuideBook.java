@@ -2,9 +2,10 @@ package io.github.chasehuegel.skilling.engine.ui;
 
 import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
+import io.github.chasehuegel.skilling.engine.ui.branding.BrandingConfig;
+import io.github.chasehuegel.skilling.engine.ui.branding.TemplateRenderer;
 import java.util.List;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -105,9 +106,14 @@ public final class SkillsGuideBook implements Listener {
     public static ItemStack create() {
         ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
         book.editMeta(meta -> {
-            meta.displayName(Component.text("Skills Guide", NamedTextColor.GOLD));
+            BrandingConfig branding = Skilling.getInstance() != null
+                    ? Skilling.getInstance().getBranding()
+                    : BrandingConfig.DEFAULT;
+            meta.displayName(TemplateRenderer.toComponent(
+                    TemplateRenderer.renderLine(branding.guideBook().name(), Map.of())));
             meta.lore(List.of(
-                    Component.text("Right-click to open your skills", NamedTextColor.GRAY)
+                    TemplateRenderer.toComponent(
+                            TemplateRenderer.renderLine(branding.guideBook().lore(), Map.of()))
             ));
             meta.setCustomModelData(CUSTOM_MODEL_DATA);
             GuideBookTag.apply(meta);

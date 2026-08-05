@@ -1,13 +1,16 @@
 package io.github.chasehuegel.skilling.engine.ui;
 
+import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
+import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.ui.GuiLayoutConfig.FillerConfig;
+import io.github.chasehuegel.skilling.engine.ui.branding.BrandingConfig;
+import io.github.chasehuegel.skilling.engine.ui.branding.SkillColorCode;
+import io.github.chasehuegel.skilling.engine.ui.branding.TemplateRenderer;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -32,8 +35,9 @@ import java.util.Map;
  * builder produces a paginated multi-page chest GUI. Otherwise it
  * falls back to the flat linear layout.
  *
- * <p>Lore is dynamically injected via {@link LoreResolver} to display
- * real-time evaluator outputs based on the player's current level.
+ * <p>Lore and GUI chrome are rendered from the {@code branding} section
+ * of {@code config.yml} via {@link TemplateRenderer}; skill and ability
+ * lore placeholders are injected live through {@link LoreResolver}.
  */
 public final class SkillMenuBuilder {
 
@@ -61,7 +65,7 @@ public final class SkillMenuBuilder {
     private Inventory buildFlatOverview(PlayerProfile profile) {
         var player = Bukkit.getPlayer(profile.getPlayerId());
         Inventory inventory = Bukkit.createInventory(new SkillInventoryHolder(player, -1, null, 0), MENU_SIZE,
-                Component.text("Skills", NamedTextColor.GOLD));
+                TemplateRenderer.toComponent(currentBranding().gui().title()));
 
         int slot = 0;
         for (SkillDefinition skill : skillManager.getSkills().values()) {
@@ -82,6 +86,7 @@ public final class SkillMenuBuilder {
         var player = Bukkit.getPlayer(profile.getPlayerId());
         if (player == null) return buildFlatOverview(profile);
 
+        BrandingConfig branding = currentBranding();
         List<String> pageOrder = guiLayoutConfig.getPageOrder();
         int pageCount = pageOrder.size();
         Map<Integer, Inventory> inventories = new HashMap<>();
@@ -104,10 +109,10 @@ public final class SkillMenuBuilder {
 
             // Place navigation arrows on the last row
             if (pageIndex > 0) {
-                inventory.setItem(page.prevSlot(), createNavItem("◀ Prev Page"));
+                inventory.setItem(page.prevSlot(), createNavItem(branding.gui().prevPage()));
             }
             if (pageIndex < pageCount - 1) {
-                inventory.setItem(page.nextSlot(), createNavItem("Next Page ▶"));
+                inventory.setItem(page.nextSlot(), createNavItem(branding.gui().nextPage()));
             }
 
             // Place page indicator at center of last row
@@ -162,10 +167,10 @@ public final class SkillMenuBuilder {
         return pane;
     }
 
-    private ItemStack createNavItem(String name) {
+    private ItemStack createNavItem(String template) {
         ItemStack arrow = new ItemStack(Material.ARROW);
         arrow.editMeta(meta -> {
-            meta.displayName(Component.text(name, NamedTextColor.GOLD));
+            meta.displayName(TemplateRenderer.toComponent(TemplateRenderer.renderLine(template, Map.of())));
             PoisonPillTag.apply(meta);
         });
         return arrow;
@@ -178,9 +183,9 @@ public final class SkillMenuBuilder {
         item.editMeta(meta -> {
             meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize(page.displayTitle()));
             int skillCount = page.skillSlots().size();
-            meta.lore(List.of(
-                    Component.text(skillCount + " skill(s)", NamedTextColor.GRAY)
-            ));
+            String countLine = TemplateRenderer.renderLine(currentBranding().gui().pageCount(),
+                    Map.of("count", String.valueOf(skillCount)));
+            meta.lore(List.of(TemplateRenderer.toComponent(countLine)));
             if (page.customModelData() > 0) {
                 meta.setCustomModelData(page.customModelData());
             }
@@ -191,80 +196,41 @@ public final class SkillMenuBuilder {
     }
 
     public List<Component> buildSkillLore(SkillDefinition skill, PlayerProfile profile) {
+        BrandingConfig branding = currentBranding();
         long currentXp = profile.getXp(skill.id());
         int level = skill.getLevelForXp(currentXp);
-        var lore = new ArrayList<Component>();
-        TextColor skillColor = resolveColor(skill.display().color());
+        int maxLevel = skill.maxLevel();
+        boolean maxed = level >= maxLevel;
 
-        lore.add(Component.text("Level " + level + " / " + skill.maxLevel(),
-                skillColor != null ? skillColor : NamedTextColor.GREEN));
+        long xpForCurrent = level > 0 ? (long) skill.progression().evaluator().evaluate(level, 0) : 0;
+        long xpForNext = level < maxLevel ? (long) skill.progression().evaluator().evaluate(level + 1, 0) : 0;
+        long xpInto = currentXp - xpForCurrent;
+        // At max level there is no next threshold; pin the needed value to the
+        // XP into the level so the progress line reads full ("XP: 5 / 5") and
+        // the bar renders filled instead of showing a stale/zero divisor.
+        long xpNeeded = maxed ? xpInto : (xpForNext - xpForCurrent);
 
-        long xpForCurrent = level > 0
-                ? (long) skill.progression().evaluator().evaluate(level, 0) : 0;
-        long xpForNext = level < skill.maxLevel()
-                ? (long) skill.progression().evaluator().evaluate(level + 1, 0) : 0;
-        int barWidth = 20;
-        double progress = xpForNext > xpForCurrent
-                ? (double) (currentXp - xpForCurrent) / (xpForNext - xpForCurrent) : 0;
-        progress = Math.min(Math.max(progress, 0), 1);
-        int filled = (int) Math.round(progress * barWidth);
-        StringBuilder barStr = new StringBuilder().append('[');
-        for (int i = 0; i < barWidth; i++) {
-            barStr.append(i < filled ? '█' : '█');
-        }
-        barStr.append(']');
-        Component barFull;
-        if (filled > 0) {
-            Component filledPart = Component.text(barStr.substring(1, 1 + filled), NamedTextColor.GREEN);
-            barFull = Component.text("[").color(NamedTextColor.DARK_GRAY)
-                    .append(filledPart)
-                    .append(Component.text(barStr.substring(1 + filled), NamedTextColor.DARK_GRAY));
-        } else {
-            barFull = Component.text(barStr.toString(), NamedTextColor.DARK_GRAY);
-        }
-        lore.add(barFull);
+        String colorCode = skillColorCode(skill);
+        int filled = filledCount(branding.barTemplate(), xpInto, xpNeeded, maxed);
+        String bar = TemplateRenderer.renderBar(branding.barTemplate(), branding.barTemplate().width(), filled);
 
-        if (level >= skill.maxLevel()) {
-            lore.add(Component.text("Total XP: " + currentXp + " (Maxed)", NamedTextColor.AQUA));
-        } else {
-            long xpInto = currentXp - xpForCurrent;
-            long xpNeeded = xpForNext - xpForCurrent;
-            lore.add(Component.text("XP: " + xpInto + " / " + xpNeeded, NamedTextColor.AQUA));
-        }
+        Map<String, String> scalars = new HashMap<>();
+        scalars.put("level", String.valueOf(level));
+        scalars.put("max_level", String.valueOf(maxLevel));
+        scalars.put("bar", bar);
+        scalars.put("xp_into", String.valueOf(xpInto));
+        scalars.put("xp_needed", String.valueOf(xpNeeded));
+        scalars.put("xp_total", String.valueOf(currentXp));
+        scalars.put("color", colorCode);
 
-        // Skill-level lore lines
-        var skillLore = skill.display().lore();
-        if (skillLore != null && !skillLore.isEmpty()) {
-            lore.add(Component.empty());
-            Map<String, ParameterEvaluator> skillParams = Map.of(
-                "level", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(level),
-                "max_level", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(skill.maxLevel()),
-                "skill_name", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(
-                        skill.display().name()),
-                "xp", new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(currentXp)
-            );
-            List<String> resolved = LoreResolver.resolveAll(
-                skillLore, skillParams, level, 0);
-            for (String line : resolved) {
-                lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(line));
-            }
-        }
+        Map<String, List<String>> inserts = new HashMap<>();
+        inserts.put("lore", resolveSkillLore(skill, level, maxLevel, currentXp));
+        inserts.put("abilities", buildAbilityBlock(branding, skill, level));
 
-        for (SkillDefinition.Ability ability : skill.abilities()) {
-            lore.add(Component.empty());
-            lore.add(formatAbilityLine(ability, level));
-
-            List<String> resolved = resolveAbilityLore(ability, level);
-            for (String line : resolved) {
-                Component deserialized = LegacyComponentSerializer.legacyAmpersand().deserialize(line);
-                lore.add(level >= ability.unlockLevel() ? deserialized : deserialized.colorIfAbsent(NamedTextColor.DARK_GRAY));
-            }
-        }
-
-        for (int i = 0; i < lore.size(); i++) {
-            lore.set(i, lore.get(i).decoration(TextDecoration.ITALIC, false));
-        }
-        return lore;
+        List<String> rendered = TemplateRenderer.renderLines(branding.skillTemplate().lines(), inserts, scalars);
+        return TemplateRenderer.toComponents(rendered).stream()
+                .map(component -> component.decoration(TextDecoration.ITALIC, false))
+                .toList();
     }
 
     private ItemStack buildSkillIcon(SkillDefinition skill, PlayerProfile profile) {
@@ -280,14 +246,13 @@ public final class SkillMenuBuilder {
         ItemStack item = new ItemStack(material);
 
         item.editMeta(meta -> {
-            TextColor skillColor = resolveColor(skill.display().color());
+            BrandingConfig branding = currentBranding();
             String skillName = skill.display().name() != null ? skill.display().name() : skill.id();
-            if (unlocked) {
-                meta.displayName(Component.text(skillName, NamedTextColor.GREEN));
-            } else {
-                meta.displayName(Component.text(skillName, NamedTextColor.GRAY)
-                        .append(Component.text(" · Locked", NamedTextColor.DARK_GRAY)));
-            }
+            Map<String, String> scalars = Map.of("name", skillName, "color", skillColorCode(skill));
+            String nameLine = unlocked
+                    ? TemplateRenderer.renderLine(branding.gui().skillNameUnlocked(), scalars)
+                    : TemplateRenderer.renderLine(branding.gui().skillNameLocked(), scalars);
+            meta.displayName(TemplateRenderer.toComponent(nameLine));
 
             meta.lore(buildSkillLore(skill, profile));
 
@@ -305,35 +270,98 @@ public final class SkillMenuBuilder {
         return item;
     }
 
-    private static TextColor resolveColor(String colorName) {
-        if (colorName == null || colorName.isBlank()) return null;
-        try {
-            return NamedTextColor.NAMES.value(colorName.toLowerCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+    /**
+     * Formats an ability's header line (the first line of the locked or
+     * unlocked ability template) for log output and unlock announcements.
+     *
+     * @param ability     the ability to format
+     * @param playerLevel the player's current skill level
+     * @return the rendered header line component
+     */
+    public static Component formatAbilityLine(SkillDefinition.Ability ability, int playerLevel) {
+        BrandingConfig branding = currentBranding();
+        boolean unlocked = playerLevel >= ability.unlockLevel();
+        List<String> template = unlocked
+                ? branding.abilities().unlocked() : branding.abilities().locked();
+        String type = isActiveAbility(ability, playerLevel)
+                ? branding.abilityType().active() : branding.abilityType().passive();
+        Map<String, String> scalars = Map.of(
+                "name", ability.displayName() != null ? ability.displayName() : ability.id(),
+                "level", String.valueOf(ability.unlockLevel()),
+                "type", type);
+        // Empty lore drops the {lore} template line, leaving just the header.
+        List<String> rendered = TemplateRenderer.renderLines(template, Map.of("lore", List.of()), scalars);
+        return rendered.isEmpty() ? Component.empty() : TemplateRenderer.toComponent(rendered.get(0));
     }
 
-    public static Component formatAbilityLine(SkillDefinition.Ability ability, int playerLevel) {
-        boolean unlocked = playerLevel >= ability.unlockLevel();
-        boolean isActive = ability.requirements().cooldown().evaluate(playerLevel, ability.unlockLevel()) > 0
+    private static List<String> buildAbilityBlock(BrandingConfig branding, SkillDefinition skill, int playerLevel) {
+        if (skill.abilities() == null || skill.abilities().isEmpty()) return List.of();
+        List<String> result = new ArrayList<>();
+        for (SkillDefinition.Ability ability : skill.abilities()) {
+            boolean unlocked = playerLevel >= ability.unlockLevel();
+            List<String> abilityTemplate = unlocked
+                    ? branding.abilities().unlocked() : branding.abilities().locked();
+            String type = isActiveAbility(ability, playerLevel)
+                    ? branding.abilityType().active() : branding.abilityType().passive();
+            Map<String, String> scalars = Map.of(
+                    "name", ability.displayName() != null ? ability.displayName() : ability.id(),
+                    "level", String.valueOf(ability.unlockLevel()),
+                    "type", type);
+            List<String> abilityBlock = TemplateRenderer.renderLines(abilityTemplate,
+                    Map.of("lore", resolveAbilityLore(ability, playerLevel)), scalars);
+            result.addAll(TemplateRenderer.renderLines(branding.abilitiesTemplate().lines(),
+                    Map.of("ability", abilityBlock), Map.of()));
+        }
+        return result;
+    }
+
+    private static List<String> resolveSkillLore(SkillDefinition skill, int level, int maxLevel, long currentXp) {
+        var skillLore = skill.display() != null ? skill.display().lore() : null;
+        if (skillLore == null || skillLore.isEmpty()) return List.of();
+        String name = skill.display().name() != null ? skill.display().name() : skill.id();
+        Map<String, ParameterEvaluator> params = Map.of(
+                "level", new ConstantEvaluator(level),
+                "max_level", new ConstantEvaluator(maxLevel),
+                "skill_name", new ConstantEvaluator(name),
+                "xp", new ConstantEvaluator(currentXp));
+        return LoreResolver.resolveAll(skillLore, params, level, 0);
+    }
+
+    /**
+     * Whether an ability renders as {@code Active} (has a cooldown, state
+     * requirements, or item requirements) versus {@code Passive}.
+     *
+     * @param ability     the ability to classify
+     * @param playerLevel the player's current skill level
+     * @return true when the ability is active
+     */
+    public static boolean isActiveAbility(SkillDefinition.Ability ability, int playerLevel) {
+        return ability.requirements().cooldown().evaluate(playerLevel, ability.unlockLevel()) > 0
                 || !ability.requirements().state().isEmpty()
                 || !ability.requirements().items().isEmpty();
+    }
 
-        if (unlocked) {
-            Component namePart = Component.text("✔ " + ability.displayName(), NamedTextColor.GREEN);
-            Component typePart = Component.text(
-                    isActive ? " · Active" : " · Passive",
-                    NamedTextColor.DARK_GRAY);
-            return namePart.append(typePart);
+    private static int filledCount(BrandingConfig.BarTemplate bar, long into, long needed, boolean maxed) {
+        double progress;
+        if (maxed) {
+            progress = 1.0;
+        } else if (needed <= 0) {
+            progress = 0.0;
+        } else {
+            progress = Math.min(Math.max((double) into / needed, 0.0), 1.0);
         }
+        return (int) Math.round(progress * bar.width());
+    }
 
-        Component lockPart = Component.text("❌ " + ability.unlockLevel(), NamedTextColor.RED);
-        Component namePart = Component.text(" · " + ability.displayName(), NamedTextColor.DARK_GRAY);
-        Component typePart = Component.text(
-                isActive ? " · Active" : " · Passive",
-                NamedTextColor.DARK_GRAY);
-        return lockPart.append(namePart).append(typePart);
+    private static String skillColorCode(SkillDefinition skill) {
+        String color = skill.display() != null ? skill.display().color() : null;
+        String code = SkillColorCode.toLegacyCode(color);
+        return code != null ? code : "&f";
+    }
+
+    private static BrandingConfig currentBranding() {
+        Skilling instance = Skilling.getInstance();
+        return instance != null ? instance.getBranding() : BrandingConfig.DEFAULT;
     }
 
     /**
@@ -349,8 +377,10 @@ public final class SkillMenuBuilder {
             return List.of();
         }
         Map<String, ParameterEvaluator> allParams = new HashMap<>();
-        for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
-            allParams.putAll(me.parameters());
+        if (ability.mechanics() != null) {
+            for (SkillDefinition.MechanicEntry me : ability.mechanics()) {
+                allParams.putAll(me.parameters());
+            }
         }
         return LoreResolver.resolveAll(ability.display().lore(), allParams, playerLevel, ability.unlockLevel());
     }

@@ -31,6 +31,7 @@ import io.github.chasehuegel.skilling.engine.ui.GuiLayoutConfig;
 import io.github.chasehuegel.skilling.engine.ui.SkillMenuBuilder;
 import io.github.chasehuegel.skilling.engine.ui.SkillsGuideBook;
 import io.github.chasehuegel.skilling.engine.ui.UIProtectionListener;
+import io.github.chasehuegel.skilling.engine.ui.branding.BrandingConfig;
 import io.github.chasehuegel.skilling.web.WebServer;
 import io.github.chasehuegel.skilling.web.config.WebConfig;
 import org.bukkit.Bukkit;
@@ -93,6 +94,7 @@ public final class Skilling extends JavaPlugin {
     private volatile int titleStayDuration;
     private volatile double globalXpModifier;
     private volatile int cropGrowRadius;
+    private volatile BrandingConfig branding;
 
     /**
      * Returns the plugin singleton instance.
@@ -158,6 +160,7 @@ public final class Skilling extends JavaPlugin {
         this.titleStayDuration = config.getInt(CONFIG_TITLES_STAY_DURATION, 5000);
         this.globalXpModifier = config.getDouble(CONFIG_GLOBAL_XP_MODIFIER, 1.0);
         this.cropGrowRadius = config.getInt(CONFIG_CROP_GROW_RADIUS, 10);
+        this.branding = BrandingConfig.from(config.getConfigurationSection("branding"));
 
         this.registries = new Registries(
                 new MechanicRegistry(),
@@ -212,7 +215,8 @@ public final class Skilling extends JavaPlugin {
         this.feedbackDebouncer = new FeedbackDebouncer(debounceMs);
         int maxBars = config.getInt(CONFIG_BOSSBAR_MAX_ACTIVE, 2);
         int fadeTicks = config.getInt(CONFIG_BOSSBAR_FADE_TICKS, 40);
-        this.bossBarPool = new BossBarPool(maxBars, fadeTicks);
+        this.bossBarPool = new BossBarPool(maxBars, fadeTicks,
+                branding.bossBar().defaultColor(), branding.bossBar().defaultStyle());
 
         // Lockdown / reload manager
         this.lockdownManager = new LockdownManager(this, profileManager, asyncBatchWorker, skillManager);
@@ -822,6 +826,20 @@ public final class Skilling extends JavaPlugin {
         return cropGrowRadius;
     }
 
+    /**
+     * Returns the active branding configuration (color templates, bar settings,
+     * message templates) parsed from {@code config.yml}.
+     *
+     * <p>Never null: a missing or unset {@code branding} section falls back to
+     * {@link BrandingConfig#DEFAULT}. Re-parsed on {@code /skills reload}.
+     *
+     * @return the current branding
+     */
+    public BrandingConfig getBranding() {
+        BrandingConfig current = branding;
+        return current != null ? current : BrandingConfig.DEFAULT;
+    }
+
     public void reloadConfigSettings() {
         reloadConfig();
         var config = (YamlConfiguration) getConfig();
@@ -829,11 +847,14 @@ public final class Skilling extends JavaPlugin {
         this.titleStayDuration = config.getInt(CONFIG_TITLES_STAY_DURATION, 5000);
         this.globalXpModifier = config.getDouble(CONFIG_GLOBAL_XP_MODIFIER, 1.0);
         this.cropGrowRadius = config.getInt(CONFIG_CROP_GROW_RADIUS, 10);
+        this.branding = BrandingConfig.from(config.getConfigurationSection("branding"));
         // Refresh subsystems whose settings are otherwise fixed at construction so
         // /skills set and web config edits actually take effect at runtime.
         if (bossBarPool != null) {
             bossBarPool.setMaxActive(config.getInt(CONFIG_BOSSBAR_MAX_ACTIVE, 2));
             bossBarPool.setFadeTicks(config.getInt(CONFIG_BOSSBAR_FADE_TICKS, 40));
+            bossBarPool.setDefaultColor(branding.bossBar().defaultColor());
+            bossBarPool.setDefaultStyle(branding.bossBar().defaultStyle());
         }
         if (feedbackDebouncer != null) {
             feedbackDebouncer.setIntervalMs(config.getLong(CONFIG_DEBOUNCER_INTERVAL_MS, 500));
