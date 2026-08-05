@@ -278,7 +278,8 @@ public final class SkillMenuBuilder {
         }
 
         ItemStack item = new ItemStack(material);
-        item.setAmount(Math.max(1, Math.min(level, 99)));
+        item.editMeta(editMeta -> editMeta.setMaxStackSize(Math.clamp(skill.maxLevel(), 1, 99)));
+        item.setAmount(Math.clamp(level, 1, 99));
 
         item.editMeta(meta -> {
             TextColor skillColor = resolveColor(skill.display().color());
