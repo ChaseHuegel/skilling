@@ -78,7 +78,7 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 * Deep architecture specs live in `docs/dev/DESIGN.md` (module layout, execution pipeline, UI architecture) and `docs/dev/REQUIREMENTS.md` (tech requirements, schema, async pipeline). Read them for design context. This file is the binding contract.
 * The content design framework (milestones, scaling curves, vanilla-restraint pillars) lives in `docs/dev/SKILL-DESIGN-FRAMEWORK.md`. Apply it when authoring bundled skill YAML.
 * The skill YAML schema template is `docs/dev/template-skill.yml`.
-* Follow the issue workflow and validation gate in root `AGENTS.md` when resolving `docs/issues/INDEX.md` items.
+* Follow the issue workflow and validation gate in `docs/agents/ISSUE-WORKFLOW.md` when resolving `docs/issues/INDEX.md` items.
 
 ## Verification
 

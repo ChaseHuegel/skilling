@@ -41,7 +41,7 @@ Every configurable YAML template (in `docs/dev/` and shipped under `src/main/res
 * Research tickets (e.g., `ISSUE-107`) deliver reports to `docs/reports/` (e.g., `docs/reports/REPORT_XP-CURVE.md`) and involve no production code changes. Reports follow a `REPORT_<TOPIC>.md` naming pattern, state the owning ticket and date in their header, and cross-link back to the ticket (`../issues/ISSUE-<n>.md`).
 
 ### Issue Tracking (`docs/issues/`)
-* `INDEX.md`: the issue index, split into **Active Sprint / Current Milestone** (the default work target) and **Backlog** (worked only on explicit request). Resolve items one at a time per the Issue Resolution Workflow in root `AGENTS.md`. Flip a bullet to `[x]` only when the ticket is fully done.
+* `INDEX.md`: the issue index, split into **Active Sprint / Current Milestone** (the default work target) and **Backlog** (worked only on explicit request). Resolve items one at a time per the Issue Resolution Workflow in `docs/agents/ISSUE-WORKFLOW.md`. Flip a bullet to `[x]` only when the ticket is fully done.
 * Detailed single-issue write-ups follow the naming pattern `ISSUE-<n>.md` and are referenced from `INDEX.md`. Numbers are sequential and unique. A new ticket uses the next free number and is filed under Backlog unless told otherwise.
 * **Mark-complete gate:** an issue is done when its ticket's Implementation Requirements and Verification & Definition of Done checkboxes are all satisfied AND the `INDEX.md` bullet is flipped.
 * Research tickets reference their deliverable report in `docs/reports/` (see above).
