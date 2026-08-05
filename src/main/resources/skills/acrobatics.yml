@@ -3,10 +3,7 @@ max_level: 100
 display: { name: "Acrobatics", icon: "minecraft:feather", color: "WHITE", style: "SOLID" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  - trigger: "entity_damage_taken"
-    filters: [ { state: "is_on_ground" } ]     # fall damage context (best available proxy)
-    reward: { constant: 111.1 }
-  - trigger: "entity_damage_taken"
+  - trigger: "fall_damage"
     reward: { constant: 111.1 }
   - trigger: "launch_projectile"
     filters: [ { target: "minecraft:ender_pearl" } ]

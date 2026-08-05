@@ -15,6 +15,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.EnchantItemTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.EntityDamageTakenTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.EntityDamageTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.EntityKillTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.FallDamageTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FishingTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FurnaceExtractTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LevelUpTrigger;
@@ -85,6 +86,7 @@ class SkillTriggerTest {
                     Arguments.of(new CropGrowTrigger(), "crop_grow", BlockGrowEvent.class),
                     Arguments.of(new EnchantItemTrigger(), "enchant_item", EnchantItemEvent.class),
                     Arguments.of(new EntityDamageTakenTrigger(), "entity_damage_taken", EntityDamageEvent.class),
+                    Arguments.of(new FallDamageTrigger(), "fall_damage", EntityDamageEvent.class),
                     Arguments.of(new EntityDamageTrigger(), "entity_damage", EntityDamageByEntityEvent.class),
                     Arguments.of(new EntityKillTrigger(), "entity_kill", EntityDeathEvent.class),
                     Arguments.of(new FishingTrigger(), "fishing", PlayerFishEvent.class),

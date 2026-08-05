@@ -398,6 +398,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("block_place", BlockPlaceTrigger.class);
         trigReg.register("entity_damage", EntityDamageTrigger.class);
         trigReg.register("entity_damage_taken", EntityDamageTakenTrigger.class);
+        trigReg.register("fall_damage", FallDamageTrigger.class);
         trigReg.register("entity_kill", EntityKillTrigger.class);
         trigReg.register("craft_item", CraftItemTrigger.class);
         trigReg.register("furnace_extract", FurnaceExtractTrigger.class);

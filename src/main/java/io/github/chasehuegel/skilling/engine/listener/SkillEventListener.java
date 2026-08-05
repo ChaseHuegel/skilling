@@ -54,10 +54,10 @@ import java.util.logging.Level;
  *
  * <p>Each event handler maps to a trigger key used in YAML skill definitions.
  * Handlers are registered at {@code MONITOR} priority as read-only observers,
- * except mechanic-required handlers: the {@code entity_damage_taken} dispatch runs
- * at {@code LOWEST} (without {@code ignoreCancelled}) so dodge/block/cancel
- * abilities negate damage before other plugins, and the firework/projectile
- * handlers run at {@code HIGHEST}.
+ * except mechanic-required handlers: the {@code entity_damage_taken} and
+ * {@code fall_damage} dispatches run at {@code LOWEST} (without
+ * {@code ignoreCancelled}) so dodge/block/cancel abilities negate damage before
+ * other plugins, and the firework/projectile handlers run at {@code HIGHEST}.
  */
 public final class SkillEventListener implements Listener {
 
@@ -152,8 +152,10 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
-     * Handles {@link EntityDamageEvent} and routes it as an {@code entity_damage_taken} trigger
-     * when the damaged entity is a player.
+     * Handles {@link EntityDamageEvent} and routes it as an {@code entity_damage_taken}
+     * trigger when the damaged entity is a player. Fall damage additionally dispatches
+     * the {@code fall_damage} trigger so acrobatics-style sources bind precisely to
+     * falls instead of proxying them through the {@code is_on_ground} state filter.
      *
      * <p>Runs at {@code LOWEST} without {@code ignoreCancelled} so dodge/block/cancel
      * abilities negate the damage before other plugins act on it.
@@ -172,6 +174,9 @@ public final class SkillEventListener implements Listener {
         }
         if (event.getEntity() instanceof Player player) {
             dispatch(player, event, "entity_damage_taken");
+            if (event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+                dispatch(player, event, "fall_damage");
+            }
         }
     }
 

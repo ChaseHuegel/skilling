@@ -687,6 +687,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `block_place` | `BlockPlaceEvent` | Placing a block |
 | `entity_damage` | `EntityDamageByEntityEvent` | Damaging an entity |
 | `entity_damage_taken` | `EntityDamageEvent` | Taking damage |
+| `fall_damage` | `EntityDamageEvent` (cause `FALL`) | Taking damage from a fall |
 | `entity_kill` | `EntityDeathEvent` | Killing an entity |
 | `craft_item` | `CraftItemEvent` | Crafting an item |
 | `furnace_extract` | `FurnaceExtractEvent` | Extracting from a furnace |
