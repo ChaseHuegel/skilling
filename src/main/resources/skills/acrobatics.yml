@@ -15,7 +15,7 @@ abilities:
   - id: "light_feet"
     display_name: "Light Feet"
     unlock_level: 1
-    trigger: "entity_damage_taken"
+    trigger: "fall_damage"
     display: { lore: [ "&7Taking fall damage grants &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
@@ -27,7 +27,7 @@ abilities:
   - id: "soft_landing"
     display_name: "Soft Landing"
     unlock_level: 15
-    trigger: "entity_damage_taken"
+    trigger: "fall_damage"
     display: { lore: [ "&a{chance}%&7 chance to negate fall damage." ] }
     mechanics:
       - type: "core:cancel_damage"
@@ -91,7 +91,7 @@ abilities:
   - id: "gravity_defier"
     display_name: "Gravity Defier"
     unlock_level: 100
-    trigger: "entity_damage_taken"
+    trigger: "fall_damage"
     display: { lore: [ "&7Permanent &a{multiplier}x&7 speed & jump while airborne-landed." ] }
     mechanics:
       - type: "core:speed_bonus"
