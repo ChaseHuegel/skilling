@@ -43,6 +43,15 @@ xp_sources:
     reward:
       constant: 2.0
 
+  # Optional "scaling: damage" makes the reward proportional to the amount of
+  # damage on the event (raw base, pre-mitigation; 1.0 = half heart). Only valid
+  # on damage triggers (fall_damage, entity_damage_taken, entity_damage);
+  # rejected at load on any other trigger. Omit for a flat reward.
+  # - trigger: "fall_damage"
+  #   reward:
+  #     constant: 25.0
+  #   scaling: damage
+
 # ----------------------------------------
 # LEVEL-UP COMMANDS (Optional)
 # Commands executed via console sender on every level-up.

@@ -19,6 +19,7 @@ interface XpSource {
   trigger: string
   filters: FilterEntry[]
   reward: { type: string; params: Record<string, any> }
+  scaling?: string
 }
 
 const props = defineProps<{
@@ -80,11 +81,12 @@ const TRIGGER_OPTIONS = computed(() =>
 // The live /api/triggers endpoint is the source of truth.
 const FALLBACK_TRIGGERS = [
   'block_break', 'block_place', 'entity_damage', 'entity_damage_taken',
-  'entity_kill', 'craft_item', 'furnace_extract', 'brew_potion', 'brew_start',
-  'repair', 'player_interact', 'consume_item', 'fishing', 'crop_grow',
-  'breed_animals', 'sprint', 'sneak', 'ride_horse', 'collect_xp', 'level_up',
-  'enchant_item', 'shoot_bow', 'item_damage', 'player_shear', 'player_tame',
-  'launch_projectile', 'projectile_hit', 'resurrect', 'cure_villager', 'elytra_glide',
+  'fall_damage', 'entity_kill', 'craft_item', 'furnace_extract', 'brew_potion',
+  'brew_start', 'repair', 'player_interact', 'consume_item', 'fishing',
+  'crop_grow', 'breed_animals', 'sprint', 'sneak', 'ride_horse', 'collect_xp',
+  'level_up', 'enchant_item', 'shoot_bow', 'item_damage', 'player_shear',
+  'player_tame', 'launch_projectile', 'projectile_hit', 'resurrect',
+  'cure_villager', 'elytra_glide',
 ]
 
 function updateSource(index: number, patch: Partial<XpSource>) {
@@ -190,6 +192,19 @@ function duplicateSource(index: number) {
             :name="'trigger-' + idx"
             @update:model-value="updateSource(idx, { trigger: $event })"
           />
+        </div>
+
+        <div class="field-row">
+          <label class="field-label">Scaling</label>
+          <select
+            class="field-select"
+            :value="source.scaling ?? 'none'"
+            :name="'scaling-' + idx"
+            @change="updateSource(idx, { scaling: ($event.target as HTMLSelectElement).value })"
+          >
+            <option value="none">Flat</option>
+            <option value="damage">Damage (per raw damage point)</option>
+          </select>
         </div>
 
         <div class="sub-section">

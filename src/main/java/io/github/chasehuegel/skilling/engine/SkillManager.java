@@ -12,6 +12,7 @@ import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.entity.EntityDamageEvent;
 import java.io.File;
 import java.util.*;
 
@@ -284,9 +285,29 @@ public final class SkillManager {
             }
             ParameterEvaluator reward = parseInlineEvaluator(castMap(rewardRaw));
 
-            sources.add(new SkillDefinition.XpSource(trigger, filters, reward));
+            SkillDefinition.XpScaling scaling = parseXpScaling(entry, trigger);
+
+            sources.add(new SkillDefinition.XpSource(trigger, filters, reward, scaling));
         }
         return sources;
+    }
+
+    private SkillDefinition.XpScaling parseXpScaling(Map<String, Object> entry, String trigger) {
+        Object scalingRaw = entry.get("scaling");
+        if (scalingRaw == null) return SkillDefinition.XpScaling.NONE;
+        String value = String.valueOf(scalingRaw).trim().toLowerCase();
+        if (!value.equals("damage")) {
+            throw new IllegalArgumentException("XP source for trigger '" + trigger
+                    + "' has unknown scaling: " + scalingRaw + " (supported: damage)");
+        }
+        // Damage scaling multiplies the reward by the event's damage; a trigger
+        // whose event carries no damage (e.g. block_break) must be rejected here.
+        Class<? extends org.bukkit.event.Event> eventClass = triggerRegistry.create(trigger).getEventClass();
+        if (!EntityDamageEvent.class.isAssignableFrom(eventClass)) {
+            throw new IllegalArgumentException("XP source for trigger '" + trigger
+                    + "' cannot use scaling: damage — trigger is not a damage event");
+        }
+        return SkillDefinition.XpScaling.DAMAGE;
     }
 
     private List<SkillDefinition.Ability> parseAbilities(String skillId, List<?> list) {

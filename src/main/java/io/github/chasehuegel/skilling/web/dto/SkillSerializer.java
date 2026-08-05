@@ -66,7 +66,8 @@ public final class SkillSerializer {
                 xpSources.add(new SkillDetailDTO.XpSourceDTO(
                     str(x, "trigger"),
                     parseFilters(listMap(x, "filters")),
-                    parseEvaluator(map(x, "reward"))
+                    parseEvaluator(map(x, "reward")),
+                    str(x, "scaling", "none")
                 ));
             }
         }
@@ -125,6 +126,11 @@ public final class SkillSerializer {
                 xm.put("filters", filtersToMap(x.filters()));
             }
             xm.put("reward", evaluatorToMap(x.reward()));
+            // Omit the scaling key for flat sources so the YAML stays clean and
+            // old skills round-trip unchanged.
+            if (x.scaling() != null && !x.scaling().equals("none")) {
+                xm.put("scaling", x.scaling());
+            }
             xpSources.add(xm);
         }
         root.put("xp_sources", xpSources);

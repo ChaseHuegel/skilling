@@ -5,7 +5,8 @@ progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
     filters: [ { state: "offhand:weapon" } ]
-    reward: { constant: 6.0 }
+    reward: { constant: 0.9 }       # per raw damage point (7 ≈ weapon hit); damage-scaled
+    scaling: damage
   - trigger: "entity_kill"
     filters: [ { state: "offhand:weapon" } ]
     reward: { constant: 25.0 }

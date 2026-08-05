@@ -489,7 +489,7 @@ public final class SkillEventListener implements Listener {
             int skillLevel = levelBySkill.computeIfAbsent(skill, s -> s.getLevelForXp(profile.getXp(s.id())));
             int oldLevel = skillLevel;
             double reward = source.reward().evaluate(oldLevel, 1);
-            double scalar = resolveEventBulkScalar(event);
+            double scalar = resolveSourceScalar(source, event);
             double global = plugin.getGlobalXpModifier();
             double xpBonus = io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic
                     .getMultiplier(player.getUniqueId());
@@ -778,6 +778,41 @@ public final class SkillEventListener implements Listener {
             return e.getItemAmount();
         }
         return 1;
+    }
+
+    /**
+     * Resolves the XP scalar for a source at grant time: flat sources use the
+     * bulk-operation scalar (or {@code 1}), while {@code scaling: damage} sources
+     * use the event's raw base damage.
+     *
+     * @param source the XP source
+     * @param event  the triggering event
+     * @return the scalar to multiply the configured reward by
+     */
+    static double resolveSourceScalar(SkillDefinition.XpSource source, Event event) {
+        return switch (source.scaling()) {
+            case NONE -> resolveEventBulkScalar(event);
+            case DAMAGE -> resolveEventDamage(event);
+        };
+    }
+
+    /**
+     * Resolves the damage scalar for {@code scaling: damage} XP sources: the raw
+     * base damage of the triggering {@link EntityDamageEvent} before mitigation
+     * ({@code getDamage()}, in half-hearts). The value is clamped at {@code 0} so
+     * a non-damage event (or a fully-negated hit) can never yield negative XP.
+     * Applies to both incoming ({@code entity_damage_taken}, {@code fall_damage})
+     * and outgoing ({@code entity_damage}) damage, since both extend
+     * {@link EntityDamageEvent}.
+     *
+     * @param event the event to inspect
+     * @return the raw base damage, or {@code 0} for non-damage events
+     */
+    static double resolveEventDamage(Event event) {
+        if (event instanceof EntityDamageEvent e) {
+            return Math.max(0, e.getDamage());
+        }
+        return 0;
     }
 
     /**

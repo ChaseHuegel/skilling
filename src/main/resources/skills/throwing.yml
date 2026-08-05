@@ -8,7 +8,8 @@ xp_sources:
     reward: { constant: 62.9 }
   - trigger: "entity_damage"
     filters: [ { target: "minecraft:trident" } ]
-    reward: { constant: 62.9 }
+    reward: { constant: 7.9 }       # per raw damage point (8 ≈ thrown trident); damage-scaled
+    scaling: damage
   - trigger: "entity_kill"
     filters: [ { target: "minecraft:trident" } ]
     reward: { constant: 62.9 }

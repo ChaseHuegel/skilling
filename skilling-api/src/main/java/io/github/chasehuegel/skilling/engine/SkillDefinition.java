@@ -74,17 +74,38 @@ public record SkillDefinition(
     ) {}
 
     /**
+     * How an XP source's reward is scaled at grant time.
+     *
+     * <p>{@link #DAMAGE} multiplies the reward by the raw base damage of the
+     * triggering {@code EntityDamageEvent} (pre-mitigation, in half-hearts), so
+     * damage-based triggers like {@code fall_damage}, {@code entity_damage_taken},
+     * and {@code entity_damage} pay proportional XP.
+     */
+    public enum XpScaling {
+        /** Flat reward per event, scaled only by the bulk-operation scalar where applicable. */
+        NONE,
+        /** Reward is multiplied by the event's raw base damage ({@code getDamage()}). */
+        DAMAGE
+    }
+
+    /**
      * An XP source binding a trigger to a reward evaluator with optional filters.
      *
      * @param trigger the trigger identifier
      * @param filters list of filter conditions
      * @param reward  the XP reward evaluator
+     * @param scaling how the reward scales at grant time; {@code NONE} for flat rewards
      */
     public record XpSource(
             String trigger,
             List<Filter> filters,
-            ParameterEvaluator reward
-    ) {}
+            ParameterEvaluator reward,
+            XpScaling scaling
+    ) {
+        public XpSource(String trigger, List<Filter> filters, ParameterEvaluator reward) {
+            this(trigger, filters, reward, XpScaling.NONE);
+        }
+    }
 
     /**
      * A filter condition for XP sources and mechanics.

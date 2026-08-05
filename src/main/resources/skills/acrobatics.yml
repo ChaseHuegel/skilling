@@ -4,7 +4,8 @@ display: { name: "Acrobatics", icon: "minecraft:feather", color: "WHITE", style:
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "fall_damage"
-    reward: { constant: 111.1 }
+    reward: { constant: 14.0 }      # per raw damage point (8 ≈ 4-heart fall); damage-scaled
+    scaling: damage
   - trigger: "launch_projectile"
     filters: [ { target: "minecraft:ender_pearl" } ]
     reward: { constant: 111.1 }

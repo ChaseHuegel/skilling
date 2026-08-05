@@ -63,6 +63,7 @@ Each entry defines an action that grants XP.
 | `trigger` | Yes | string | Event trigger key (e.g., `block_break`, `entity_kill`, `craft_item`) |
 | `filters` | No | list | Conditions that must be met |
 | `reward` | Yes | section | XP reward evaluator |
+| `scaling` | No | string | `damage` to multiply the reward by the event's raw base damage (see below); omitted for a flat reward |
 
 #### filters
 
@@ -120,6 +121,26 @@ holds such an item.
 Uses evaluator syntax (see Evaluators below). A scalar value (e.g. `reward: 50`)
 is rejected at load with an `IllegalArgumentException`; it must be an evaluator
 block such as `reward: { constant: 50 }`.
+
+#### scaling
+
+The optional `scaling: damage` value multiplies the configured `reward` by the
+raw base damage of the triggering event (`getDamage()`, pre-mitigation, in
+half-hearts: a 5-heart fall is `10.0`). It is only valid on damage triggers —
+`fall_damage`, `entity_damage_taken`, and `entity_damage` (outgoing) — and is
+rejected at load with an `IllegalArgumentException` on any other trigger, so a
+typo cannot silently disable a source. Example:
+
+```yaml
+xp_sources:
+  - trigger: "fall_damage"
+    reward: { constant: 25.0 }
+    scaling: damage
+```
+
+A source with `scaling: damage` grants `round(reward × damage × global modifier)`
+XP; a non-positive result (e.g. a fully-negated hit) grants nothing. Omit
+`scaling` for the default flat reward.
 
 ### abilities
 

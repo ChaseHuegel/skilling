@@ -37,7 +37,8 @@ public record SkillDetailDTO(
     public record XpSourceDTO(
         String trigger,
         List<FilterDTO> filters,
-        EvaluatorDTO reward
+        EvaluatorDTO reward,
+        String scaling
     ) {}
 
     public record FilterDTO(

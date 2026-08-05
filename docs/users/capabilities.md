@@ -681,6 +681,12 @@ attribute: { constant: "minecraft:movement_speed" }
 > configured reward once per item consumed. All other triggers grant the flat
 > configured reward.
 
+> **Damage scaling:** any XP source on a damage trigger (`fall_damage`,
+> `entity_damage_taken`, `entity_damage`) may declare `scaling: damage`, which
+> multiplies the configured reward by the event's raw base damage
+> (`getDamage()`, pre-mitigation, in half-hearts). It is rejected at load on
+> non-damage triggers. See [creating-skills.md](creating-skills.md) for details.
+
 | Key | Event | Description |
 |---|---|---|
 | `block_break` | `BlockBreakEvent` | Breaking a block |
