@@ -43,7 +43,7 @@ abilities:
   - id: "offhand_strike"
     display_name: "Offhand Strike"
     unlock_level: 25
-    trigger: "player_interact"
+    trigger: "right_click_entity"
     display:
       lore:
         - "&7Left-Click with a weapon in offhand to strike for &a{multiplier}x&7 offhand damage."
@@ -52,10 +52,11 @@ abilities:
         - "&8Requires: Sneaking, weapon in offhand, 3s cooldown, 3+ hunger."
     requirements:
       cooldown: 3.0
-      state: [ "is_sneaking", "offhand:weapon" ]
+      state: [ "offhand:weapon" ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
     on_failure: { cooldown: { action_bar: "&eOffhand Strike cooling down: {time}s" } }
     mechanics:
+      - type: "core:offhand_swing"
       - type: "core:offhand_strike"        # P2-4
         parameters:
           multiplier: { linear: { base: 0.6, step: 0.01, max: 1.0 } }

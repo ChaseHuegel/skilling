@@ -339,6 +339,16 @@ Deals a melee hit using the base attack damage of the off-hand weapon to the ent
 
 **Event:** `PlayerInteractEvent`
 
+### core:offhand_swing
+
+Plays the off-hand swing animation for the activating player. It deals no damage
+and changes no state. Use it for animation feedback only, typically alongside
+another mechanic such as `core:offhand_strike`.
+
+**Parameters:** None
+
+**Event:** any
+
 ### core:dodge
 
 Chance to completely dodge incoming damage.
