@@ -37,6 +37,21 @@ final class DamageTargetResolver {
      * @return the target to damage, or null
      */
     static LivingEntity resolveTarget(Player player, Event event) {
+        return resolveTarget(player, event, OffhandStrikeMechanic.MAX_REACH);
+    }
+
+    /**
+     * Resolves the damage target carried by the event with an explicit maximum
+     * raycast reach for the {@link PlayerInteractEvent} fallback, or null when no
+     * acceptable living target exists (air click, no target in reach, a player,
+     * the caster, or a dead entity).
+     *
+     * @param player the player activating the ability
+     * @param event the triggering event
+     * @param maxReach maximum raycast distance in blocks for the air/block-click fallback
+     * @return the target to damage, or null
+     */
+    static LivingEntity resolveTarget(Player player, Event event, double maxReach) {
         LivingEntity target = null;
         if (event instanceof EntityDamageByEntityEvent de
                 && player.equals(EntityDamageResolver.resolveDamagerPlayer(de))
@@ -49,7 +64,7 @@ final class DamageTargetResolver {
             org.bukkit.event.block.Action action = ie.getAction();
             if (action == org.bukkit.event.block.Action.RIGHT_CLICK_AIR
                     || action == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
-                Entity hit = player.getTargetEntity((int) OffhandStrikeMechanic.MAX_REACH);
+                Entity hit = player.getTargetEntity((int) maxReach);
                 if (hit instanceof LivingEntity living) target = living;
             }
         }

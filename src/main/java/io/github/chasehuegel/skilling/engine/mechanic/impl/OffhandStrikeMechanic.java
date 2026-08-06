@@ -3,7 +3,6 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import java.util.Map;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -12,17 +11,28 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 
 /**
- * Deals damage based on the off-hand weapon's base attack damage to the entity the
- * player is looking at, consuming 1 off-hand durability.
+ * Deals damage based on the off-hand weapon's base attack damage to the strike
+ * target, consuming 1 off-hand durability.
  *
- * <p>Only fires on a right-click with an item in hand; left-clicks, plain block
+ * <p>The target is the entity the triggering event points at: the right-clicked
+ * entity, the victim of the player's {@code entity_damage}/{@code left_click_entity}
+ * hit, or the entity the player is looking at on a {@code player_interact}
+ * right-click. A plain right-click on air or a block (no entity in reach) is a
+ * no-op. Entity clicks arrive as {@code PlayerInteractEntityEvent}, so a
+ * {@code right_click_entity}-triggered ability strikes the clicked entity
+ * directly instead of requiring a raycast.
+ *
+ * <p>Only right-click-with-item actions fire the strike; left-clicks, plain block
  * interactions, and empty-hand actions never trigger it. The durability decrement
  * is written back to the off-hand slot, and an air/unbreakable off-hand is a no-op.
  *
- * <p>The raycast is gated by the {@code targets} filter and never strikes another
- * player or the caster, so a cheap right-click cannot damage players across a
- * room. The {@code reach} and {@code multiplier} params are clamped at execution
- * time so level-scaled evaluator outputs stay bounded too.
+ * <p>Strikes never hit another player or the caster (PvP protection). The
+ * {@code targets} filter is honored for the remaining living entities; an unknown
+ * {@code targets} value falls back to this mechanic's {@code hostiles} default
+ * rather than {@link AuraTargetFilter}'s {@code allies} fallback, so a typo
+ * cannot flip the strike onto friendly mobs. The {@code reach} and {@code multiplier}
+ * params are clamped at execution time so level-scaled evaluator outputs stay
+ * bounded too.
  *
  * <p>YAML key: {@code core:offhand_strike}
  * <br>Params:
@@ -30,12 +40,13 @@ import org.bukkit.inventory.meta.Damageable;
  *   <li>{@code multiplier} (double, optional, default 1.0) — scales the off-hand
  *       base damage (clamped to [0, 4])</li>
  *   <li>{@code reach} (double, optional, default 4) — maximum raycast distance in
- *       blocks (clamped to [0, 4.5])</li>
+ *       blocks for the air/block-click fallback (clamped to [0, 4.5])</li>
  *   <li>{@code targets} (string, optional, default {@code hostiles}) — which
  *       living entities may be struck; other players are never struck</li>
  * </ul>
  *
- * <p>Requires {@link PlayerInteractEvent}. The {@link #BASE_DAMAGE} table maps vanilla
+ * <p>Acts on {@link PlayerInteractEvent}, {@link PlayerInteractEntityEvent}, and
+ * {@link EntityDamageByEntityEvent}. The {@link #BASE_DAMAGE} table maps vanilla
  * weapon materials to their base attack damage; unarmed off-hand defaults to 1.0.
  */
 public final class OffhandStrikeMechanic implements SkillMechanic {
@@ -65,29 +76,30 @@ public final class OffhandStrikeMechanic implements SkillMechanic {
 
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof PlayerInteractEvent interactEvent)) return false;
-
-        // Only right-click-with-item actions may trigger the strike; left-clicks
-        // and plain block interactions must not fire (or give free damage).
-        org.bukkit.event.block.Action action = interactEvent.getAction();
-        if (action != org.bukkit.event.block.Action.RIGHT_CLICK_AIR
-                && action != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return false;
-        if (interactEvent.useItemInHand() == org.bukkit.event.Event.Result.DENY) return false;
+        // Only right-click-with-item interactions may trigger the strike; left-clicks
+        // and plain block interactions must not fire (or give free damage). Entity
+        // clicks arrive as PlayerInteractEntityEvent and carry no such guards.
+        if (event instanceof PlayerInteractEvent interactEvent) {
+            org.bukkit.event.block.Action action = interactEvent.getAction();
+            if (action != org.bukkit.event.block.Action.RIGHT_CLICK_AIR
+                    && action != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return false;
+            if (interactEvent.useItemInHand() == org.bukkit.event.Event.Result.DENY) return false;
+        }
 
         double multiplier = clampMultiplier(((Number) params.getOrDefault("multiplier", 1.0)).doubleValue());
         if (multiplier <= 0) return false;
         double reach = clampReach(((Number) params.getOrDefault("reach", 4.0)).doubleValue());
-        String targets = String.valueOf(params.getOrDefault("targets", "hostiles"));
+        String targets = normalizeTargets(String.valueOf(params.getOrDefault("targets", "hostiles")));
 
         ItemStack offhand = player.getInventory().getItemInOffHand();
         if (offhand == null || offhand.getType() == Material.AIR) return false;
         if (!(offhand.getItemMeta() instanceof Damageable damageable)) return false;
         if (damageable.isUnbreakable()) return false;
 
-        Entity target = player.getTargetEntity((int) reach);
-        if (!(target instanceof LivingEntity livingTarget)) return false;
-        // PvP protection: never strike another player, and honor the targets filter.
-        if (livingTarget instanceof Player) return false;
+        // PvP protection, the dead check, and the targets filter live in the
+        // shared resolver; never strike another player or the caster.
+        LivingEntity livingTarget = DamageTargetResolver.resolveTarget(player, event, reach);
+        if (livingTarget == null) return false;
         if (!AuraTargetFilter.accepts(targets, livingTarget)) return false;
 
         double dmg = baseDamage(offhand.getType()) * multiplier;
@@ -107,6 +119,21 @@ public final class OffhandStrikeMechanic implements SkillMechanic {
 
     static double clampMultiplier(double multiplier) {
         return Math.max(0.0, Math.min(multiplier, MAX_MULTIPLIER));
+    }
+
+    /**
+     * Coerces the {@code targets} parameter to a known filter value, falling back
+     * to {@code hostiles} on anything unknown so a typo cannot silently select
+     * friendly mobs via {@link AuraTargetFilter}'s {@code allies} default.
+     *
+     * @param targets the configured {@code targets} value
+     * @return the normalized filter value
+     */
+    static String normalizeTargets(String targets) {
+        return switch (targets) {
+            case "hostiles", "allies", "all" -> targets;
+            default -> "hostiles";
+        };
     }
 
     /**
