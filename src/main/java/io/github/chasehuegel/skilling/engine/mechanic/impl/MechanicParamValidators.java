@@ -2,6 +2,7 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
@@ -28,10 +29,13 @@ import org.bukkit.NamespacedKey;
  */
 public final class MechanicParamValidators {
 
+    private static final Logger LOGGER = Logger.getLogger(MechanicParamValidators.class.getName());
+
     private static volatile Predicate<NamespacedKey> potionKeyKnown;
     private static volatile Predicate<NamespacedKey> attributeKeyKnown;
     private static volatile Predicate<NamespacedKey> soundKeyKnown;
     private static volatile Predicate<NamespacedKey> particleKeyKnown;
+    private static volatile Predicate<NamespacedKey> recipeKeyKnown;
 
     private MechanicParamValidators() {}
 
@@ -42,15 +46,18 @@ public final class MechanicParamValidators {
      * @param attributeKeyKnown tests whether a namespaced attribute key exists
      * @param soundKeyKnown     tests whether a namespaced sound key exists
      * @param particleKeyKnown  tests whether a namespaced particle key exists
+     * @param recipeKeyKnown    tests whether a namespaced recipe key is registered
      */
     public static void configureLookups(Predicate<NamespacedKey> potionKeyKnown,
                                         Predicate<NamespacedKey> attributeKeyKnown,
                                         Predicate<NamespacedKey> soundKeyKnown,
-                                        Predicate<NamespacedKey> particleKeyKnown) {
+                                        Predicate<NamespacedKey> particleKeyKnown,
+                                        Predicate<NamespacedKey> recipeKeyKnown) {
         MechanicParamValidators.potionKeyKnown = potionKeyKnown;
         MechanicParamValidators.attributeKeyKnown = attributeKeyKnown;
         MechanicParamValidators.soundKeyKnown = soundKeyKnown;
         MechanicParamValidators.particleKeyKnown = particleKeyKnown;
+        MechanicParamValidators.recipeKeyKnown = recipeKeyKnown;
     }
 
     /**
@@ -118,6 +125,44 @@ public final class MechanicParamValidators {
         if (material.isBlank()) return;
         if (Material.matchMaterial(material) == null) {
             throw new IllegalArgumentException(context + ": unknown material '" + material + "'");
+        }
+    }
+
+    /**
+     * Validates a recipe parameter. The parameter is required and must be a
+     * constant namespaced key string; a malformed key is rejected at load.
+     *
+     * <p>Recipe registration is dynamic: a data pack or third-party plugin can
+     * register a recipe after Skilling loads. A syntactically valid key whose
+     * recipe is not currently registered therefore logs a warning instead of
+     * failing the load, so a milestone unlocking a later-registered recipe is
+     * not rejected. The runtime no-op covers the case where it never appears.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the recipe
+     * @throws IllegalArgumentException if the recipe is missing or malformed
+     */
+    public static void recipe(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key)) {
+            throw new IllegalArgumentException(context + ": missing required parameter '" + key + "'");
+        }
+        Object raw = params.get(key);
+        // A recipe key is inherently a string; a numeric constant would stringify
+        // into a plausible-looking key (e.g. "5.0"), so reject it here.
+        if (!(raw instanceof String)) {
+            throw new IllegalArgumentException(context + ": recipe parameter '" + key
+                    + "' must be a namespaced key string, got: " + raw);
+        }
+        NamespacedKey nsKey;
+        try {
+            nsKey = parseNamespacedKey(raw);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(context + ": " + e.getMessage(), e);
+        }
+        if (recipeKeyKnown != null && !recipeKeyKnown.test(nsKey)) {
+            LOGGER.warning(context + ": recipe '" + raw + "' is not currently registered; "
+                    + "the unlock will no-op until a plugin or data pack provides it");
         }
     }
 

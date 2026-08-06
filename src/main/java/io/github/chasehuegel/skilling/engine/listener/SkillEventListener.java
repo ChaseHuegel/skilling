@@ -1004,6 +1004,49 @@ public final class SkillEventListener implements Listener {
         return result;
     }
 
+    /**
+     * Retroactively executes the persistent unlock mechanics of every milestone
+     * ability the player has already satisfied.
+     *
+     * <p>Runs on player join and after {@code /skills reload} so a player who
+     * reached a {@code level_up} milestone before it was configured — or whose
+     * level was set by an offline admin command — is caught up without needing a
+     * live level-up. Only {@code level_up}-triggered abilities whose owning-skill
+     * level meets {@code unlock_level} are considered, and only mechanics marked
+     * as {@code UnlockMechanic} run: costed/cooldown abilities must never fire
+     * outside their event. The vanilla recipe book guard makes each unlock a
+     * no-op once granted, so re-running is safe.
+     *
+     * <p>The {@code event} passed to the unlock mechanic is {@code null}, per the
+     * {@code UnlockMechanic} contract. Unlocks are silent here; in-session
+     * milestone feedback flows through the normal ability dispatch instead.
+     *
+     * @param player  the online player to reconcile
+     * @param profile the player's live profile (XP already hydrated)
+     */
+    public void reconcileMilestoneUnlocks(Player player, PlayerProfile profile) {
+        for (SkillDefinition skill : skillManager.getSkills().values()) {
+            int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
+            for (SkillDefinition.Ability ability : skill.abilities()) {
+                if (!"level_up".equals(ability.trigger())) continue;
+                if (skillLevel < ability.unlockLevel()) continue;
+                for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
+                    if (!mechanicRegistry.isUnlock(entry.type())) continue;
+                    try {
+                        SkillMechanic mechanic = mechanicRegistry.create(entry.type());
+                        if (mechanic == null) continue;
+                        Map<String, Object> params = evaluateParams(entry, skillLevel, ability.unlockLevel());
+                        mechanic.execute(player, params, null);
+                    } catch (Exception ex) {
+                        plugin.getLogger().log(Level.WARNING, "Unlock mechanic " + entry.type()
+                                + " for ability " + ability.id() + " in skill " + skill.id()
+                                + " failed during join/reload reconciliation", ex);
+                    }
+                }
+            }
+        }
+    }
+
 
 
     private void debug(String msg) {

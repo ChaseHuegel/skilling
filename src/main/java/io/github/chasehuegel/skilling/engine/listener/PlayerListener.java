@@ -26,15 +26,18 @@ public final class PlayerListener implements Listener {
     private final SkillManager skillManager;
     private final BossBarPool bossBarPool;
     private final FeedbackDebouncer feedbackDebouncer;
+    private final SkillEventListener skillEventListener;
 
     public PlayerListener(ProfileManager profileManager, AsyncBatchWorker asyncBatchWorker,
                           SkillManager skillManager,
-                          BossBarPool bossBarPool, FeedbackDebouncer feedbackDebouncer) {
+                          BossBarPool bossBarPool, FeedbackDebouncer feedbackDebouncer,
+                          SkillEventListener skillEventListener) {
         this.profileManager = profileManager;
         this.asyncBatchWorker = asyncBatchWorker;
         this.skillManager = skillManager;
         this.bossBarPool = bossBarPool;
         this.feedbackDebouncer = feedbackDebouncer;
+        this.skillEventListener = skillEventListener;
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -55,6 +58,11 @@ public final class PlayerListener implements Listener {
             LevelUpDispatcher.broadcastLevelUp(player, skill, level, Skilling.getInstance(), bossBarPool);
             profile.consumePendingFanfare(skillId);
         }
+        // Catch up milestone unlocks (e.g. core:unlock_recipe) for a player whose
+        // skill level already meets an unlock_level reached before this config
+        // existed or set while they were offline. Unlock mechanics are idempotent,
+        // so already-granted unlocks are no-ops.
+        skillEventListener.reconcileMilestoneUnlocks(player, profile);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

@@ -239,10 +239,10 @@ public final class Skilling extends JavaPlugin {
 
         // Event listeners
         Bukkit.getPluginManager().registerEvents(new UIProtectionListener(), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker, skillManager, bossBarPool, feedbackDebouncer), this);
         this.skillEventListener = new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
                         registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool, stateFilterRegistry);
         Bukkit.getPluginManager().registerEvents(skillEventListener, this);
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(profileManager, asyncBatchWorker, skillManager, bossBarPool, feedbackDebouncer, skillEventListener), this);
 
         // BossBar TTL tick loop (every tick so fadeTicks config is in game ticks)
         Bukkit.getScheduler().runTaskTimer(this, bossBarPool::tickAll, 1L, 1L);
@@ -279,7 +279,21 @@ public final class Skilling extends JavaPlugin {
                 key -> Registry.POTION_EFFECT_TYPE.get(key) != null,
                 key -> Registry.ATTRIBUTE.get(key) != null,
                 key -> Registry.SOUND_EVENT.get(key) != null,
-                key -> Registry.PARTICLE_TYPE.get(key) != null);
+                key -> Registry.PARTICLE_TYPE.get(key) != null,
+                Skilling::isRecipeRegistered);
+    }
+
+    /**
+     * Whether a recipe with the given namespaced key is registered on this server.
+     * Recipe registration is dynamic (data packs and other plugins load and
+     * unload recipes), so this is queried at skill load and, for missing keys,
+     * once more when an unlock executes.
+     *
+     * @param key the recipe's namespaced key
+     * @return true if the recipe is currently registered
+     */
+    private static boolean isRecipeRegistered(NamespacedKey key) {
+        return Bukkit.getServer().getRecipe(key) != null;
     }
 
     /** Registers the built-in parameter evaluators into the given registry. */
@@ -397,6 +411,8 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
         mechReg.register("core:block_particles", BlockParticlesMechanic.class, List.of("particle", "count", "speed"),
                 (ctx, p) -> MechanicParamValidators.particle(ctx, p, "particle"));
+        mechReg.register("core:unlock_recipe", UnlockRecipeMechanic.class, List.of("recipe"),
+                (ctx, p) -> MechanicParamValidators.recipe(ctx, p, "recipe"));
     }
 
     /** Registers the built-in triggers into the given registry. */

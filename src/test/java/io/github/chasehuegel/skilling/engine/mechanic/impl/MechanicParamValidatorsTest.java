@@ -19,7 +19,7 @@ class MechanicParamValidatorsTest {
 
     @AfterEach
     void tearDown() {
-        MechanicParamValidators.configureLookups(null, null, null, null);
+        MechanicParamValidators.configureLookups(null, null, null, null, null);
     }
 
     private static void configureLookups() {
@@ -27,7 +27,8 @@ class MechanicParamValidatorsTest {
                 key -> key.getKey().equals("poison"),
                 key -> key.getKey().equals("movement_speed"),
                 key -> key.getKey().equals("entity.player.levelup"),
-                key -> key.getKey().equals("happy_villager"));
+                key -> key.getKey().equals("happy_villager"),
+                key -> key.getKey().equals("netherite_pickaxe"));
     }
 
     @Test
@@ -119,6 +120,37 @@ class MechanicParamValidatorsTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                 MechanicParamValidators.sound("ctx", Map.of("type", "NOT_A_SOUND"), "type"));
         assertTrue(ex.getMessage().contains("invalid namespaced identifier"));
+    }
+
+    @Test
+    void recipeAcceptsRegisteredKeyAndSkipsUnknown() {
+        configureLookups();
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.recipe("ctx", Map.of("recipe", "minecraft:netherite_pickaxe"), "recipe"));
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.recipe("ctx", Map.of("recipe", "minecraft:netherite_pickaxe"), "recipe"));
+        // An unregistered but syntactically valid recipe warns instead of failing,
+        // because a data pack or third-party plugin may register it after load.
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.recipe("ctx", Map.of("recipe", "minecraft:later_recipe"), "recipe"));
+    }
+
+    @Test
+    void recipeRejectsMissingAndMalformedValues() {
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.recipe("ctx", Map.of(), "recipe"));
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.recipe("ctx", Map.of("recipe", "NOT_A_RECIPE"), "recipe"));
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.recipe("ctx", Map.of("recipe", ""), "recipe"));
+        assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.recipe("ctx", Map.of("recipe", 5.0), "recipe"));
+    }
+
+    @Test
+    void recipeSkipsExistenceCheckWhenLookupUnconfigured() {
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.recipe("ctx", Map.of("recipe", "minecraft:anything"), "recipe"));
     }
 
     @Test

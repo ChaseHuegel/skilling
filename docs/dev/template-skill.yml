@@ -191,3 +191,29 @@ abilities:
           volume: 0.5
           pitch: 1.2
           target: "self"                       # Plays at the player location
+
+  # -- ABILITY 3: Milestone Unlock (One-Time Passive) --
+  # core:unlock_recipe permanently unlocks a recipe book recipe by namespaced
+  # key (vanilla, data pack, or another plugin). Bind it to the "level_up"
+  # trigger with the milestone's unlock_level. The unlock fires once, at the
+  # moment the skill crosses that level; the engine also reconciles unlock
+  # mechanics on player join and after /skills reload, so a player already past
+  # the milestone is caught up. It no-ops once the recipe is already unlocked,
+  # so feedback never re-fires. Unlocks are inherently binary: this is the
+  # deliberate exception to the "No Static Milestones" sub-scaling rule.
+  # List one mechanic entry per recipe for a multi-recipe milestone.
+  # - id: "master_blacksmith"
+  #   display_name: "Master Blacksmith"
+  #   unlock_level: 50
+  #   trigger: "level_up"
+  #   display:
+  #     lore:
+  #       - "&7Learn to craft the netherite pickaxe."
+  #   mechanics:
+  #     - type: "core:unlock_recipe"
+  #       parameters:
+  #         recipe: { constant: "minecraft:netherite_pickaxe" }
+  #   feedback:
+  #     notify:
+  #       action_bar: false          # Silent by default; the recipe-book toast is the feedback
+  #       chat: false

@@ -62,6 +62,14 @@ class SkillEventListenerBuryBonesTest {
     private PlayerProfile profile;
     private Player player;
     private ItemStack bone;
+    /**
+     * Strong reference to the interaction's mock world. {@code Location} stores
+     * its world in a {@link java.lang.ref.WeakReference}, so a world that only
+     * survives as a helper-local is garbage-collectible and {@code getWorld()}
+     * then throws "World unloaded". Holding it here keeps the location usable
+     * for the whole test.
+     */
+    private World buryWorld;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -133,6 +141,7 @@ class SkillEventListenerBuryBonesTest {
 
     private PlayerInteractEvent interactWithDirt(Action action) {
         var world = mock(World.class);
+        this.buryWorld = world;
         var block = mock(Block.class);
         when(block.getLocation()).thenReturn(new Location(world, 1, 2, 3));
         when(block.getType()).thenReturn(Material.DIRT);

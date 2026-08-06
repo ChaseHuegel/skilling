@@ -373,6 +373,28 @@ abilities:
 Note that every `abilities[]` entry declares a `trigger` key, and any mechanic
 parameters that take a potion effect use namespaced keys.
 
+**Milestone unlocks:** to unlock recipes as a passive one-time milestone, bind a
+`core:unlock_recipe` mechanic to the `level_up` trigger with the milestone's
+`unlock_level`. The unlock fires at the moment the skill crosses that level, and
+the engine re-runs it on player join and after `/skills reload` so a player
+already past the milestone is caught up. It is a no-op once the recipe is
+already unlocked, so it never re-fires feedback. See the recipe below.
+
+```yaml
+abilities:
+  - id: "master_blacksmith"
+    display_name: "Master Blacksmith"
+    unlock_level: 50
+    trigger: "level_up"                  # The milestone moment
+    display:
+      lore: [ "&7Learn to craft the netherite pickaxe." ]
+    mechanics:
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "minecraft:netherite_pickaxe" }
+    feedback: { notify: { action_bar: false } }
+```
+
 **Ability lore convention:** any ability with a `requirements:` block must surface
 its costs and conditions in its lore so players see them before using the ability.
 A `&7Costs` line lists what the ability consumes (exhaustion hunger, `cost` items).

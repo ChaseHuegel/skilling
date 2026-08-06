@@ -1,6 +1,7 @@
 package io.github.chasehuegel.skilling.engine.registry;
 
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import io.github.chasehuegel.skilling.engine.mechanic.UnlockMechanic;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.function.Supplier;
 public final class MechanicRegistry {
 
     private final Map<String, Supplier<? extends SkillMechanic>> registry = new ConcurrentHashMap<>();
+    private final Map<String, Class<? extends SkillMechanic>> classes = new ConcurrentHashMap<>();
     private final Map<String, List<String>> paramNames = new ConcurrentHashMap<>();
     private final Map<String, MechanicValidator> validators = new ConcurrentHashMap<>();
 
@@ -67,6 +69,7 @@ public final class MechanicRegistry {
             throw new IllegalArgumentException("Mechanic already registered: " + key);
         }
         RegistrySupport.requirePublicNoArgConstructor(key, clazz);
+        this.classes.put(key, clazz);
         this.paramNames.put(key, List.copyOf(paramNames));
         this.validators.put(key, validator);
         // Resolve the public no-arg constructor once here so per-execution
@@ -134,6 +137,22 @@ public final class MechanicRegistry {
     }
 
     /**
+     * Returns whether the mechanic registered under the given key is a persistent
+     * one-time unlock mechanic (implements {@link UnlockMechanic}).
+     *
+     * <p>The engine reconciles these on player join and after {@code /skills
+     * reload} so unlocks are retroactive for players already past their
+     * milestone, without instantiating the mechanic just to check its type.
+     *
+     * @param key the registry key
+     * @return true if the key is registered to an {@link UnlockMechanic}
+     */
+    public boolean isUnlock(String key) {
+        Class<? extends SkillMechanic> clazz = classes.get(key);
+        return clazz != null && UnlockMechanic.class.isAssignableFrom(clazz);
+    }
+
+    /**
      * Returns an immutable snapshot of all mechanic keys to their parameter names.
      *
      * @return map of key -> immutable parameter name list
@@ -149,6 +168,7 @@ public final class MechanicRegistry {
      */
     public void clear() {
         registry.clear();
+        classes.clear();
         paramNames.clear();
         validators.clear();
     }

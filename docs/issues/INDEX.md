@@ -5,6 +5,7 @@
 
 ### Improvements
 - [x] [ISSUE-249](ISSUE-249.md) - Configurable in-game branding from config.yml (skill lore templates, XP bar, ability lines, messaging)
+- [x] [ISSUE-250](ISSUE-250.md) - core:unlock_recipe milestone unlock mechanic (persistent one-time recipe unlocks)
 
 ### Research
 

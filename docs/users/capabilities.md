@@ -683,6 +683,51 @@ Temporarily increases the player's attack speed for a configurable duration.
 
 **Event:** Fires on the trigger declared by the ability (temporary attack speed bonus).
 
+### core:unlock_recipe
+
+Permanently unlocks a recipe book recipe for the player. The recipe is
+identified by its namespaced key and may come from vanilla, a data pack, or
+another plugin. The unlock writes to the player's persistent recipe book state,
+so it survives restarts and plugin removal.
+
+This mechanic is a persistent one-time unlock. It is a no-op when the recipe is
+already discovered or not currently registered on the server. Use it as a
+milestone: bind an ability to the `level_up` trigger with the desired
+`unlock_level` (see [creating-skills.md](creating-skills.md)). The engine also
+re-runs unlock mechanics on player join and after `/skills reload`, so a player
+who is already past the milestone — including one whose level was set by an
+offline admin command — is caught up. In-session, the ability fires only on the
+real unlock, so configured feedback shows once at the milestone, not on every
+later level-up.
+
+A milestone that unlocks several recipes lists one mechanic entry per recipe.
+Unlocks are inherently binary and are the deliberate exception to the
+"No Static Milestones" sub-scaling rule.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `recipe` | string | none (required) | Namespaced recipe key (e.g., `minecraft:netherite_pickaxe`). Malformed keys fail at load; a syntactically valid key whose recipe is not registered yet logs a warning and no-ops until it exists |
+
+**YAML usage:**
+
+```yaml
+abilities:
+  - id: master_blacksmith
+    display_name: "Master Blacksmith"
+    unlock_level: 50
+    trigger: "level_up"
+    mechanics:
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "minecraft:netherite_pickaxe" }
+    feedback: { notify: { action_bar: false } }
+```
+
+**Event:** `level_up` (the milestone moment). Join and `/skills reload` also
+reconcile unlock mechanics for players already past the milestone.
+
 ## Effect & Attribute Parameter Keys
 
 Mechanics that accept an `effect` parameter (`core:apply_status`, `core:aoe_effect`,

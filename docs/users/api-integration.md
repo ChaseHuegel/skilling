@@ -124,6 +124,50 @@ registry.register("myaddon:knockback", KnockbackMechanic.class, List.of("force",
 > pattern) automatically gain namespaced-key support (`minecraft:poison`) with legacy
 > numeric IDs still accepted but deprecated. Unknown keys fail fast.
 
+### Persistent Unlock Mechanics
+
+A mechanic that grants permanent player state and is intrinsically idempotent
+(for example unlocking a recipe, a quest, or a persistent trait) should
+implement `UnlockMechanic` instead of the plain `SkillMechanic` marker. The
+engine treats unlock mechanics as one-time milestones: it re-runs them on
+player join and after `/skills reload` for every ability whose owning-skill
+level already meets `unlock_level`, and the `level_up` trigger fires them at
+the milestone moment in-session.
+
+Two contracts follow from reconciliation:
+
+- **The mechanic must be idempotent.** Return `false` once the state already
+  exists, so a re-run (later level-up, join, reload) is a no-op and never
+  re-fires feedback.
+- **The `event` argument may be `null`.** Join and reload reconciliation calls
+  `execute(player, params, null)`. Guard any event-specific logic.
+
+```java
+import io.github.chasehuegel.skilling.engine.mechanic.UnlockMechanic;
+
+/**
+ * Permanently unlocks a quest entry for the player.
+ *
+ * <p>YAML key: {@code myaddon:unlock_quest}
+ * <br>Params: {@code quest} (namespaced quest id)
+ */
+public class UnlockQuestMechanic implements UnlockMechanic {
+    @Override
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        String quest = String.valueOf(params.get("quest"));
+        if (player.getPersistentDataContainer().has(questKey(quest),
+                org.bukkit.persistence.PersistentDataType.BYTE)) {
+            return false; // already unlocked
+        }
+        // grant the quest, store the flag persistently, then:
+        return true;
+    }
+}
+```
+
+Register it as usual; the registry reports it through `isUnlock(...)` and the
+engine's reconciliation path picks it up automatically.
+
 ## Registering a Custom Trigger
 
 Triggers map a YAML trigger key to a Paper event class. Implement `SkillTrigger` as a

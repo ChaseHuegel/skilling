@@ -14,7 +14,7 @@ Provide the public contract that addon developers implement and consume to exten
 ## Local Contracts
 
 - **API-First Design:** Expose the entry point to addons via the Bukkit `ServicesManager` (`SkillingAPI`). Addon code registers custom mechanics/triggers/evaluators through the registry container.
-- **Interface Contracts:** Ship the contracts (`SkillMechanic`, `SkillTrigger`, `ParameterEvaluator`, registries, `RequirementResult`, `FailureReason`, `PlayerProfileView`, `SkillDefinition`) only. Implementations belong in `src/` and must not leak into this module.
+- **Interface Contracts:** Ship the contracts (`SkillMechanic`, `UnlockMechanic`, `SkillTrigger`, `ParameterEvaluator`, registries, `RequirementResult`, `FailureReason`, `PlayerProfileView`, `SkillDefinition`) only. Implementations belong in `src/` and must not leak into this module.
 - **Javadoc:** Required on all public API elements. This is the addon-facing surface. Document each interface's purpose and the YAML keys it binds to.
 - **Versioning:** Breaking API changes are a MAJOR version bump per `docs/dev/CONVENTIONS-COMMITS.md` (`!` or `BREAKING CHANGE` footer). This is purely a release-labeling rule. Per root `AGENTS.md`, the project is greenfield and there is no backwards-compatibility obligation, so never spend effort keeping the API source-compatible.
 - **Dependencies:** `compileOnly` Paper API only. No runtime dependencies, so addons never pull extra transitive deps.

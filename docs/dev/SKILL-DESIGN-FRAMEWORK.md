@@ -48,6 +48,14 @@ $$\text{Value} = (\text{PlayerLevel}) \times \text{PrimaryStep}$$
 
 * **Role:** Every milestone ability (L15, L25, L50, L75, L100) has its own secondary formula. This formula grows in potency from its unlock point up to Level 100.
 * **No Static Milestones:** No ability unlock remains mathematically binary. Parameters like cooldowns, durations, radii, or proc chances grow as the player levels past the unlock threshold.
+* **Deliberate Exception (Persistent Unlocks):** A persistent unlock mechanic
+  (`core:unlock_recipe`, or any addon `UnlockMechanic`) grants binary permanent
+  state — a recipe is unlocked or it is not — so there is nothing to sub-scale.
+  These are the sanctioned exception to the no-static-milestones rule. Author
+  them as one-time milestone abilities bound to `trigger: level_up`, and keep
+  them silent (no action-bar/chat spam) since the grant itself (e.g. the
+  recipe-book toast) is the feedback. The engine reconciles them on join and
+  after reload so players already past the milestone are caught up.
 * **Standard Evaluation Formulas for Configs:**
 * **Linear Sub-Growth:**
 

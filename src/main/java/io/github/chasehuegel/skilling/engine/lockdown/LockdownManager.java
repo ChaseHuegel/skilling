@@ -209,6 +209,23 @@ public final class LockdownManager {
             }
             profile.invalidatePageCache();
         }
+        reconcileOnlineUnlocks();
         plugin.debug("Phase 5/6: UI caches invalidated.");
+    }
+
+    /**
+     * Re-runs persistent unlock mechanics (e.g. {@code core:unlock_recipe}) for
+     * online players against the freshly rebuilt skill set, so a player whose
+     * milestone was added or raised by a reload — or whose level was set while
+     * they were online via admin commands — is caught up immediately. Runs on
+     * the main thread inside the reload sequence; the idempotency guard on each
+     * unlock makes already-granted unlocks no-ops.
+     */
+    private void reconcileOnlineUnlocks() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
+            if (profile == null) continue;
+            plugin.getSkillEventListener().reconcileMilestoneUnlocks(player, profile);
+        }
     }
 }

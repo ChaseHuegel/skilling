@@ -29,12 +29,13 @@ class SkillManagerMechanicParamValidationTest {
                 key -> key.getKey().equals("poison"),
                 key -> key.getKey().equals("movement_speed"),
                 key -> key.getKey().equals("entity.player.levelup"),
-                key -> key.getKey().equals("happy_villager"));
+                key -> key.getKey().equals("happy_villager"),
+                key -> key.getKey().equals("netherite_pickaxe"));
     }
 
     @AfterEach
     void tearDown() {
-        MechanicParamValidators.configureLookups(null, null, null, null);
+        MechanicParamValidators.configureLookups(null, null, null, null, null);
     }
 
     private SkillManager newSkillManager() {
@@ -201,6 +202,53 @@ class SkillManagerMechanicParamValidationTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
         assertTrue(ex.getMessage().contains("minecraft:not_a_particle"), ex.getMessage());
+    }
+
+    @Test
+    void missingRecipeFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:unlock_recipe"
+                        parameters:
+                          duration: { constant: 3 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("recipe"), ex.getMessage());
+    }
+
+    @Test
+    void malformedRecipeKeyFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:unlock_recipe"
+                        parameters:
+                          recipe: { constant: "NOT_A_RECIPE" }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("NOT_A_RECIPE"), ex.getMessage());
+    }
+
+    @Test
+    void unknownUnlockRecipeParamFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:unlock_recipe"
+                        parameters:
+                          recipe: { constant: "minecraft:netherite_pickaxe" }
+                          typo: { constant: 1.0 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertTrue(ex.getMessage().contains("typo"), ex.getMessage());
+    }
+
+    @Test
+    void validUnlockRecipeLoads() throws Exception {
+        writeSkill("""
+                      - type: "core:unlock_recipe"
+                        parameters:
+                          recipe: { constant: "minecraft:netherite_pickaxe" }
+                """);
+        assertDoesNotThrow(() -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
     }
 
     @Test

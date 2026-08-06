@@ -33,7 +33,7 @@ class PlayerListenerQuitTest {
         PlayerListener listener = new PlayerListener(
                 mock(ProfileManager.class), mock(AsyncBatchWorker.class),
                 mock(SkillManager.class),
-                bossBarPool, debouncer);
+                bossBarPool, debouncer, mock(SkillEventListener.class));
 
         PlayerQuitEvent event = mock(PlayerQuitEvent.class);
         when(event.getPlayer()).thenReturn(player);

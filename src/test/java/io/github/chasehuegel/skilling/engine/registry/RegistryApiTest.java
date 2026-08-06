@@ -2,6 +2,7 @@ package io.github.chasehuegel.skilling.engine.registry;
 
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import io.github.chasehuegel.skilling.engine.mechanic.UnlockMechanic;
 import io.github.chasehuegel.skilling.engine.trigger.SkillTrigger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -70,6 +71,13 @@ class RegistryApiTest {
         @Override
         public double evaluate(int currentLevel, int unlockLevel) {
             return currentLevel * 10.0;
+        }
+    }
+
+    public static class UnlockMechanicStub implements UnlockMechanic {
+        @Override
+        public boolean execute(Player player, Map<String, Object> params, Event event) {
+            return true;
         }
     }
 
@@ -162,6 +170,16 @@ class RegistryApiTest {
         var mechanic = reg.create("a");
         assertInstanceOf(ValidMechanic.class, mechanic);
         assertNull(reg.create("unknown"), "an unregistered key must return null");
+    }
+
+    @Test
+    void isUnlockDetectsUnlockMechanicsOnly() {
+        var reg = new MechanicRegistry();
+        reg.register("plain", ValidMechanic.class);
+        reg.register("unlock", UnlockMechanicStub.class);
+        assertTrue(reg.isUnlock("unlock"), "an UnlockMechanic must be reported as an unlock");
+        assertTrue(!reg.isUnlock("plain"), "a plain SkillMechanic must not be an unlock");
+        assertTrue(!reg.isUnlock("unknown"), "an unregistered key must not be an unlock");
     }
 
     @Test

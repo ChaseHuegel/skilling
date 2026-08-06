@@ -130,6 +130,25 @@ Post-execution, the engine parses the YAML `feedback` node to dispatch visual an
 * **Level Ups:** Triggered by a central dispatcher checking XP thresholds. Broadcasts a Title to the player and a permanent log to the chat. Milestone levels dynamically append unlocked ability names.
 * **Ability Activations:** Dispatches configured particles, sounds, and action bar text targeted at the player or the affected entity.
 
+### Persistent Unlock Reconciliation
+
+Mechanics that implement `UnlockMechanic` (e.g. `core:unlock_recipe`) are
+persistent, one-time effects. They are inherently idempotent: the grant state
+(e.g. the player's recipe book) is the ledger, so a re-run is a no-op. Beyond
+the normal `level_up` trigger dispatch, the engine reconciles them so unlocks
+are retroactive:
+
+* **On player join** (`PlayerListener`), after the profile loads.
+* **After `/skills reload`** (`LockdownManager` invalidate phase), against the
+  freshly rebuilt skill set.
+
+Reconciliation runs for each `level_up`-triggered ability whose owning-skill
+level meets `unlock_level`, executing only `UnlockMechanic` entries with
+`event = null` and no requirements/cooldown/feedback. Costed or cooldown
+abilities never fire outside their event dispatch. This covers players who
+passed the milestone before the config existed or whose level was set while
+offline.
+
 ## 5. User Interface Architecture
 
 The UI is dynamically generated from the YAML files and heavily protected against client-server desyncs.
@@ -170,7 +189,7 @@ The `/skills reload` command follows a deterministic six-phase sequence:
 2. **Close GUIs.** Force-close all open skill menus for online players.
 3. **Flush DB.** Synchronously drain the dirty profile cache to SQLite.
 4. **Rebuild Registries.** Clear and re-parse all YAML skill definitions, evaluators, and tag maps.
-5. **Invalidate Caches.** Clear all `PlayerProfile` UI inventory caches.
+5. **Invalidate Caches.** Clear all `PlayerProfile` UI inventory caches, then reconcile persistent unlock mechanics for online players against the rebuilt skill set.
 6. **Unlock.** Clear the `reloading` flag to resume normal operation.
 
 ### Offline Player Targeting
