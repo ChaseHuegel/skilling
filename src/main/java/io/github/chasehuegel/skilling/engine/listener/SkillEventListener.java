@@ -141,6 +141,21 @@ public final class SkillEventListener implements Listener {
         }
     }
 
+    /**
+     * Handles {@link EntityDamageByEntityEvent} and routes it as a
+     * {@code left_click_entity} trigger when the player attacks an entity directly
+     * with their hand. Projectile attacks are not left-clicks and stay on the
+     * {@code entity_damage} and {@code shoot_bow} triggers.
+     *
+     * @param event the entity damage by entity event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onLeftClickEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player player) {
+            dispatch(player, event, "left_click_entity");
+        }
+    }
+
     private Player resolvePlayerDamager(EntityDamageByEntityEvent event) {
         return io.github.chasehuegel.skilling.engine.mechanic.impl.EntityDamageResolver.resolveDamagerPlayer(event);
     }
@@ -266,6 +281,40 @@ public final class SkillEventListener implements Listener {
         // with items in both hands fires the ability / XP source once, not twice.
         if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
         dispatch(event.getPlayer(), event, "player_interact");
+    }
+
+    /**
+     * Handles {@link PlayerInteractEvent} and routes the four action-specific
+     * click triggers ({@code right_click_air}, {@code right_click_block},
+     * {@code left_click_air}, {@code left_click_block}) based on the click action.
+     *
+     * @param event the player interact event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onClickAction(PlayerInteractEvent event) {
+        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
+        String triggerKey = switch (event.getAction()) {
+            case RIGHT_CLICK_AIR -> "right_click_air";
+            case RIGHT_CLICK_BLOCK -> "right_click_block";
+            case LEFT_CLICK_AIR -> "left_click_air";
+            case LEFT_CLICK_BLOCK -> "left_click_block";
+            default -> null;
+        };
+        if (triggerKey != null) {
+            dispatch(event.getPlayer(), event, triggerKey);
+        }
+    }
+
+    /**
+     * Handles {@link PlayerInteractEntityEvent} and routes it as a
+     * {@code right_click_entity} trigger.
+     *
+     * @param event the player interact entity event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onRightClickEntity(org.bukkit.event.player.PlayerInteractEntityEvent event) {
+        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
+        dispatch(event.getPlayer(), event, "right_click_entity");
     }
 
     /**
@@ -476,7 +525,7 @@ public final class SkillEventListener implements Listener {
         for (SkillManager.XpSourceRef ref : skillManager.xpSourcesFor(triggerKey)) {
             SkillDefinition skill = ref.skill();
             SkillDefinition.XpSource source = ref.source();
-            if (!matchesFilters(player, event, source.filters())) {
+            if (!matchesFilters(player, event, triggerKey, source.filters())) {
                 debug("  [" + skill.id() + "] XP source filters failed, skipping");
                 continue;
             }
@@ -571,7 +620,7 @@ public final class SkillEventListener implements Listener {
                         continue;
                     }
 
-                    if (!matchesFilters(player, event, entry.filters())) {
+                    if (!matchesFilters(player, event, triggerKey, entry.filters())) {
                         debug("    -> filters failed, skipping");
                         continue;
                     }
@@ -659,10 +708,11 @@ public final class SkillEventListener implements Listener {
         }
     }
 
-    private boolean matchesFilters(Player player, Event event, List<SkillDefinition.Filter> filters) {
+    private boolean matchesFilters(Player player, Event event, String triggerKey,
+            List<SkillDefinition.Filter> filters) {
         if (filters == null || filters.isEmpty()) return true;
         for (SkillDefinition.Filter filter : filters) {
-            boolean passed = matchFilter(player, event, filter);
+            boolean passed = matchFilter(player, event, triggerKey, filter);
             debug("  filter target=" + filter.target() + " state=" + filter.state()
                     + " tool=" + filter.tool() + " -> " + (passed ? "PASS" : "FAIL"));
             if (!passed) return false;
@@ -670,9 +720,9 @@ public final class SkillEventListener implements Listener {
         return true;
     }
 
-    private boolean matchFilter(Player player, Event event, SkillDefinition.Filter filter) {
+    private boolean matchFilter(Player player, Event event, String triggerKey, SkillDefinition.Filter filter) {
         if (filter.target() != null && !filter.target().isBlank()) {
-            Material targetMaterial = resolveEventMaterial(event);
+            Material targetMaterial = resolveEventMaterial(event, triggerKey);
             if (targetMaterial == null) return false;
             boolean matched;
             try {
@@ -838,7 +888,19 @@ public final class SkillEventListener implements Listener {
         return Math.round(xp);
     }
 
-    static Material resolveEventMaterial(Event event) {
+    /**
+     * Resolves the target material an event carries for {@code target} filter
+     * matching. Block- and item-carrying events map directly to a material;
+     * air interactions carry none. The trigger key disambiguates the shared
+     * {@link PlayerInteractEvent}: the legacy {@code player_interact} trigger and
+     * {@code right_click_block} match a right-clicked block, {@code left_click_block}
+     * matches a left-clicked block, and the air triggers never match a block.
+     *
+     * @param event      the triggering event
+     * @param triggerKey the trigger key the event was dispatched for
+     * @return the target material, or null if the event carries none
+     */
+    static Material resolveEventMaterial(Event event, String triggerKey) {
         if (event instanceof BlockBreakEvent be) return be.getBlock().getType();
         if (event instanceof BlockPlaceEvent pe) return pe.getBlockPlaced().getType();
         if (event instanceof EntityDamageByEntityEvent de) {
@@ -874,9 +936,18 @@ public final class SkillEventListener implements Listener {
             return projectileToMaterial(phe.getEntity());
         }
         if (event instanceof org.bukkit.event.player.PlayerInteractEvent ie) {
-            // Only a right-click on a block carries a target block to filter on;
-            // left-clicks and air interactions must not match a block target.
-            if (ie.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK
+            // Only a block click carries a target block to filter on; air clicks
+            // never match a block target. The legacy player_interact trigger and
+            // right_click_block match a right-clicked block; left_click_block
+            // matches a left-clicked block.
+            var action = ie.getAction();
+            if (action == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK
+                    && ("right_click_block".equals(triggerKey) || "player_interact".equals(triggerKey))
+                    && ie.getClickedBlock() != null) {
+                return ie.getClickedBlock().getType();
+            }
+            if (action == org.bukkit.event.block.Action.LEFT_CLICK_BLOCK
+                    && "left_click_block".equals(triggerKey)
                     && ie.getClickedBlock() != null) {
                 return ie.getClickedBlock().getType();
             }

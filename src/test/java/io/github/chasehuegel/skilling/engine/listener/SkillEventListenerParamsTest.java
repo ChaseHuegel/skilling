@@ -49,12 +49,12 @@ class SkillEventListenerParamsTest {
     void resolveEventMaterialToleratesNullCraftRecipe() {
         var event = mock(org.bukkit.event.inventory.CraftItemEvent.class);
         when(event.getRecipe()).thenReturn(null);
-        assertNull(SkillEventListener.resolveEventMaterial(event));
+        assertNull(SkillEventListener.resolveEventMaterial(event, "craft_item"));
 
         // A recipe with a null result is likewise a no-match, not an NPE.
         var recipe = mock(org.bukkit.inventory.Recipe.class);
         when(event.getRecipe()).thenReturn(recipe);
         when(recipe.getResult()).thenReturn(null);
-        assertNull(SkillEventListener.resolveEventMaterial(event));
+        assertNull(SkillEventListener.resolveEventMaterial(event, "craft_item"));
     }
 }

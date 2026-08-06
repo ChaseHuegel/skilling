@@ -20,9 +20,15 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.FishingTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FurnaceExtractTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LevelUpTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LaunchProjectileTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickAirTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickBlockTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickEntityTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.PlayerInteractTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.ProjectileHitTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RideHorseTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickAirTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickBlockTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickEntityTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SneakTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SprintTrigger;
 
@@ -47,6 +53,7 @@ import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -94,6 +101,12 @@ class SkillTriggerTest {
                     Arguments.of(new LevelUpTrigger(), "level_up", SkillingLevelUpEvent.class),
                     Arguments.of(new LaunchProjectileTrigger(), "launch_projectile", ProjectileLaunchEvent.class),
                     Arguments.of(new PlayerInteractTrigger(), "player_interact", PlayerInteractEvent.class),
+                    Arguments.of(new RightClickAirTrigger(), "right_click_air", PlayerInteractEvent.class),
+                    Arguments.of(new RightClickBlockTrigger(), "right_click_block", PlayerInteractEvent.class),
+                    Arguments.of(new RightClickEntityTrigger(), "right_click_entity", PlayerInteractEntityEvent.class),
+                    Arguments.of(new LeftClickAirTrigger(), "left_click_air", PlayerInteractEvent.class),
+                    Arguments.of(new LeftClickBlockTrigger(), "left_click_block", PlayerInteractEvent.class),
+                    Arguments.of(new LeftClickEntityTrigger(), "left_click_entity", EntityDamageByEntityEvent.class),
                     Arguments.of(new ProjectileHitTrigger(), "projectile_hit", ProjectileHitEvent.class),
                     Arguments.of(new RideHorseTrigger(), "ride_horse", VehicleEnterEvent.class),
                     Arguments.of(new CureVillagerTrigger(), "cure_villager", EntityTransformEvent.class),

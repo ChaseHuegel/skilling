@@ -410,6 +410,12 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("brew_start", BrewStartTrigger.class);
         trigReg.register("repair", RepairTrigger.class);
         trigReg.register("player_interact", PlayerInteractTrigger.class);
+        trigReg.register("right_click_air", RightClickAirTrigger.class);
+        trigReg.register("right_click_block", RightClickBlockTrigger.class);
+        trigReg.register("right_click_entity", RightClickEntityTrigger.class);
+        trigReg.register("left_click_air", LeftClickAirTrigger.class);
+        trigReg.register("left_click_block", LeftClickBlockTrigger.class);
+        trigReg.register("left_click_entity", LeftClickEntityTrigger.class);
         trigReg.register("consume_item", ConsumeItemTrigger.class);
         trigReg.register("fishing", FishingTrigger.class);
         trigReg.register("crop_grow", CropGrowTrigger.class);

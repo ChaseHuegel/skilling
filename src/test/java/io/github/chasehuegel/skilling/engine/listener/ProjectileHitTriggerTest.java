@@ -144,6 +144,6 @@ class ProjectileHitTriggerTest {
         when(trident.getType()).thenReturn(org.bukkit.entity.EntityType.TRIDENT);
         var event = mock(ProjectileHitEvent.class);
         when(event.getEntity()).thenReturn(trident);
-        assertEquals(org.bukkit.Material.TRIDENT, listener.resolveEventMaterial(event));
+        assertEquals(org.bukkit.Material.TRIDENT, listener.resolveEventMaterial(event, "projectile_hit"));
     }
 }

@@ -700,7 +700,13 @@ attribute: { constant: "minecraft:movement_speed" }
 | `furnace_extract` | `FurnaceExtractEvent` | Extracting from a furnace |
 | `brew_potion` | `BrewEvent` | A brewing stand finishes brewing a batch |
 | `brew_start` | `BrewingStartEvent` | A brewing stand begins a new brewing cycle |
-| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) with the main hand only. The off-hand duplicate of a two-handed interaction is skipped so abilities fire once. A `target` filter matches the clicked block on right-click. Left-clicks and air interactions never match a block target |
+| `player_interact` | `PlayerInteractEvent` | Interacting (right/left click) with the main hand only. The off-hand duplicate of a two-handed interaction is skipped so abilities fire once. A `target` filter matches the clicked block on right-click. Left-clicks and air interactions never match a block target. Superseded by the six action-specific click triggers for precise routing |
+| `right_click_air` | `PlayerInteractEvent` (action `RIGHT_CLICK_AIR`) | Right-clicking air with the main hand only. Never matches a block `target` filter |
+| `right_click_block` | `PlayerInteractEvent` (action `RIGHT_CLICK_BLOCK`) | Right-clicking a block with the main hand only. A `target` filter matches the clicked block |
+| `right_click_entity` | `PlayerInteractEntityEvent` | Right-clicking an entity with the main hand only. The off-hand duplicate of a two-handed interaction is skipped |
+| `left_click_air` | `PlayerInteractEvent` (action `LEFT_CLICK_AIR`) | Left-clicking air with the main hand only. Never matches a block `target` filter |
+| `left_click_block` | `PlayerInteractEvent` (action `LEFT_CLICK_BLOCK`) | Left-clicking a block with the main hand only. A `target` filter matches the clicked block |
+| `left_click_entity` | `EntityDamageByEntityEvent` | Attacking an entity directly with a left-click (hand/punch only). Projectile attacks are not left-clicks and stay on the `entity_damage` and `shoot_bow` triggers. Supports `scaling: damage` |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
 | `fishing` | `PlayerFishEvent` | Successfully catching a fish. Only the `CAUGHT_FISH` state dispatches. Casts, bites, reels, and failed attempts do not |
 | `crop_grow` | `BlockGrowEvent` | Natural crop growth |
