@@ -331,6 +331,8 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "ticks"));
         mechReg.register("core:offhand_strike", OffhandStrikeMechanic.class, List.of("multiplier", "reach", "targets"));
         mechReg.register("core:offhand_swing", OffhandSwingMechanic.class, List.of());
+        mechReg.register("core:damage", DamageMechanic.class, List.of("damage", "percent"));
+        mechReg.register("core:true_damage", TrueDamageMechanic.class, List.of("damage", "percent"));
         mechReg.register("core:set_cooldown", SetCooldownMechanic.class, List.of("material", "ticks"),
                 (ctx, p) -> {
                     MechanicParamValidators.material(ctx, p, "material");

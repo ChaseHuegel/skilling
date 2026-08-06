@@ -409,6 +409,36 @@ Instantly kills targets below a health threshold.
 
 **Event:** `EntityDamageByEntityEvent`
 
+### core:damage
+
+Deals damage to the target through the normal damage pipeline, so armor,
+protection enchantments, potion effects, and absorption reduce it.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `damage` | double | `0` | Flat damage in engine points (half-hearts, matching the rest of the engine; an iron sword deals 6.0) |
+| `percent` | double | `0` | Bonus damage as a fraction of the target's max health (e.g. `0.1` = 10% of max health). Added to `damage` |
+
+**Event:** `EntityDamageByEntityEvent` (the victim, when the player is the attacker) / `PlayerInteractEntityEvent` (the right-clicked entity) / `PlayerInteractEvent` right-click (the entity the player is looking at)
+
+### core:true_damage
+
+Deals damage to the target that ignores damage mitigations: armor, protection
+enchantments, potion effects, absorption, and damage-cancel mechanics are all
+bypassed. The target's hard invulnerability flag (e.g. creative mode) is still
+honored.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `damage` | double | `0` | Flat damage in engine points (half-hearts, matching the rest of the engine; an iron sword deals 6.0) |
+| `percent` | double | `0` | Bonus damage as a fraction of the target's max health (e.g. `0.1` = 10% of max health). Added to `damage` |
+
+**Event:** `EntityDamageByEntityEvent` (the victim, when the player is the attacker) / `PlayerInteractEntityEvent` (the right-clicked entity) / `PlayerInteractEvent` right-click (the entity the player is looking at)
+
 ### core:auto_smelt
 
 Automatically smelts mined blocks (e.g. iron ore -> iron ingot). Each distinct
