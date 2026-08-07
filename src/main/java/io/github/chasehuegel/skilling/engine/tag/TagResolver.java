@@ -103,7 +103,7 @@ public final class TagResolver {
         String key = namespace.substring(colonIndex + 1);
         if ("c".equals(prefix)) {
             // Defer only when the loader never ran (e.g. a unit-test resolver
-            // without a tags.yml); a loaded store is authoritative, so an
+            // without a tags store); a loaded store is authoritative, so an
             // undefined #c: key is rejected at load instead of silently never
             // matching at runtime.
             if (!customTagLoader.isLoaded()) return true;

@@ -60,7 +60,7 @@ class StagingManagerConcurrencyTest {
     @Test
     void stagedWriteConcurrentWithReloadNeverProducesPartialLiveFile() throws Exception {
         StagingManager sm = new StagingManager(tempDir.toFile());
-        File liveTags = new File(tempDir.toFile(), "tags.yml");
+        File liveTags = new File(new File(tempDir.toFile(), "tags"), "base.yml");
         String content = "debug_logging: true\n".repeat(5000);
 
         sm.stageTagsFile(content);
@@ -79,7 +79,7 @@ class StagingManagerConcurrencyTest {
         sm.clear();
 
         assertTrue(!sm.hasPendingChanges());
-        File stagedTags = new File(sm.getStagingDir(), "tags.yml");
+        File stagedTags = new File(new File(sm.getStagingDir(), "tags"), "base.yml");
         assertTrue(!stagedTags.exists());
     }
 
@@ -87,7 +87,8 @@ class StagingManagerConcurrencyTest {
     void backupSurvivesClearAfterSuccessfulReload() throws Exception {
         StagingManager sm = new StagingManager(tempDir.toFile());
         // A live file exists so apply creates a real backup.
-        File liveTags = new File(tempDir.toFile(), "tags.yml");
+        File liveTags = new File(new File(tempDir.toFile(), "tags"), "base.yml");
+        Files.createDirectories(liveTags.toPath().getParent());
         Files.writeString(liveTags.toPath(), "debug_logging: false\n");
 
         sm.stageTagsFile("debug_logging: true\n");
@@ -139,11 +140,12 @@ class StagingManagerConcurrencyTest {
         sm.applyAndBackup();
 
         // A genuine post-apply edit (e.g. FTP) must still be flagged on retry.
-        File liveTags = new File(tempDir.toFile(), "tags.yml");
+        File liveTags = new File(new File(tempDir.toFile(), "tags"), "base.yml");
+        Files.createDirectories(liveTags.toPath().getParent());
         Files.writeString(liveTags.toPath(), "debug_logging: externally_edited\n");
 
         List<String> conflicts = sm.checkConflicts();
-        assertTrue(conflicts.contains("tags.yml"),
+        assertTrue(conflicts.contains("tags/base.yml"),
                 "a genuine external edit after Apply must still be detected as a conflict");
     }
 }

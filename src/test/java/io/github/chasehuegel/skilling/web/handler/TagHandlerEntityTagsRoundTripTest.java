@@ -22,9 +22,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Verifies the tags.yml round-trip through the web GUI preserves the read-only
- * {@code entity_tags} section (used by the {@code target_type} state filter)
- * when saving custom tags.
+ * Verifies the tags/base.yml round-trip through the web GUI preserves the
+ * read-only {@code entity_tags} section (used by the {@code target_type} state
+ * filter) when saving custom tags.
  */
 class TagHandlerEntityTagsRoundTripTest {
 
@@ -47,7 +47,8 @@ class TagHandlerEntityTagsRoundTripTest {
             """;
 
     private Path writeTagsFile() throws IOException {
-        Path tagsFile = tempDir.resolve("tags.yml");
+        Path tagsFile = tempDir.resolve("tags").resolve("base.yml");
+        Files.createDirectories(tagsFile.getParent());
         Files.writeString(tagsFile, TAGS_YML);
         return tagsFile;
     }
@@ -64,8 +65,8 @@ class TagHandlerEntityTagsRoundTripTest {
         new TagHandler(staging, tagsFile.toFile()).update(ctx);
 
         verify(ctx).json(Map.of("status", "ok"));
-        Path staged = tempDir.resolve(".web_staging").resolve("tags.yml");
-        assertTrue(Files.exists(staged), "staged tags.yml must be written");
+        Path staged = tempDir.resolve(".web_staging").resolve("tags").resolve("base.yml");
+        assertTrue(Files.exists(staged), "staged tags/base.yml must be written");
 
         Map<String, Object> raw = new Yaml().load(Files.readString(staged, StandardCharsets.UTF_8));
         assertNotNull(raw.get("custom_tags"), "custom_tags must be present");
@@ -79,7 +80,7 @@ class TagHandlerEntityTagsRoundTripTest {
 
     @Test
     void updateWithoutExistingFileStagesCustomTagsOnly() throws IOException {
-        Path tagsFile = tempDir.resolve("tags.yml");
+        Path tagsFile = tempDir.resolve("tags").resolve("base.yml");
         StagingManager staging = new StagingManager(tempDir.toFile());
 
         Context ctx = mock(Context.class, RETURNS_SELF);
@@ -88,7 +89,7 @@ class TagHandlerEntityTagsRoundTripTest {
 
         new TagHandler(staging, tagsFile.toFile()).update(ctx);
 
-        Path staged = tempDir.resolve(".web_staging").resolve("tags.yml");
+        Path staged = tempDir.resolve(".web_staging").resolve("tags").resolve("base.yml");
         Map<String, Object> raw = new Yaml().load(Files.readString(staged, StandardCharsets.UTF_8));
         assertNotNull(raw.get("custom_tags"));
         assertEquals(null, raw.get("entity_tags"), "no entity_tags section when none existed");

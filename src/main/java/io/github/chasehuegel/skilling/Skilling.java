@@ -117,9 +117,13 @@ public final class Skilling extends JavaPlugin {
         boolean firstRun = config.getBoolean("setup.first_run", true);
 
         if (firstRun) {
-            if (!new File(getDataFolder(), "tags.yml").exists()) {
-                getLogger().info("Generating default tags.yml...");
-                saveResource("tags.yml", false);
+            File tagsDir = new File(getDataFolder(), "tags");
+            if (!tagsDir.exists() && !tagsDir.mkdirs()) {
+                getLogger().warning("Could not create tags data directory: " + tagsDir);
+            }
+            if (!new File(tagsDir, "base.yml").exists()) {
+                getLogger().info("Generating default tags/base.yml...");
+                saveResource("tags/base.yml", false);
             }
             if (!new File(getDataFolder(), "template-skill.yml").exists()) {
                 getLogger().info("Generating default template-skill.yml...");
@@ -169,7 +173,7 @@ public final class Skilling extends JavaPlugin {
         );
         this.stateFilterRegistry = new StateFilterRegistry();
         this.customTagLoader = new CustomTagLoader();
-        customTagLoader.load(new File(getDataFolder(), "tags.yml"));
+        customTagLoader.loadDirectory(new File(getDataFolder(), "tags"));
         this.tagResolver = new TagResolver(customTagLoader);
         this.entityTagResolver = new EntityTagResolver(customTagLoader);
         registerBuiltins();
@@ -782,7 +786,7 @@ public final class Skilling extends JavaPlugin {
     }
 
     /**
-     * Replaces the active tag resolver (used on reload when tags.yml changes).
+     * Replaces the active tag resolver (used on reload when tags change).
      *
      * @param tagResolver the new tag resolver
      */
@@ -801,8 +805,8 @@ public final class Skilling extends JavaPlugin {
     }
 
     /**
-     * Replaces the active entity-type tag resolver (used on reload when
-     * tags.yml changes).
+     * Replaces the active entity-type tag resolver (used on reload when tags
+     * change).
      *
      * @param entityTagResolver the new entity tag resolver
      */

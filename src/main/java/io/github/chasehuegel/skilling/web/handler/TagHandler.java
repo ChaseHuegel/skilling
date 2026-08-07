@@ -50,7 +50,7 @@ public final class TagHandler {
             }
             ctx.json(Map.of("tags", tags, "entityTags", entityTags));
         } catch (Exception e) {
-            WebError.internal(ctx, LOGGER, "Failed to read tags.yml", e);
+            WebError.internal(ctx, LOGGER, "Failed to read tags/base.yml", e);
         }
     }
 
@@ -102,14 +102,14 @@ public final class TagHandler {
         } catch (JsonProcessingException e) {
             WebError.malformedJson(ctx);
         } catch (Exception e) {
-            WebError.internal(ctx, LOGGER, "Failed to stage tags.yml", e);
+            WebError.internal(ctx, LOGGER, "Failed to stage tags/base.yml", e);
         }
     }
 
     /**
-     * Loads the {@code entity_tags} section from the live tags.yml, or null when
-     * the file is absent or has no such section. An unreadable file is treated as
-     * having nothing to preserve rather than failing the stage.
+     * Loads the {@code entity_tags} section from the live tags/base.yml, or null
+     * when the file is absent or has no such section. An unreadable file is
+     * treated as having nothing to preserve rather than failing the stage.
      *
      * @return the raw entity_tags value, or null
      */
@@ -122,7 +122,7 @@ public final class TagHandler {
                 return existing.get("entity_tags");
             }
         } catch (IOException e) {
-            LOGGER.warning("Could not read tags.yml to preserve entity_tags: " + e.getMessage());
+            LOGGER.warning("Could not read tags/base.yml to preserve entity_tags: " + e.getMessage());
         }
         return null;
     }

@@ -66,7 +66,8 @@ public final class WebServer {
             var routes = app.unsafe.routes;
             File skillsDir = new File(plugin.getDataFolder(), "skills");
             var skillHandler = new SkillHandler(skillManager, stagingManager, skillsDir);
-            var tagHandler = new TagHandler(stagingManager, new File(plugin.getDataFolder(), "tags.yml"));
+            var tagHandler = new TagHandler(stagingManager,
+                    new File(new File(plugin.getDataFolder(), "tags"), "base.yml"));
             var configHandler = new ConfigHandler(stagingManager, new File(plugin.getDataFolder(), "config.yml"));
             var reloadHandler = new ReloadHandler(plugin, stagingManager, lockdownManager);
 

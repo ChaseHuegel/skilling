@@ -28,7 +28,8 @@ function seedFixtures(): void {
 
   fs.cpSync(path.join(FIXTURES_DIR, 'skills'), path.join(PLUGIN_DIR, 'skills'), { recursive: true });
   fs.copyFileSync(path.join(FIXTURES_DIR, 'config.yml'), path.join(PLUGIN_DIR, 'config.yml'));
-  fs.copyFileSync(path.join(FIXTURES_DIR, 'tags.yml'), path.join(PLUGIN_DIR, 'tags.yml'));
+  fs.mkdirSync(path.join(PLUGIN_DIR, 'tags'), { recursive: true });
+  fs.copyFileSync(path.join(FIXTURES_DIR, 'tags', 'base.yml'), path.join(PLUGIN_DIR, 'tags', 'base.yml'));
   console.log('  Fixtures seeded into', PLUGIN_DIR);
 }
 

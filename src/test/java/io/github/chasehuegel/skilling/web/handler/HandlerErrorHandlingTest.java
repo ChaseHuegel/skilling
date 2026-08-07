@@ -74,7 +74,7 @@ class HandlerErrorHandlingTest {
         Context ctx = mock(Context.class, RETURNS_SELF);
         when(ctx.bodyAsClass(Map.class)).thenAnswer(inv -> { throw malformedJson(); });
 
-        new TagHandler(staging, tempDir.resolve("tags.yml").toFile()).update(ctx);
+        new TagHandler(staging, tempDir.resolve("tags").resolve("base.yml").toFile()).update(ctx);
 
         verify(ctx).status(400);
         verify(staging, never()).stageTagsFile(anyString());
@@ -86,7 +86,7 @@ class HandlerErrorHandlingTest {
         Context ctx = mock(Context.class, RETURNS_SELF);
         when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of("tags", "not-a-map"));
 
-        new TagHandler(staging, tempDir.resolve("tags.yml").toFile()).update(ctx);
+        new TagHandler(staging, tempDir.resolve("tags").resolve("base.yml").toFile()).update(ctx);
 
         verify(ctx).status(400);
         verify(staging, never()).stageTagsFile(anyString());
@@ -98,7 +98,7 @@ class HandlerErrorHandlingTest {
         Context ctx = mock(Context.class, RETURNS_SELF);
         when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of("tags", Map.of("#c:ores", "not-a-list")));
 
-        new TagHandler(staging, tempDir.resolve("tags.yml").toFile()).update(ctx);
+        new TagHandler(staging, tempDir.resolve("tags").resolve("base.yml").toFile()).update(ctx);
 
         verify(ctx).status(400);
         verify(staging, never()).stageTagsFile(anyString());
@@ -124,7 +124,7 @@ class HandlerErrorHandlingTest {
         doThrow(new RuntimeException("leaky /tmp/plugins/Skilling/tags.yml detail"))
             .when(staging).stageTagsFile(anyString());
 
-        new TagHandler(staging, tempDir.resolve("tags.yml").toFile()).update(ctx);
+        new TagHandler(staging, tempDir.resolve("tags").resolve("base.yml").toFile()).update(ctx);
 
         verify(ctx).status(500);
         @SuppressWarnings("unchecked")

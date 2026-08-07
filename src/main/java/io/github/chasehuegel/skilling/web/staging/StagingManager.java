@@ -41,7 +41,7 @@ public final class StagingManager {
         this.stagingDir = new File(dataFolder, ".web_staging");
         this.skillsDir = new File(dataFolder, "skills");
         this.configFile = new File(dataFolder, "config.yml");
-        this.tagsFile = new File(dataFolder, "tags.yml");
+        this.tagsFile = new File(new File(dataFolder, "tags"), "base.yml");
         this.guiFile = new File(dataFolder, "gui.yml");
     }
 
@@ -160,7 +160,7 @@ public final class StagingManager {
     }
 
     private File resolveLiveFile(String stagedPath) {
-        if (stagedPath.equals("tags.yml")) return tagsFile;
+        if (stagedPath.equals("tags/base.yml")) return tagsFile;
         if (stagedPath.equals("config.yml")) return configFile;
         if (stagedPath.equals("gui.yml")) return guiFile;
         if (stagedPath.startsWith("skills/")) {
@@ -241,12 +241,12 @@ public final class StagingManager {
                     }
                 }
 
-                // Apply staged tags.yml
-                File stagedTags = new File(stagingDir, "tags.yml");
+                // Apply staged tags/base.yml
+                File stagedTags = new File(new File(stagingDir, "tags"), "base.yml");
                 if (stagedTags.exists()) {
                     backupFile(tagsFile, backupDir);
                     atomicCopy(stagedTags, tagsFile);
-                    applied.add("tags.yml");
+                    applied.add("tags/base.yml");
                 }
 
                 // Apply staged config.yml
@@ -308,11 +308,11 @@ public final class StagingManager {
     public void stageTagsFile(String yamlContent) {
         lock.lock();
         try {
-            File f = new File(stagingDir, "tags.yml");
+            File f = new File(new File(stagingDir, "tags"), "base.yml");
             atomicWrite(f, yamlContent);
-            updateStatusAdd("tags.yml");
+            updateStatusAdd("tags/base.yml");
         } catch (IOException e) {
-            throw new RuntimeException("Failed to stage tags.yml", e);
+            throw new RuntimeException("Failed to stage tags/base.yml", e);
         } finally {
             lock.unlock();
         }

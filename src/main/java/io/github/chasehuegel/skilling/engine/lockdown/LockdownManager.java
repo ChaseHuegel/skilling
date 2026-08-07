@@ -137,10 +137,10 @@ public final class LockdownManager {
 
         plugin.reloadConfigSettings();
 
-        // Load the new tags before clearing anything, so a malformed tags.yml
+        // Load the new tags before clearing anything, so a malformed tags store
         // aborts with all prior state intact.
         var customTagLoader = new CustomTagLoader();
-        customTagLoader.load(new File(plugin.getDataFolder(), "tags.yml"));
+        customTagLoader.loadDirectory(new File(plugin.getDataFolder(), "tags"));
         var tagResolver = new TagResolver(customTagLoader);
         var entityTagResolver = new EntityTagResolver(customTagLoader);
 

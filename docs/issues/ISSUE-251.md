@@ -5,14 +5,14 @@
 - **Agent Role:** You are an expert backend engineer executing this task. Additive merge means the entry lists of a duplicated tag key are appended together, so the contents of one file never overwrite the contents of another file in the in-memory tag map.
 
 ## Implementation Requirements
-- [ ] Rename `src/main/resources/tags.yml` to `src/main/resources/tags/base.yml` (content unchanged).
-- [ ] Add `CustomTagLoader.loadDirectory(File tagsDir)`: walk the directory recursively; collect `.yml` files sorted by relative path for a deterministic order; gather the raw `custom_tags` and `entity_tags` entries from every file; append entry lists when a tag key repeats across files (additive merge); resolve all tags in one global pass so cross-file `#c:` references work; treat a missing directory as an empty store and mark the loader `loaded`.
-- [ ] A `.yml` file in the `tags` directory that cannot be read as tags (non-map YAML, scalar where a list is expected, unknown material or entity name, unknown vanilla tag) logs a warning and is skipped. It does NOT fail the load.
-- [ ] Keep `CustomTagLoader.load(File)` for single-file loading; share the gather/resolve machinery between both entry points.
-- [ ] First-run provisioning in `Skilling.onEnable` generates `tags/base.yml` instead of `tags.yml`; the `tags` data directory is created when missing.
-- [ ] Startup (`Skilling.onEnable`) and reload (`LockdownManager.rebuild`) load the whole `tags` directory via `loadDirectory`.
-- [ ] Web stays working: `WebServer`, `StagingManager`, and `TagHandler` read and write `tags/base.yml` only; staging status path strings use `tags/base.yml`.
-- [ ] E2E fixture `web/frontend/e2e/test-data/tags.yml` moves to `web/frontend/e2e/test-data/tags/base.yml`; `globalSetup` copies it to `plugins/Skilling/tags/base.yml`.
+- [x] Rename `src/main/resources/tags.yml` to `src/main/resources/tags/base.yml` (content unchanged).
+- [x] Add `CustomTagLoader.loadDirectory(File tagsDir)`: walk the directory recursively; collect `.yml` files sorted by relative path for a deterministic order; gather the raw `custom_tags` and `entity_tags` entries from every file; append entry lists when a tag key repeats across files (additive merge); resolve all tags in one global pass so cross-file `#c:` references work; treat a missing directory as an empty store and mark the loader `loaded`.
+- [x] A `.yml` file in the `tags` directory that cannot be read as tags (non-map YAML, scalar where a list is expected, unknown material or entity name, unknown vanilla tag) logs a warning and is skipped. It does NOT fail the load.
+- [x] Keep `CustomTagLoader.load(File)` for single-file loading; share the gather/resolve machinery between both entry points.
+- [x] First-run provisioning in `Skilling.onEnable` generates `tags/base.yml` instead of `tags.yml`; the `tags` data directory is created when missing.
+- [x] Startup (`Skilling.onEnable`) and reload (`LockdownManager.rebuild`) load the whole `tags` directory via `loadDirectory`.
+- [x] Web stays working: `WebServer`, `StagingManager`, and `TagHandler` read and write `tags/base.yml` only; staging status path strings use `tags/base.yml`.
+- [x] E2E fixture `web/frontend/e2e/test-data/tags.yml` moves to `web/frontend/e2e/test-data/tags/base.yml`; `globalSetup` copies it to `plugins/Skilling/tags/base.yml`.
 
 ## Technical Specifications & Context
 - **Target Files:**
@@ -24,8 +24,8 @@
 - **Constraints:** Per `src/AGENTS.md`, the entity tags store is resolved by the parallel `EntityTagResolver`. Apply the same additive merge semantics to `entity_tags` for consistency. New automated coverage for directory loading lives in ISSUE-256.
 
 ## Verification & Definition of Done
-- [ ] `./gradlew build` passes.
-- [ ] `./gradlew test` passes.
-- [ ] `cd web/frontend && npm run build` passes.
-- [ ] A fresh data folder generates `tags/base.yml`. A second file `tags/custom.yml` defining an existing tag key merges its entries into the in-memory tag map.
-- [ ] A malformed `.yml` in the `tags` directory logs a warning and does not abort the load.
+- [x] `./gradlew build` passes.
+- [x] `./gradlew test` passes.
+- [x] `cd web/frontend && npm run build` passes.
+- [x] A fresh data folder generates `tags/base.yml`. A second file `tags/custom.yml` defining an existing tag key merges its entries into the in-memory tag map.
+- [x] A malformed `.yml` in the `tags` directory logs a warning and does not abort the load.
