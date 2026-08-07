@@ -1,7 +1,6 @@
 ## Active Sprint / Current Milestone
 
 ### Bugs
-- [x] [ISSUE-248](ISSUE-248.md) - ModifyFurnaceOutputMechanic can create an oversized ItemStack on large multipliers [Severity: Low]
 
 ### Improvements
 - [ ] [ISSUE-251](ISSUE-251.md) - Tags: relocate to `tags/base.yml`, load recursively with additive merge
