@@ -13,10 +13,13 @@ On first launch, Skilling creates the following structure:
 
 ```
 plugins/Skilling/
-├── config.yml          # Global settings (database, boss bars, debounce)
-├── tags.yml            # Custom tag definitions (#c:ores, #c:logs, etc.)
-├── template-skill.yml  # Annotated example skill definition
-└── skills/             # Place your .yml skill definitions here
+├── config.yml           # Global settings (database, boss bars, debounce)
+├── tags/
+│   └── base.yml         # Custom tag definitions (#c:ores, #c:logs, etc.)
+├── abilities/
+│   └── vein_miner.yml   # Example reusable ability
+├── template-skill.yml   # Annotated example skill definition
+└── skills/              # Place your .yml skill definitions here (subfolders allowed)
 ```
 
 ## Basic Commands

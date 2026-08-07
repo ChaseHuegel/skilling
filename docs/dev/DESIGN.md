@@ -49,7 +49,8 @@ io.github.chasehuegel.skilling
       impl/                   # LinearEvaluator, MilestoneEvaluator, ConstantEvaluator, PolynomialEvaluator
     tag/
       TagResolver.java        # Resolves #minecraft: and #c: tags into EnumSet, cached and pre-warmed at load
-      CustomTagLoader.java    # Reads tags.yml
+      CustomTagLoader.java    # Reads the tags/ folder
+      AbilityManager.java     # Registers reusable abilities from the abilities/ folder
     ui/
       SkillMenuBuilder.java   # Lazy-builds Inventory from SkillDefinition
       LoreResolver.java       # Injects {placeholder} → evaluator output
@@ -80,21 +81,29 @@ debouncer:
   interval_ms: 500
 ```
 
-### tags.yml (Custom Tag Definitions)
+### tags/ (Custom Tag Definitions)
+
+The `tags/` data folder (shipped as `tags/base.yml`) is scanned recursively.
+Duplicate tag keys merge additively across files. A file that cannot be read as
+tags logs a warning and is skipped.
 
 ```yaml
 custom_tags:
-  c:ores:
+  ores:
     - "minecraft:coal_ore"
     - "minecraft:iron_ore"
     - "minecraft:gold_ore"
     - "#minecraft:copper_ores"    # vanilla tags can be cross-referenced
-  c:logs:
+  logs:
     - "#minecraft:logs"
-  c:gems:
+  gems:
     - "minecraft:diamond"
     - "minecraft:emerald"
 ```
+
+The optional `abilities/` data folder registers reusable abilities by id
+(`AbilityManager`). A skill references an id and overrides individual fields on
+top of the registered base definition.
 
 ## 3. State Management & Data Persistence
 
@@ -221,12 +230,12 @@ The project ships with user-facing markdown documentation in `..`. These files a
 | Document | Audience | Content |
 |---|---|---|
 | `../users/getting-started.md` | Server owners | Installation, first run, basic `/skills` usage |
-| `../users/configuration.md` | Server owners | Reference for `config.yml` and `tags.yml` with all supported keys |
+| `../users/configuration.md` | Server owners | Reference for `config.yml` and `tags/` with all supported keys |
 | `../users/creating-skills.md` | Server owners / designers | Full YAML schema for skill definitions, abilities, XP sources, requirements, with annotated examples |
 | `../users/api-integration.md` | Addon developers | How to register custom mechanics, triggers, evaluators via `SkillingAPI`. Maven/Gradle coordinates, code samples |
 | `../users/capabilities.md` | Addon developers | Catalog of every built-in mechanic, trigger, and evaluator with their parameters and YAML usage |
 
-All YAML config templates (`config.yml`, `tags.yml`, `template-skill.yml`) must contain inline commented documentation for each supported key, including valid values, defaults, and short descriptions.
+All YAML config templates (`config.yml`, `tags/base.yml`, `template-skill.yml`) must contain inline commented documentation for each supported key, including valid values, defaults, and short descriptions.
 
 ---
 

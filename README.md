@@ -81,7 +81,7 @@ Once registered, server owners can immediately use `type: "myaddon:lifesteal"` i
 1. Download the latest release from the [Releases](https://www.google.com/search?q=%23) page.
 2. Drop the `.jar` into your Paper server's `plugins/` folder.
 3. Start the server to generate the default configuration files.
-4. (Optional) Edit `tags.yml` to define custom resource groupings for your specific server economy.
+4. (Optional) Edit `tags/base.yml` (or add files under `tags/`) to define custom resource groupings for your specific server economy.
 5. Build your skills in the `plugins/Skilling/skills/` directory.
 
 ## ⚙️ Technical Requirements

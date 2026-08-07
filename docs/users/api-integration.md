@@ -259,7 +259,7 @@ Armor gating is provided by the built-in `equipped_all` / `equipped_any` filters
 resolve their `value` as a material or `#...` tag through the cached `TagResolver`. No
 armor-tier knowledge lives in Java. The bundled `#c:light_armor`, `#c:medium_armor`,
 `#c:heavy_armor`, and `#c:unarmored` tags reproduce the historical tiers as data (see
-`tags.yml`). Custom filters accept any `value`
+`tags/base.yml`). Custom filters accept any `value`
 string and are available in both `requirements.state` and filter `state` fields.
 
 ### Constructor Requirements

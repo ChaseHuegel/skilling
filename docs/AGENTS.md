@@ -19,7 +19,7 @@ Provide the durable reference material for the project. This includes user-facin
 ### User Documentation (`docs/users/`)
 The following files must exist and stay current:
 * `getting-started.md`: Installation, first run, basic usage (`/skills` commands).
-* `configuration.md`: Reference for `config.yml` and `tags.yml` with all supported keys.
+* `configuration.md`: Reference for `config.yml` and `tags/` with all supported keys.
 * `creating-skills.md`: Full YAML schema for skill definitions, abilities, XP sources, and requirements, with annotated examples.
 * `api-integration.md`: How to register custom mechanics, triggers, and evaluators via the API. Maven/Gradle coordinates, code samples. Keep in sync with `skilling-api/AGENTS.md`.
 * `capabilities.md`: Catalog of every built-in mechanic, trigger, and evaluator with their parameters and YAML usage.

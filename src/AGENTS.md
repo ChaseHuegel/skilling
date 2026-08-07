@@ -10,7 +10,7 @@ Implement the PaperMC rules engine with **zero hardcoded skills, levels, or abil
 
 - `src/main/java/io/github/chasehuegel/skilling/engine/**`: core engine (parsing, registries, profiles, db, requirements, mechanics, triggers, evaluators, tags, ui, feedback, command, lockdown, listeners, events, integration). This includes `engine/ui/branding/**`, the config-driven in-game branding renderer (`BrandingConfig`, `TemplateRenderer`, `SkillColorCode`).
 - `src/main/java/io/github/chasehuegel/skilling/api/**`: main plugin-side API impl/registries (the public API interfaces themselves are owned by `skilling-api/AGENTS.md`).
-- `src/main/resources/**`: `plugin.yml`/`paper-plugin.yml`, default `config.yml`, `tags.yml`, and bundled skill YAML.
+- `src/main/resources/**`: `plugin.yml`/`paper-plugin.yml`, default `config.yml`, `tags/base.yml`, bundled abilities, and bundled skill YAML.
 - `src/test/**`: JUnit 5 unit tests.
 - **NOT owned:** `io.github.chasehuegel.skilling.web`. The Web GUI backend package is owned by `web/AGENTS.md`.
 
@@ -46,7 +46,7 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 ### 5. Configs & Tags
 * **Plugin Config:** Global settings (`config.yml`) govern database pool size, boss bar pool capacity, and debounce intervals.
 * When writing block or item filters, support Vanilla namespaces (e.g., `#minecraft:logs`).
-* Always route tag checks through the custom `TagResolver` to support user-defined custom tags in `tags.yml`. Entity-type tags (`entity_tags:` in `tags.yml`, e.g. `#c:undead`) are resolved by the parallel `EntityTagResolver` for the `target_type` state filter.
+* Always route tag checks through the custom `TagResolver` to support user-defined custom tags in `tags/` (shipped as `tags/base.yml`, loaded recursively with additive merge). Entity-type tags (`entity_tags:` in `tags/`, e.g. `#c:undead`) are resolved by the parallel `EntityTagResolver` for the `target_type` state filter.
 * Flatten tag resolution into `EnumSet<Material>` or `EnumSet<EntityType>` during plugin load to keep event listener lookups at O(1) complexity.
 
 ### 6. Command & Administration
@@ -64,11 +64,12 @@ Ability execution must follow the **Check, Execute, Consume** pattern:
 * Every `SkillMechanic`, `SkillTrigger`, and `ParameterEvaluator` implementation must have a class-level Javadoc explaining its purpose, YAML key, and required/optional parameters.
 
 ### 8. YAML Template Documentation
-* Every configurable YAML file shipped under `resources/` (`config.yml`, `tags.yml`, skill definitions, `template-skill.yml`) must include commented documentation for each key: supported values, defaults, and a brief description.
+* Every configurable YAML file shipped under `resources/` (`config.yml`, `tags/base.yml`, skill definitions, `template-skill.yml`) must include commented documentation for each key: supported values, defaults, and a brief description.
 * Include commented-out examples showing configuration possibilities inline in templates.
 
 ### 9. Coding Style & Conventions
 * **Fail-Fast:** Throw `IllegalArgumentException` during YAML parsing if a config is malformed. Do not let bad configs silently fail at runtime.
+* **Organizational loading is warn-and-skip:** the folder loaders (`CustomTagLoader.loadDirectory`, `AbilityManager.loadAbilities`, `SkillManager.loadSkills`) log a warning and skip a bad file or a duplicate id instead of failing the load. This lets server owners keep work-in-progress files in `tags/`, `abilities/`, and `skills/`. Single-file parsing and schema validation still fail fast; only the aggregate folder load tolerates bad content.
 * **Performance:** Avoid regex compilation inside loops or high-frequency events.
 * **Debouncing:** When providing failure feedback (e.g., playing a dud sound for an ability on cooldown), route it through the `FeedbackDebouncer` to prevent client-side spam.
 * **Component API:** Use Paper's modern Component API for items and text. Avoid legacy `&` color code translations where MiniMessage or Components are applicable.

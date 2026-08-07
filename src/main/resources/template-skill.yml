@@ -64,6 +64,16 @@ xp_sources:
 # ----------------------------------------
 # ABILITIES & MECHANICS
 # ----------------------------------------
+# An ability can be inlined here (full definition) or referenced by id from
+# the abilities/ data folder. A referenced ability inherits the registered
+# definition. The skill's own fields overwrite the inherited fields (top-level
+# overwrite only, no deep merge). Example:
+#
+#   abilities:
+#     - id: "vein_miner"
+#       unlock_level: 40
+#
+# The bundled abilities/vein_miner.yml provides a real example.
 abilities:
 
   # -- ABILITY 1: The Core Passive (Linear Scaling) --

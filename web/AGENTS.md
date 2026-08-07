@@ -61,7 +61,7 @@ All API routes are registered in `WebServer.java` using Javalin 7's `routes` API
 | `PUT` | `/api/skills/{id}` | `SkillHandler.update` | Update skill (staged) |
 | `DELETE` | `/api/skills/{id}` | `SkillHandler.delete` | Delete skill file |
 | `GET` | `/api/tags` | `TagHandler.get` | Get all custom tags |
-| `PUT` | `/api/tags` | `TagHandler.update` | Update tags.yml (staged) |
+| `PUT` | `/api/tags` | `TagHandler.update` | Update tags/base.yml (staged) |
 | `GET` | `/api/config` | `ConfigHandler.get` | Get config.yml values |
 | `PUT` | `/api/config` | `ConfigHandler.update` | Update config.yml (staged) |
 | `GET` | `/api/gui-layout` | `GuiLayoutHandler.get` | Get gui.yml layout (DTO) |
@@ -233,8 +233,9 @@ manual visual-debugging utility only, not part of the test suite.
 
 Fixture data lives in `e2e/test-data/`:
 - `config.yml`: plugin config with `web.enabled: true`.
-- `tags.yml`: sample custom tags (`c:ores`, `c:stone`).
+- `tags/base.yml`: sample custom tags (`c:ores`, `c:stone`).
 - `skills/mining.yml`: sample mining skill with XP sources and abilities.
+- `skills/special/blasting.yml`: a skill in a subfolder, proving recursive skill loading.
 
 The `globalSetup.ts` copies these into `run/plugins/Skilling/` before the server starts, so they are loaded as the initial plugin state.
 

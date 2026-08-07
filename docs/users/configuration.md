@@ -135,9 +135,12 @@ Defaults reproduce the plugin's original look. The engine renders templates verb
 
 The web GUI uses Basic auth over plaintext HTTP, so credentials are base64-encoded, not encrypted. Put the GUI behind a TLS-terminating reverse proxy (nginx, Caddy) or bind to `127.0.0.1` in production. Failed logins are rate-limited per client IP (locked out after 10 failures within 15 minutes). Changing `web.port`, `web.username`, or `web.password` requires editing `config.yml` and restarting the server. The web UI rejects such changes with a "requires restart" message. Saving config from the web UI preserves every key the editor does not model (e.g. `setup.first_run`). Only the edited keys are written.
 
-## tags.yml
+## tags/
 
-Defines custom namespaced tag groups referenced in skill YAML files.
+The `tags/` data folder defines custom namespaced tag groups referenced in
+skill YAML files. The plugin scans the folder recursively on startup and on
+`/skills reload`. Every `.yml` file in the folder (including subfolders)
+loads in sorted relative-path order.
 
 Tags use the `#c:` prefix and can contain:
 - Direct material names: `minecraft:diamond`
@@ -151,6 +154,15 @@ custom_tags:
     - "minecraft:gold_ore"
     - "#minecraft:coal_ores"
 ```
+
+**Additive merge:** when two files define the same tag key, the entry lists
+are appended together. The first file's entries do not overwrite the second
+file's entries. Cross-file `#c:` references resolve in one pass, so a file can
+reference a tag that another file defines.
+
+**Warn-and-skip:** a file that cannot be read as tags (non-map YAML, a scalar
+where a list is expected, an unknown material or entity name, or an unknown
+vanilla tag) logs a warning and is skipped. It does not fail the load.
 
 **Entity tags** live under a separate `entity_tags:` key and are used by the
 `target_type` state filter. They hold entity type names and/or vanilla entity
@@ -166,7 +178,8 @@ entity_tags:
 
 Usage in a skill: `state: "target_type:#c:undead"`.
 
-The shipped `tags.yml` defines these custom tags (used by the bundled skill YAMLs):
+The shipped `tags/base.yml` defines these custom tags (used by the bundled
+skill YAMLs):
 
 | Tag | Members |
 |---|---|
@@ -201,6 +214,6 @@ The shipped `tags.yml` defines these custom tags (used by the bundled skill YAML
 |---|---|
 | `#c:undead` | `#minecraft:zombies`, `#minecraft:skeletons`, wither skeleton, phantom, zombified piglin, drowned, stray, husk |
 
-> **Web GUI:** The Tags page edits `custom_tags` only. `entity_tags` are read-only
-> in the GUI, displayed for reference, and preserved verbatim when tags are saved
-> through the API.
+> **Web GUI:** The Tags page edits `custom_tags` in `tags/base.yml` only.
+> `entity_tags` are read-only in the GUI, displayed for reference, and
+> preserved verbatim when tags are saved through the API.

@@ -151,12 +151,39 @@ Each entry defines an unlockable ability with mechanics.
 | `id` | Yes | string | Unique ability identifier |
 | `display_name` | No | string | Human-readable name (default: same as `id`) |
 | `unlock_level` | No | int | Level required to unlock (default: 1) |
-| `trigger` | Yes | string | The event that activates this ability. Each ability must declare exactly one trigger key that determines which event dispatch activates it. See the Triggers table in [capabilities.md](capabilities.md) for valid keys. This field is required and fail-fast validated. Omitting it throws `IllegalArgumentException` during skill loading. The trigger must match the mechanic's expected event (see [capabilities.md](capabilities.md) for each mechanic's event) |
+| `trigger` | Yes | string | The event that activates this ability. Each ability must declare exactly one trigger key that determines which event dispatch activates it. See the Triggers table in [capabilities.md](capabilities.md) for valid keys. This field is required and fail-fast validated for an inline (non-referenced) ability. An ability that references a registered id (see below) may omit `trigger` and inherit it from the registered ability. Omitting `trigger` on an inline ability throws `IllegalArgumentException` during skill loading. The trigger must match the mechanic's expected event (see [capabilities.md](capabilities.md) for each mechanic's event) |
 | `display` | No | section | UI lore configuration |
 | `requirements` | No | section | Pre-execution requirements |
 | `on_failure` | No | section | Failure feedback overrides |
 | `mechanics` | Yes | list | Executable mechanic actions |
 | `feedback` | No | section | Success feedback (particles, sounds, messages) |
+
+#### Reusable Abilities (the `abilities/` folder)
+
+The optional `abilities/` data folder defines reusable abilities. Each `.yml`
+file registers one ability by its `id`. The plugin scans the folder
+recursively on startup and on `/skills reload`. A file that is not a YAML map
+or lacks a non-blank string `id` logs a warning and is skipped. On an id
+conflict the first file loaded wins and a warning is logged.
+
+A skill references a registered ability by its `id`. The registered ability
+acts as the base. The skill's own fields overwrite the inherited fields
+(top-level overwrite only, no deep merge). This lets one field be overridden
+per skill while everything else is inherited:
+
+```yaml
+abilities:
+  - id: "vein_miner"
+    unlock_level: 40
+```
+
+Here `vein_miner` inherits its `trigger`, `requirements`, `mechanics`, and
+`feedback` from `abilities/vein_miner.yml`. The skill's `unlock_level` (40)
+overwrites the ability file's value (25).
+
+If a skill references an id that is not registered and the inline definition
+is incomplete, parsing fails with a descriptive error. An id-referenced
+ability with no other fields is valid only when the id is registered.
 
 #### on_failure
 

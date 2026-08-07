@@ -834,14 +834,14 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `health` | `below:N%`, `above:N%` | Player health percentage |
 | `hunger` | `below:N`, `above:N` | Player food level |
 | `biome` | `minecraft:biome_id` | Player's current biome. Values are validated at load |
-| `target_type` | `minecraft:entity_id` or `<#entity_tag>` | Type of the target entity. Matches the damaged entity on `entity_damage`/`entity_damage_taken` and the killed entity on `entity_kill`. A `#...` value (e.g. `#c:undead`, `#minecraft:zombies`) resolves through the `entity_tags` store in `tags.yml`. Fails closed on events with no target entity |
+| `target_type` | `minecraft:entity_id` or `<#entity_tag>` | Type of the target entity. Matches the damaged entity on `entity_damage`/`entity_damage_taken` and the killed entity on `entity_kill`. A `#...` value (e.g. `#c:undead`, `#minecraft:zombies`) resolves through the `entity_tags` store in `tags/base.yml`. Fails closed on events with no target entity |
 | `offhand` | `empty`, `weapon` | Offhand item state |
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
 | `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |
 | `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
 
 The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`
-custom tags (in `tags.yml`) reproduce the historical armor tiers as data. No
+custom tags (in `tags/base.yml`) reproduce the historical armor tiers as data. No
 tier knowledge is hard-coded in Java. `#c:unarmored` includes empty slots
 (`minecraft:air`), the elytra, and headwear.
 

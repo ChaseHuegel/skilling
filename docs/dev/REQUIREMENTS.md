@@ -52,7 +52,8 @@ The engine acts as a parser mapping YAML definitions to executable Java interfac
 * **Plugin Config:** A global `config.yml` must be generated on first run, governing database pool size, boss bar pool capacity (default: 2), and debounce intervals (default: 500ms).
 * **Parameter Evaluators:** All numeric configurations must be parsed into polymorphic evaluators (`LinearEvaluator`, `MilestoneEvaluator`, `ConstantEvaluator`) that dynamically calculate outputs based on a player's effective level.
 * **Vanilla Tag Resolution:** String filters beginning with `#` must query the Bukkit `Tag` API.
-* **Custom Tag Registry:** The engine must parse a localized `tags.yml` (generated on first run) to support custom item/block groupings before falling back to vanilla namespaces. The `tags.yml` format must support both raw material lists and cross-references to vanilla `#` tags.
+* **Custom Tag Registry:** The engine must parse the `tags/` data folder (generated on first run as `tags/base.yml`) to support custom item/block groupings before falling back to vanilla namespaces. The folder must be scanned recursively. Duplicate tag keys must merge additively. A file that cannot be read as tags must log a warning and be skipped. The format must support both raw material lists and cross-references to vanilla `#` tags.
+* **Ability Registry:** The engine must parse the optional `abilities/` data folder into a registry keyed by ability id. A skill may reference an id and override individual fields on top of the registered base definition.
 * **O(1) Execution:** Tags and filters must be flattened into `EnumSet<Material>` or `EnumSet<EntityType>` during plugin load to guarantee fast event routing.
 
 ---
