@@ -147,6 +147,12 @@ public final class LockdownManager {
         var oldTagResolver = plugin.getTagResolver();
         var oldEntityTagResolver = plugin.getEntityTagResolver();
         var oldCustomTagLoader = plugin.getCustomTagLoader();
+        var oldAbilityManager = plugin.getAbilityManager();
+
+        // Rebuild the abilities registry from the data folder so a reload picks up
+        // new or edited reusable abilities.
+        var abilityManager = new io.github.chasehuegel.skilling.engine.AbilityManager();
+        abilityManager.loadAbilities(new File(plugin.getDataFolder(), "abilities"));
 
         // Hold the registry write lock for the whole clear/rebuild so a concurrent
         // staged-skill validation (Jetty worker, read lock) never sees the shared
@@ -169,8 +175,10 @@ public final class LockdownManager {
             plugin.setTagResolver(tagResolver);
             plugin.setEntityTagResolver(entityTagResolver);
             plugin.setCustomTagLoader(customTagLoader);
+            plugin.setAbilityManager(abilityManager);
             plugin.registerBuiltins();
             skillManager.setTagResolver(tagResolver);
+            skillManager.setAbilityManager(abilityManager);
             plugin.getRequirementEngine().setTagResolver(tagResolver);
             plugin.getSkillEventListener().setTagResolver(tagResolver);
             try {
@@ -179,7 +187,9 @@ public final class LockdownManager {
                 plugin.setTagResolver(oldTagResolver);
                 plugin.setEntityTagResolver(oldEntityTagResolver);
                 plugin.setCustomTagLoader(oldCustomTagLoader);
+                plugin.setAbilityManager(oldAbilityManager);
                 skillManager.setTagResolver(oldTagResolver);
+                skillManager.setAbilityManager(oldAbilityManager);
                 plugin.getRequirementEngine().setTagResolver(oldTagResolver);
                 plugin.getSkillEventListener().setTagResolver(oldTagResolver);
                 // State filters capture the resolver at registration; re-register

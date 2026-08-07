@@ -3,6 +3,7 @@ package io.github.chasehuegel.skilling;
 import io.github.chasehuegel.skilling.api.Registries;
 import io.github.chasehuegel.skilling.api.SkillingAPI;
 import io.github.chasehuegel.skilling.engine.SkillManager;
+import io.github.chasehuegel.skilling.engine.AbilityManager;
 import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.db.DatabaseManager;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
@@ -83,6 +84,7 @@ public final class Skilling extends JavaPlugin {
     private LockdownManager lockdownManager;
     private SkillsCommand skillsCommand;
     private CustomTagLoader customTagLoader;
+    private volatile AbilityManager abilityManager;
     private volatile TagResolver tagResolver;
     private volatile EntityTagResolver entityTagResolver;
     private SkillEventListener skillEventListener;
@@ -204,6 +206,9 @@ public final class Skilling extends JavaPlugin {
                 tagResolver,
                 stateFilterRegistry
         );
+        this.abilityManager = new AbilityManager();
+        abilityManager.loadAbilities(new File(getDataFolder(), "abilities"));
+        skillManager.setAbilityManager(abilityManager);
         loadSkills();
 
         // UI
@@ -774,6 +779,26 @@ public final class Skilling extends JavaPlugin {
 
     public void setCustomTagLoader(CustomTagLoader customTagLoader) {
         this.customTagLoader = customTagLoader;
+    }
+
+    /**
+     * Returns the reusable ability registry used by {@link SkillManager} for
+     * ability base-merge.
+     *
+     * @return the current ability registry
+     */
+    public AbilityManager getAbilityManager() {
+        return abilityManager;
+    }
+
+    /**
+     * Replaces the reusable ability registry (used on reload when abilities
+     * change).
+     *
+     * @param abilityManager the new ability registry
+     */
+    public void setAbilityManager(AbilityManager abilityManager) {
+        this.abilityManager = abilityManager;
     }
 
     /**

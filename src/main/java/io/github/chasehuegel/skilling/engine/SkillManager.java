@@ -38,6 +38,7 @@ public final class SkillManager {
     private final TriggerRegistry triggerRegistry;
     private final io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry stateFilterRegistry;
     private TagResolver tagResolver;
+    private volatile AbilityManager abilityManager;
     private volatile Map<String, SkillDefinition> skills = Map.of();
     private volatile Map<String, List<XpSourceRef>> xpSourcesByTrigger = Map.of();
     private volatile Map<String, List<AbilityRef>> abilitiesByTrigger = Map.of();
@@ -324,6 +325,21 @@ public final class SkillManager {
             if (id == null) throw new IllegalArgumentException("Ability missing 'id'");
             if (!seenIds.add(id)) {
                 throw new IllegalArgumentException("Duplicate ability ID: " + id);
+            }
+
+            // When an ability with this id is registered in the AbilityManager,
+            // the registered definition acts as the base: the skill's inline map
+            // is overlaid on top (top-level field overwrite, no deep merge of
+            // nested structures), so one field can be overridden per skill while
+            // everything else is inherited. Each skill parses its own instance.
+            AbilityManager manager = abilityManager;
+            if (manager != null) {
+                Map<String, Object> base = manager.getRaw(id);
+                if (base != null) {
+                    Map<String, Object> merged = new LinkedHashMap<>(base);
+                    merged.putAll(abilityMap);
+                    abilityMap = merged;
+                }
             }
 
             String displayName = (String) abilityMap.getOrDefault("display_name", id);
@@ -845,6 +861,24 @@ public final class SkillManager {
      */
     public void setTagResolver(TagResolver tagResolver) {
         this.tagResolver = tagResolver;
+    }
+
+    /**
+     * Replaces the ability registry used for reusable ability base-merge.
+     *
+     * @param abilityManager the new ability registry
+     */
+    public void setAbilityManager(AbilityManager abilityManager) {
+        this.abilityManager = abilityManager;
+    }
+
+    /**
+     * Returns the ability registry used for reusable ability base-merge.
+     *
+     * @return the current ability registry, or null when none is set
+     */
+    public AbilityManager getAbilityManager() {
+        return abilityManager;
     }
 
     /**
