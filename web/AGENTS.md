@@ -85,6 +85,10 @@ it is preserved read-only through the round-trip.
 
 Before applying, `StagingManager.applyAndBackup()` snapshots live-file content fingerprints (SHA-256, including "absent" for files that did not exist at staging time). If a live file was modified externally (e.g., FTP) or a previously-absent file appeared since staging, the reload is rejected with HTTP 409 and a list of conflicting files. All staging mutations are serialized by an internal lock. Writes are atomic (temp + atomic move). Each reload writes a unique backup directory.
 
+#### Referenced Abilities
+
+Skills may reference a reusable ability by id (registered from the `abilities/` data folder) instead of inlining its full definition. The serializers tolerate such a reference-shaped entry (an `id` with no `trigger`) so `GET /api/skills/{id}` never errors on those skills, and `abilityToMap` omits null/blank/default fields so a no-op round-trip does not add spurious overrides. The editor has **no support for referenced abilities yet**: it displays them as a bare id, saving may expand or reject them (the frontend still requires a `trigger`), and nested-skill file resolution is out of scope. Editor support is a follow-up; do not build it here.
+
 ### Minecraft Asset Textures
 
 The skill card icons render actual Minecraft item textures via a public CDN. This gives admins a visual preview of how their icon choice looks.

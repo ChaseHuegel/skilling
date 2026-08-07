@@ -163,10 +163,12 @@ public final class SkillSerializer {
         String id = str(raw, "id");
         String displayName = str(raw, "display_name", id);
         int unlockLevel = intVal(raw, "unlock_level", 1);
+        // A reference-shaped ability (an id with no trigger) is tolerated so the
+        // editor can open skills that reuse an ability registered in the
+        // abilities/ data folder. The engine resolves the trigger and the rest
+        // from the registry at parse time; the editor has no reference support
+        // yet, so it only round-trips the id and any explicit overrides.
         String trigger = str(raw, "trigger");
-        if (trigger == null || trigger.isBlank()) {
-            throw new IllegalArgumentException("Ability '" + id + "' missing required 'trigger' field");
-        }
 
         Map<String, Object> displayMap = map(raw, "display");
         List<String> lore = new ArrayList<>();
@@ -255,9 +257,21 @@ public final class SkillSerializer {
     private static Map<String, Object> abilityToMap(SkillDetailDTO.AbilityDTO a) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", a.id());
-        m.put("display_name", a.displayName());
-        m.put("unlock_level", a.unlockLevel());
-        m.put("trigger", a.trigger());
+        // Only write fields that carry real content so an id-referenced ability
+        // (whose trigger and other fields come from the abilities/ registry)
+        // round-trips as a bare reference instead of emitting spurious overrides
+        // that would mask the registered ability's values. display_name equal to
+        // the id is the parse fallback, not an explicit value.
+        if (a.displayName() != null && !a.displayName().isBlank()
+                && !a.displayName().equals(a.id())) {
+            m.put("display_name", a.displayName());
+        }
+        if (a.unlockLevel() != 1) {
+            m.put("unlock_level", a.unlockLevel());
+        }
+        if (a.trigger() != null && !a.trigger().isBlank()) {
+            m.put("trigger", a.trigger());
+        }
 
         Map<String, Object> displayMap = new LinkedHashMap<>();
         if (a.display() != null && a.display().lore() != null && !a.display().lore().isEmpty()) {
@@ -297,7 +311,7 @@ public final class SkillSerializer {
             exMap.put("minimum", a.requirements().exhaustion().minimum());
             reqMap.put("exhaustion", exMap);
         }
-        m.put("requirements", reqMap);
+        if (!reqMap.isEmpty()) m.put("requirements", reqMap);
 
         List<Map<String, Object>> mechanics = new ArrayList<>();
         for (var me : a.mechanics()) {
@@ -313,17 +327,24 @@ public final class SkillSerializer {
             meMap.put("parameters", params);
             mechanics.add(meMap);
         }
-        m.put("mechanics", mechanics);
+        if (!mechanics.isEmpty()) m.put("mechanics", mechanics);
 
-        Map<String, Object> fbMap = new LinkedHashMap<>();
-        Map<String, Object> notify = new LinkedHashMap<>();
-        notify.put("action_bar", a.feedback().actionBar());
-        notify.put("chat", a.feedback().chat());
-        notify.put("message", a.feedback().message());
-        fbMap.put("notify", notify);
-        fbMap.put("particles", a.feedback().particles() != null ? a.feedback().particles() : List.of());
-        fbMap.put("sounds", a.feedback().sounds() != null ? a.feedback().sounds() : List.of());
-        m.put("feedback", fbMap);
+        boolean hasFeedback = a.feedback() != null
+                && (a.feedback().actionBar() || a.feedback().chat()
+                        || (a.feedback().message() != null && !a.feedback().message().isBlank())
+                        || (a.feedback().particles() != null && !a.feedback().particles().isEmpty())
+                        || (a.feedback().sounds() != null && !a.feedback().sounds().isEmpty()));
+        if (hasFeedback) {
+            Map<String, Object> fbMap = new LinkedHashMap<>();
+            Map<String, Object> notify = new LinkedHashMap<>();
+            notify.put("action_bar", a.feedback().actionBar());
+            notify.put("chat", a.feedback().chat());
+            notify.put("message", a.feedback().message());
+            fbMap.put("notify", notify);
+            fbMap.put("particles", a.feedback().particles() != null ? a.feedback().particles() : List.of());
+            fbMap.put("sounds", a.feedback().sounds() != null ? a.feedback().sounds() : List.of());
+            m.put("feedback", fbMap);
+        }
 
         Map<String, Object> ofMap = onFailureToMap(a.onFailure());
         if (!ofMap.isEmpty()) {
