@@ -70,7 +70,7 @@ class SkillManagerMechanicParamValidationTest {
                           effect: { constant: "minecraft:poisn" }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("poisn"), ex.getMessage());
     }
 
@@ -83,7 +83,7 @@ class SkillManagerMechanicParamValidationTest {
                           amount: { constant: 1.0 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("movement_speeed"), ex.getMessage());
     }
 
@@ -96,7 +96,7 @@ class SkillManagerMechanicParamValidationTest {
                           ticks: { constant: 20 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("not_a_material"), ex.getMessage());
     }
 
@@ -108,7 +108,7 @@ class SkillManagerMechanicParamValidationTest {
                           particle: { constant: "minecraft:not_a_particle" }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("minecraft:not_a_particle"), ex.getMessage());
     }
 
@@ -120,7 +120,7 @@ class SkillManagerMechanicParamValidationTest {
                           radius: { constant: 5 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("effect"), ex.getMessage());
     }
 
@@ -132,7 +132,7 @@ class SkillManagerMechanicParamValidationTest {
                           amount: { constant: 1.0 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("attribute"), ex.getMessage());
     }
 
@@ -145,7 +145,7 @@ class SkillManagerMechanicParamValidationTest {
                           duration: { constant: "3" }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("duration"), ex.getMessage());
     }
 
@@ -158,7 +158,7 @@ class SkillManagerMechanicParamValidationTest {
                           typo: { constant: 1.0 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("typo"), ex.getMessage());
     }
 
@@ -188,7 +188,7 @@ class SkillManagerMechanicParamValidationTest {
                       sounds: [ { type: "minecraft:not_a_sound" } ]
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("minecraft:not_a_sound"), ex.getMessage());
     }
 
@@ -200,7 +200,7 @@ class SkillManagerMechanicParamValidationTest {
                       particles: [ { type: "minecraft:not_a_particle" } ]
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("minecraft:not_a_particle"), ex.getMessage());
     }
 
@@ -212,7 +212,7 @@ class SkillManagerMechanicParamValidationTest {
                           duration: { constant: 3 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("recipe"), ex.getMessage());
     }
 
@@ -224,7 +224,7 @@ class SkillManagerMechanicParamValidationTest {
                           recipe: { constant: "NOT_A_RECIPE" }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("NOT_A_RECIPE"), ex.getMessage());
     }
 
@@ -237,7 +237,7 @@ class SkillManagerMechanicParamValidationTest {
                           typo: { constant: 1.0 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("typo"), ex.getMessage());
     }
 
@@ -248,7 +248,7 @@ class SkillManagerMechanicParamValidationTest {
                         parameters:
                           recipe: { constant: "minecraft:netherite_pickaxe" }
                 """);
-        assertDoesNotThrow(() -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertDoesNotThrow(() -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
     }
 
     @Test
@@ -260,7 +260,7 @@ class SkillManagerMechanicParamValidationTest {
                     feedback: { notify: { action_bar: false } }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("minecraft:not_a_sound"), ex.getMessage());
     }
 
@@ -275,7 +275,7 @@ class SkillManagerMechanicParamValidationTest {
                       sounds: [ { type: "minecraft:entity.player.levelup" } ]
                       particles: [ { type: "minecraft:happy_villager" } ]
                 """);
-        assertDoesNotThrow(() -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+        assertDoesNotThrow(() -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
     }
 
     @Test
@@ -287,7 +287,7 @@ class SkillManagerMechanicParamValidationTest {
                           radius: { constant: -5 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("radius"), ex.getMessage());
     }
 
@@ -299,7 +299,7 @@ class SkillManagerMechanicParamValidationTest {
                           chance: { constant: 150 }
                 """);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("chance"), ex.getMessage());
     }
 
@@ -312,7 +312,7 @@ class SkillManagerMechanicParamValidationTest {
                           ticks: { constant: -10 }
                 """);
         assertThrows(IllegalArgumentException.class,
-                () -> newSkillManager().loadSkills(tempDir.resolve("skills").toFile()));
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
     }
 
     @Test
@@ -357,7 +357,7 @@ class SkillManagerMechanicParamValidationTest {
                           effect: { constant: "minecraft:poisn" }
                 """);
         assertThrows(IllegalArgumentException.class,
-                () -> manager.loadSkills(tempDir.resolve("skills").toFile()));
+                () -> manager.parseSkill(tempDir.resolve("skills/test.yml").toFile()));
     }
 
     /** No-op mechanic used only to register a validator under a test key. */

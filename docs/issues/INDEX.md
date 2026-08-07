@@ -5,7 +5,7 @@
 ### Improvements
 - [x] [ISSUE-251](ISSUE-251.md) - Tags: relocate to `tags/base.yml`, load recursively with additive merge
 - [x] [ISSUE-252](ISSUE-252.md) - Abilities: reusable `AbilityManager` registry and polymorphic base-merge
-- [ ] [ISSUE-253](ISSUE-253.md) - Skills: load recursively with warn-and-skip and first-wins conflicts
+- [x] [ISSUE-253](ISSUE-253.md) - Skills: load recursively with warn-and-skip and first-wins conflicts
 - [ ] [ISSUE-254](ISSUE-254.md) - Extract bundled `vein_miner` ability to `abilities/vein_miner.yml`
 - [ ] [ISSUE-255](ISSUE-255.md) - Web: tolerate id-referenced abilities in the editor serializers
 - [ ] [ISSUE-256](ISSUE-256.md) - Automated coverage for the portability loading features

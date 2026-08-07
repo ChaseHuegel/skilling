@@ -166,12 +166,11 @@ public final class LockdownManager {
             plugin.getRegistries().getTriggerRegistry().clear();
 
             // Rebuild the registries around the new resolvers, then parse the new
-            // skills. loadSkills() swaps the skill set atomically only after every
-            // file parses, so a malformed skill throws here with the previous skills
-            // preserved — but if the resolvers were already committed, those surviving
-            // skills would silently stop matching against the new tags. Roll the
-            // resolver swap back on failure so the previous set keeps running against
-            // the previous tags.
+            // skills. loadSkills() skips malformed files with a warning and swaps
+            // in the surviving set atomically; only a catastrophic error throws
+            // here. If the resolvers were already committed and the load fails,
+            // roll the resolver swap back so the previous skills keep running
+            // against the previous tags.
             plugin.setTagResolver(tagResolver);
             plugin.setEntityTagResolver(entityTagResolver);
             plugin.setCustomTagLoader(customTagLoader);

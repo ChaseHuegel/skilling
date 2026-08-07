@@ -10,10 +10,13 @@ import io.github.chasehuegel.skilling.engine.registry.MechanicRegistry;
 import io.github.chasehuegel.skilling.engine.registry.TriggerRegistry;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.entity.EntityDamageEvent;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 
@@ -97,32 +100,36 @@ public final class SkillManager {
     }
 
     /**
-     * Loads all skill YAML files from the given directory.
+     * Loads all skill YAML files from the given directory, recursing into
+     * subfolders in sorted relative-path order.
+     *
+     * <p>A file that cannot be parsed logs a warning and is skipped, so skill
+     * packs may hold work-in-progress files. A parsed skill whose id already
+     * exists keeps the first loaded skill and logs a warning. Files are built
+     * into a local map and atomically swapped in as an immutable snapshot so
+     * concurrent readers (web threads, addons) never see a half-loaded view.
+     * Only catastrophic file-system errors throw.
      *
      * @param skillsDir the directory containing skill YAML files
-     * @throws IllegalArgumentException if a file is malformed
      */
     public void loadSkills(File skillsDir) {
-        // Build into a local map and atomically swap in an immutable snapshot so
-        // concurrent readers (web threads, addons) never see a half-loaded view.
-        // A malformed file throws here, leaving the previous skill set intact.
         Map<String, SkillDefinition> built = new LinkedHashMap<>();
         if (skillsDir.exists() && skillsDir.isDirectory()) {
-            File[] files = skillsDir.listFiles((dir, name) -> name.endsWith(".yml"));
-            if (files != null) {
-                for (File file : files) {
-                    SkillDefinition def;
-                    try {
-                        def = parseSkill(file);
-                    } catch (IllegalArgumentException e) {
-                        throw new IllegalArgumentException(
-                                "Failed to parse skill file " + file.getName() + ": " + e.getMessage(), e);
-                    }
-                    if (built.containsKey(def.id())) {
-                        throw new IllegalArgumentException("Duplicate skill ID '" + def.id() + "' in file: " + file.getName());
-                    }
-                    built.put(def.id(), def);
+            for (File file : collectSkillFiles(skillsDir)) {
+                SkillDefinition def;
+                try {
+                    def = parseSkill(file);
+                } catch (IllegalArgumentException e) {
+                    Bukkit.getLogger().warning(
+                            "Skipping malformed skill file " + file.getName() + ": " + e.getMessage());
+                    continue;
                 }
+                if (built.containsKey(def.id())) {
+                    Bukkit.getLogger().warning("Duplicate skill ID '" + def.id()
+                            + "' in file: " + file.getName() + "; keeping the first definition");
+                    continue;
+                }
+                built.put(def.id(), def);
             }
         }
         this.skills = Collections.unmodifiableMap(built);
@@ -145,8 +152,27 @@ public final class SkillManager {
         this.abilitiesByTrigger = freezeIndex(abilityIndex);
     }
 
-    private static <T> Map<String, List<T>> freezeIndex(Map<String, List<T>> index) {
-        Map<String, List<T>> frozen = new HashMap<>();
+    /**
+     * Collects every {@code .yml} file under the skills directory (recursively)
+     * in sorted relative-path order for a deterministic load order.
+     *
+     * @param dir the skills directory
+     * @return the skill files to load
+     */
+    private static List<File> collectSkillFiles(File dir) {
+        List<File> files = new ArrayList<>();
+        try (var stream = Files.walk(dir.toPath())) {
+            stream.filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".yml"))
+                    .sorted(Comparator.comparing(p -> dir.toPath().relativize(p).toString()))
+                    .forEach(p -> files.add(p.toFile()));
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to walk skills directory: " + dir, e);
+        }
+        return files;
+    }
+
+    private static <T> Map<String, List<T>> freezeIndex(Map<String, List<T>> index) {        Map<String, List<T>> frozen = new HashMap<>();
         index.forEach((trigger, refs) -> frozen.put(trigger, List.copyOf(refs)));
         return Collections.unmodifiableMap(frozen);
     }

@@ -2,16 +2,21 @@ package io.github.chasehuegel.skilling.skill;
 
 import io.github.chasehuegel.skilling.TestSkillManager;
 import io.github.chasehuegel.skilling.engine.SkillManager;
+import org.bukkit.Bukkit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class SkillManagerReloadTest {
 
@@ -26,7 +31,7 @@ class SkillManagerReloadTest {
     }
 
     @Test
-    void malformedSkillAmongManyFailsLoadAndPreservesPreviousSet() throws Exception {
+    void malformedSkillAmongManyIsSkippedWithWarning() throws Exception {
         Path skillsDir = tempDir.resolve("skills");
         Files.createDirectories(skillsDir);
         Files.writeString(skillsDir.resolve("good.yml"), """
@@ -46,12 +51,14 @@ class SkillManagerReloadTest {
               - { trigger: block_break }
             """);
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> skillManager.loadSkills(skillsDir.toFile()));
-        assertTrue(ex.getMessage().contains("bad.yml"),
-                "the failing file must be named: " + ex.getMessage());
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getLogger()).thenReturn(Logger.getAnonymousLogger());
+            skillManager.loadSkills(skillsDir.toFile());
+        }
         assertTrue(skillManager.getSkills().containsKey("good"),
-                "the previous skill set must be preserved after a failed load");
+                "the valid skill must survive a malformed sibling");
+        assertFalse(skillManager.getSkills().containsKey("bad"),
+                "the malformed skill must be skipped, not fail the load");
     }
 
     @Test
