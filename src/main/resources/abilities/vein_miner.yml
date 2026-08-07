@@ -1,0 +1,55 @@
+# ==========================================
+# Skilling: Reusable Ability — Vein Miner
+# ==========================================
+# This file registers a reusable ability under the id "vein_miner".
+# Any skill can reference the id in its abilities list and override
+# individual fields. The skill's own fields overwrite this file's values.
+# The merge is a top-level field overwrite. There is no deep merge of
+# nested structures.
+#
+# Example in a skill definition:
+#   abilities:
+#     - id: "vein_miner"
+#       unlock_level: 25
+#
+# The supported keys for an ability are:
+#   id:           the registry id used to reference this ability.
+#   display_name: the name shown in the skill GUI.
+#   unlock_level: the level at which the ability unlocks. Default 1.
+#   trigger:      the event that fires the ability. Example "block_break".
+#   display:      the lore lines shown in the GUI. Use {placeholder} tokens
+#                 that match mechanic parameter names.
+#   requirements: cooldown, state filters, item costs, and exhaustion.
+#   on_failure:   the feedback shown when a requirement check fails.
+#   mechanics:    the list of mechanic entries that execute on the trigger.
+#   feedback:     the notify and sound feedback on a successful use.
+# ==========================================
+
+id: "vein_miner"
+display_name: "Vein Miner"
+unlock_level: 25
+trigger: "block_break"
+display:
+  lore:
+    - "&7Sneak-mine to break up to &a{chain_limit}&7 connected ore/stone."
+    - "&7Costs 2 hunger + 1 coal."
+    - "&8Requires: Sneaking, pickaxe, 5s cooldown, 3+ hunger."
+requirements:
+  cooldown: 5.0
+  state: [ "is_sneaking" ]
+  items:
+    - { action: "possession", tag: "#minecraft:pickaxes", slot: "MAIN_HAND" }
+    - { action: "cost", tag: "minecraft:coal", amount: 1 }
+  exhaustion: { amount: 2.0, minimum: 3.0 }
+on_failure:
+  cooldown: { action_bar: "&cVein Miner cooling down: {time}s" }
+  missing_item: { action_bar: "&cRequires 1x Coal to power Vein Miner!" }
+  exhaustion: { action_bar: "&cToo exhausted!" }
+mechanics:
+  - type: "core:chain_break"
+    filters: [ { target: "#c:veinminer" } ]
+    parameters:
+      chain_limit: { milestones: { 25: 3, 50: 8, 75: 16, 100: 32 } }
+feedback:
+  notify: { action_bar: true, chat: false, message: "&b✦ Vein Miner! ✦" }
+  sounds: [ { type: "minecraft:entity.zombie.break_wooden_door", volume: 0.5, pitch: 1.2, target: "self" } ]

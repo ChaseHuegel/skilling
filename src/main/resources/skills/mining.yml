@@ -32,34 +32,11 @@ abilities:
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
     feedback: { notify: { action_bar: false } }
+  # Reusable ability: the full definition lives in abilities/vein_miner.yml.
+  # Referencing the id with unlock_level demonstrates per-skill override; the
+  # skill's unlock_level overwrites the ability file's value.
   - id: "vein_miner"
-    display_name: "Vein Miner"
     unlock_level: 25
-    trigger: "block_break"
-    display:
-      lore:
-        - "&7Sneak-mine to break up to &a{chain_limit}&7 connected ore/stone."
-        - "&7Costs 2 hunger + 1 coal."
-        - "&8Requires: Sneaking, pickaxe, 5s cooldown, 3+ hunger."
-    requirements:
-      cooldown: 5.0
-      state: [ "is_sneaking" ]
-      items:
-        - { action: "possession", tag: "#minecraft:pickaxes", slot: "MAIN_HAND" }
-        - { action: "cost", tag: "minecraft:coal", amount: 1 }
-      exhaustion: { amount: 2.0, minimum: 3.0 }
-    on_failure:
-      cooldown: { action_bar: "&cVein Miner cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires 1x Coal to power Vein Miner!" }
-      exhaustion: { action_bar: "&cToo exhausted!" }
-    mechanics:
-      - type: "core:chain_break"
-        filters: [ { target: "#c:veinminer" } ]
-        parameters:
-          chain_limit: { milestones: { 25: 3, 50: 8, 75: 16, 100: 32 } }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Vein Miner! ✦" }
-      sounds: [ { type: "minecraft:entity.zombie.break_wooden_door", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "magma_forge"
     display_name: "Magma Forge"
     unlock_level: 50

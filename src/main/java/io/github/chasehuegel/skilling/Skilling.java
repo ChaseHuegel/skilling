@@ -131,6 +131,14 @@ public final class Skilling extends JavaPlugin {
                 getLogger().info("Generating default template-skill.yml...");
                 saveResource("template-skill.yml", false);
             }
+            File abilitiesDir = new File(getDataFolder(), "abilities");
+            if (!abilitiesDir.exists() && !abilitiesDir.mkdirs()) {
+                getLogger().warning("Could not create abilities data directory: " + abilitiesDir);
+            }
+            if (!new File(abilitiesDir, "vein_miner.yml").exists()) {
+                getLogger().info("Generating default abilities/vein_miner.yml...");
+                saveResource("abilities/vein_miner.yml", false);
+            }
             if (!new File(getDataFolder(), "gui.yml").exists()) {
                 getLogger().info("Generating default gui.yml...");
                 saveResource("gui.yml", false);
