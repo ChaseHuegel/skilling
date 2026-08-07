@@ -1,0 +1,20 @@
+id: "blasting"
+max_level: 100
+display: { name: "Blasting", icon: "minecraft:tnt", color: "ORANGE", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+xp_sources:
+  - trigger: "block_break"
+    filters: [ { target: "#c:ores" } ]
+    reward: { constant: 3.0 }
+abilities:
+  - id: "blast_protection"
+    display_name: "Blast Protection"
+    unlock_level: 1
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7Explosion damage reduced &a{amount}&7." ] }
+    mechanics:
+      - type: "core:armor_bonus"
+        parameters:
+          amount: { linear: { base: 0.5, step: 0.01, max: 1.5 } }
+          duration: { constant: 8.0 }
+    feedback: { notify: { action_bar: false } }

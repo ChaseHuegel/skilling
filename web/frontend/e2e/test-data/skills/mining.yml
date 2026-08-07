@@ -59,7 +59,7 @@ abilities:
           chain_limit: { milestones: { 25: 3, 50: 8, 75: 16, 100: 32 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&b✦ Vein Miner! ✦" }
-      sounds: [ { type: "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR", volume: 0.5, pitch: 1.2, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.zombie.break_wooden_door", volume: 0.5, pitch: 1.2, target: "self" } ]
   - id: "magma_forge"
     display_name: "Magma Forge"
     unlock_level: 50

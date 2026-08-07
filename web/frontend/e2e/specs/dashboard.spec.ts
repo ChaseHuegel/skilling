@@ -18,6 +18,13 @@ test.describe('Dashboard', () => {
     await expect(card.locator('.skill-meta')).toContainText(/Level/);
   });
 
+  test('lists skills loaded from subfolders of the skills directory', async ({ page }) => {
+    const dashboard = new DashboardPage(page);
+    await dashboard.goto();
+    await expect(dashboard.skillCards.filter({ hasText: 'Mining' }).first()).toBeVisible();
+    await expect(dashboard.skillCards.filter({ hasText: 'Blasting' }).first()).toBeVisible();
+  });
+
   test('clicking a skill card navigates to editor', async ({ page }) => {
     const dashboard = new DashboardPage(page);
     await dashboard.goto();

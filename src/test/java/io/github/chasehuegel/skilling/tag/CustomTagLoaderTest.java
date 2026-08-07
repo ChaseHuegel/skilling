@@ -12,6 +12,7 @@ import org.mockito.MockedStatic;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -223,5 +224,77 @@ class CustomTagLoaderTest {
                 "a material lookup must not see entity tags");
         assertTrue(loader.resolveEntity("#c:ores").isEmpty(),
                 "an entity lookup must not see material tags");
+    }
+
+    @Test
+    void loadDirectoryMergesAdditivelyAcrossSubfolders() throws IOException {
+        Path tagsDir = tempDir.resolve("tags");
+        Files.createDirectories(tagsDir.resolve("nested"));
+        Files.writeString(tagsDir.resolve("base.yml"), """
+                custom_tags:
+                  ores:
+                    - "minecraft:coal_ore"
+                  goods:
+                    - "minecraft:iron_ingot"
+                """);
+        Files.writeString(tagsDir.resolve("nested/custom.yml"), """
+                custom_tags:
+                  ores:
+                    - "minecraft:gold_ore"
+                  vein:
+                    - "#c:ores"
+                    - "#c:goods"
+                entity_tags:
+                  undead:
+                    - "minecraft:zombie"
+                """);
+
+        var loader = new CustomTagLoader();
+        loader.loadDirectory(tagsDir.toFile());
+
+        assertTrue(loader.resolve("#c:ores").containsAll(
+                Set.of(Material.COAL_ORE, Material.GOLD_ORE)),
+                "a key defined in two files must merge additively");
+        assertEquals(2, loader.resolve("#c:ores").size(),
+                "the merge must append, not overwrite");
+        var vein = loader.resolve("#c:vein");
+        assertTrue(vein.containsAll(Set.of(Material.COAL_ORE, Material.GOLD_ORE, Material.IRON_INGOT)),
+                "a cross-file #c: reference must resolve in the global pass");
+        assertTrue(loader.resolveEntity("#c:undead").contains(org.bukkit.entity.EntityType.ZOMBIE),
+                "entity tags load from the same directory walk");
+    }
+
+    @Test
+    void loadDirectorySkipsMalformedFilesAndLoadsTheRest() throws IOException {
+        Path tagsDir = tempDir.resolve("tags");
+        Files.createDirectories(tagsDir);
+        Files.writeString(tagsDir.resolve("base.yml"), """
+                custom_tags:
+                  ores:
+                    - "minecraft:coal_ore"
+                """);
+        Files.writeString(tagsDir.resolve("broken.yml"),
+                "custom_tags:\n  bad:\n    - \"minecraft:not_a_material\"\n");
+        Files.writeString(tagsDir.resolve("notamap.yml"), "- just\n- a list\n");
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getLogger()).thenReturn(Logger.getAnonymousLogger());
+            var loader = new CustomTagLoader();
+            loader.loadDirectory(tagsDir.toFile());
+
+            assertTrue(loader.resolve("#c:ores").contains(Material.COAL_ORE),
+                    "valid files must still load alongside malformed ones");
+            assertFalse(loader.getKeys().contains("#c:bad"),
+                    "the malformed file's tag must be skipped");
+            assertTrue(loader.isLoaded());
+        }
+    }
+
+    @Test
+    void loadDirectoryMissingDirectoryIsEmptyLoadedStore() {
+        var loader = new CustomTagLoader();
+        loader.loadDirectory(tempDir.resolve("does-not-exist").toFile());
+        assertTrue(loader.isLoaded());
+        assertTrue(loader.resolve("#c:whatever").isEmpty());
     }
 }
