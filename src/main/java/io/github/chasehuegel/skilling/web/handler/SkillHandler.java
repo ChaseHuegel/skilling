@@ -10,9 +10,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.javalin.http.Context;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -159,8 +161,9 @@ public final class SkillHandler {
     /**
      * Finds the live skill file for an id: a file named exactly {@code {id}.yml},
      * or a live file whose parsed skill id matches {@code id} (handles files whose
-     * name differs from the skill id). Staged files are ignored, so this answers
-     * "does a live skill with this id already exist?" for collision checks.
+     * name differs from the skill id, including skills nested in subfolders).
+     * Staged files are ignored, so this answers "does a live skill with this id
+     * already exist?" for collision checks.
      *
      * @param id the skill id
      * @return the matching live file, or null
@@ -169,9 +172,9 @@ public final class SkillHandler {
         File namedFile = confinedLiveFile(id);
         if (namedFile != null && namedFile.exists()) return namedFile;
         if (!skillsDir.exists() || !skillsDir.isDirectory()) return null;
-        File[] files = skillsDir.listFiles((d, name) -> name.endsWith(".yml"));
-        if (files == null) return null;
-        for (File f : files) {
+        // Walk recursively in sorted relative-path order (matching SkillManager's
+        // load order) so the file returned is the one the engine actually used.
+        for (File f : collectSkillFiles()) {
             try {
                 SkillDetailDTO dto = SkillSerializer.parseSkillFile(f);
                 if (dto.id().equals(id)) return f;
@@ -180,6 +183,27 @@ public final class SkillHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * Collects every {@code .yml} file under the skills directory (recursively)
+     * in sorted relative-path order, mirroring {@code SkillManager}'s load order
+     * so a duplicate id resolves to the same file the engine kept first.
+     *
+     * @return the skill files under the skills directory
+     */
+    private List<File> collectSkillFiles() {
+        List<File> files = new ArrayList<>();
+        try (var stream = Files.walk(skillsDir.toPath())) {
+            stream.filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".yml"))
+                    .sorted(Comparator.comparing(p -> skillsDir.toPath().relativize(p).toString()))
+                    .forEach(p -> files.add(p.toFile()));
+        } catch (IOException e) {
+            LOGGER.log(java.util.logging.Level.WARNING,
+                    "Failed to walk skills directory: " + skillsDir, e);
+        }
+        return files;
     }
 
     /**

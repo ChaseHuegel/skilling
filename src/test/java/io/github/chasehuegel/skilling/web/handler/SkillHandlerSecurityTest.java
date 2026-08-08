@@ -111,6 +111,65 @@ class SkillHandlerSecurityTest {
     }
 
     @Test
+    void getReturnsSkillNestedInSubfolder() throws IOException {
+        writeSkillWithLevel("special/blasting.yml", "blasting", 100);
+
+        Context ctx = mockContext("blasting");
+
+        new SkillHandler(null, new StagingManager(tempDir.toFile()), skillsDir()).get(ctx);
+
+        verify(ctx, never()).status(400);
+        verify(ctx, never()).status(404);
+        var captor = org.mockito.ArgumentCaptor.forClass(SkillDetailDTO.class);
+        verify(ctx).json(captor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("blasting", captor.getValue().id());
+    }
+
+    @Test
+    void getNestedSkillReturns404WhenIdDoesNotExist() throws IOException {
+        writeSkillWithLevel("special/blasting.yml", "blasting", 100);
+
+        Context ctx = mockContext("missing");
+
+        new SkillHandler(null, new StagingManager(tempDir.toFile()), skillsDir()).get(ctx);
+
+        verify(ctx).status(404);
+        verify(ctx, never()).json(any(SkillDetailDTO.class));
+    }
+
+    @Test
+    void getDuplicateIdResolvesToTheFileTheEngineLoadedFirst() throws IOException {
+        // Sorted relative-path order: a.yml before special/blasting.yml, so the
+        // engine keeps a.yml's definition for id "blasting"; the lookup must
+        // return the same file (max_level 100), not the later duplicate.
+        writeSkillWithLevel("a.yml", "blasting", 100);
+        writeSkillWithLevel("special/blasting.yml", "blasting", 200);
+
+        Context ctx = mockContext("blasting");
+
+        new SkillHandler(null, new StagingManager(tempDir.toFile()), skillsDir()).get(ctx);
+
+        verify(ctx, never()).status(404);
+        var captor = org.mockito.ArgumentCaptor.forClass(SkillDetailDTO.class);
+        verify(ctx).json(captor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals(100, captor.getValue().maxLevel());
+    }
+
+    @Test
+    void deleteResolvesNestedSkill() {
+        writeSkillWithLevel("special/blasting.yml", "blasting", 100);
+        StagingManager staging = new StagingManager(tempDir.toFile());
+
+        Context ctx = mockContext("blasting");
+
+        new SkillHandler(null, staging, skillsDir()).delete(ctx);
+
+        verify(ctx).json(Map.of("status", "ok", "id", "blasting"));
+        org.junit.jupiter.api.Assertions.assertTrue(
+            new File(staging.getStagingDir(), "deleted_skills/blasting.yml.deleted").exists());
+    }
+
+    @Test
     void deleteLegitIdStagesDeletion() {
         writeSkill("mining.yml");
         StagingManager staging = new StagingManager(tempDir.toFile());
@@ -135,15 +194,22 @@ class SkillHandlerSecurityTest {
     }
 
     private void writeSkill(String name) {
-        write(new File(skillsDir(), name), """
-            id: mining
-            max_level: 100
-            display_name: Mining
+        writeSkillWithLevel(name, "mining", 100);
+    }
+
+    private void writeSkillWithLevel(String relative, String id, int maxLevel) {
+        File file = new File(skillsDir(), relative);
+        File parent = file.getParentFile();
+        if (parent != null) parent.mkdirs();
+        write(file, """
+            id: %s
+            max_level: %d
+            display_name: %s
             progression:
               curve: polynomial
               base_xp: 50
               exponent: 2.5
-            """);
+            """.formatted(id, maxLevel, id));
     }
 
     private void write(File file, String content) {
