@@ -227,4 +227,35 @@ function logout() {
 .theme-toggle {
     /* btn-icon styles handled by global .btn.btn-icon */
 }
+
+/* Narrow viewports: the fixed 52px single-row layout (brand + 5 nav links +
+   user area) overflows horizontally at 375px, forcing page-level horizontal
+   scroll. Wrap the bar into rows and tighten spacing so every element stays
+   on-page. */
+@media (max-width: 640px) {
+    .topbar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 0.5rem 0.75rem;
+        row-gap: 0.25rem;
+    }
+    .topbar-left {
+        flex-wrap: wrap;
+        gap: 0.35rem 0.75rem;
+    }
+    .topbar-right {
+        margin-left: auto;
+        gap: 0.4rem;
+    }
+    .topbar-brand {
+        font-size: 1rem;
+    }
+    .nav-link {
+        padding: 0.3rem 0.45rem;
+        font-size: 0.8rem;
+    }
+    .user-name {
+        display: none;
+    }
+}
 </style>

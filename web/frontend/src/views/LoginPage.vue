@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const darkMode = computed(() => document.documentElement.classList.contains('app-dark'));
@@ -44,6 +44,7 @@ function toggleDark() {
     localStorage.setItem('skilling_dark_mode', String(next));
 }
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const username = ref('admin');
@@ -51,7 +52,13 @@ const password = ref('');
 
 async function submit() {
     const ok = await authStore.login(username.value, password.value);
-    if (ok) router.push('/');
+    if (ok) {
+        // The route guard bounced an authenticated-required navigation here; land
+        // back on the originally requested route after login rather than always
+        // returning to the dashboard.
+        const intended = route.redirectedFrom?.fullPath || '/';
+        router.push(intended);
+    }
 }
 </script>
 

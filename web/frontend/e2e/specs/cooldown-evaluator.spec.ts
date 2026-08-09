@@ -40,6 +40,10 @@ test.describe('Cooldown evaluator', () => {
     await expect(card.locator('.cooldown-evaluator')).toBeVisible();
     await expect(card.locator('.cooldown-evaluator .evaluator-type-select')).toHaveValue('linear');
 
+    // Dirty the page with a skill-level edit so the save banner appears; the
+    // linear cooldown block itself is left untouched.
+    await editor.setDisplayName('Mining (edited)');
+
     await editor.save();
 
     // The staged payload keeps the linear cooldown block intact.
