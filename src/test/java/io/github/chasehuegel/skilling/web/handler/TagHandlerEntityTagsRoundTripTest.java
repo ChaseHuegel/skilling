@@ -54,7 +54,7 @@ class TagHandlerEntityTagsRoundTripTest {
     }
 
     @Test
-    void updatePreservesEntityTagsInStagedFile() throws IOException {
+    void updatePreservesEntityTagsWhenNotProvided() throws IOException {
         Path tagsFile = writeTagsFile();
         StagingManager staging = new StagingManager(tempDir.toFile());
 
@@ -76,6 +76,49 @@ class TagHandlerEntityTagsRoundTripTest {
         assertNotNull(entityTagsMap.get("undead"), "original entity tag entry must survive");
         assertEquals(List.of("#minecraft:zombies", "minecraft:stray"), entityTagsMap.get("undead"));
         assertNotNull(entityTagsMap.get("aquatic"));
+    }
+
+    @Test
+    void updateWritesProvidedEntityTagsToStagedFile() throws IOException {
+        Path tagsFile = writeTagsFile();
+        StagingManager staging = new StagingManager(tempDir.toFile());
+
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of(
+                "tags", Map.of("#c:ores", List.of("minecraft:iron_ore")),
+                "entityTags", Map.of("#c:undead", List.of("minecraft:stray", "minecraft:husk"))));
+
+        new TagHandler(staging, tagsFile.toFile()).update(ctx);
+
+        verify(ctx).json(Map.of("status", "ok"));
+        Path staged = tempDir.resolve(".web_staging").resolve("tags").resolve("base.yml");
+        Map<String, Object> raw = new Yaml().load(Files.readString(staged, StandardCharsets.UTF_8));
+        Map<String, Object> entityTagsMap = (Map<String, Object>) raw.get("entity_tags");
+        assertNotNull(entityTagsMap, "provided entity_tags must be written");
+        assertEquals(List.of("minecraft:stray", "minecraft:husk"), entityTagsMap.get("undead"));
+        assertEquals(null, entityTagsMap.get("aquatic"), "an omitted entity tag must not be preserved");
+    }
+
+    @Test
+    void updateRejectsUnknownEntityValueWithBadRequest() throws IOException {
+        Path tagsFile = writeTagsFile();
+        StagingManager staging = new StagingManager(tempDir.toFile());
+
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.bodyAsClass(Map.class)).thenReturn(Map.of(
+                "tags", Map.of("#c:ores", List.of("minecraft:iron_ore")),
+                "entityTags", Map.of("#c:undead", List.of("minecraft:not_an_entity"))));
+
+        new TagHandler(staging, tagsFile.toFile()).update(ctx);
+
+        org.mockito.ArgumentCaptor<String> message = org.mockito.ArgumentCaptor.forClass(String.class);
+        org.mockito.ArgumentCaptor<Map<?, ?>> body = org.mockito.ArgumentCaptor.forClass(Map.class);
+        verify(ctx).status(400);
+        verify(ctx).json(body.capture());
+        assertTrue(String.valueOf(body.getValue().get("message")).contains("not_an_entity"),
+                "the 400 body must name the unknown value");
+        Path staged = tempDir.resolve(".web_staging").resolve("tags").resolve("base.yml");
+        assertTrue(!Files.exists(staged), "an invalid entity tag must not be staged");
     }
 
     @Test

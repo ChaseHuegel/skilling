@@ -4,9 +4,9 @@
             <div>
                 <div class="header-left">
                     <h1>Tags</h1>
-                    <span v-if="!loading && Object.keys(tags).length > 0" class="count-badge">{{ Object.keys(tags).length }} tag{{ Object.keys(tags).length !== 1 ? 's' : '' }}</span>
+                    <span v-if="!loading && totalTagCount > 0" class="count-badge">{{ totalTagCount }} tag{{ totalTagCount !== 1 ? 's' : '' }}</span>
                 </div>
-                <p class="page-subtitle">Manage custom item and block tags for skill definitions</p>
+                <p class="page-subtitle">Manage custom item, block, and entity tags for skill definitions</p>
             </div>
 
         </div>
@@ -27,19 +27,22 @@
         <div v-if="error" class="error-banner">{{ error }}</div>
         <div v-if="loading" class="loading">Loading tags...</div>
 
-        <div v-else-if="searchQuery.trim() && Object.keys(filteredTags).length === 0" class="no-results">
+        <div v-else-if="searchQuery.trim() && totalFilteredCount === 0" class="no-results">
             No tags match your search
         </div>
 
         <div v-else class="tags-content">
-            <TagListEditor v-model="filteredTags" :suggestions="suggestions" />
-            <div v-if="entityTagKeys.length > 0" class="entity-tags-note">
-                <strong>Entity tags (read-only)</strong>
-                <span>Preserved on save and used by the <code>target_type</code> state filter:</span>
-                <div class="entity-tags-list">
-                    <span v-for="key in entityTagKeys" :key="key" class="entity-tag-key">{{ key }}</span>
-                </div>
-            </div>
+            <section class="tags-section">
+                <h2 class="section-heading">Material Tags</h2>
+                <p class="section-hint">Item and block tags referenced with <code>#c:...</code> in skill definitions</p>
+                <TagListEditor v-model="filteredTags" :suggestions="materialSuggestions" />
+            </section>
+
+            <section class="tags-section">
+                <h2 class="section-heading">Entity Tags</h2>
+                <p class="section-hint">Entity type tags for the <code>target_type</code> state filter, referenced with <code>#c:...</code></p>
+                <TagListEditor v-model="filteredEntityTags" :suggestions="entitySuggestions" placeholder="e.g. minecraft:zombie" />
+            </section>
         </div>
 
         <StickyActionBanner :visible="isDirty" :saving="saving" @save="saveTags" @cancel="confirmCancel" />
@@ -73,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, type WritableComputedRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
 import TagListEditor from '../components/tags/TagListEditor.vue';
@@ -83,14 +86,20 @@ const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const tags = reactive<Record<string, string[]>>({});
-const entityTagKeys = ref<string[]>([]);
+const entityTags = reactive<Record<string, string[]>>({});
 const cleanTags = ref('');
 const searchQuery = ref('');
 const showCancelDialog = ref(false);
 const showLeaveDialog = ref(false);
 let pendingNavigation: (() => void) | null = null;
 
-const isDirty = computed(() => JSON.stringify(tags) !== cleanTags.value);
+const totalTagCount = computed(() => Object.keys(tags).length + Object.keys(entityTags).length);
+
+const isDirty = computed(() => snapshot() !== cleanTags.value);
+
+function snapshot(): string {
+    return JSON.stringify({ tags, entityTags });
+}
 
 onBeforeRouteLeave((_to, _from, next) => {
     if (!isDirty.value) {
@@ -101,34 +110,55 @@ onBeforeRouteLeave((_to, _from, next) => {
     pendingNavigation = () => next();
 });
 
-const filteredTags = computed({
-    get: () => {
-        if (!searchQuery.value.trim()) return tags;
-        const q = searchQuery.value.toLowerCase();
-        const result: Record<string, string[]> = {};
-        for (const [key, values] of Object.entries(tags)) {
-            if (key.toLowerCase().includes(q) || values.some(v => v.toLowerCase().includes(q))) {
-                result[key] = values;
-            }
-        }
-        return result;
-    },
-    set: (val) => {
-        // The editor operates on the (possibly filtered) subset. Replace only
-        // the keys that were shown, merging the edited entries back into the
-        // full set so tags that did not match the search survive a save.
-        const shown = Object.keys(filteredTags.value);
-        for (const k of shown) delete tags[k];
-        for (const [k, v] of Object.entries(val)) tags[k] = v;
-    },
-});
+function matchesSearch(key: string, values: string[]): boolean {
+    const q = searchQuery.value.toLowerCase();
+    return key.toLowerCase().includes(q) || values.some(v => v.toLowerCase().includes(q));
+}
 
-const suggestions = [
+// Each section's editor operates on a (possibly filtered) subset. The setter
+// replaces only the keys that were shown, merging the edited entries back into
+// the full set so tags that did not match the search survive a save.
+function makeFiltered(
+    target: Record<string, string[]>,
+    visible: () => Record<string, string[]>,
+): WritableComputedRef<Record<string, string[]>> {
+    return computed({
+        get: () => {
+            if (!searchQuery.value.trim()) return target;
+            const result: Record<string, string[]> = {};
+            for (const [key, values] of Object.entries(target)) {
+                if (matchesSearch(key, values)) {
+                    result[key] = values;
+                }
+            }
+            return result;
+        },
+        set: (val: Record<string, string[]>) => {
+            const shown = Object.keys(visible());
+            for (const k of shown) delete target[k];
+            for (const [k, v] of Object.entries(val)) target[k] = v;
+        },
+    });
+}
+
+const filteredTags = makeFiltered(tags, () => filteredTags.value);
+const filteredEntityTags = makeFiltered(entityTags, () => filteredEntityTags.value);
+
+const totalFilteredCount = computed(() =>
+    Object.keys(filteredTags.value).length + Object.keys(filteredEntityTags.value).length);
+
+const materialSuggestions = [
     '#c:ores', '#c:stone', '#c:logs', '#c:gems',
     '#minecraft:logs', '#minecraft:planks', '#minecraft:stone_tool_materials',
     '#minecraft:pickaxes', '#minecraft:axes', '#minecraft:shovels', '#minecraft:hoes',
     '#minecraft:coals', '#minecraft:copper_ores', '#minecraft:iron_ores',
     '#minecraft:gold_ores', '#minecraft:diamond_ores', '#minecraft:emerald_ores',
+];
+
+const entitySuggestions = [
+    '#minecraft:zombies', '#minecraft:skeletons', '#minecraft:undead', '#minecraft:arthropods',
+    '#minecraft:raiders', '#minecraft:aquatic', '#minecraft:axolotl_tempt_items',
+    'minecraft:zombie', 'minecraft:skeleton', 'minecraft:creeper', 'minecraft:spider',
 ];
 
 onMounted(fetchTags);
@@ -139,18 +169,16 @@ function confirmCancel() {
 
 function discardTags() {
     showCancelDialog.value = false;
-    cleanTags.value = JSON.stringify(tags);
+    cleanTags.value = snapshot();
     fetchTags();
 }
-
-
 
 async function leaveSave() {
     showLeaveDialog.value = false;
     saving.value = true;
     error.value = null;
     try {
-        await api.tags.update({ ...tags });
+        await api.tags.update({ ...tags }, { ...entityTags });
         saving.value = false;
         pendingNavigation?.();
         pendingNavigation = null;
@@ -175,8 +203,8 @@ async function fetchTags() {
     try {
         const data = await api.tags.get();
         Object.assign(tags, data.tags || {});
-        entityTagKeys.value = Object.keys(data.entityTags || {});
-        cleanTags.value = JSON.stringify(tags);
+        Object.assign(entityTags, data.entityTags || {});
+        cleanTags.value = snapshot();
     } catch (e: any) {
         error.value = e.message || 'Failed to load tags';
     } finally {
@@ -188,7 +216,7 @@ async function saveTags() {
     saving.value = true;
     error.value = null;
     try {
-        await api.tags.update({ ...tags });
+        await api.tags.update({ ...tags }, { ...entityTags });
         window.location.reload();
     } catch (e: any) {
         error.value = e.message || 'Failed to save tags';
@@ -322,38 +350,28 @@ async function saveTags() {
     font-size: 0.8rem;
     color: var(--p-text-muted-color, #888);
 }
-.entity-tags-note {
-    margin-top: 1.25rem;
-    padding: 0.75rem;
-    border: 1px dashed var(--p-content-border-color, #ccc);
-    border-radius: 6px;
+.tags-section {
+    margin-bottom: 2rem;
+}
+.tags-section:last-child {
+    margin-bottom: 0;
+}
+.section-heading {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+    color: var(--p-text-color);
+    border-bottom: 1px solid var(--p-content-border-color, #ddd);
+    padding-bottom: 0.35rem;
+}
+.section-hint {
+    margin: 0 0 0.75rem;
     font-size: 0.8rem;
     color: var(--p-text-muted-color, #888);
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
 }
-.entity-tags-note strong {
-    color: var(--p-text-color, #000);
-}
-.entity-tags-note code {
+.section-hint code {
     font-family: monospace;
     background: var(--p-content-background, #f6f6f6);
     padding: 0 0.25rem;
     border-radius: 3px;
-}
-.entity-tags-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-top: 0.25rem;
-}
-.entity-tag-key {
-    font-family: monospace;
-    font-size: 0.75rem;
-    background: var(--p-content-background, #f0f0f0);
-    border: 1px solid var(--p-content-border-color, #ddd);
-    border-radius: 4px;
-    padding: 0.15rem 0.5rem;
 }
 </style>

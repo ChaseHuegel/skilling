@@ -4,14 +4,20 @@ import { ensureLoggedIn } from './shared-login';
 export class TagsPage {
   readonly page: Page;
   readonly header: Locator;
-  readonly tagHeaders: Locator;
+  readonly materialSection: Locator;
+  readonly entitySection: Locator;
+  readonly materialTagHeaders: Locator;
+  readonly entityTagHeaders: Locator;
   readonly saveBtn: Locator;
   readonly addTagBtn: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.header = page.locator('.page-header h1');
-    this.tagHeaders = page.locator('.tag-header');
+    this.materialSection = page.locator('section.tags-section').nth(0);
+    this.entitySection = page.locator('section.tags-section').nth(1);
+    this.materialTagHeaders = this.materialSection.locator('.tag-header');
+    this.entityTagHeaders = this.entitySection.locator('.tag-header');
     this.saveBtn = page.getByRole('button', { name: 'Save Changes' });
     this.addTagBtn = page.locator('button:has-text("Add Tag")');
   }
@@ -22,9 +28,16 @@ export class TagsPage {
     await ensureLoggedIn(this.page);
   }
 
-  async getTagNames(): Promise<string[]> {
-    await this.tagHeaders.first().waitFor({ state: 'visible', timeout: 10000 });
-    return this.tagHeaders.evaluateAll((els) =>
+  async getMaterialTagNames(): Promise<string[]> {
+    await this.materialTagHeaders.first().waitFor({ state: 'visible', timeout: 10000 });
+    return this.materialTagHeaders.evaluateAll((els) =>
+      els.map((el) => el.textContent?.trim() || '')
+    );
+  }
+
+  async getEntityTagNames(): Promise<string[]> {
+    await this.entityTagHeaders.first().waitFor({ state: 'visible', timeout: 10000 });
+    return this.entityTagHeaders.evaluateAll((els) =>
       els.map((el) => el.textContent?.trim() || '')
     );
   }

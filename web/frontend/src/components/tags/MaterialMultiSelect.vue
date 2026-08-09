@@ -4,6 +4,7 @@ import { ref } from 'vue'
 const props = defineProps<{
   modelValue: string[]
   suggestions: string[]
+  placeholder?: string
 }>()
 
 const emit = defineEmits<{
@@ -39,7 +40,7 @@ function onKeydown(e: KeyboardEvent) {
       <input
         class="multi-input"
         type="text"
-        placeholder="e.g. minecraft:stone"
+        :placeholder="placeholder || 'e.g. minecraft:stone'"
         list="multi-suggestions"
         v-model="inputValue"
         @keydown="onKeydown"

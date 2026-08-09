@@ -6,6 +6,7 @@ import { useDragReorder } from '../../composables/useDragReorder'
 const props = defineProps<{
   modelValue: Record<string, string[]>
   suggestions: string[]
+  placeholder?: string
 }>()
 
 const emit = defineEmits<{
@@ -100,6 +101,7 @@ function cancelAddTag() {
       <MaterialMultiSelect
         :model-value="entry.val"
         :suggestions="suggestions"
+        :placeholder="placeholder"
         @update:model-value="updateTagMaterials(entry.key, $event)"
       />
     </div>

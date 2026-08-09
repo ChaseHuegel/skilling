@@ -214,6 +214,8 @@ skill YAMLs):
 |---|---|
 | `#c:undead` | `#minecraft:zombies`, `#minecraft:skeletons`, wither skeleton, phantom, zombified piglin, drowned, stray, husk |
 
-> **Web GUI:** The Tags page edits `custom_tags` in `tags/base.yml` only.
-> `entity_tags` are read-only in the GUI, displayed for reference, and
-> preserved verbatim when tags are saved through the API.
+> **Web GUI:** The Tags page edits both `custom_tags` and `entity_tags` in
+> `tags/base.yml`. Each kind is shown in its own section ("Material Tags" and
+> "Entity Tags"); a save stages both sections in one API call, and an invalid
+> entity value (unknown entity type or vanilla tag) is rejected with a clear
+> error instead of being staged.

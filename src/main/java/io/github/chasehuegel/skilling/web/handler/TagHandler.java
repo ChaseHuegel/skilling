@@ -3,6 +3,10 @@ package io.github.chasehuegel.skilling.web.handler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.chasehuegel.skilling.web.staging.StagingManager;
 import io.javalin.http.Context;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
+import org.bukkit.entity.EntityType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -86,13 +90,41 @@ public final class TagHandler {
 
             Map<String, Object> root = new LinkedHashMap<>();
             root.put("custom_tags", customTags);
-            // Preserve the read-only entity_tags section so a GUI save does not
-            // silently delete it: EntityTagResolver reads it to resolve the
-            // target_type state filter, and skills may reference e.g.
-            // state: "target_type:#c:undead".
-            Object entityTags = loadEntityTags();
-            if (entityTags != null) {
+
+            // entityTags is optional: when present it is validated and written
+            // explicitly; when absent the live entity_tags section is preserved so
+            // a material-only save never silently deletes it (EntityTagResolver
+            // reads it to resolve the target_type state filter).
+            Object entityTagsRaw = body.get("entityTags");
+            if (entityTagsRaw instanceof Map<?, ?> entityTagsMap) {
+                Map<String, List<String>> entityTags = new LinkedHashMap<>();
+                for (var entry : entityTagsMap.entrySet()) {
+                    String key = String.valueOf(entry.getKey());
+                    Object value = entry.getValue();
+                    if (!(value instanceof List<?> rawList)) {
+                        WebError.badRequest(ctx, "entity tag '" + key + "' must be a list of strings");
+                        return;
+                    }
+                    List<String> refs = new ArrayList<>();
+                    for (Object item : rawList) {
+                        if (item != null) refs.add(item.toString());
+                    }
+                    for (String ref : refs) {
+                        if (!isKnownEntityReference(ref)) {
+                            WebError.badRequest(ctx, "entity tag '" + key + "' has unknown value '" + ref + "'");
+                            return;
+                        }
+                    }
+                    if (key.startsWith("#c:")) {
+                        entityTags.put(key.substring(3), refs);
+                    }
+                }
                 root.put("entity_tags", entityTags);
+            } else {
+                Object entityTags = loadEntityTags();
+                if (entityTags != null) {
+                    root.put("entity_tags", entityTags);
+                }
             }
             var yaml = new org.yaml.snakeyaml.Yaml();
             String yamlContent = yaml.dump(root);
@@ -104,6 +136,39 @@ public final class TagHandler {
         } catch (Exception e) {
             WebError.internal(ctx, LOGGER, "Failed to stage tags/base.yml", e);
         }
+    }
+
+    /**
+     * Whether an entity-tag value is a valid reference, matching the engine's
+     * {@code CustomTagLoader.validateEntityEntry} semantics: a {@code #c:}
+     * cross-reference is always accepted (its target is resolved later), a
+     * {@code #minecraft:} entity tag must exist in the vanilla registry, and a
+     * bare entity type name must resolve via {@link EntityType#fromName}. When
+     * the vanilla registry is unavailable (e.g. a unit test without a server),
+     * tag existence checks are deferred so validation never rejects on
+     * infrastructure the loader cannot see.
+     *
+     * @param ref the entity-tag value
+     * @return true if the reference is known or cannot be verified
+     */
+    private static boolean isKnownEntityReference(String ref) {
+        if (ref.startsWith("#")) {
+            String tagKey = ref.substring(1);
+            String namespace = tagKey.contains(":") ? tagKey.substring(0, tagKey.indexOf(':')) : "";
+            if ("c".equals(namespace)) return true;
+            if ("minecraft".equals(namespace)) {
+                NamespacedKey nsKey = NamespacedKey.fromString(tagKey);
+                if (nsKey == null) return false;
+                try {
+                    return Bukkit.getTag(Tag.REGISTRY_ENTITY_TYPES, nsKey, EntityType.class) != null;
+                } catch (RuntimeException e) {
+                    return true; // Bukkit unavailable; defer
+                }
+            }
+            return false;
+        }
+        String name = ref.contains(":") ? ref.substring(ref.indexOf(':') + 1) : ref;
+        return EntityType.fromName(name) != null;
     }
 
     /**
