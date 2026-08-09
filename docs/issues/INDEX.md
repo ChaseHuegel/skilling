@@ -10,6 +10,7 @@
 ## Backlog
 
 ### Bugs
+- [ ] [ISSUE-278](ISSUE-278.md) - Fix pre-existing ChainBreakMechanicTest budget failures
 
 ### Improvements
 
