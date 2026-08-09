@@ -74,6 +74,11 @@ it is preserved read-only through the round-trip.
 | `GET` | `/api/staging/status` | inline | Check pending changes |
 | `DELETE` | `/api/staging` | inline | Discard all staged changes |
 | `POST` | `/api/reload` | `ReloadHandler.reload` | Apply staged + reload |
+| `GET` | `/api/materials` | `RecommendedListsHandler.materials` | Exhaustive item material list from `Registry.MATERIAL` |
+| `GET` | `/api/sounds` | `RecommendedListsHandler.sounds` | Exhaustive sound-event list from `Registry.SOUND_EVENT` |
+| `GET` | `/api/particles` | `RecommendedListsHandler.particles` | Exhaustive particle list from `Registry.PARTICLE_TYPE` |
+| `GET` | `/api/entities` | `RecommendedListsHandler.entities` | Spawnable, player-facing entity types from `Registry.ENTITY_TYPE` |
+| `GET` | `/api/tags/all` | `RecommendedListsHandler.tags` | Vanilla block and item tag keys from the live registries |
 
 #### Staging Workflow
 

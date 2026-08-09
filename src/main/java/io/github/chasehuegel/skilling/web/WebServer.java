@@ -9,6 +9,7 @@ import io.github.chasehuegel.skilling.web.config.WebConfig;
 import io.github.chasehuegel.skilling.web.handler.ConfigHandler;
 import io.github.chasehuegel.skilling.web.handler.GuiLayoutHandler;
 import io.github.chasehuegel.skilling.web.handler.ReloadHandler;
+import io.github.chasehuegel.skilling.web.handler.RecommendedListsHandler;
 import io.github.chasehuegel.skilling.web.handler.SkillHandler;
 import io.github.chasehuegel.skilling.web.handler.StateFilterHandler;
 import io.github.chasehuegel.skilling.web.handler.TagHandler;
@@ -193,6 +194,15 @@ public final class WebServer {
 
             var stateFilterHandler = new StateFilterHandler(plugin);
             routes.get("/api/state-filters", stateFilterHandler::list);
+
+            // Recommended lists (exhaustive, registry-derived). The frontend
+            // merges these with its own curated shortlists.
+            var recommendedListsHandler = new RecommendedListsHandler();
+            routes.get("/api/materials", recommendedListsHandler::materials);
+            routes.get("/api/sounds", recommendedListsHandler::sounds);
+            routes.get("/api/particles", recommendedListsHandler::particles);
+            routes.get("/api/entities", recommendedListsHandler::entities);
+            routes.get("/api/tags/all", recommendedListsHandler::tags);
 
             // Registered reusable abilities (abilities/ data folder). The skill
             // editor validates that a referenced base ability id is registered

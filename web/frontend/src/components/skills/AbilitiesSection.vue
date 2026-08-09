@@ -9,27 +9,11 @@ import FormattedText from '../common/FormattedText.vue'
 import EvaluatorParameter from '../common/EvaluatorParameter.vue'
 import { useDragReorder } from '../../composables/useDragReorder'
 import { useRegistriesStore } from '../../stores/registries'
-import { STATE_SUGGESTIONS } from '../common/stateFilters'
+import { STATE_SUGGESTIONS, withTargetTypeSuggestions } from '../common/stateFilters'
 import { stableKey } from '../../utils/stableKey'
 import { cooldownToNumber, isDynamicCooldown, type CooldownEvaluator } from '../../utils/cooldown'
 
 const registriesStore = useRegistriesStore()
-
-const PARTICLE_SUGGESTIONS = [
-  'minecraft:flame', 'minecraft:smoke', 'minecraft:large_smoke', 'minecraft:campfire_cosy_smoke',
-  'minecraft:campfire_signal_smoke', 'minecraft:cloud', 'minecraft:crit', 'minecraft:enchanted_hit',
-  'minecraft:enchant', 'minecraft:dragon_breath', 'minecraft:end_rod', 'minecraft:explosion',
-  'minecraft:explosion_emitter', 'minecraft:firework', 'minecraft:glow', 'minecraft:glow_squid_ink',
-  'minecraft:heart', 'minecraft:happy_villager', 'minecraft:angry_villager', 'minecraft:instant_effect',
-  'minecraft:effect', 'minecraft:item_slime', 'minecraft:item_snowball', 'minecraft:lava',
-  'minecraft:dripping_lava', 'minecraft:falling_lava', 'minecraft:landing_lava', 'minecraft:note',
-  'minecraft:poof', 'minecraft:portal', 'minecraft:rain', 'minecraft:splash',
-  'minecraft:sweep_attack', 'minecraft:totem_of_undying', 'minecraft:witch',
-  'minecraft:dripping_water', 'minecraft:falling_water', 'minecraft:bubble', 'minecraft:bubble_pop',
-  'minecraft:fishing', 'minecraft:nautilus', 'minecraft:sonic_boom', 'minecraft:sculk_soul',
-  'minecraft:sculk_charge', 'minecraft:sculk_charge_pop', 'minecraft:shriek', 'minecraft:trail',
-  'minecraft:dust', 'minecraft:dust_color_transition', 'minecraft:vibration',
-]
 
 const SLOT_SUGGESTIONS = ['HAND', 'OFF_HAND', 'FEET', 'LEGS', 'CHEST', 'HEAD']
 
@@ -113,7 +97,10 @@ const abilities = computed({
 const { dragIndex, onDragStart, onDragOver, onDragEnd } = useDragReorder(abilities)
 
 const STATE_OPTIONS = computed(() =>
-  registriesStore.stateFilters.length > 0 ? registriesStore.stateFilters : STATE_SUGGESTIONS
+  withTargetTypeSuggestions(
+    registriesStore.stateFilters.length > 0 ? registriesStore.stateFilters : STATE_SUGGESTIONS,
+    registriesStore.entities,
+  )
 )
 
 const expanded = ref<Record<string, boolean>>({})
@@ -753,7 +740,7 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
                   <div class="particle-type-row">
                     <AppCombobox
                       :model-value="particle.type"
-                      :suggestions="PARTICLE_SUGGESTIONS"
+                      :suggestions="registriesStore.particles"
                       placeholder="minecraft:flame"
                       :name="'particle-' + idx + '-' + pIdx"
                       @update:model-value="updateParticle(idx, pIdx, { type: $event })"

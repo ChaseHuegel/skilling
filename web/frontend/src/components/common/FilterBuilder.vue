@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import AppCombobox from './AppCombobox.vue'
 import { useRegistriesStore } from '../../stores/registries'
-import { STATE_SUGGESTIONS as FALLBACK_STATE_SUGGESTIONS } from './stateFilters'
+import { STATE_SUGGESTIONS as FALLBACK_STATE_SUGGESTIONS, withTargetTypeSuggestions } from './stateFilters'
 import { stableKey } from '../../utils/stableKey'
 
 interface FilterEntry {
@@ -24,7 +24,10 @@ const emit = defineEmits<{
 const registriesStore = useRegistriesStore()
 
 const stateSuggestions = computed(() =>
-  registriesStore.stateFilters.length > 0 ? registriesStore.stateFilters : FALLBACK_STATE_SUGGESTIONS
+  withTargetTypeSuggestions(
+    registriesStore.stateFilters.length > 0 ? registriesStore.stateFilters : FALLBACK_STATE_SUGGESTIONS,
+    registriesStore.entities,
+  )
 )
 
 /** Stable per-row identity; `_key` is assigned at creation and preserved by spreads. */

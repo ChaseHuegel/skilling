@@ -84,4 +84,11 @@ export const api = {
     abilities: {
         list: () => apiFetch<{ abilities: { id: string; displayName: string; trigger: string; unlockLevel: number }[] }>('/api/abilities'),
     },
+    recommended: {
+        materials: () => apiFetch<{ materials: string[] }>('/api/materials'),
+        sounds: () => apiFetch<{ sounds: string[] }>('/api/sounds'),
+        particles: () => apiFetch<{ particles: string[] }>('/api/particles'),
+        entities: () => apiFetch<{ entities: string[] }>('/api/entities'),
+        tags: () => apiFetch<{ tags: string[] }>('/api/tags/all'),
+    },
 };

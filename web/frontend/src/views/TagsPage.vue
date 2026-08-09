@@ -79,8 +79,11 @@
 import { ref, reactive, computed, onMounted, type WritableComputedRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { api } from '../api/client';
+import { useRegistriesStore } from '../stores/registries';
 import TagListEditor from '../components/tags/TagListEditor.vue';
 import StickyActionBanner from '../components/common/StickyActionBanner.vue';
+
+const registriesStore = useRegistriesStore();
 
 const loading = ref(true);
 const saving = ref(false);
@@ -147,21 +150,14 @@ const filteredEntityTags = makeFiltered(entityTags, () => filteredEntityTags.val
 const totalFilteredCount = computed(() =>
     Object.keys(filteredTags.value).length + Object.keys(filteredEntityTags.value).length);
 
-const materialSuggestions = [
-    '#c:ores', '#c:stone', '#c:logs', '#c:gems',
-    '#minecraft:logs', '#minecraft:planks', '#minecraft:stone_tool_materials',
-    '#minecraft:pickaxes', '#minecraft:axes', '#minecraft:shovels', '#minecraft:hoes',
-    '#minecraft:coals', '#minecraft:copper_ores', '#minecraft:iron_ores',
-    '#minecraft:gold_ores', '#minecraft:diamond_ores', '#minecraft:emerald_ores',
-];
+const materialSuggestions = computed(() => registriesStore.tags);
 
-const entitySuggestions = [
-    '#minecraft:zombies', '#minecraft:skeletons', '#minecraft:undead', '#minecraft:arthropods',
-    '#minecraft:raiders', '#minecraft:aquatic', '#minecraft:axolotl_tempt_items',
-    'minecraft:zombie', 'minecraft:skeleton', 'minecraft:creeper', 'minecraft:spider',
-];
+const entitySuggestions = computed(() => registriesStore.entities);
 
-onMounted(fetchTags);
+onMounted(() => {
+    fetchTags();
+    registriesStore.fetch();
+});
 
 function confirmCancel() {
     showCancelDialog.value = true;

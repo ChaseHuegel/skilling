@@ -22,3 +22,18 @@ export const STATE_SUGGESTIONS: string[] = [
   'equipped_any:#c:light_armor',
   'is_blocking',
 ]
+
+/**
+ * Appends a {@code target_type:<entity>} suggestion for each known entity to
+ * a state-filter suggestion list. The entity list carries both entity types
+ * ({@code minecraft:zombie}) and entity tags ({@code #minecraft:zombies}), so
+ * the target_type filter gets complete coverage. Duplicates are removed.
+ *
+ * @param stateSuggestions the base state-filter suggestions
+ * @param entities the known entity types and entity tags
+ * @return the merged, deduplicated suggestion list
+ */
+export function withTargetTypeSuggestions(stateSuggestions: string[], entities: string[]): string[] {
+  const targetTypeSuggestions = entities.map(e => `target_type:${e}`)
+  return Array.from(new Set([...stateSuggestions, ...targetTypeSuggestions]))
+}

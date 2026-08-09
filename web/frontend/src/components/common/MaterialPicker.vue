@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import MinecraftIcon from './MinecraftIcon.vue'
-import materials from '../../assets/materials.json'
+import { useRegistriesStore } from '../../stores/registries'
 
 defineProps<{
     modelValue: string
@@ -57,14 +57,16 @@ const emit = defineEmits<{
     'update:modelValue': [value: string]
 }>()
 
+const registriesStore = useRegistriesStore()
+
 const isOpen = ref(false)
 const searchQuery = ref('')
 const pickerRef = ref<HTMLElement | null>(null)
 
 const filteredMaterials = computed(() => {
-    if (!searchQuery.value.trim()) return materials
+    if (!searchQuery.value.trim()) return registriesStore.materials
     const q = searchQuery.value.toLowerCase()
-    return materials.filter(m => m.toLowerCase().includes(q))
+    return registriesStore.materials.filter(m => m.toLowerCase().includes(q))
 })
 
 function toggleOpen() {

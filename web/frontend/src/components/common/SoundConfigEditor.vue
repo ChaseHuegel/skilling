@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppCombobox from './AppCombobox.vue'
+import { useRegistriesStore } from '../../stores/registries'
 
 export interface SoundConfig {
   type: string
@@ -18,37 +19,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: SoundConfig[]]
 }>()
 
-const SOUND_SUGGESTIONS = [
-  'minecraft:entity.experience_orb.pickup', 'minecraft:entity.player.levelup',
-  'minecraft:entity.player.attack.crit', 'minecraft:entity.player.attack.strong',
-  'minecraft:entity.player.attack.sweep', 'minecraft:entity.player.attack.knockback',
-  'minecraft:entity.player.attack.weak', 'minecraft:entity.arrow.shoot',
-  'minecraft:entity.arrow.hit', 'minecraft:entity.firework_rocket.blast',
-  'minecraft:entity.firework_rocket.twinkle', 'minecraft:entity.firework_rocket.large_blast',
-  'minecraft:entity.firework_rocket.launch', 'minecraft:entity.generic.explode',
-  'minecraft:entity.lightning_bolt.thunder', 'minecraft:entity.lightning_bolt.impact',
-  'minecraft:entity.wither.spawn', 'minecraft:entity.wither.death',
-  'minecraft:entity.wither.shoot', 'minecraft:entity.ender_dragon.death',
-  'minecraft:entity.ender_dragon.growl', 'minecraft:entity.dragon_fireball.explode',
-  'minecraft:item.trident.thunder', 'minecraft:item.trident.riptide_1',
-  'minecraft:item.trident.riptide_2', 'minecraft:item.trident.riptide_3',
-  'minecraft:block.anvil.land', 'minecraft:block.anvil.place',
-  'minecraft:block.anvil.break', 'minecraft:block.anvil.destroy',
-  'minecraft:block.anvil.fall', 'minecraft:block.anvil.hit',
-  'minecraft:block.anvil.step', 'minecraft:block.anvil.use',
-  'minecraft:block.brewing_stand.brew', 'minecraft:block.chest.open',
-  'minecraft:block.chest.close', 'minecraft:block.ender_chest.open',
-  'minecraft:block.ender_chest.close', 'minecraft:block.furnace.fire_crackle',
-  'minecraft:block.note_block.bell', 'minecraft:block.note_block.chime',
-  'minecraft:block.note_block.flute', 'minecraft:block.note_block.guitar',
-  'minecraft:block.note_block.harp', 'minecraft:block.note_block.hat',
-  'minecraft:block.note_block.basedrum', 'minecraft:block.note_block.snare',
-  'minecraft:block.note_block.pling', 'minecraft:block.note_block.xylophone',
-  'minecraft:block.note_block.iron_xylophone', 'minecraft:block.note_block.cow_bell',
-  'minecraft:block.note_block.didgeridoo', 'minecraft:block.note_block.bit',
-  'minecraft:block.note_block.banjo', 'minecraft:ui.button.click',
-  'minecraft:ui.toast.in', 'minecraft:ui.toast.out', 'minecraft:ui.toast.challenge_complete',
-]
+const registriesStore = useRegistriesStore()
 
 function addSound() {
   emit('update:modelValue', [
@@ -80,7 +51,7 @@ function updateSound(index: number, patch: Partial<SoundConfig>) {
       <div class="sound-type-row">
         <AppCombobox
           :model-value="sound.type"
-          :suggestions="SOUND_SUGGESTIONS"
+          :suggestions="registriesStore.sounds"
           :placeholder="placeholder || 'minecraft:entity_experience_orb_pickup'"
           :name="namePrefix + '-' + sIdx"
           @update:model-value="updateSound(sIdx, { type: $event })"
