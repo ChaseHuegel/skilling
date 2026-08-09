@@ -100,6 +100,7 @@ import { api } from '../api/client';
 import { cooldownToNumber, isDynamicCooldown } from '../utils/cooldown';
 import { stableKey } from '../utils/stableKey';
 import { useSkillsStore } from '../stores/skills';
+import { useRegistriesStore } from '../stores/registries';
 import MinecraftIcon from '../components/common/MinecraftIcon.vue';
 import SkillIdentitySection from '../components/skills/SkillIdentitySection.vue';
 import DisplaySection from '../components/skills/DisplaySection.vue';
@@ -112,6 +113,7 @@ import StickyActionBanner from '../components/common/StickyActionBanner.vue';
 const route = useRoute();
 const router = useRouter();
 const skillsStore = useSkillsStore();
+const registriesStore = useRegistriesStore();
 
 const skillId = route.params.id as string;
 const isNew = route.name === 'SkillNew';
@@ -155,7 +157,16 @@ function validate(): boolean {
             } else if (seen.has(ab.id)) {
                 errors[`ability-${i}-id`] = 'Duplicate ability ID';
             }
-            if (!ab.trigger || !ab.trigger.trim()) {
+            if (ab.isReference) {
+                // A referenced base/shared ability needs no trigger (it comes
+                // from the abilities/ registry), but its id must be registered
+                // so the skill does not reference a nonexistent ability. Only
+                // enforced when the registry is loaded; a failed registry fetch
+                // must not block saving a valid skill.
+                if (registriesStore.loaded && !registriesStore.baseAbilities[ab.id]) {
+                    errors[`ability-${i}-id`] = `Reference to unknown base ability '${ab.id}'`;
+                }
+            } else if (!ab.trigger || !ab.trigger.trim()) {
                 errors[`ability-${i}-trigger`] = 'Ability trigger is required';
             }
             seen.add(ab.id);
@@ -294,15 +305,17 @@ function enrichFormKeys(target: any): void {
 }
 
 /**
- * Recursively removes client-only `_key` fields so they never reach the backend
- * (which rejects unknown JSON properties).
+ * Recursively removes client-only fields so they never reach the backend (which
+ * rejects unknown JSON properties): `_key` row identities, the reference flag,
+ * and the inherited/base identity hints that are display-only.
  */
 function stripRowKeys(value: any): any {
     if (Array.isArray(value)) return value.map(stripRowKeys);
     if (value && typeof value === 'object') {
         const out: Record<string, any> = {};
         for (const [k, v] of Object.entries(value)) {
-            if (k === '_key') continue;
+            if (k === '_key' || k === 'isReference' || k === 'inheritedTrigger'
+                    || k === 'inheritedDisplayName' || k === '_baseValues') continue;
             out[k] = stripRowKeys(v);
         }
         return out;
@@ -341,17 +354,52 @@ function normalizeMilestonesEvaluator(ev: any): any {
 }
 
 function apiAbilityToForm(ab: any): any {
+    const isReference = !!ab.id && !ab.trigger;
+    const base = registriesStore.baseAbilities[ab.id];
     return {
         ...ab,
         lore: ab.display?.lore || [],
         display: undefined,
+        // A reference-shaped ability (an id with no trigger) is a base/shared
+        // ability registered in abilities/. Mark it and surface the inherited
+        // identity (display name, trigger, unlock level) from the registry so
+        // the UI shows what the skill actually inherits. The skill's own yml
+        // only ever carries explicit overrides; inherited values are display
+        // hints, not values to re-emit.
+        isReference,
+        inheritedTrigger: base?.trigger || '',
+        inheritedDisplayName: base?.displayName || ab.id,
+        _baseValues: isReference ? {
+            displayName: base?.displayName || ab.id,
+            unlockLevel: base?.unlockLevel ?? 1,
+        } : undefined,
+        // Pre-fill the editable identity with the inherited values so the form
+        // shows the real unlock level / name instead of the parse fallback.
+        // Only when the skill did not explicitly override the field (the parse
+        // fallback fills displayName with the id and unlock level 1); an
+        // explicit override keeps its value. On save, only fields that differ
+        // from _baseValues are written.
+        displayName: isReference && base && (!ab.displayName || ab.displayName === ab.id)
+            ? base.displayName
+            : ab.displayName,
+        unlockLevel: isReference && base && (ab.unlockLevel == null || ab.unlockLevel === 1)
+            ? base.unlockLevel
+            : ab.unlockLevel,
         feedback: ab.feedback ? {
             ...ab.feedback,
-            particles: convertParticleOffsets(ab.feedback.particles),
+            particles: convertParticleOffsets(ab.feedback.particles || []),
             sounds: ab.feedback.sounds || [],
-        } : ab.feedback,
+        } : {
+            actionBar: false,
+            chat: false,
+            message: '',
+            particles: [],
+            sounds: [],
+        },
+        onFailure: ab.onFailure || { reasons: {} },
         requirements: {
             ...ab.requirements,
+            state: ab.requirements?.state || [],
             cooldown: isDynamicCooldown(ab.requirements?.cooldown)
                 ? ab.requirements?.cooldown
                 : cooldownToNumber(ab.requirements?.cooldown),
@@ -384,6 +432,9 @@ function formLoreToApi(lore: any[]): string[] {
 }
 
 function formAbilityToApi(ab: any): any {
+    if (ab.isReference) {
+        return formReferenceAbilityToApi(ab);
+    }
     const result: any = {
         ...ab,
         lore: undefined,
@@ -405,15 +456,79 @@ function formAbilityToApi(ab: any): any {
     return stripRowKeys(result);
 }
 
+/**
+ * Serializes a reference-shaped ability (a bare `- id` entry pointing at a
+ * base/shared ability in abilities/) back to a reference with real overrides
+ * only, mirroring `SkillSerializer.abilityToMap`'s omission rules.
+ *
+ * <p>Only the id is always emitted. display_name and unlock_level are written
+ * when they differ from the inherited base values (an explicit per-skill
+ * override); lore/requirements/mechanics/feedback are written only when they
+ * carry content, so a no-op open/save round-trip keeps the bare reference and
+ * never detaches the skill from the shared base. trigger is never written for
+ * a reference — it always comes from the registered ability.
+ */
+function formReferenceAbilityToApi(ab: any): any {
+    const out: any = { id: ab.id };
+    const base = ab._baseValues || {};
+
+    const displayName = ab.displayName ?? '';
+    if (displayName.trim() && displayName !== ab.id && displayName !== base.displayName) {
+        out.displayName = displayName;
+    }
+    const unlockLevel = ab.unlockLevel ?? 1;
+    if (unlockLevel !== 1 && unlockLevel !== base.unlockLevel) {
+        out.unlockLevel = unlockLevel;
+    }
+
+    const lore: string[] = (ab.lore || []).map((l: any) => (typeof l === 'string' ? l : l.text));
+    if (lore.some((l: string) => l.trim())) {
+        out.display = { lore };
+    }
+
+    const cooldown = ab.requirements?.cooldown;
+    const requirements: any = {};
+    if (isDynamicCooldown(cooldown)) {
+        requirements.cooldown = cooldown;
+    } else if (cooldownToNumber(cooldown) > 0) {
+        requirements.cooldown = cooldownToNumber(cooldown);
+    }
+    if (ab.requirements?.state?.length) requirements.state = ab.requirements.state;
+    if (ab.requirements?.items?.length) requirements.items = ab.requirements.items;
+    if (Object.keys(requirements).length > 0) out.requirements = requirements;
+
+    const mechanics = (ab.mechanics || []).map((m: any) => {
+        const params: Record<string, any> = {};
+        for (const p of m.params || []) {
+            if (p.name) params[p.name] = p.evaluator;
+        }
+        return { ...m, params: undefined, parameters: params };
+    });
+    if (mechanics.length > 0) out.mechanics = mechanics;
+
+    const fb = ab.feedback;
+    if (fb && (fb.actionBar || fb.chat || (fb.message && fb.message.trim())
+            || (fb.particles && fb.particles.length) || (fb.sounds && fb.sounds.length))) {
+        out.feedback = { ...fb, particles: revertParticleOffsets(fb.particles) };
+    }
+
+    if (ab.onFailure && Object.keys(ab.onFailure.reasons || {}).length > 0) {
+        out.onFailure = ab.onFailure;
+    }
+
+    return stripRowKeys(out);
+}
+
 onMounted(async () => {
     if (isNew) {
         await nextTick();
         cleanForm.value = JSON.stringify(form);
     }
     // Populate the skills list so the duplicate-ID check actually runs (the
-    // store is not filled by any other view).
+    // store is not filled by any other view), and the abilities/ registries so
+    // reference-shaped abilities resolve their inherited identity.
     try {
-        await skillsStore.fetchList();
+        await Promise.all([skillsStore.fetchList(), registriesStore.fetch()]);
     } catch {
         // A failed list fetch only disables duplicate detection, never blocks editing.
     }

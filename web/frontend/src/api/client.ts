@@ -81,4 +81,7 @@ export const api = {
     stateFilters: {
         list: () => apiFetch<{ stateFilters: string[] }>('/api/state-filters'),
     },
+    abilities: {
+        list: () => apiFetch<{ abilities: { id: string; displayName: string; trigger: string; unlockLevel: number }[] }>('/api/abilities'),
+    },
 };

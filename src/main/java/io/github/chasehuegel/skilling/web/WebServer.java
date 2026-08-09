@@ -194,6 +194,14 @@ public final class WebServer {
             var stateFilterHandler = new StateFilterHandler(plugin);
             routes.get("/api/state-filters", stateFilterHandler::list);
 
+            // Registered reusable abilities (abilities/ data folder). The skill
+            // editor validates that a referenced base ability id is registered
+            // and shows the base's inherited identity (display name, trigger,
+            // unlock level) for a reference-shaped ability.
+            routes.get("/api/abilities", ctx -> {
+                ctx.json(Map.of("abilities", abilitySummaries(plugin.getAbilityManager().getAbilities())));
+            });
+
             app.start(config.bindAddress(), config.port());
             plugin.getLogger().info("Web GUI started on " + config.bindAddress() + ":" + config.port());
         } catch (Exception e) {
@@ -237,6 +245,33 @@ public final class WebServer {
         String[] parts = forwardedFor.split(",");
         String last = parts[parts.length - 1].trim();
         return last.isBlank() ? socketIp : last;
+    }
+
+    /**
+     * Builds the public ability-registry summaries served by {@code GET
+     * /api/abilities}: each registered ability's id plus its inherited identity
+     * (display name, trigger, unlock level) with parse-style fallbacks, so the
+     * skill editor can display and validate reference-shaped abilities. Pure and
+     * package-private for unit testing without a live server.
+     *
+     * @param registry the raw registered ability maps keyed by id
+     * @return an ordered list of {@code {id, displayName, trigger, unlockLevel}} maps
+     */
+    static java.util.List<Map<String, Object>> abilitySummaries(Map<String, Map<String, Object>> registry) {
+        var list = new java.util.ArrayList<Map<String, Object>>();
+        for (var entry : registry.entrySet()) {
+            Map<String, Object> raw = entry.getValue();
+            Map<String, Object> summary = new java.util.LinkedHashMap<>();
+            summary.put("id", entry.getKey());
+            Object displayName = raw.get("display_name");
+            summary.put("displayName", displayName != null ? displayName : entry.getKey());
+            Object trigger = raw.get("trigger");
+            summary.put("trigger", trigger != null ? trigger : "");
+            Object unlockLevel = raw.get("unlock_level");
+            summary.put("unlockLevel", unlockLevel instanceof Number n ? n.intValue() : 1);
+            list.add(summary);
+        }
+        return list;
     }
 
     /**

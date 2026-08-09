@@ -89,6 +89,12 @@ interface Ability {
     particles: ParticleConfig[]
     sounds: SoundConfig[]
   }
+  // Reference-shaped abilities (a bare `- id` entry) carry client-only markers:
+  // isReference flags the entry, inheritedTrigger/inheritedDisplayName show the
+  // values resolved from the abilities/ registry. Neither is ever serialized.
+  isReference?: boolean
+  inheritedTrigger?: string
+  inheritedDisplayName?: string
 }
 
 const props = defineProps<{
@@ -217,6 +223,11 @@ function duplicateAbility(index: number) {
     ...JSON.parse(JSON.stringify(source)),
     _key: stableKey(),
     id: source.id ? source.id + '_copy' : '',
+    // A duplicated reference changes its id, so it can no longer point at the
+    // same base ability; fall back to an inline ability the admin fills in.
+    isReference: undefined,
+    inheritedTrigger: undefined,
+    inheritedDisplayName: undefined,
   }
   const copy = [...props.modelValue]
   copy.splice(index + 1, 0, cloned)
@@ -379,6 +390,9 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
         <span class="ability-title">
           {{ ability.id || 'Unnamed Ability' }}
         </span>
+        <span v-if="ability.isReference" class="editor-ability-type-badge badge-reference" title="Defined in abilities/ — this skill overrides selected fields">
+          Base/Shared
+        </span>
         <span class="ability-unlock-level">Lv.{{ ability.unlockLevel }}</span>
         <span class="editor-ability-type-badge" :class="isAbilityActive(ability) ? 'badge-active' : 'badge-passive'">
           {{ isAbilityActive(ability) ? 'Active' : 'Passive' }}
@@ -407,6 +421,11 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
         v-if="expanded[abilityKey(ability)]"
         class="ability-body"
       >
+        <div v-if="ability.isReference" class="reference-note">
+          Base/shared ability from <code>abilities/</code>. Fields you edit here
+          become overrides in this skill's yml; the shared file is never changed.
+        </div>
+
         <div class="field-row">
           <label class="field-label">ID</label>
           <input
@@ -444,7 +463,14 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
 
         <div class="field-row">
           <label class="field-label">Trigger</label>
+          <template v-if="ability.isReference">
+            <div class="reference-inherited-value">
+              <span>Inherited: <code>{{ ability.inheritedTrigger || '(none)' }}</code></span>
+              <span class="reference-hint">(defined by the base ability)</span>
+            </div>
+          </template>
           <AppCombobox
+            v-else
             :model-value="ability.trigger || ''"
             :suggestions="TRIGGER_SUGGESTIONS"
             placeholder="e.g. block_break"
@@ -940,6 +966,10 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
   white-space: nowrap;
   line-height: 1.4;
 }
+.badge-reference {
+  color: var(--p-primary-contrast-color, #fff);
+  background: var(--p-primary-color, #3b82f6);
+}
 
 .ability-body {
   padding: 0.75rem;
@@ -959,6 +989,39 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--p-text-color);
+}
+
+.reference-note {
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color, #888);
+  background: var(--p-content-hover-background, #f4f4f4);
+  border: 1px solid var(--p-content-border-color, #ddd);
+  border-radius: 4px;
+  padding: 0.5rem 0.6rem;
+  line-height: 1.4;
+}
+.reference-note code {
+  font-family: monospace;
+  background: var(--p-form-field-background);
+  padding: 0 0.25rem;
+  border-radius: 3px;
+}
+.reference-inherited-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--p-text-color);
+}
+.reference-inherited-value code {
+  font-family: monospace;
+  background: var(--p-content-hover-background, #f4f4f4);
+  padding: 0 0.25rem;
+  border-radius: 3px;
+}
+.reference-hint {
+  font-size: 0.75rem;
+  color: var(--p-form-field-placeholder-color, #888);
 }
 
 .field-input {

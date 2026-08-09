@@ -60,6 +60,7 @@ All API routes are registered in `WebServer.java` using Javalin 7's `routes` API
 | `POST` | `/api/skills` | `SkillHandler.create` | Create skill (staged) |
 | `PUT` | `/api/skills/{id}` | `SkillHandler.update` | Update skill (staged) |
 | `DELETE` | `/api/skills/{id}` | `SkillHandler.delete` | Delete skill file |
+| `GET` | `/api/abilities` | inline (`WebServer`) | List registered reusable abilities (`abilities/` folder) with inherited identity |
 | `GET` | `/api/tags` | `TagHandler.get` | Get all custom tags |
 | `PUT` | `/api/tags` | `TagHandler.update` | Update tags/base.yml (staged) |
 | `GET` | `/api/config` | `ConfigHandler.get` | Get config.yml values |
@@ -87,7 +88,9 @@ Before applying, `StagingManager.applyAndBackup()` snapshots live-file content f
 
 #### Referenced Abilities
 
-Skills may reference a reusable ability by id (registered from the `abilities/` data folder) instead of inlining its full definition. The serializers tolerate such a reference-shaped entry (an `id` with no `trigger`) so `GET /api/skills/{id}` never errors on those skills, and `abilityToMap` omits null/blank/default fields so a no-op round-trip does not add spurious overrides. The editor has **no support for referenced abilities yet**: it displays them as a bare id, saving may expand or reject them (the frontend still requires a `trigger`), and nested-skill file resolution is out of scope. Editor support is a follow-up; do not build it here.
+Skills may reference a reusable ability by id (registered from the `abilities/` data folder) instead of inlining its full definition. The serializers tolerate such a reference-shaped entry (an `id` with no `trigger`) so `GET /api/skills/{id}` never errors on those skills, and `abilityToMap` omits null/blank/default fields so a no-op round-trip does not add spurious overrides.
+
+The skill editor supports referenced abilities: a reference-shaped entry (an `id` with no `trigger`) loads with a "Base/Shared" badge showing the inherited identity (display name, trigger, unlock level) resolved from `GET /api/abilities`, does not require a trigger to save, and re-serializes as a bare reference plus explicit overrides only. A field the admin edits becomes a per-skill override; unchanged inherited fields are omitted, so the skill yml keeps a bare reference and never detaches from the shared base. Saving validates that a referenced id is registered and rejects unknown ids with a clear error; it never writes to `abilities/<file>.yml`. Full editing of a base ability's inherited fields (a dedicated ability editor) is planned separately in `docs/issues/ISSUE-275.md`.
 
 ### Minecraft Asset Textures
 
