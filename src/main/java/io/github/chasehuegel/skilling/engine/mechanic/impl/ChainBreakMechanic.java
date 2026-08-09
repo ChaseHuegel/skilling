@@ -1,6 +1,8 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
+import io.github.chasehuegel.skilling.Skilling;
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,8 +22,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link #directions()} hook so a plane-only variant ({@link LevelBreakMechanic})
  * reuses the same BFS, tool-damage, and guard logic.
  *
+ * <p>The optional {@code target} parameter restricts the chain to a material or
+ * tag reference ({@code #minecraft:logs}, {@code #c:logs}, or
+ * {@code minecraft:oak_log}) instead of the origin block's own material, so a
+ * single ability can fell a tree by chaining the tagged logs and every connected
+ * leaves block. The target is resolved once per execution through the live
+ * plugin {@link TagResolver} ({@link Skilling#getTagResolver()}), which flattens
+ * tag references into a cached {@link EnumSet} at load; the set is used as an
+ * O(1) per-neighbor membership test, so no tag resolution happens per block.
+ *
  * <p><b>YAML key:</b> {@code core:chain_break}
- * <br>Params: {@code chain_limit} (max total blocks broken including the origin)
+ * <br>Params: {@code chain_limit} (max total blocks broken including the origin),
+ * {@code target} (optional; a material or tag reference restricting the chain,
+ * defaults to the origin block's own material)
  */
 public class ChainBreakMechanic implements SkillMechanic {
 
@@ -74,6 +87,41 @@ public class ChainBreakMechanic implements SkillMechanic {
         return DIRECTIONS;
     }
 
+    /**
+     * Resolves the optional {@code target} reference into an {@link EnumSet} of
+     * materials, or null when the parameter is absent/blank (chain to the origin
+     * block's own material). Resolution is delegated to the live plugin
+     * {@link TagResolver}, which caches the flattened set so repeated
+     * executions cost an O(1) map lookup instead of re-reading tag data.
+     *
+     * @param params the evaluated mechanic parameters
+     * @return the flattened target material set, or null for origin-material chaining
+     */
+    private static Set<Material> resolveTarget(Map<String, Object> params) {
+        Object raw = params.get("target");
+        if (raw == null) return null;
+        String reference = String.valueOf(raw);
+        if (reference.isBlank()) return null;
+        TagResolver resolver = Skilling.getInstance().getTagResolver();
+        if (resolver == null) {
+            throw new IllegalStateException("Cannot resolve chain_break 'target' without a live TagResolver");
+        }
+        return resolver.resolve(reference);
+    }
+
+    /**
+     * Whether a neighbor block should be chained: with a target set the neighbor
+     * must be a member of it, otherwise it must match the origin block's material.
+     *
+     * @param neighbor   the candidate neighbor block
+     * @param targetType the origin block's material (used when no target is set)
+     * @param targetSet  the flattened target set, or null for origin-material chaining
+     * @return true if the neighbor chains
+     */
+    private static boolean matches(Block neighbor, Material targetType, Set<Material> targetSet) {
+        return targetSet == null ? neighbor.getType() == targetType : targetSet.contains(neighbor.getType());
+    }
+
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
         if (!(event instanceof BlockBreakEvent breakEvent)) return false;
@@ -87,6 +135,7 @@ public class ChainBreakMechanic implements SkillMechanic {
 
         Block origin = breakEvent.getBlock();
         Material targetType = origin.getType();
+        Set<Material> targetSet = resolveTarget(params);
         Set<Location> visited = new HashSet<>();
         Queue<Block> queue = new ArrayDeque<>();
         queue.add(origin);
@@ -107,7 +156,7 @@ public class ChainBreakMechanic implements SkillMechanic {
                     if (broken >= chainedBudget) break;
                     Block neighbor = current.getRelative(dir[0], dir[1], dir[2]);
                     Location loc = neighbor.getLocation();
-                    if (neighbor.getType() == targetType && !visited.contains(loc)
+                    if (matches(neighbor, targetType, targetSet) && !visited.contains(loc)
                             && !processing.contains(loc)) {
                         visited.add(loc);
                         processing.add(loc);

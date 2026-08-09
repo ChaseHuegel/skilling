@@ -7,10 +7,14 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
  * layer must stay intact.
  *
  * <p>Reuses {@link ChainBreakMechanic}'s shared BFS, tool-durability cost,
- * {@code chain_limit} cap, and chaining guard.
+ * {@code chain_limit} cap, and chaining guard. The optional {@code target}
+ * parameter restricts the chain to a material or tag reference, exactly as in
+ * {@code core:chain_break}.
  *
  * <p><b>YAML key:</b> {@code core:level_break}
- * <br>Params: {@code chain_limit} (max total blocks broken including the origin)
+ * <br>Params: {@code chain_limit} (max total blocks broken including the origin),
+ * {@code target} (optional; a material or tag reference restricting the chain,
+ * defaults to the origin block's own material)
  */
 public final class LevelBreakMechanic extends ChainBreakMechanic {
 

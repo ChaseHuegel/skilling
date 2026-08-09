@@ -162,6 +162,12 @@ abilities:
               15: 3
               40: 8
               80: 16
+            # target: { constant: "#c:tree_blocks" }
+            # Optional chain target. Accepts a tag reference (#minecraft:logs,
+            # #c:logs) or a single material (minecraft:oak_log). When present,
+            # only blocks matching the resolved set chain; when absent, the
+            # chain follows the origin block's own material. To fell a whole
+            # tree, define a custom tag covering logs and leaves, then target it:
 
     # -- STRING PARAMETERS --
     # Some mechanics take namespaced string constants (effect, attribute, material).

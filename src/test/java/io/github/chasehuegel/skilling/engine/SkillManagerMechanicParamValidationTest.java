@@ -30,12 +30,13 @@ class SkillManagerMechanicParamValidationTest {
                 key -> key.getKey().equals("movement_speed"),
                 key -> key.getKey().equals("entity.player.levelup"),
                 key -> key.getKey().equals("happy_villager"),
-                key -> key.getKey().equals("netherite_pickaxe"));
+                key -> key.getKey().equals("netherite_pickaxe"),
+                ref -> ref.equals("#minecraft:logs") || ref.startsWith("minecraft:"));
     }
 
     @AfterEach
     void tearDown() {
-        MechanicParamValidators.configureLookups(null, null, null, null, null);
+        MechanicParamValidators.configureLookups(null, null, null, null, null, null);
     }
 
     private SkillManager newSkillManager() {
@@ -160,6 +161,30 @@ class SkillManagerMechanicParamValidationTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
         assertTrue(ex.getMessage().contains("typo"), ex.getMessage());
+    }
+
+    @Test
+    void unknownChainBreakTargetFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:chain_break"
+                        parameters:
+                          chain_limit: { constant: 10 }
+                          target: { constant: "#minecraft:typo" }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
+        assertTrue(ex.getMessage().contains("#minecraft:typo"), ex.getMessage());
+    }
+
+    @Test
+    void validChainBreakTargetLoads() throws Exception {
+        writeSkill("""
+                      - type: "core:chain_break"
+                        parameters:
+                          chain_limit: { constant: 10 }
+                          target: { constant: "#minecraft:logs" }
+                """);
+        assertDoesNotThrow(() -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
     }
 
     private void writeAbilityWithFeedback(String abilityBody) throws Exception {

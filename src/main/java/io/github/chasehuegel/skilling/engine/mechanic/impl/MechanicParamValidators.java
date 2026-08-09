@@ -36,6 +36,7 @@ public final class MechanicParamValidators {
     private static volatile Predicate<NamespacedKey> soundKeyKnown;
     private static volatile Predicate<NamespacedKey> particleKeyKnown;
     private static volatile Predicate<NamespacedKey> recipeKeyKnown;
+    private static volatile Predicate<String> tagOrMaterialKnown;
 
     private MechanicParamValidators() {}
 
@@ -47,17 +48,21 @@ public final class MechanicParamValidators {
      * @param soundKeyKnown     tests whether a namespaced sound key exists
      * @param particleKeyKnown  tests whether a namespaced particle key exists
      * @param recipeKeyKnown    tests whether a namespaced recipe key is registered
+     * @param tagOrMaterialKnown tests whether a tag ({@code #...}) or material
+     *                           ({@code minecraft:<item>}) reference is known
      */
     public static void configureLookups(Predicate<NamespacedKey> potionKeyKnown,
                                         Predicate<NamespacedKey> attributeKeyKnown,
                                         Predicate<NamespacedKey> soundKeyKnown,
                                         Predicate<NamespacedKey> particleKeyKnown,
-                                        Predicate<NamespacedKey> recipeKeyKnown) {
+                                        Predicate<NamespacedKey> recipeKeyKnown,
+                                        Predicate<String> tagOrMaterialKnown) {
         MechanicParamValidators.potionKeyKnown = potionKeyKnown;
         MechanicParamValidators.attributeKeyKnown = attributeKeyKnown;
         MechanicParamValidators.soundKeyKnown = soundKeyKnown;
         MechanicParamValidators.particleKeyKnown = particleKeyKnown;
         MechanicParamValidators.recipeKeyKnown = recipeKeyKnown;
+        MechanicParamValidators.tagOrMaterialKnown = tagOrMaterialKnown;
     }
 
     /**
@@ -125,6 +130,29 @@ public final class MechanicParamValidators {
         if (material.isBlank()) return;
         if (Material.matchMaterial(material) == null) {
             throw new IllegalArgumentException(context + ": unknown material '" + material + "'");
+        }
+    }
+
+    /**
+     * Validates a material-or-tag reference parameter, skipping it when absent
+     * or blank. Accepts a single material ({@code minecraft:stone}) or a tag
+     * reference ({@code #minecraft:logs}, {@code #c:ores}), checked against the
+     * configured {@code TagResolver.isKnown} predicate. When the predicate is
+     * not configured (unit-test context), the existence check is skipped so the
+     * validator never rejects on infrastructure the loader cannot see.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the material-or-tag reference
+     * @throws IllegalArgumentException if the reference is present but unknown
+     */
+    public static void materialOrTag(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key)) return;
+        Object raw = params.get(key);
+        String reference = raw == null ? "" : String.valueOf(raw);
+        if (reference.isBlank()) return;
+        if (tagOrMaterialKnown != null && !tagOrMaterialKnown.test(reference)) {
+            throw new IllegalArgumentException(context + ": unknown tag or material '" + reference + "'");
         }
     }
 

@@ -19,7 +19,7 @@ class MechanicParamValidatorsTest {
 
     @AfterEach
     void tearDown() {
-        MechanicParamValidators.configureLookups(null, null, null, null, null);
+        MechanicParamValidators.configureLookups(null, null, null, null, null, null);
     }
 
     private static void configureLookups() {
@@ -28,7 +28,9 @@ class MechanicParamValidatorsTest {
                 key -> key.getKey().equals("movement_speed"),
                 key -> key.getKey().equals("entity.player.levelup"),
                 key -> key.getKey().equals("happy_villager"),
-                key -> key.getKey().equals("netherite_pickaxe"));
+                key -> key.getKey().equals("netherite_pickaxe"),
+                ref -> ref.equals("#minecraft:logs") || ref.equals("#c:ores")
+                        || ref.equals("minecraft:stone"));
     }
 
     @Test
@@ -77,6 +79,33 @@ class MechanicParamValidatorsTest {
     void materialSkipsWhenAbsentOrBlank() {
         assertDoesNotThrow(() -> MechanicParamValidators.material("ctx", Map.of(), "material"));
         assertDoesNotThrow(() -> MechanicParamValidators.material("ctx", Map.of("material", ""), "material"));
+    }
+
+    @Test
+    void materialOrTagAcceptsMaterialTagAndCustomTag() {
+        configureLookups();
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.materialOrTag("ctx", Map.of("target", "#minecraft:logs"), "target"));
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.materialOrTag("ctx", Map.of("target", "#c:ores"), "target"));
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.materialOrTag("ctx", Map.of("target", "minecraft:stone"), "target"));
+    }
+
+    @Test
+    void materialOrTagRejectsUnknownReference() {
+        configureLookups();
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                MechanicParamValidators.materialOrTag("ctx", Map.of("target", "#minecraft:typo"), "target"));
+        assertTrue(ex.getMessage().contains("unknown tag or material '#minecraft:typo'"));
+    }
+
+    @Test
+    void materialOrTagSkipsWhenAbsentBlankOrLookupUnconfigured() {
+        assertDoesNotThrow(() -> MechanicParamValidators.materialOrTag("ctx", Map.of(), "target"));
+        assertDoesNotThrow(() -> MechanicParamValidators.materialOrTag("ctx", Map.of("target", ""), "target"));
+        assertDoesNotThrow(() ->
+                MechanicParamValidators.materialOrTag("ctx", Map.of("target", "#minecraft:whatever"), "target"));
     }
 
     @Test

@@ -1,5 +1,7 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
+import io.github.chasehuegel.skilling.Skilling;
+import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -13,11 +15,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -136,5 +140,43 @@ class LevelBreakMechanicTest {
 
         verify(east, org.mockito.Mockito.times(1)).breakNaturally(any(ItemStack.class));
         verify(farEast, never()).breakNaturally(any(ItemStack.class));
+    }
+
+    @Test
+    void targetHonorsXZPlaneOnlyExpansion() {
+        var world = mock(World.class);
+        var origin = block(world, 0, 0, 0, Material.OAK_LOG);
+        var horizontalMember = block(world, 1, 0, 0, Material.BIRCH_LOG); // XZ member of #minecraft:logs
+        var verticalMember = block(world, 0, 1, 0, Material.OAK_LOG); // Y member, must never break
+        var air = block(world, 99, 99, 99, Material.AIR);
+
+        Map<Location, Block> neighbors = new HashMap<>();
+        neighbors.put(horizontalMember.getLocation(), horizontalMember);
+        neighbors.put(verticalMember.getLocation(), verticalMember);
+        when(origin.getRelative(anyInt(), anyInt(), anyInt())).thenAnswer(inv -> {
+            int dx = inv.getArgument(0), dy = inv.getArgument(1), dz = inv.getArgument(2);
+            Location loc = new Location(world, dx, dy, dz);
+            return neighbors.getOrDefault(loc, air);
+        });
+        when(horizontalMember.getRelative(anyInt(), anyInt(), anyInt())).thenReturn(air);
+        when(verticalMember.getRelative(anyInt(), anyInt(), anyInt())).thenReturn(air);
+
+        var resolver = mock(TagResolver.class);
+        when(resolver.resolve("#minecraft:logs")).thenReturn(EnumSet.of(Material.OAK_LOG, Material.BIRCH_LOG));
+        var plugin = mock(Skilling.class);
+        when(plugin.getTagResolver()).thenReturn(resolver);
+
+        var player = player();
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class);
+             MockedStatic<Skilling> skilling = mockStatic(Skilling.class)) {
+            when(Bukkit.getPluginManager()).thenReturn(mock(org.bukkit.plugin.PluginManager.class));
+            when(Skilling.getInstance()).thenReturn(plugin);
+            new LevelBreakMechanic().execute(player,
+                    Map.of("chain_limit", 10, "target", "#minecraft:logs"), breakAt(origin));
+        }
+
+        verify(horizontalMember).breakNaturally(any(ItemStack.class));
+        verify(verticalMember, never()).breakNaturally(any(ItemStack.class));
+        verify(resolver).resolve("#minecraft:logs");
     }
 }

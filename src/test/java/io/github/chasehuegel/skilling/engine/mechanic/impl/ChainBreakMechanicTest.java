@@ -9,6 +9,7 @@ import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.registry.MechanicRegistry;
 import io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
+import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,6 +24,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -52,6 +57,57 @@ class ChainBreakMechanicTest {
         when(block.getLocation()).thenReturn(new Location(world, x, y, z));
         when(block.getType()).thenReturn(material);
         return block;
+    }
+
+    /**
+     * Runs a chain break with the given neighbor map, returning the blocks that
+     * were actually broken. Mocks the plugin instance so the mechanic can resolve
+     * the optional {@code target} reference through the given tag resolver.
+     */
+    private java.util.List<Block> runChain(World world, Map<Location, Block> neighbors, Material originMaterial,
+            TagResolver tagResolver, Map<String, Object> params) {
+        var origin = block(world, 0, 0, 0, originMaterial);
+        var air = block(world, 99, 99, 99, Material.AIR);
+        when(origin.getRelative(anyInt(), anyInt(), anyInt())).thenAnswer(inv -> {
+            int dx = inv.getArgument(0), dy = inv.getArgument(1), dz = inv.getArgument(2);
+            Location loc = new Location(world, dx, dy, dz);
+            return neighbors.getOrDefault(loc, air);
+        });
+        java.util.List<Block> broken = new java.util.ArrayList<>();
+        for (var b : neighbors.values()) {
+            when(b.getRelative(anyInt(), anyInt(), anyInt())).thenReturn(air);
+            doAnswer(inv -> {
+                broken.add(b);
+                return true;
+            }).when(b).breakNaturally(any(ItemStack.class));
+        }
+
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(origin);
+
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inv = mock(org.bukkit.inventory.PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inv);
+        var tool = mock(ItemStack.class);
+        var toolMaterial = mock(Material.class);
+        when(toolMaterial.getMaxDurability()).thenReturn((short) 100);
+        when(tool.getType()).thenReturn(toolMaterial);
+        var meta = mock(Damageable.class);
+        when(meta.getDamage()).thenReturn(0);
+        when(tool.getItemMeta()).thenReturn(meta);
+        when(inv.getItemInMainHand()).thenReturn(tool);
+
+        var plugin = mock(Skilling.class);
+        when(plugin.getTagResolver()).thenReturn(tagResolver);
+        var pluginManager = mock(org.bukkit.plugin.PluginManager.class);
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class);
+             MockedStatic<Skilling> skilling = mockStatic(Skilling.class)) {
+            when(Bukkit.getPluginManager()).thenReturn(pluginManager);
+            when(Skilling.getInstance()).thenReturn(plugin);
+            new ChainBreakMechanic().execute(player, params, event);
+        }
+        return broken;
     }
 
     @Test
@@ -231,6 +287,93 @@ class ChainBreakMechanicTest {
         verify(meta, never()).setDamage(anyInt());
         verify(inv, never()).setItemInMainHand(tool);
     }
+
+    @Test
+    void noTargetChainsToOriginMaterialOnly() {
+        var world = mock(World.class);
+        var origin = block(world, 0, 0, 0, Material.STONE);
+        var sameMaterial = block(world, 1, 0, 0, Material.STONE);
+        var differentMaterial = block(world, -1, 0, 0, Material.DIRT);
+
+        Map<Location, Block> neighbors = new HashMap<>();
+        neighbors.put(sameMaterial.getLocation(), sameMaterial);
+        neighbors.put(differentMaterial.getLocation(), differentMaterial);
+
+        var resolver = mock(TagResolver.class);
+        var broken = runChain(world, neighbors, Material.STONE, resolver, Map.of("chain_limit", 10));
+
+        // Without a target the chain is limited to the origin's own material;
+        // the DIRT neighbor must not break.
+        assertTrue(broken.contains(sameMaterial), "same-material neighbor must chain without a target");
+        assertFalse(broken.contains(differentMaterial), "different-material neighbor must not chain without a target");
+    }
+
+    @Test
+    void targetSingleMaterialChainsOnlyToThatMaterial() {
+        var world = mock(World.class);
+        var origin = block(world, 0, 0, 0, Material.STONE);
+        var targetMaterial = block(world, 1, 0, 0, Material.DIRT);
+        var otherMaterial = block(world, -1, 0, 0, Material.STONE);
+
+        Map<Location, Block> neighbors = new HashMap<>();
+        neighbors.put(targetMaterial.getLocation(), targetMaterial);
+        neighbors.put(otherMaterial.getLocation(), otherMaterial);
+
+        var resolver = mock(TagResolver.class);
+        when(resolver.resolve("minecraft:dirt")).thenReturn(EnumSet.of(Material.DIRT));
+        var broken = runChain(world, neighbors, Material.STONE, resolver,
+                Map.of("chain_limit", 10, "target", "minecraft:dirt"));
+
+        assertTrue(broken.contains(targetMaterial), "target material must chain");
+        assertFalse(broken.contains(otherMaterial), "non-target material must not chain");
+        verify(resolver).resolve("minecraft:dirt");
+    }
+
+    @Test
+    void targetVanillaTagChainsToEveryMemberMaterial() {
+        var world = mock(World.class);
+        var origin = block(world, 0, 0, 0, Material.OAK_LOG);
+        var memberMaterial = block(world, 1, 0, 0, Material.BIRCH_LOG);
+        var nonMember = block(world, -1, 0, 0, Material.STONE);
+
+        Map<Location, Block> neighbors = new HashMap<>();
+        neighbors.put(memberMaterial.getLocation(), memberMaterial);
+        neighbors.put(nonMember.getLocation(), nonMember);
+
+        var resolver = mock(TagResolver.class);
+        when(resolver.resolve("#minecraft:logs")).thenReturn(EnumSet.of(Material.OAK_LOG, Material.BIRCH_LOG));
+        var broken = runChain(world, neighbors, Material.OAK_LOG, resolver,
+                Map.of("chain_limit", 10, "target", "#minecraft:logs"));
+
+        assertTrue(broken.contains(memberMaterial), "member of the target tag must chain");
+        assertFalse(broken.contains(nonMember), "non-member must not chain");
+        verify(resolver).resolve("#minecraft:logs");
+    }
+
+    @Test
+    void targetCustomTagChainsToEveryMemberMaterial() throws Exception {
+        Path tagsFile = Files.createTempFile("tags", ".yml");
+        Files.writeString(tagsFile, "custom_tags:\n  logs:\n    - \"minecraft:oak_log\"\n    - \"minecraft:birch_log\"\n");
+        var loader = new CustomTagLoader();
+        loader.load(tagsFile.toFile());
+        var resolver = new TagResolver(loader);
+
+        var world = mock(World.class);
+        var origin = block(world, 0, 0, 0, Material.OAK_LOG);
+        var memberMaterial = block(world, 1, 0, 0, Material.BIRCH_LOG);
+        var nonMember = block(world, -1, 0, 0, Material.STONE);
+
+        Map<Location, Block> neighbors = new HashMap<>();
+        neighbors.put(memberMaterial.getLocation(), memberMaterial);
+        neighbors.put(nonMember.getLocation(), nonMember);
+
+        var broken = runChain(world, neighbors, Material.OAK_LOG, resolver,
+                Map.of("chain_limit", 10, "target", "#c:logs"));
+
+        assertTrue(broken.contains(memberMaterial), "member of the custom tag must chain");
+        assertFalse(broken.contains(nonMember), "non-member must not chain");
+    }
+
 
     @Test
     void chainStopsWhenToolBreaks() {

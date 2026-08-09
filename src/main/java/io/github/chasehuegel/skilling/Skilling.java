@@ -297,7 +297,8 @@ public final class Skilling extends JavaPlugin {
                 key -> Registry.ATTRIBUTE.get(key) != null,
                 key -> Registry.SOUND_EVENT.get(key) != null,
                 key -> Registry.PARTICLE_TYPE.get(key) != null,
-                Skilling::isRecipeRegistered);
+                Skilling::isRecipeRegistered,
+                tagResolver::isKnown);
     }
 
     /**
@@ -325,8 +326,10 @@ public final class Skilling extends JavaPlugin {
     public static void registerBuiltinMechanics(MechanicRegistry mechReg) {
         mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class, List.of("yield_chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "yield_chance", 100));
-        mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit"));
-        mechReg.register("core:level_break", LevelBreakMechanic.class, List.of("chain_limit"));
+        mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit", "target"),
+                (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
+        mechReg.register("core:level_break", LevelBreakMechanic.class, List.of("chain_limit", "target"),
+                (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
         mechReg.register("core:modify_damage", ModifyDamageMechanic.class, List.of("multiplier"));
         mechReg.register("core:apply_status", ApplyStatusMechanic.class, List.of("effect", "duration", "amplifier"),
                 (ctx, p) -> {

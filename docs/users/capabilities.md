@@ -42,11 +42,16 @@ durability (respecting Unbreaking, with the tool breaking at max durability).
 Chained blocks are broken without re-triggering XP or ability processing (only
 the originating break awards XP).
 
+The optional `target` parameter restricts the chain to a material or tag instead
+of the origin block's own material, so one ability can fell a tree by chaining
+the tagged `logs` blocks and every connected `leaves` block.
+
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `chain_limit` | double | `0` | Maximum connected blocks to break (clamped to 128 so an oversized value cannot freeze the server) |
+| `target` | string | (none) | Optional material or tag reference (`#minecraft:logs`, `#c:logs`, or `minecraft:oak_log`). When present, only blocks matching the resolved set chain |
 
 **Event:** `BlockBreakEvent`
 
@@ -63,6 +68,7 @@ for chained blocks).
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `chain_limit` | double | `0` | Maximum connected blocks to break (clamped to 128) |
+| `target` | string | (none) | Optional material or tag reference (`#minecraft:logs`, `#c:logs`, or `minecraft:oak_log`). When present, only blocks matching the resolved set chain |
 
 **Event:** `BlockBreakEvent`
 
