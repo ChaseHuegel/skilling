@@ -247,7 +247,15 @@ test.describe('Skill Editor', () => {
     // Round-trip: reloading with lore present must not mark the form dirty, and
     // saving an unrelated edit must preserve the untouched lore.
     await expect(page.locator('.sticky-banner')).not.toBeVisible({ timeout: 5000 });
-    await editor.setDisplayName('Mining Lore Round-Trip');
+    // The desktop and mobile projects share one server, so an earlier project
+    // may already have applied this test's rename to the live skill. Toggle the
+    // E2E suffix so the edit always dirties the form: setting the same name
+    // again leaves it clean and the Save Changes button never appears.
+    const currentName = await editor.displayNameInput.inputValue();
+    const roundTripName = currentName.endsWith(' E2E')
+        ? currentName.replace(/ E2E$/, '')
+        : `${currentName} E2E`;
+    await editor.setDisplayName(roundTripName);
     await editor.save();
     await dashboard.assertBannerVisible();
     await dashboard.applyChanges();

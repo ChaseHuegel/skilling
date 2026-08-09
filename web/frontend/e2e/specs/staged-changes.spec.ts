@@ -13,6 +13,10 @@ test.describe('Staged Changes Workflow', () => {
     await editor.waitForLoad();
     await editor.setDisplayName('Mining E2E Test');
     await editor.save();
+    // save() waits for the post-save reload; wait for the reloaded editor to
+    // finish loading so the discard flow below runs on a clean editor (a
+    // still-loading editor must not trigger the unsaved-changes leave dialog).
+    await editor.waitForLoad();
     await dashboard.assertBannerVisible();
   });
 

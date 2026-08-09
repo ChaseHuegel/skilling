@@ -53,8 +53,17 @@ export class DashboardPage {
 
   async applyChanges() {
     const reloaded = this.page.waitForResponse(res => res.url().includes('/api/reload'));
+    // applyAndReload() calls window.location.reload() in the microtask after
+    // the response, so subscribe to the next page load before clicking. Waiting
+    // only on the HTTP response leaves the test racing the reload: later edits
+    // on the stale page are wiped when the reload commits. Guarded by res.ok()
+    // because a conflict (409) shows an error and does not reload.
+    const pageLoaded = this.page.waitForEvent('load').catch(() => {});
     await this.applyBtn.click();
-    await reloaded;
+    const res = await reloaded;
+    if (res.ok()) {
+      await pageLoaded;
+    }
   }
 
   async discardChanges() {

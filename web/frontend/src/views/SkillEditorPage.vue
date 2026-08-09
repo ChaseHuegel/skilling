@@ -479,10 +479,12 @@ function formReferenceAbilityToApi(ab: any): any {
 }
 
 onMounted(async () => {
-    if (isNew) {
-        await nextTick();
-        cleanForm.value = JSON.stringify(form);
-    }
+    // Baseline the initial form as clean up front so the editor is never
+    // treated as dirty while it loads skill data after a save/apply reload.
+    // Otherwise a navigation during the async fetch opens the unsaved-changes
+    // leave dialog (whose overlay intercepts banner clicks) and the save banner
+    // flashes during the loading phase.
+    cleanForm.value = JSON.stringify(form);
     // Populate the skills list so the duplicate-ID check actually runs (the
     // store is not filled by any other view), and the abilities/ registries so
     // reference-shaped abilities resolve their inherited identity.

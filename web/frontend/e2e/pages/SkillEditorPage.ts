@@ -91,8 +91,18 @@ export class SkillEditorPage {
     const saved = this.page.waitForResponse(
       res => res.url().includes('/api/skills') && (res.request().method() === 'PUT' || res.request().method() === 'POST')
     );
+    // The editor calls window.location.reload() right after a successful save,
+    // so subscribe to the next page load before clicking. Waiting only on the
+    // HTTP response leaves the test racing the reload: edits made on the stale
+    // page are wiped when the reload commits, so the Save Changes banner (and
+    // its button) never appears. Guarded by res.ok() because a failed save
+    // surfaces an error banner and does not reload.
+    const pageLoaded = this.page.waitForEvent('load').catch(() => {});
     await this.saveBtn.click();
-    await saved;
+    const res = await saved;
+    if (res.ok()) {
+      await pageLoaded;
+    }
   }
 
   // Get identity form values for verification
