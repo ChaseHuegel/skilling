@@ -10,7 +10,7 @@
 - [x] [ISSUE-258](ISSUE-258.md) - E2E: fix pre-existing suite health (auth redirect and topbar overflow)
 
 ### Research
-- [ ] [ISSUE-275](ISSUE-275.md) - Research: ability editor and list page for standalone base/shared abilities
+- [x] [ISSUE-275](ISSUE-275.md) - Research: ability editor and list page for standalone base/shared abilities
 - [ ] [ISSUE-276](ISSUE-276.md) - Research: centralized searchable lists (materials, tags, entities, sounds, particles)
 
 ## Backlog
