@@ -548,6 +548,7 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
                 label="Cooldown"
                 name="Cooldown (s)"
                 :types="['constant', 'linear', 'milestones']"
+                :numeric-constant="true"
                 @update:model-value="updateRequirement(idx, { cooldown: $event })"
               />
             </div>

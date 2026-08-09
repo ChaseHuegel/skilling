@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import DecimalInput from './DecimalInput.vue'
 import { stableKey } from '../../utils/stableKey'
+
+export type ConstantValue = number | string
 
 interface EvaluatorValue {
   type: string
@@ -19,6 +21,14 @@ const props = defineProps<{
   label: string
   name: string
   types?: readonly string[]
+  /**
+   * Restricts the constant "Value" field to numbers (via DecimalInput). Used by
+   * the ability cooldown, which is numeric by contract (cooldownToNumber
+   * collapses constant evaluators to numbers); allowing a string constant there
+   * would silently zero the cooldown. Mechanics and XP-source reward constants
+   * stay free-text so string values (effect keys, tag references) round-trip.
+   */
+  numericConstant?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -31,6 +41,38 @@ const EVALUATOR_TYPES = computed(
 
 /** Whether the type is one this editor can edit; unknown types are read-only. */
 const isKnownType = computed(() => EVALUATOR_TYPES.value.includes(props.modelValue.type))
+
+/** Raw text backing the free-text constant value field. */
+const constantText = ref(constantToText(props.modelValue.params?.value))
+watch(() => props.modelValue.params?.value, (value) => {
+  constantText.value = constantToText(value)
+})
+
+/**
+ * Converts a parsed constant value back to display text. Numbers render as their
+ * decimal string so a numeric constant round-trips exactly.
+ */
+function constantToText(value: any): string {
+  if (value === null || value === undefined) return ''
+  return String(value)
+}
+
+/**
+ * Parses constant input text into a value preserving the runtime type: a plain
+ * decimal literal becomes a number, anything else (a namespaced key, a tag
+ * reference) stays a string verbatim.
+ */
+function parseConstantValue(text: string): ConstantValue {
+  const trimmed = text.trim()
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed)
+  return text
+}
+
+function onConstantInput(event: Event) {
+  const el = event.target as HTMLInputElement
+  constantText.value = el.value
+  setParam('value', parseConstantValue(el.value))
+}
 
 /** Stable per-row identity; `_key` is assigned at creation and preserved by spreads. */
 function milestoneKey(entry: MilestoneEntry): string {
@@ -124,8 +166,17 @@ function updateMilestone(index: number, key: 'level' | 'value', val: number) {
         <div class="field-row">
           <label class="field-label">Value</label>
           <DecimalInput
+            v-if="numericConstant"
             :model-value="modelValue.params?.value"
             @update:model-value="setParam('value', $event)"
+          />
+          <input
+            v-else
+            class="decimal-input"
+            type="text"
+            inputmode="decimal"
+            :value="constantText"
+            @input="onConstantInput"
           />
         </div>
       </template>
@@ -260,6 +311,17 @@ function updateMilestone(index: number, key: 'level' | 'value', val: number) {
   min-width: 5rem;
   font-size: 0.8rem;
   color: var(--p-form-field-placeholder-color);
+}
+
+.decimal-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 4px;
+  background: var(--p-form-field-background);
+  color: var(--p-text-color);
+  font-size: 0.85rem;
 }
 
 .milestones-list {
