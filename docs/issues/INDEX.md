@@ -11,7 +11,7 @@
 
 ### Research
 - [x] [ISSUE-275](ISSUE-275.md) - Research: ability editor and list page for standalone base/shared abilities
-- [ ] [ISSUE-276](ISSUE-276.md) - Research: centralized searchable lists (materials, tags, entities, sounds, particles)
+- [x] [ISSUE-276](ISSUE-276.md) - Research: centralized searchable lists (materials, tags, entities, sounds, particles)
 
 ## Backlog
 
