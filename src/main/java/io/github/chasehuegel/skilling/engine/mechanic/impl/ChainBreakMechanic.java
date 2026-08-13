@@ -50,7 +50,7 @@ public class ChainBreakMechanic implements SkillMechanic {
             ThreadLocal.withInitial(HashSet::new);
 
     private static final int[][] DIRECTIONS = {
-            {0,1,0}, {0,-1,0}, {1,0,0}, {-1,0,0}, {0,0,1}, {0,0,-1}
+            {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}
     };
 
     /**
@@ -144,12 +144,16 @@ public class ChainBreakMechanic implements SkillMechanic {
         Set<Location> processing = processingSet();
         int[][] dirs = directions();
         try {
+            // chain_limit counts the origin block, which is broken by the
+            // originating BlockBreakEvent rather than this mechanic, so the
+            // mechanic may break at most limit - 1 chained blocks.
+            int chainedBudget = limit - 1;
             int broken = 0;
             search:
-            while (!queue.isEmpty() && broken < limit) {
+            while (!queue.isEmpty() && broken < chainedBudget) {
                 Block current = queue.poll();
                 for (int[] dir : dirs) {
-                    if (broken >= limit) break;
+                    if (broken >= chainedBudget) break;
                     Block neighbor = current.getRelative(dir[0], dir[1], dir[2]);
                     Location loc = neighbor.getLocation();
                     if (matches(neighbor, targetType, targetSet) && !visited.contains(loc)
@@ -170,7 +174,7 @@ public class ChainBreakMechanic implements SkillMechanic {
                                         player.getInventory().getItemInMainHand())) {
                                     break search;
                                 }
-                                if (broken < limit) {
+                                if (broken < chainedBudget) {
                                     queue.add(neighbor);
                                 }
                             }
