@@ -14,6 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class AuthRateLimiter {
 
+    /** Hard ceiling on the attempt map so a many-IP flood cannot grow it without bound. */
+    private static final int HARD_CAP = 4096;
+
     private final int maxFailures;
     private final long windowMillis;
     private final long blockMillis;
@@ -84,5 +87,15 @@ public final class AuthRateLimiter {
         if (attempts.size() <= 1024) return;
         long cutoff = System.currentTimeMillis() - windowMillis - blockMillis;
         attempts.entrySet().removeIf(entry -> entry.getValue().windowStartMillis() < cutoff);
+        // A many-IP flood with windowStart ≈ now survives the time-based prune;
+        // enforce the hard cap by evicting the oldest entries so the map stays
+        // bounded. Sorted only when over the cap (the extreme case).
+        if (attempts.size() > HARD_CAP) {
+            int excess = attempts.size() - HARD_CAP;
+            attempts.entrySet().stream()
+                    .sorted(java.util.Comparator.comparingLong(e -> e.getValue().windowStartMillis()))
+                    .limit(excess)
+                    .forEach(e -> attempts.remove(e.getKey(), e.getValue()));
+        }
     }
 }

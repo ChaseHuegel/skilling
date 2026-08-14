@@ -85,9 +85,21 @@ public final class WebServer {
                 // never attached to cross-origin requests, so refusing the header
                 // also prevents cross-origin state changes from being read.
                 String origin = ctx.header("Origin");
-                if (origin != null && originAllowed(origin, ctx)) {
+                boolean allowed = origin == null || originAllowed(origin, ctx);
+                if (origin != null && allowed) {
                     ctx.res().setHeader("Access-Control-Allow-Origin", origin);
                     ctx.res().setHeader("Vary", "Origin");
+                }
+                // Block state-changing requests from a disallowed cross-origin
+                // origin outright (CSRF defense): refusing only the CORS header
+                // stops the browser reading the response, but a request carrying
+                // valid credentials would still be processed server-side.
+                if (shouldRejectCrossOriginStateChange(origin, allowed, ctx.method().name())) {
+                    ctx.status(403).json(Map.of(
+                        "status", "error",
+                        "message", "Cross-origin request rejected"
+                    ));
+                    ctx.skipRemainingHandlers();
                 }
             });
 
@@ -107,10 +119,7 @@ public final class WebServer {
                 String auth = ctx.header("Authorization");
                 if (auth == null || !authenticator.valid(auth)) {
                     rateLimiter.recordFailure(ip);
-                    ctx.status(401).json(Map.of(
-                        "status", "error",
-                        "message", "Invalid credentials"
-                    ));
+                    sendUnauthorized(ctx);
                     ctx.skipRemainingHandlers();
                 } else {
                     rateLimiter.recordSuccess(ip);
@@ -133,10 +142,7 @@ public final class WebServer {
                 String auth = ctx.header("Authorization");
                 if (auth == null || !authenticator.valid(auth)) {
                     rateLimiter.recordFailure(ip);
-                    ctx.status(401).json(Map.of(
-                        "status", "error",
-                        "message", "Invalid credentials"
-                    ));
+                    sendUnauthorized(ctx);
                 } else {
                     rateLimiter.recordSuccess(ip);
                     ctx.json(Map.of(
@@ -255,6 +261,36 @@ public final class WebServer {
         String[] parts = forwardedFor.split(",");
         String last = parts[parts.length - 1].trim();
         return last.isBlank() ? socketIp : last;
+    }
+
+    /**
+     * Sends a 401 with the {@code WWW-Authenticate} challenge (RFC 7617) so
+     * browsers and HTTP clients know to retry with Basic credentials.
+     *
+     * @param ctx the request context
+     */
+    private static void sendUnauthorized(Context ctx) {
+        ctx.res().setHeader("WWW-Authenticate", "Basic realm=\"skilling\"");
+        ctx.status(401).json(Map.of(
+            "status", "error",
+            "message", "Invalid credentials"
+        ));
+    }
+
+    /**
+     * Whether a request must be rejected as a cross-origin state change: it
+     * carries an Origin header that the CORS policy rejects AND uses a method
+     * that mutates server state. Requests without an Origin (same-origin
+     * browsers, curl, the frontend) are never rejected here.
+     *
+     * @param origin        the request's Origin header, or null
+     * @param originAllowed whether {@code originAllowed} accepted the origin
+     * @param methodName    the HTTP method name
+     * @return true when the request must be rejected with 403
+     */
+    static boolean shouldRejectCrossOriginStateChange(String origin, boolean originAllowed, String methodName) {
+        if (origin == null || originAllowed) return false;
+        return methodName.equals("POST") || methodName.equals("PUT") || methodName.equals("DELETE");
     }
 
     /**

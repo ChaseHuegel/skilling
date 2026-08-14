@@ -26,13 +26,18 @@ public final class BasicAuthenticator {
         if (colon < 0) return false;
         String user = decoded.substring(0, colon);
         String pass = decoded.substring(colon + 1);
-        return constantTimeEquals(config.username(), user) && constantTimeEquals(config.password(), pass);
+        // Compare username and password as one concatenated value so a username
+        // mismatch cannot short-circuit and leak the username via timing; both
+        // fields go through a single constant-time comparison.
+        return constantTimeEquals(config.username() + "\u0000" + config.password(),
+                user + "\u0000" + pass);
     }
 
     /**
      * Constant-time string comparison via {@link MessageDigest#isEqual}, so the
      * time to reject a wrong credential does not depend on how many leading
-     * characters matched.
+     * characters matched. Equal-length inputs take constant time; the length
+     * of the combined value is not treated as secret.
      *
      * @param expected the expected value
      * @param actual   the value supplied by the client
