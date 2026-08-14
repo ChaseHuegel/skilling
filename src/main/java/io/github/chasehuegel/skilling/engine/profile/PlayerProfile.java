@@ -28,6 +28,7 @@ public final class PlayerProfile implements PlayerProfileView {
 
     private final UUID playerId;
     private volatile boolean initialized;
+    private volatile boolean preferencesLoaded;
     private final ConcurrentHashMap<String, Long> xpMap;
     private final Set<String> pendingFanfareSkills = ConcurrentHashMap.newKeySet();
     private final AtomicLong modCount;
@@ -60,11 +61,36 @@ public final class PlayerProfile implements PlayerProfileView {
     /**
      * Sets the player's logging preferences and marks the profile as dirty.
      *
+     * <p>An explicit set is the player's real intent, so it also marks the
+     * preferences as loaded: a failed hydration load must not let the write-behind
+     * flush overwrite the persisted row with defaults, but a player-set value is
+     * always safe to persist.
+     *
      * @param preferences the new preferences
      */
     public void setPreferences(PlayerPreferences preferences) {
         this.preferences = preferences;
+        this.preferencesLoaded = true;
         modCount.incrementAndGet();
+    }
+
+    /**
+     * Returns whether the preferences were loaded successfully (or explicitly set
+     * by the player). A profile whose hydration prefs-read failed keeps this
+     * false so the flush never overwrites the player's real persisted row with
+     * defaults.
+     *
+     * @return true when the in-memory preferences are safe to persist
+     */
+    public boolean preferencesLoaded() {
+        return preferencesLoaded;
+    }
+
+    /**
+     * Marks the preferences as loaded after a successful database read.
+     */
+    public void markPreferencesLoaded() {
+        this.preferencesLoaded = true;
     }
 
     /**

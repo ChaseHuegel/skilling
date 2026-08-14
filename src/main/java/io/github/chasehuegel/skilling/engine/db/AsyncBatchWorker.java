@@ -144,8 +144,12 @@ public final class AsyncBatchWorker implements Runnable {
             }
 
             // Persist preferences for every dirty profile so /skills log and
-            // other preference changes ride the async write-behind path.
+            // other preference changes ride the async write-behind path. A
+            // profile whose hydration prefs-read failed keeps preferencesLoaded
+            // false and is skipped: flushing its defaults would permanently
+            // overwrite the player's real persisted row.
             for (var entry : dirty.entrySet()) {
+                if (!entry.getValue().preferencesLoaded()) continue;
                 prefsStmt.setString(1, entry.getKey().toString());
                 prefsStmt.setString(2, entry.getValue().getPreferencesJson());
                 prefsStmt.addBatch();

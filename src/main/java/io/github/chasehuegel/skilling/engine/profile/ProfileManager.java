@@ -143,7 +143,10 @@ public final class ProfileManager {
             for (String skillId : hydrated.pendingFanfareSkills()) {
                 existing.addPendingFanfare(skillId);
             }
-            if (existing.getPreferences() == PlayerPreferences.DEFAULTS) {
+            // Only carry the snapshot's preferences when that hydration loaded
+            // them successfully; a failed prefs read must not clobber the
+            // placeholder's "not yet loaded" state with defaults.
+            if (hydrated.preferencesLoaded() && existing.getPreferences() == PlayerPreferences.DEFAULTS) {
                 existing.setPreferences(hydrated.getPreferences());
             }
             existing.markInitialized();
@@ -302,7 +305,10 @@ public final class ProfileManager {
     }
 
     private void loadPreferences(PlayerProfile profile, UUID playerUuid) {
-        if (!databaseManager.isInitialized()) return;
+        if (!databaseManager.isInitialized()) {
+            profile.markPreferencesLoaded();
+            return;
+        }
         String sql = "SELECT preferences FROM player_preferences WHERE player_uuid = ?";
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -312,6 +318,10 @@ public final class ProfileManager {
                     profile.setPreferencesFromJson(rs.getString("preferences"));
                 }
             }
+            // A successful read (with or without a row) makes the in-memory
+            // preferences authoritative; a failed read leaves the flag unset so
+            // the write-behind flush never overwrites the player's real row.
+            profile.markPreferencesLoaded();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to load preferences for player " + playerUuid, e);
         }
