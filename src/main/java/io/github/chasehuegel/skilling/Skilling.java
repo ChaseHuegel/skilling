@@ -324,8 +324,11 @@ public final class Skilling extends JavaPlugin {
 
     /** Registers the built-in mechanics into the given registry. */
     public static void registerBuiltinMechanics(MechanicRegistry mechReg) {
-        mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class, List.of("yield_chance"),
-                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "yield_chance", 100));
+        mechReg.register("core:yield_multiplier", YieldMultiplierMechanic.class, List.of("yield_chance", "triple_chance"),
+                (ctx, p) -> {
+                    MechanicParamValidators.chance(ctx, p, "yield_chance", 100);
+                    MechanicParamValidators.chance(ctx, p, "triple_chance", 100);
+                });
         mechReg.register("core:chain_break", ChainBreakMechanic.class, List.of("chain_limit", "target"),
                 (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
         mechReg.register("core:level_break", LevelBreakMechanic.class, List.of("chain_limit", "target"),
@@ -412,6 +415,8 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:repair_discount", RepairDiscountMechanic.class, List.of("discount"));
         mechReg.register("core:modify_tame_chance", ModifyTameChanceMechanic.class, List.of("multiplier"),
                 (ctx, p) -> MechanicParamValidators.positive(ctx, p, "multiplier"));
+        mechReg.register("core:instant_tame", InstantTameMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:projectile_return", ProjectileReturnMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:modify_enchant_cost", ModifyEnchantCostMechanic.class, List.of("discount"));
