@@ -148,4 +148,61 @@ class StagingManagerConcurrencyTest {
         assertTrue(conflicts.contains("tags/base.yml"),
                 "a genuine external edit after Apply must still be detected as a conflict");
     }
+
+    @Test
+    void clearAppliedPreservesAnEditStagedDuringTheReloadWindow() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        sm.stageSkillFile("alpha", "id: alpha\nmax_level: 100\n");
+        List<String> applied = sm.applyAndBackup();
+
+        // An admin saves another skill while the reload rebuild is in flight.
+        sm.stageSkillFile("gamma", "id: gamma\nmax_level: 100\n");
+
+        sm.clearApplied(applied);
+
+        File stagedAlpha = new File(sm.getStagingDir(), "skills/alpha.yml");
+        File stagedGamma = new File(sm.getStagingDir(), "skills/gamma.yml");
+        assertTrue(!stagedAlpha.exists(), "the applied entry's staged source must be dropped");
+        assertTrue(stagedGamma.exists(), "an edit staged during the window must survive");
+        assertTrue(sm.hasPendingChanges(), "the surviving edit must still be pending");
+        StagingManager.StagingStatus status = sm.status();
+        assertTrue(status.files().contains("skills/gamma.yml"));
+        assertTrue(!status.files().contains("skills/alpha.yml"));
+    }
+
+    @Test
+    void clearAppliedKeepsAReSaveOfTheSameFileDuringTheWindow() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        sm.stageSkillFile("alpha", "id: alpha\nmax_level: 100\n");
+        List<String> applied = sm.applyAndBackup();
+
+        // The admin re-saves the very same skill while the reload is in flight;
+        // its staged content now differs from the just-applied live file.
+        sm.stageSkillFile("alpha", "id: alpha\nmax_level: 200\n");
+
+        sm.clearApplied(applied);
+
+        File stagedAlpha = new File(sm.getStagingDir(), "skills/alpha.yml");
+        assertTrue(stagedAlpha.exists(), "a re-save during the window must not be dropped");
+        assertEquals("id: alpha\nmax_level: 200\n", Files.readString(stagedAlpha.toPath()));
+        assertTrue(sm.status().files().contains("skills/alpha.yml"),
+                "the re-saved edit must remain pending");
+    }
+
+    @Test
+    void clearAppliedRemovesConsumedDeletionMarkers() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        File live = new File(new File(tempDir.toFile(), "skills"), "blasting.yml");
+        Files.createDirectories(live.toPath().getParent());
+        Files.writeString(live.toPath(), "id: blasting\n");
+
+        sm.stageSkillDeletion("blasting", "blasting.yml");
+        List<String> applied = sm.applyAndBackup();
+        assertTrue(!live.exists(), "the live file must be deleted by apply");
+
+        sm.clearApplied(applied);
+
+        File marker = new File(sm.getStagingDir(), "deleted_skills/blasting.yml.deleted");
+        assertTrue(!marker.exists(), "a consumed deletion marker must be dropped");
+    }
 }

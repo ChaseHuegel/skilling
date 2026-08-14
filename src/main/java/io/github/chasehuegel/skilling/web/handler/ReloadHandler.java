@@ -80,9 +80,10 @@ public final class ReloadHandler {
             }
 
             if (errors.isEmpty()) {
-                // Only discard pending edits once the reload fully succeeded, so a
-                // failed apply can be retried from the preserved staging.
-                stagingManager.clear();
+                // Discard only the applied entries once the reload fully
+                // succeeded, so an edit staged while the apply/reload window was
+                // in flight is preserved instead of being wiped by a full clear.
+                stagingManager.clearApplied(applied);
                 ctx.json(Map.of(
                     "success", true,
                     "message", "Changes applied. Plugin reloaded successfully.",

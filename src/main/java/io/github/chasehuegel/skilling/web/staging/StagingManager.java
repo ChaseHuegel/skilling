@@ -16,6 +16,7 @@ import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -153,6 +154,59 @@ public final class StagingManager {
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Failed to clear staging directory", e);
                 }
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Removes only the staged entries that were just applied, preserving any edit
+     * staged while the apply/reload window was in flight. A staged source is
+     * dropped only when it still matches the applied live file; a re-save during
+     * the window changes the staged content and survives for the next Apply.
+     *
+     * @param applied the {@code applyAndBackup()} applied-file list
+     */
+    public void clearApplied(List<String> applied) {
+        lock.lock();
+        try {
+            Set<String> appliedKeys = new java.util.HashSet<>();
+            for (String path : applied) {
+                appliedKeys.add(path.endsWith(".deleted")
+                        ? path.substring(0, path.length() - ".deleted".length())
+                        : path);
+            }
+            for (String path : applied) {
+                if (path.startsWith("deleted_skills/")) {
+                    // The deletion itself was applied; drop its marker regardless.
+                    File marker = new File(stagingDir, path + ".deleted");
+                    if (marker.exists()) marker.delete();
+                    continue;
+                }
+                File staged = new File(stagingDir, path);
+                File live = resolveLiveFile(path);
+                if (staged.exists() && staged.isFile()
+                        && fingerprint(staged).equals(fingerprint(live))) {
+                    staged.delete();
+                }
+            }
+            List<String> remaining = status().files().stream()
+                    .filter(f -> {
+                        String key = f.endsWith(".deleted")
+                                ? f.substring(0, f.length() - ".deleted".length())
+                                : f;
+                        if (!appliedKeys.contains(key)) return true;
+                        if (key.startsWith("deleted_skills/")) return false;
+                        // Keep the status entry when the staged source was
+                        // re-saved during the window and therefore preserved.
+                        return new File(stagingDir, key).exists();
+                    })
+                    .toList();
+            if (remaining.isEmpty()) {
+                statusFile().delete();
+            } else {
+                writeStatus(new ArrayList<>(remaining));
             }
         } finally {
             lock.unlock();
