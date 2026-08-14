@@ -39,7 +39,13 @@ import org.bukkit.inventory.ItemStack;
  */
 public record AutoSmeltMechanic() implements SkillMechanic {
 
-    /** Maps a captured <em>drop</em> material to its smelted product. */
+    /**
+     * Maps a captured <em>drop</em> material to its smelted product.
+     *
+     * <p>Immutable (design decision, ISSUE-301): this mirrors Minecraft's fixed
+     * vanilla smelting recipes and is a library-mechanic fact, not author-facing
+     * content, so it is intentionally not exposed in YAML.
+     */
     private static final Map<Material, Material> SMELT_MAP = Map.ofEntries(
         Map.entry(Material.RAW_IRON, Material.IRON_INGOT),
         Map.entry(Material.RAW_GOLD, Material.GOLD_INGOT),

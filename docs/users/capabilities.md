@@ -1,5 +1,23 @@
 # Capabilities Catalog
 
+## Fixed Gameplay Tables
+
+A few built-in mechanics carry small fixed data tables (design decision
+ISSUE-301). They are immutable in Java and are not configurable in YAML:
+
+| Mechanic | Fixed table | What it does |
+|---|---|---|
+| `core:auto_smelt` | `SMELT_MAP` | Raw-to-smelted product pairs mirroring vanilla furnace recipes |
+| `core:offhand_strike` | `BASE_DAMAGE` | Base attack damage per vanilla weapon material |
+| `core:auto_replant` | crop list | Which crops the mechanic replants |
+| `core:apply_status` / `core:modify_attribute` | legacy numeric IDs | Deprecated numeric-ID fallback mapping |
+| engine filter matching | `projectileToMaterial` | Maps a projectile type to a material for the `target` filter |
+
+These are vanilla mirrors, capability boundaries, compatibility shims, or engine
+plumbing, not skills or abilities, so they stay out of YAML. All author-facing
+tuning (rewards, chances, durations, limits) remains configurable as evaluator
+parameters in your skill files.
+
 ## Ability Cost & Cooldown Consumption
 
 An ability's item costs are deducted and its cooldown is applied **exactly once

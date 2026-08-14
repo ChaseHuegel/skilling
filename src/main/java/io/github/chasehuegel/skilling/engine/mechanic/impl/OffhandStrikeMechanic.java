@@ -57,6 +57,13 @@ public final class OffhandStrikeMechanic implements SkillMechanic {
     /** Sane damage-multiplier cap so a level-scaled multiplier cannot one-shot. */
     static final double MAX_MULTIPLIER = 4.0;
 
+    /**
+     * Vanilla weapon base attack damage per material.
+     *
+     * <p>Immutable (design decision, ISSUE-301): this mirrors Minecraft's fixed
+     * weapon damage values, so it is a library-mechanic fact rather than
+     * author-facing content and is deliberately not exposed in YAML.
+     */
     static final Map<Material, Double> BASE_DAMAGE = Map.ofEntries(
             Map.entry(Material.WOODEN_SWORD, 4.0),
             Map.entry(Material.STONE_SWORD, 5.0),

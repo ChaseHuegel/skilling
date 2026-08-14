@@ -30,6 +30,11 @@ public final class ModifyAttributeMechanic implements SkillMechanic {
 
     private static final Logger LOGGER = Logger.getLogger(ModifyAttributeMechanic.class.getName());
 
+    /**
+     * Legacy numeric attribute IDs, accepted for backward compatibility only.
+     * Immutable (design decision, ISSUE-301): a deprecated compatibility shim,
+     * not author-facing content.
+     */
     private static final Map<Integer, String> LEGACY_ATTRIBUTE_KEYS = Map.of(
             1, "minecraft:max_health",
             2, "minecraft:follow_range",

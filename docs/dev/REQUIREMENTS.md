@@ -25,6 +25,27 @@ The system treats skills as data. It uses composition instead of inheritance to 
 * **Result Object Pattern:** Requirement checks must return a unified `RequirementResult` object containing the boolean success state, failure reason, and dynamic string placeholders for feedback.
 * **API-First Design:** The plugin must expose a `Service` via the Bukkit `ServicesManager` to allow addon plugins to register custom mechanics and evaluators.
 
+### Hardcoded Gameplay Tables (Design Decision, ISSUE-301)
+
+The golden rule forbids hardcoded skills, levels, and abilities. Small gameplay-data
+tables inside mechanic implementations are a separate boundary. The decision is:
+
+**Keep them immutable in Java; never expose them in YAML.**
+
+These tables are one of four kinds, none of which is author-facing content:
+
+| Table | Kind | Why immutable |
+|---|---|---|
+| `AutoSmeltMechanic.SMELT_MAP` | Vanilla mirror | Repeats Minecraft's fixed smelting recipes; exposing them would fork the game's own data |
+| `OffhandStrikeMechanic.BASE_DAMAGE` | Vanilla mirror | Mirrors the fixed vanilla weapon attack-damage values |
+| `AutoReplantMechanic` crop list | Capability boundary | Defines which blocks a mechanic can act on |
+| `PotionEffectResolver` / `ModifyAttributeMechanic` legacy numeric IDs | Compatibility shim | Deprecated numeric-ID mapping for old configs |
+| `SkillEventListener.projectileToMaterial` | Engine plumbing | Maps projectile entity types to a filter material for the `target` filter |
+
+Each table carries an explicit "immutable" note in its Javadoc. If a future table
+encodes author-tunable tuning data (rewards, chances, limits), it belongs in YAML
+as an evaluator parameter or filter, not in Java.
+
 ---
 
 ## 3. Data Persistence & Lifecycle

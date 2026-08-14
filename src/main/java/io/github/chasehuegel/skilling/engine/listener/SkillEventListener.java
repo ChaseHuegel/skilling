@@ -1045,6 +1045,12 @@ public final class SkillEventListener implements Listener {
         return io.github.chasehuegel.skilling.engine.mechanic.impl.BlockParticlesMechanic.resolveBlockLocation(event);
     }
 
+    /**
+     * Maps a projectile entity type to the material the {@code target} filter
+     * matches for projectile kills. Immutable engine plumbing (design decision,
+     * ISSUE-301): it connects the entity pipeline to the material-based filter
+     * system and is not author-facing content.
+     */
     private static Material projectileToMaterial(org.bukkit.entity.Entity damager) {
         if (damager instanceof Projectile proj) {
             return switch (proj.getType()) {

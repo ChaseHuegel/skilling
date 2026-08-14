@@ -2,9 +2,7 @@
 
 ## 1. Core Architectural Pillars
 
-### Pillar I: Non-Destructive Integrity (The "Clean Unplug" Rule)
-
-* **Zero World Corruption:** No ability may permanently alter world geometry. No ability may place non-vanilla blocks. No ability may write custom tile entity data that depends on the plugin to exist.* **Vanilla Container Safety:** Never alter container sizes, slot layouts, or inventory interfaces via custom GUIs. Storage utilities must use standard vanilla containers or temporary virtual windows (e.g., opening a portable crafting table/Ender chest GUI directly) to prevent item loss if the plugin is uninstalled.
+### Pillar I: Non-Destructive Integrity (The "Clean Unplug" Rule)* **Zero World Corruption:** No ability may permanently alter world geometry. No ability may place non-vanilla blocks. No ability may write custom tile entity data that depends on the plugin to exist.* **Vanilla Container Safety:** Never alter container sizes, slot layouts, or inventory interfaces via custom GUIs. Storage utilities must use standard vanilla containers or temporary virtual windows (e.g., opening a portable crafting table/Ender chest GUI directly) to prevent item loss if the plugin is uninstalled.
 * **Native Event Execution:** World-modifying mechanics (e.g., vein mining or tree felling) must run as standard player `BlockBreakEvent` passes, respecting normal tool durability, enchantments, and drop tables.
 
 ### Pillar II: Aesthetic & Mechanical Restraint
@@ -27,6 +25,25 @@
 * **Zero Constant Ticking Tasks:** Avoid `BukkitRunnable` tasks that run every tick to check player surroundings, scan chunks, or update block states.
 * **Player-Centric Effects:** Modify *Player* or *Target Entity* properties directly (status effects, standard damage source calls, held item durability). Do not hack NMS tile entities (e.g., modifying Beacon block tick ranges) or spam block-outline packets.
 * **Clean Event Listeners:** All abilities must execute strictly inside standard Paper API event listeners (`BlockBreakEvent`, `EntityDamageByEntityEvent`, `PlayerInteractEvent`, `GenericGameEvent`) running in $O(1)$ time.
+
+---
+
+## 1b. Hardcoded Gameplay Tables (Data Boundary)
+
+The golden rule is zero hardcoded skills, levels, and abilities. Small tables
+inside mechanic implementations sit at a deliberate boundary (design decision,
+ISSUE-301): they are kept immutable in Java, never exposed in YAML.
+
+| Table | Kind |
+|---|---|
+| `AutoSmeltMechanic.SMELT_MAP` | Vanilla mirror of fixed smelting recipes |
+| `OffhandStrikeMechanic.BASE_DAMAGE` | Vanilla mirror of weapon attack damage |
+| `AutoReplantMechanic` crop list | Capability boundary for the mechanic |
+| `PotionEffectResolver` / `ModifyAttributeMechanic` numeric IDs | Deprecated compatibility shim |
+| `SkillEventListener.projectileToMaterial` | Engine plumbing for the `target` filter |
+
+Author-facing tuning (rewards, chances, limits) always belongs in YAML as
+evaluator parameters or filters, never in these tables.
 
 ---
 

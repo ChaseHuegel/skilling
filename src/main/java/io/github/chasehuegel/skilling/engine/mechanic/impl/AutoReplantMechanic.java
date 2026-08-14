@@ -50,6 +50,11 @@ public final class AutoReplantMechanic implements SkillMechanic {
         return true;
     }
 
+    /**
+     * The set of crops this mechanic replants. Immutable (design decision,
+     * ISSUE-301): it is a capability boundary for the library mechanic, not
+     * author-facing content, and is deliberately not exposed in YAML.
+     */
     private boolean isCrop(Material material) {
         return switch (material) {
             case WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART -> true;
