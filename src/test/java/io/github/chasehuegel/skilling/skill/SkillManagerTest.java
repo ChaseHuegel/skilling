@@ -327,4 +327,123 @@ class SkillManagerTest {
                 () -> skillManager.parseSkill(config));
         assertTrue(ex.getMessage().contains("Unknown mechanic"));
     }
+
+    @Test
+    void numericAbilityTriggerThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", 5)));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("trigger"));
+    }
+
+    @Test
+    void numericAbilityIdThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of("id", 7)));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("id"));
+    }
+
+    @Test
+    void numericDisplayNameThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "display_name", 3, "unlock_level", 1, "trigger", "block_break")));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("display_name"));
+    }
+
+    @Test
+    void scalarStateThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "requirements", java.util.Map.of("state", "on_fire"))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("state"));
+    }
+
+    @Test
+    void nonStringStateElementThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "requirements", java.util.Map.of("state", java.util.List.of(5)))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("state"));
+    }
+
+    @Test
+    void scalarItemsThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "requirements", java.util.Map.of("items", 5))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("items"));
+    }
+
+    @Test
+    void nonMapItemElementThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "requirements", java.util.Map.of("items", java.util.List.of("pickaxe")))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("items"));
+    }
+
+    @Test
+    void scalarFeedbackSoundsThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "feedback", java.util.Map.of("sounds", 5))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("sounds"));
+    }
+
+    @Test
+    void numericXpSourceTriggerThrows() {
+        var config = minimalSkill();
+        config.set("xp_sources", java.util.List.of(java.util.Map.of(
+                "trigger", 5, "reward", java.util.Map.of("constant", 15.0))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("trigger"));
+    }
+
+    @Test
+    void numericXpSourceFilterTargetThrows() {
+        var config = minimalSkill();
+        config.set("xp_sources", java.util.List.of(java.util.Map.of(
+                "trigger", "block_break",
+                "filters", java.util.List.of(java.util.Map.of("target", 42)),
+                "reward", java.util.Map.of("constant", 15.0))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("target"));
+    }
+
+    @Test
+    void numericItemRequirementAmountThrows() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "requirements", java.util.Map.of("items",
+                        java.util.List.of(java.util.Map.of(
+                                "tag", "#c:logs", "amount", "many"))))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("amount"));
+    }
 }

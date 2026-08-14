@@ -12,7 +12,7 @@
 ### Bugs
 - [x] [ISSUE-278](ISSUE-278.md) - Fix pre-existing ChainBreakMechanicTest budget failures
 - [x] [ISSUE-279](ISSUE-279.md) - Shaded JAR omits the SQLite JDBC driver and ships un-remapped service files
-- [ ] [ISSUE-280](ISSUE-280.md) - SkillManager raw casts throw ClassCastException instead of fail-fast IllegalArgumentException
+- [x] [ISSUE-280](ISSUE-280.md) - SkillManager raw casts throw ClassCastException instead of fail-fast IllegalArgumentException
 - [ ] [ISSUE-281](ISSUE-281.md) - Unknown item-requirement slot throws on the event path and aborts ability dispatch
 - [ ] [ISSUE-282](ISSUE-282.md) - `level_up` XP sources can self-trigger an unbounded XP cascade
 - [ ] [ISSUE-283](ISSUE-283.md) - AttributeModifierHelper applies a modifier before scheduling removal, leaking a permanent stacking buff

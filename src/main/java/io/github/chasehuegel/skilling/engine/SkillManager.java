@@ -238,8 +238,7 @@ public final class SkillManager {
         int customModelData = section.getInt("custom_model_data", 0);
         String color = section.getString("color", "WHITE");
         String style = section.getString("style", "SOLID");
-        @SuppressWarnings("unchecked")
-        List<String> lore = (List<String>) section.getList("lore", List.of());
+        List<String> lore = asStringList(section.getList("lore", List.of()), "display lore");
         return new SkillDefinition.Display(name, icon, customModelData, color, style, lore);
     }
 
@@ -277,7 +276,7 @@ public final class SkillManager {
                 throw new IllegalArgumentException("XP source must be a map, got: " + raw);
             }
             Map<String, Object> entry = castMap(map);
-            String trigger = (String) entry.get("trigger");
+            String trigger = asString(entry, "trigger", "XP source");
             if (trigger == null) throw new IllegalArgumentException("XP source missing 'trigger'");
             // Fail fast on a typo'd trigger so a source that can never be
             // dispatched is rejected here instead of silently never firing.
@@ -291,9 +290,9 @@ public final class SkillManager {
                 for (Object f : filterList) {
                     if (f instanceof Map<?, ?> fm) {
                         Map<String, Object> filterMap = castMap(fm);
-                        String target = (String) filterMap.get("target");
-                        String state = (String) filterMap.get("state");
-                        String tool = (String) filterMap.get("tool");
+                        String target = asString(filterMap, "target", "XP source filter");
+                        String state = asString(filterMap, "state", "XP source filter");
+                        String tool = asString(filterMap, "tool", "XP source filter");
                         validateTagReference(target);
                         validateTagReference(tool);
                         validateAndWarmState(state, "XP source for trigger '" + trigger + "'");
@@ -347,7 +346,7 @@ public final class SkillManager {
             }
             Map<String, Object> abilityMap = castMap(map);
 
-            String id = (String) abilityMap.get("id");
+            String id = asString(abilityMap, "id", "Ability");
             if (id == null) throw new IllegalArgumentException("Ability missing 'id'");
             if (!seenIds.add(id)) {
                 throw new IllegalArgumentException("Duplicate ability ID: " + id);
@@ -368,10 +367,10 @@ public final class SkillManager {
                 }
             }
 
-            String displayName = (String) abilityMap.getOrDefault("display_name", id);
+            String displayName = asString(abilityMap, "display_name", id, "Ability '" + id + "'");
             int unlockLevel = parseUnlockLevel(id, abilityMap.getOrDefault("unlock_level", 1));
 
-            String trigger = (String) abilityMap.get("trigger");
+            String trigger = asString(abilityMap, "trigger", "Ability '" + id + "'");
             if (trigger == null || trigger.isBlank()) {
                 throw new IllegalArgumentException("Ability '" + id + "' missing required 'trigger' field");
             }
@@ -407,8 +406,7 @@ public final class SkillManager {
 
     private SkillDefinition.AbilityDisplay parseAbilityDisplay(Map<String, Object> map) {
         if (map == null) return new SkillDefinition.AbilityDisplay(List.of());
-        @SuppressWarnings("unchecked")
-        List<String> lore = (List<String>) map.getOrDefault("lore", List.of());
+        List<String> lore = asStringList(map, "lore", "Ability display");
         return new SkillDefinition.AbilityDisplay(lore);
     }
 
@@ -447,19 +445,17 @@ public final class SkillManager {
     private SkillDefinition.Requirements parseRequirements(Map<String, Object> map, String abilityId) {
         if (map == null) return new SkillDefinition.Requirements(0, List.of(), List.of());
         ParameterEvaluator cooldown = parseCooldown(map.get("cooldown"));
-        @SuppressWarnings("unchecked")
-        List<String> state = (List<String>) map.getOrDefault("state", List.of());
-        state.forEach(s -> validateAndWarmState(s, "Ability '" + abilityId + "' requirements"));
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> itemsRaw = (List<Map<String, Object>>) map.getOrDefault("items", List.of());
+        String reqContext = "Ability '" + abilityId + "' requirements";
+        List<String> state = asStringList(map, "state", reqContext);
+        state.forEach(s -> validateAndWarmState(s, reqContext));
+        List<Map<String, Object>> itemsRaw = asMapList(map, "items", reqContext);
         List<SkillDefinition.ItemRequirement> items = itemsRaw.stream().map(this::parseItemRequirement).toList();
 
         SkillDefinition.Exhaustion exhaustion = null;
         if (map.containsKey("exhaustion")) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> exMap = (Map<String, Object>) map.get("exhaustion");
-            double amount = ((Number) exMap.getOrDefault("amount", 1.0)).doubleValue();
-            double minimum = ((Number) exMap.getOrDefault("minimum", 0.0)).doubleValue();
+            Map<String, Object> exMap = castMap(map.get("exhaustion"));
+            double amount = asDouble(exMap, "amount", 1.0, reqContext + " exhaustion");
+            double minimum = asDouble(exMap, "minimum", 0.0, reqContext + " exhaustion");
             exhaustion = new SkillDefinition.Exhaustion(amount, minimum);
         }
 
@@ -486,17 +482,18 @@ public final class SkillManager {
     }
 
     private SkillDefinition.ItemRequirement parseItemRequirement(Map<String, Object> map) {
-        String action = (String) map.getOrDefault("action", "possession");
-        String tag = (String) map.get("tag");
+        String itemContext = "Item requirement";
+        String action = asString(map, "action", "possession", itemContext);
+        String tag = asString(map, "tag", itemContext);
         // Fail fast: a missing tag would NPE inside the requirement resolver on
         // the event path; reject it here at load instead.
         if (tag == null || tag.isBlank()) {
             throw new IllegalArgumentException("Item requirement missing required 'tag'");
         }
-        String slot = (String) map.getOrDefault("slot", "HAND");
+        String slot = asString(map, "slot", "HAND", itemContext);
         validateTagReference(tag);
-        int amount = ((Number) map.getOrDefault("amount", 1)).intValue();
-        double itemCooldown = ((Number) map.getOrDefault("item_cooldown", 0.0)).doubleValue();
+        int amount = asInt(map, "amount", 1, itemContext);
+        double itemCooldown = asDouble(map, "item_cooldown", 0.0, itemContext);
         return new SkillDefinition.ItemRequirement(action, tag, slot, amount, itemCooldown);
     }
 
@@ -564,8 +561,7 @@ public final class SkillManager {
         for (var entry : map.entrySet()) {
             Map<String, Object> feedbackMap = castMap(entry.getValue());
             String actionBar = feedbackString(feedbackMap, "action_bar");
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> sounds = (List<Map<String, Object>>) feedbackMap.getOrDefault("sounds", List.of());
+            List<Map<String, Object>> sounds = asMapList(feedbackMap, "sounds", "on_failure '" + entry.getKey() + "' of ability '" + abilityId + "'");
             validateFeedbackSounds("on_failure '" + entry.getKey() + "' of ability '" + abilityId + "'", sounds);
             failures.put(entry.getKey(), new SkillDefinition.FailureFeedback(actionBar, sounds));
         }
@@ -580,7 +576,7 @@ public final class SkillManager {
                 throw new IllegalArgumentException("Mechanic entry must be a map, got: " + raw);
             }
             Map<String, Object> mechanicMap = castMap(map);
-            String type = (String) mechanicMap.get("type");
+            String type = asString(mechanicMap, "type", "Mechanic");
             if (type == null) throw new IllegalArgumentException("Mechanic entry missing 'type'");
             if (!mechanicRegistry.contains(type)) {
                 throw new IllegalArgumentException("Unknown mechanic type: " + type);
@@ -621,8 +617,7 @@ public final class SkillManager {
             }
             mechanicRegistry.validate(type, "ability '" + abilityId + "' in skill '" + skillId + "'", constantParams);
 
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> filtersRaw = (List<Map<String, Object>>) mechanicMap.getOrDefault("filters", List.of());
+            List<Map<String, Object>> filtersRaw = asMapList(mechanicMap, "filters", "Mechanic '" + type + "' of ability '" + abilityId + "'");
             List<SkillDefinition.Filter> filters = filtersRaw.stream()
                     .map(fm -> {
                         String target = fm.get("target") != null ? String.valueOf(fm.get("target")) : null;
@@ -664,10 +659,8 @@ public final class SkillManager {
                 .bool(feedbackContext, notify.getOrDefault("chat", false), "chat");
         String message = feedbackString(notify, "message");
 
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> particles = (List<Map<String, Object>>) map.getOrDefault("particles", List.of());
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> sounds = (List<Map<String, Object>>) map.getOrDefault("sounds", List.of());
+        List<Map<String, Object>> particles = asMapList(map, "particles", "feedback of ability '" + abilityId + "'");
+        List<Map<String, Object>> sounds = asMapList(map, "sounds", "feedback of ability '" + abilityId + "'");
 
         validateFeedbackParticles("feedback of ability '" + abilityId + "'", particles);
         validateFeedbackSounds("feedback of ability '" + abilityId + "'", sounds);
@@ -686,7 +679,9 @@ public final class SkillManager {
      */
     private static String feedbackString(Map<String, Object> map, String key) {
         Object raw = map.get(key);
-        return raw == null ? "" : (String) raw;
+        if (raw == null) return "";
+        if (raw instanceof String s) return s;
+        throw new IllegalArgumentException("Feedback '" + key + "' must be a string, got: " + raw);
     }
 
     private void validateFeedbackSounds(String context, List<Map<String, Object>> sounds) {
@@ -757,10 +752,15 @@ public final class SkillManager {
 
         if (map.containsKey("linear")) {
             Map<String, Object> linearMap = castMap(map.get("linear"));
-            double base = ((Number) linearMap.getOrDefault("base", 0.0)).doubleValue();
-            double step = ((Number) linearMap.getOrDefault("step", 0.0)).doubleValue();
-            double min = linearMap.containsKey("min") ? ((Number) linearMap.get("min")).doubleValue() : Double.NEGATIVE_INFINITY;
-            double max = linearMap.containsKey("max") ? ((Number) linearMap.get("max")).doubleValue() : Double.POSITIVE_INFINITY;
+            String linearContext = "linear evaluator";
+            double base = asDouble(linearMap, "base", 0.0, linearContext);
+            double step = asDouble(linearMap, "step", 0.0, linearContext);
+            double min = linearMap.containsKey("min")
+                    ? asDouble(linearMap, "min", Double.NEGATIVE_INFINITY, linearContext)
+                    : Double.NEGATIVE_INFINITY;
+            double max = linearMap.containsKey("max")
+                    ? asDouble(linearMap, "max", Double.POSITIVE_INFINITY, linearContext)
+                    : Double.POSITIVE_INFINITY;
             return new LinearEvaluator(base, step, min, max);
         }
 
@@ -776,7 +776,8 @@ public final class SkillManager {
             TreeMap<Integer, Double> milestones = new TreeMap<>();
             for (var entry : milestonesMap.entrySet()) {
                 try {
-                    milestones.put(Integer.parseInt(entry.getKey()), ((Number) entry.getValue()).doubleValue());
+                    milestones.put(Integer.parseInt(entry.getKey()),
+                            asNumber(entry.getValue(), "milestone value").doubleValue());
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Invalid milestone level key: " + entry.getKey(), e);
                 }
@@ -786,8 +787,8 @@ public final class SkillManager {
 
         if (map.containsKey("polynomial")) {
             Map<String, Object> polyMap = castMap(map.get("polynomial"));
-            double baseXp = ((Number) polyMap.getOrDefault("base_xp", 50.0)).doubleValue();
-            double exponent = ((Number) polyMap.getOrDefault("exponent", 2.5)).doubleValue();
+            double baseXp = asDouble(polyMap, "base_xp", 50.0, "polynomial evaluator");
+            double exponent = asDouble(polyMap, "exponent", 2.5, "polynomial evaluator");
             return new PolynomialEvaluator(baseXp, exponent);
         }
 
@@ -827,6 +828,82 @@ public final class SkillManager {
             return result;
         }
         throw new IllegalArgumentException("Expected a YAML map, got: " + raw);
+    }
+
+    private static String asString(Map<String, Object> map, String key, String context) {
+        Object raw = map.get(key);
+        if (raw == null) return null;
+        if (raw instanceof String s) return s;
+        throw new IllegalArgumentException(context + " '" + key + "' must be a string, got: " + raw);
+    }
+
+    private static String asString(Map<String, Object> map, String key, String defaultValue, String context) {
+        Object raw = map.get(key);
+        if (raw == null) return defaultValue;
+        if (raw instanceof String s) return s;
+        throw new IllegalArgumentException(context + " '" + key + "' must be a string, got: " + raw);
+    }
+
+    private static double asDouble(Map<String, Object> map, String key, double defaultValue, String context) {
+        Object raw = map.get(key);
+        if (raw == null) return defaultValue;
+        if (raw instanceof Number n) return n.doubleValue();
+        throw new IllegalArgumentException(context + " '" + key + "' must be a number, got: " + raw);
+    }
+
+    private static int asInt(Map<String, Object> map, String key, int defaultValue, String context) {
+        Object raw = map.get(key);
+        if (raw == null) return defaultValue;
+        if (raw instanceof Number n) return n.intValue();
+        throw new IllegalArgumentException(context + " '" + key + "' must be a number, got: " + raw);
+    }
+
+    private static Number asNumber(Object raw, String context) {
+        if (raw instanceof Number n) return n;
+        throw new IllegalArgumentException(context + " must be a number, got: " + raw);
+    }
+
+    private static List<String> asStringList(Map<String, Object> map, String key, String context) {
+        Object raw = map.get(key);
+        if (raw == null) return List.of();
+        if (raw instanceof List<?> list) {
+            List<String> out = new ArrayList<>(list.size());
+            for (Object element : list) {
+                if (element instanceof String s) out.add(s);
+                else throw new IllegalArgumentException(context + " '" + key
+                        + "' must be a list of strings, got element: " + element);
+            }
+            return out;
+        }
+        throw new IllegalArgumentException(context + " '" + key + "' must be a list of strings, got: " + raw);
+    }
+
+    private static List<String> asStringList(List<?> raw, String context) {
+        if (raw == null) return List.of();
+        List<String> out = new ArrayList<>(raw.size());
+        for (Object element : raw) {
+            if (element instanceof String s) out.add(s);
+            else throw new IllegalArgumentException(context + " must be a list of strings, got element: " + element);
+        }
+        return out;
+    }
+
+    private List<Map<String, Object>> asMapList(Map<String, Object> map, String key, String context) {
+        Object raw = map.get(key);
+        if (raw == null) return List.of();
+        if (raw instanceof List<?> list) {
+            List<Map<String, Object>> out = new ArrayList<>(list.size());
+            for (Object element : list) {
+                if (element instanceof Map<?, ?>) {
+                    out.add(castMap(element));
+                } else {
+                    throw new IllegalArgumentException(context + " '" + key
+                            + "' must be a list of maps, got element: " + element);
+                }
+            }
+            return out;
+        }
+        throw new IllegalArgumentException(context + " '" + key + "' must be a list of maps, got: " + raw);
     }
 
     /**

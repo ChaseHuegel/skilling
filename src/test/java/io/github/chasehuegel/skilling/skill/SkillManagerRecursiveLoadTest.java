@@ -100,4 +100,28 @@ class SkillManagerRecursiveLoadTest {
         assertFalse(skillManager.getSkills().containsKey("bad"),
                 "the malformed skill must be skipped, not fail the load");
     }
+
+    @Test
+    void malformedTypedValuesAreSkippedWithAWarningNotPropagated() throws Exception {
+        writeValidSkill("good.yml", "good");
+        writeSkill("bad.yml", """
+                id: bad
+                max_level: 100
+                progression: { curve: constant, base_xp: 100 }
+                abilities:
+                  - id: a
+                    unlock_level: 1
+                    trigger: 5
+                """);
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getLogger()).thenReturn(Logger.getAnonymousLogger());
+            skillManager.loadSkills(tempDir.resolve("skills").toFile());
+        }
+
+        assertTrue(skillManager.getSkills().containsKey("good"),
+                "valid skills must survive a sibling with a typed-mismatch");
+        assertFalse(skillManager.getSkills().containsKey("bad"),
+                "a numeric trigger must be rejected at parse and skipped, not fail the load");
+    }
 }
