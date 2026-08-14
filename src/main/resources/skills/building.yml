@@ -88,12 +88,11 @@ abilities:
   - id: "architects_vision"
     display_name: "Architect's Vision"
     unlock_level: 75
-    trigger: "block_place"
+    trigger: "block_break"
     display:
       lore:
-        - "&7Shift+Place a decorative block to instantly"
-        - "&7break &a{max_blocks}&7 adjacent decorative blocks for re-use."
-        - "&7Restores block to inventory for rapid re-placement."
+        - "&7Sneak-break a decorative block to harvest up to"
+        - "&7&a{max_blocks}&7 same-type decorative blocks for re-use."
         - "&7Costs 4 hunger."
         - "&8Requires: Sneaking, holding a decorative block, 15s cooldown, 6+ hunger."
     requirements:
@@ -106,7 +105,8 @@ abilities:
       cooldown: { action_bar: "&eArchitect's Vision cooling down: {time}s" }
       exhaustion: { action_bar: "&cToo exhausted to build!" }
     mechanics:
-      - type: "core:area_harvest"     # now honestly a teardown-for-rebuild tool
+      - type: "core:area_harvest"
+        filters: [ { target: "#c:stone_products" } ]
         parameters:
           radius: { milestones: { 75: 1, 85: 2, 95: 3, 100: 4 } }
           max_blocks: { linear: { base: 16.0, step: 1.0, max: 64.0 } }

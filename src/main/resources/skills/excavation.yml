@@ -6,9 +6,6 @@ xp_sources:
   - trigger: "block_break"
     filters: [ { target: "#c:excavatable" }, { state: "player_placed:false" } ]
     reward: { constant: 34.7 }
-  - trigger: "block_break"
-    filters: [ { target: "#minecraft:sand" }, { state: "player_placed:false" } ]
-    reward: { constant: 34.7 }
   - trigger: "craft_item"
     filters: [ { target: "#c:shovels" } ]
     reward: { constant: 34.7 }
@@ -64,11 +61,13 @@ abilities:
     display_name: "Fossil Hunter"
     unlock_level: 50
     trigger: "block_break"
-    display: { lore: [ "&7Sand & gravel breaks yield +&a{yield_chance}%&7 flint/bone." ] }
+    display: { lore: [ "&7Sand & gravel breaks yield &a{yield_chance}%&7 doubled drops." ] }
     mechanics:
       - type: "core:yield_multiplier"
         filters:
           - target: "#minecraft:sand"            # tag covers sand + red sand
+        parameters:
+          yield_chance: { linear: { base: 2.0, step: 0.05, max: 8.0 } }
       - type: "core:yield_multiplier"
         filters: [ { target: "minecraft:gravel" } ]
         parameters:

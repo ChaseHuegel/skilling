@@ -82,12 +82,9 @@ abilities:
   - id: "master_alchemist"
     display_name: "Master Alchemist"
     unlock_level: 100
-    trigger: "brew_start"
-    display: { lore: [ "&7Brew time cut; potion durations &a{multiplier}x&7." ] }
+    trigger: "brew_potion"
+    display: { lore: [ "&7Brewed potion durations &a{multiplier}x&7." ] }
     mechanics:
-      - type: "core:modify_brew_time"
-        parameters:
-          multiplier: { linear: { base: 0.4, step: -0.002, max: 0.2 } }
       - type: "core:modify_potion_duration"
         parameters:
           multiplier: { linear: { base: 2.0, step: 0.02, max: 3.0 } }

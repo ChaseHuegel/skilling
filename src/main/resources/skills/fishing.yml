@@ -50,12 +50,14 @@ abilities:
   - id: "light_line"
     display_name: "Light Line"
     unlock_level: 15
-    trigger: "fishing"
+    trigger: "item_damage"
     display:
       lore:
-        - "&7Fishing rod durability loss reduced by &a{chance}%&7."
+        - "&7Fishing rods have &a{chance}%&7 chance to lose no durability."
     mechanics:
       - type: "core:durability_save"
+        filters:
+          - target: "minecraft:fishing_rod"
         parameters:
           chance:
             linear:
@@ -99,13 +101,13 @@ abilities:
     trigger: "fishing"
     display:
       lore:
-        - "&7Doubles fish catches."
+        - "&7Fish catches yield &a{multiplier}x&7."
     mechanics:
       - type: "core:fishing_loot"
         parameters:
           multiplier:
             linear:
-              base: 1.5
+              base: 2.0
               step: 0.01
               max: 2.5
     feedback:

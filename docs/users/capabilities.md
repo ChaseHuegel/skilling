@@ -24,13 +24,17 @@ mechanic:
 
 ### core:yield_multiplier
 
-Multiplies block drops by a percentage chance on each break.
+Multiplies block drops by a percentage chance on each break. An optional
+`triple_chance` rolls first: when it succeeds the drops are tripled instead of
+doubled, so a single mechanic expresses "always double, sometimes triple"
+capstones without stacking two mechanics into a quadruple yield.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `yield_chance` | double | `0` | Probability (0-100%) of bonus drops |
+| `yield_chance` | double | `0` | Probability (0-100%) of doubling the drops |
+| `triple_chance` | double | `0` | Probability (0-100%) of tripling instead of doubling |
 
 **Event:** `BlockBreakEvent`
 
@@ -238,7 +242,10 @@ Modifies the brewing time of potions in a brewing stand.
 
 ### core:modify_potion_duration
 
-Modifies the duration of brewed potion effects.
+Modifies the duration of brewed potion effects, including the base potion
+type's effects (the vanilla path a normal brewed potion such as Swiftness
+stores its effect under). Same-type effects merge with the longest duration
+winning at consumption, so the potion's identity is preserved.
 
 **Parameters:**
 
@@ -490,13 +497,15 @@ Grants bonus catch items when fishing.
 
 ### core:fishing_loot
 
-Multiplies the quality or quantity of loot from fishing treasure.
+Multiplies the quantity of caught fishing loot. A fractional result (e.g. 1
+fish &times; 1.5) rounds up probabilistically, so a small stack under a
+fractional multiplier yields its expected value instead of flooring to nothing.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `multiplier` | double | `1.0` | Loot multiplier |
+| `multiplier` | double | `1.0` | Catch multiplier (2.0 = double) |
 
 **Event:** `PlayerFishEvent`
 
@@ -576,6 +585,25 @@ probability `1 - multiplier` (e.g. `0.5` → half of tames are undone).
 | `multiplier` | double | `1.0` | Taming chance multiplier (1.0 = vanilla) |
 
 **Event:** `EntityTameEvent`
+
+### core:instant_tame
+
+Tames an untamed tameable mob on right-click. The vanilla tame event fires only
+after a successful roll, so a "tame more easily" bonus cannot be built on it;
+this mechanic hooks the earlier right-click and assigns ownership with the
+configured `chance`. Acting on an untamed mob cancels the interaction, so the
+ability's `requirements.items` food cost is the only item consumed (the vanilla
+feed/tame attempt never adds a second charge). The ability must provide that
+food cost (e.g. via the `#c:tame_offerings` tag) to preserve the item economy.
+Players are never targets, and another player's pet is already tamed.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `100` | Probability (0-100%) of taming |
+
+**Event:** `right_click_entity` (`PlayerInteractEntityEvent`)
 
 ### core:projectile_return
 

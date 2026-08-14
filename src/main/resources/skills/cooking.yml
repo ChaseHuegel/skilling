@@ -11,9 +11,6 @@ xp_sources:
   - trigger: "consume_item"
     filters: [ { target: "#c:foods" } ]
     reward: { constant: 128.2 }
-  - trigger: "furnace_extract"
-    filters: [ { target: "minecraft:cooked_beef" } ]
-    reward: { constant: 128.2 }
 abilities:
   - id: "seasoning"
     display_name: "Seasoning"

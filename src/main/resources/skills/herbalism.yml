@@ -6,9 +6,6 @@ xp_sources:
   - trigger: "block_break"
     filters: [ { target: "#c:herbs" }, { state: "player_placed:false" } ]
     reward: { constant: 30.9 }
-  - trigger: "block_break"
-    filters: [ { target: "#minecraft:flowers" }, { state: "player_placed:false" } ]
-    reward: { constant: 30.9 }
   - trigger: "craft_item"
     filters: [ { target: "minecraft:paper" } ]   # sugar-cane product. Herbs have no craft-result form
     reward: { constant: 30.9 }
@@ -95,14 +92,11 @@ abilities:
     display_name: "Master Herbalist"
     unlock_level: 100
     trigger: "block_break"
-    display: { lore: [ "&7Herb yield always doubles; +&a{yield_chance}%&7 chance to triple." ] }
+    display: { lore: [ "&7Herb yield always doubles; +&a{triple_chance}%&7 chance to triple." ] }
     mechanics:
       - type: "core:yield_multiplier"
         filters: [ { target: "#c:herbs" } ]
         parameters:
           yield_chance: { constant: 100.0 }
-      - type: "core:yield_multiplier"
-        filters: [ { target: "#c:herbs" } ]
-        parameters:
-          yield_chance: { linear: { base: 10.0, step: 0.9, max: 80.0 } }
+          triple_chance: { linear: { base: 10.0, step: 0.9, max: 80.0 } }
     feedback: { notify: { action_bar: false } }

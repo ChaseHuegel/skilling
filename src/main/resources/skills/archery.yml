@@ -28,8 +28,8 @@ abilities:
   - id: "arrow_recovery"
     display_name: "Arrow Recovery"
     unlock_level: 15
-    trigger: "shoot_bow"
-    display: { lore: [ "&a{chance}%&7 chance arrows are not consumed on shoot." ] }
+    trigger: "projectile_hit"
+    display: { lore: [ "&a{chance}%&7 chance to recover fired arrows on hit." ] }
     mechanics:
       - type: "core:projectile_return"
         parameters:
@@ -38,10 +38,10 @@ abilities:
   - id: "power_shot"
     display_name: "Power Shot"
     unlock_level: 25
-    trigger: "shoot_bow"
+    trigger: "entity_damage"
     display:
       lore:
-        - "&7Sneak-fire a bow for &a{multiplier}x&7 arrow damage on next shot."
+        - "&7Sneak-shots deal &a{multiplier}x&7 arrow damage."
         - "&7Costs 1 hunger."
         - "&8Requires: Sneaking, bow, 5s cooldown, 3+ hunger."
     requirements:

@@ -223,6 +223,30 @@ custom_tags:
     - "minecraft:pumpkin"
     - "minecraft:cocoa"
 
+  # Edible raw crop items (the item forms a player eats, not the crop blocks).
+  # #minecraft:crops is a block tag and never matches an eaten item, so
+  # consume_item filters use this item-form tag instead.
+  raw_crops:
+    - "minecraft:carrot"
+    - "minecraft:potato"
+    - "minecraft:beetroot"
+    - "minecraft:sweet_berries"
+    - "minecraft:glow_berries"
+    - "minecraft:melon_slice"
+
+  # Vanilla tame foods. Used as the consumed "offering" cost for instant-tame
+  # abilities, preserving the item-economy pillar: taming still costs an item.
+  tame_offerings:
+    - "minecraft:bone"
+    - "minecraft:wheat_seeds"
+    - "minecraft:pumpkin_seeds"
+    - "minecraft:melon_seeds"
+    - "minecraft:beetroot_seeds"
+    - "minecraft:raw_cod"
+    - "minecraft:raw_salmon"
+    - "minecraft:golden_apple"
+    - "minecraft:golden_carrot"
+
   foods:
     - "minecraft:cooked_beef"
     - "minecraft:cooked_chicken"

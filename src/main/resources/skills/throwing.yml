@@ -38,16 +38,15 @@ abilities:
   - id: "wind_up"
     display_name: "Wind Up"
     unlock_level: 25
-    trigger: "shoot_bow"
+    trigger: "entity_damage"
     display:
       lore:
-        - "&7Sneak-throw a trident for &a{multiplier}x&7 damage on next throw."
+        - "&7Sneak-thrown tridents deal &a{multiplier}x&7 damage."
         - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, trident in hand, 5s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, 5s cooldown, 3+ hunger."
     requirements:
       cooldown: 5.0
       state: [ "is_sneaking" ]
-      items: [ { action: "possession", tag: "minecraft:trident", slot: "MAIN_HAND" } ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
     on_failure: { cooldown: { action_bar: "&eWind Up cooling down: {time}s" } }
     mechanics:

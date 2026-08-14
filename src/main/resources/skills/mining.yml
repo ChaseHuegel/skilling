@@ -65,14 +65,11 @@ abilities:
     display_name: "Perfect Yield"
     unlock_level: 100
     trigger: "block_break"
-    display: { lore: [ "&7Ore breaks always double; &a{yield_chance}%&7 chance to triple." ] }
+    display: { lore: [ "&7Ore breaks always double; &a{triple_chance}%&7 chance to triple." ] }
     mechanics:
       - type: "core:yield_multiplier"
         filters: [ { target: "#c:ores" } ]
         parameters:
           yield_chance: { constant: 100.0 }   # guaranteed double (binary = justified capstone identity)
-      - type: "core:yield_multiplier"
-        filters: [ { target: "#c:ores" } ]
-        parameters:
-          yield_chance: { linear: { base: 10.0, step: 0.9, max: 80.0 } }  # sub-scaling triple chance
+          triple_chance: { linear: { base: 10.0, step: 0.9, max: 80.0 } }  # sub-scaling triple chance
     feedback: { notify: { action_bar: false } }
