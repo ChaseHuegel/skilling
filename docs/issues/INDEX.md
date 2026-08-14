@@ -25,7 +25,7 @@
 - [x] [ISSUE-290](ISSUE-290.md) - Deleting or renaming a nested skill through the GUI silently does nothing
 - [x] [ISSUE-291](ISSUE-291.md) - Reload success clears the staging directory and wipes edits made while the reload was in flight
 - [x] [ISSUE-292](ISSUE-292.md) - Frontend is silently omitted from the JAR on clean builds and never rebuilt on source changes
-- [ ] [ISSUE-293](ISSUE-293.md) - `skilling.use` permission used by player commands is undeclared, making `/skills` ops-only
+- [x] [ISSUE-293](ISSUE-293.md) - `skilling.use` permission used by player commands is undeclared, making `/skills` ops-only
 - [ ] [ISSUE-294](ISSUE-294.md) - Shipped `template-skill.yml` is rejected by the parser; it lacks the required ability `trigger`
 - [ ] [ISSUE-296](ISSUE-296.md) - Engine minor fixes: block metadata, event ordering, and mechanic edge cases
 - [ ] [ISSUE-297](ISSUE-297.md) - Database/profile minor fixes: leaks, shutdown ordering, and silent data-loss edges

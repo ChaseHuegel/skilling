@@ -24,6 +24,8 @@ plugins/Skilling/
 
 ## Basic Commands
 
+`skilling.use` is granted to all players by default; `skilling.admin` is granted to operators only.
+
 | Command | Permission | Description |
 |---|---|---|
 | `/skills` | `skilling.use` | Opens the skill overview GUI, or shows skill progress with a skill name |

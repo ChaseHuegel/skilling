@@ -5,9 +5,9 @@
 - **Agent Role:** You are an expert backend engineer executing this task.
 
 ## Implementation Requirements
-- [ ] Declare `skilling.use` in `paper-plugin.yml` with `default: true` and a description.
-- [ ] Keep `skilling.admin` at `default: op`.
-- [ ] Verify no other permission nodes used in `SkillsCommand` are undeclared.
+- [x] Declare `skilling.use` in `paper-plugin.yml` with `default: true` and a description.
+- [x] Keep `skilling.admin` at `default: op`.
+- [x] Verify no other permission nodes used in `SkillsCommand` are undeclared.
 
 ## Technical Specifications & Context
 - **Target Files:** `src/main/resources/paper-plugin.yml:13-16` (permissions block), `src/main/java/io/github/chasehuegel/skilling/engine/command/SkillsCommand.java:75,95,122,130` (`.permission("skilling.use")`), `:163,180,193,206,213` (`.permission("skilling.admin")`).
@@ -15,6 +15,6 @@
 - **Constraints:** The documented behavior is that a bare `/skills` opens the player overview for all players.
 
 ## Verification & Definition of Done
-- [ ] `paper-plugin.yml` lists both permissions with correct defaults.
-- [ ] `./gradlew build` passes.
-- [ ] Edge case handled: `/skills help` and `/skills log` remain usable by non-OP players.
+- [x] `paper-plugin.yml` lists both permissions with correct defaults.
+- [x] `./gradlew build` passes.
+- [x] Edge case handled: `/skills help` and `/skills log` remain usable by non-OP players.
