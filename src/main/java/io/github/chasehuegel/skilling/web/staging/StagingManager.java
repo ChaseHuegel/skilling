@@ -169,13 +169,58 @@ public final class StagingManager {
         return new File(stagingDir, stagedPath);
     }
 
-    public void stageSkillDeletion(String skillId) {
+    /**
+     * Reads the live-file path recorded in a deletion marker, falling back to the
+     * flat {@code {skillId}.yml} path for markers written before the change.
+     *
+     * @param marker  the deletion marker file
+     * @param skillId the skill id (for the fallback path)
+     * @return the live-file path relative to the skills dir
+     */
+    private static String readMarkerPath(File marker, String skillId) {
+        try {
+            String content = Files.readString(marker.toPath(), StandardCharsets.UTF_8).trim();
+            return content.isEmpty() ? skillId + ".yml" : content;
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to read deletion marker " + marker.getName(), e);
+            return skillId + ".yml";
+        }
+    }
+
+    /**
+     * Resolves a skills-relative path into a live file, rejecting any path that
+     * escapes the skills directory (defense in depth for the recorded deletion
+     * marker, which is otherwise derived from an id-validated skill).
+     *
+     * @param relative the path relative to the skills dir
+     * @return the confined live file
+     * @throws IllegalArgumentException if the path escapes the skills dir
+     */
+    private File confinedLiveSkillFile(String relative) {
+        Path root = skillsDir.toPath().toAbsolutePath().normalize();
+        Path target = root.resolve(relative).normalize();
+        if (!target.startsWith(root)) {
+            throw new IllegalArgumentException("Deletion path escapes the skills directory: " + relative);
+        }
+        return target.toFile();
+    }
+
+    /**
+     * Stages the deletion of a skill. The marker records the resolved live-file
+     * path (relative to the skills dir) so {@link #applyAndBackup} deletes the
+     * real file, including skills nested in subfolders whose file name differs
+     * from the flat {@code skills/{id}.yml} path.
+     *
+     * @param skillId          the skill id
+     * @param liveRelativePath the live file path relative to the skills dir
+     */
+    public void stageSkillDeletion(String skillId, String liveRelativePath) {
         lock.lock();
         try {
             File markerDir = new File(stagingDir, "deleted_skills");
             markerDir.mkdirs();
             File marker = new File(markerDir, skillId + ".yml.deleted");
-            marker.createNewFile();
+            atomicWrite(marker, liveRelativePath);
             updateStatusAdd("deleted_skills/" + skillId + ".yml.deleted");
             // Remove any previously staged file for this skill so it doesn't
             // get resurrected by applyAndBackup() copying all staged .yml files
@@ -217,10 +262,14 @@ public final class StagingManager {
                         for (File marker : deletionMarkers) {
                             String name = marker.getName();
                             String skillId = name.substring(0, name.length() - ".yml.deleted".length());
-                            File live = new File(skillsDir, skillId + ".yml");
+                            // The marker content carries the resolved live-file path
+                            // (relative to the skills dir); fall back to the flat
+                            // path for markers written before the change.
+                            String relative = readMarkerPath(marker, skillId);
+                            File live = confinedLiveSkillFile(relative);
                             backupFile(live, backupDir);
                             if (live.exists() && live.delete()) {
-                                LOGGER.info("Deleted live skill file: " + live.getName());
+                                LOGGER.info("Deleted live skill file: " + relative);
                             }
                             applied.add("deleted_skills/" + skillId + ".yml");
                         }

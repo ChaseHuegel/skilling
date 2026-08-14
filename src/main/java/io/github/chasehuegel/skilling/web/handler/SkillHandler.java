@@ -120,7 +120,10 @@ public final class SkillHandler {
                     throw new IllegalArgumentException("Skill id already exists: " + newId);
                 }
                 stagingManager.stageSkillFile(newId, yaml);
-                stagingManager.stageSkillDeletion(oldId);
+                // Remove the original file — which may live in a subfolder — so a
+                // rename out of (or within) a subfolder never leaves the old file
+                // behind (which would double-load the skill on Apply).
+                stagingManager.stageSkillDeletion(oldId, relativeLivePath(oldId));
             } else {
                 stagingManager.stageSkillFile(oldId, yaml);
             }
@@ -145,8 +148,24 @@ public final class SkillHandler {
             return;
         }
 
-        stagingManager.stageSkillDeletion(id);
+        stagingManager.stageSkillDeletion(id, relativeLivePath(id));
         ctx.json(Map.of("status", "ok", "id", id));
+    }
+
+    /**
+     * Resolves the live-file path of a skill relative to the skills dir, so a
+     * deletion marker records exactly the file Apply must remove (a skill nested
+     * in a subfolder is not reachable via the flat {@code skills/{id}.yml} path).
+     *
+     * @param id the skill id
+     * @return the relative live path, or {@code {id}.yml} when no live file exists
+     */
+    private String relativeLivePath(String id) {
+        File live = liveSkillFile(id);
+        if (live == null) return id + ".yml";
+        return skillsDir.toPath().toAbsolutePath().normalize()
+                .relativize(live.toPath().toAbsolutePath().normalize())
+                .toString();
     }
 
     private File resolveSkillFile(String id) {

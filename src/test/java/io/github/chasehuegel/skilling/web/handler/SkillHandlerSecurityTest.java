@@ -16,6 +16,8 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_SELF;
@@ -91,7 +93,7 @@ class SkillHandlerSecurityTest {
         new SkillHandler(null, staging, skillsDir()).delete(ctx);
 
         verify(ctx).status(400);
-        verify(staging, never()).stageSkillDeletion(anyString());
+        verify(staging, never()).stageSkillDeletion(anyString(), anyString());
     }
 
     @Test
@@ -167,6 +169,57 @@ class SkillHandlerSecurityTest {
         verify(ctx).json(Map.of("status", "ok", "id", "blasting"));
         org.junit.jupiter.api.Assertions.assertTrue(
             new File(staging.getStagingDir(), "deleted_skills/blasting.yml.deleted").exists());
+    }
+
+    @Test
+    void deleteNestedSkillRemovesTheLiveFileAfterApply() {
+        writeSkillWithLevel("special/blasting.yml", "blasting", 100);
+        StagingManager staging = new StagingManager(tempDir.toFile());
+
+        new SkillHandler(null, staging, skillsDir()).delete(mockContext("blasting"));
+        staging.applyAndBackup();
+
+        assertFalse(new File(skillsDir(), "special/blasting.yml").exists(),
+                "applying a nested-skill deletion must remove the real nested file");
+    }
+
+    @Test
+    void deleteFlatSkillStillRemovesTheFlatFileAfterApply() {
+        writeSkill("mining.yml");
+        StagingManager staging = new StagingManager(tempDir.toFile());
+
+        new SkillHandler(null, staging, skillsDir()).delete(mockContext("mining"));
+        staging.applyAndBackup();
+
+        assertFalse(new File(skillsDir(), "mining.yml").exists(),
+                "a flat-path deletion must behave exactly as before");
+    }
+
+    @Test
+    void renameOutOfSubfolderRemovesTheOriginalNestedFileAfterApply() throws Exception {
+        writeSkillWithLevel("special/blasting.yml", "blasting", 100);
+        StagingManager staging = new StagingManager(tempDir.toFile());
+        io.github.chasehuegel.skilling.engine.SkillManager skillManager =
+                io.github.chasehuegel.skilling.TestSkillManager.newBuiltIn();
+        SkillHandler handler = new SkillHandler(skillManager, staging, skillsDir());
+
+        String json = """
+            {"id":"mining","displayName":"Mining","maxLevel":100,"icon":"minecraft:barrier",
+             "progression":{"curve":"constant","baseXp":100},"xpSources":[],"abilities":[]}
+            """;
+        io.github.chasehuegel.skilling.web.dto.SkillDetailDTO dto =
+                new com.fasterxml.jackson.databind.ObjectMapper().readValue(json, io.github.chasehuegel.skilling.web.dto.SkillDetailDTO.class);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        when(ctx.pathParam("id")).thenReturn("blasting");
+        when(ctx.bodyAsClass(io.github.chasehuegel.skilling.web.dto.SkillDetailDTO.class)).thenReturn(dto);
+
+        handler.update(ctx);
+        staging.applyAndBackup();
+
+        assertFalse(new File(skillsDir(), "special/blasting.yml").exists(),
+                "renaming out of a subfolder must remove the original nested file");
+        assertTrue(new File(skillsDir(), "mining.yml").exists(),
+                "the new flat file must exist after apply");
     }
 
     @Test

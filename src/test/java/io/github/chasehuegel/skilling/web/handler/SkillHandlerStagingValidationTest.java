@@ -124,7 +124,7 @@ class SkillHandlerStagingValidationTest {
 
         verify(ctx).status(400);
         verify(staging, never()).stageSkillFile(anyString(), anyString());
-        verify(staging, never()).stageSkillDeletion(anyString());
+        verify(staging, never()).stageSkillDeletion(anyString(), anyString());
     }
 
     @Test
@@ -145,7 +145,7 @@ class SkillHandlerStagingValidationTest {
         handler.update(ctx);
 
         verify(staging).stageSkillFile(eq("mining"), anyString());
-        verify(staging).stageSkillDeletion(eq("farming"));
+        verify(staging).stageSkillDeletion(eq("farming"), anyString());
     }
 
     @Test
