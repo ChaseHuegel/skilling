@@ -142,4 +142,40 @@ class LevelThresholdsTest {
                 "cleared weak keys must be reclaimed after reload");
         assertSame(liveTable, LevelThresholds.table(live, 20), "live evaluator's table must be preserved");
     }
+
+    @Test
+    void concurrentLookupsDuringClearedKeyEvictionNeverHangOrCorrupt() throws Exception {
+        // A reload clears old evaluators while players earn XP; the eviction now
+        // runs outside the computeIfAbsent mapping function, so hammering the
+        // cache from many threads must never livelock or produce wrong tables.
+        int workers = 8;
+        int lookupsPerWorker = 500;
+        var errors = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        CountDownLatch gate = new CountDownLatch(1);
+        var threads = java.util.stream.IntStream.range(0, workers).mapToObj(w -> new Thread(() -> {
+            try {
+                gate.await();
+                for (int i = 0; i < lookupsPerWorker; i++) {
+                    // Alternate between fresh (reload-like) and stable evaluators.
+                    var curve = new TestEvaluator(100.0 + (i % 7));
+                    SkillDefinition skill = new SkillDefinition(
+                            "test", MAX_LEVEL,
+                            new SkillDefinition.Display("Test", "minecraft:stone", 0, "red", "solid"),
+                            new SkillDefinition.Progression("linear", 100.0, 0.0, curve),
+                            List.of(), List.of());
+                    int level = skill.getLevelForXp(1_000_000L);
+                    if (level != MAX_LEVEL) {
+                        throw new AssertionError("corrupt threshold table: level=" + level);
+                    }
+                }
+            } catch (Throwable t) {
+                errors.compareAndSet(null, t);
+            }
+        })).toList();
+        threads.forEach(Thread::start);
+        gate.countDown();
+        for (Thread t : threads) t.join(30_000);
+
+        assertTrue(errors.get() == null, "concurrent lookups during eviction must not fail: " + errors.get());
+    }
 }

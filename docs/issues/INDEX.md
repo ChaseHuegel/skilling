@@ -20,7 +20,7 @@
 - [x] [ISSUE-285](ISSUE-285.md) - Offline `/skills addxp` can double-grant XP when a login races the write
 - [x] [ISSUE-286](ISSUE-286.md) - Level anchor mismatch between the threshold table and `setlevel`/XP-bar math
 - [x] [ISSUE-287](ISSUE-287.md) - SQLite multi-writer pool with no busy-timeout tuning causes intermittent "database is locked"
-- [ ] [ISSUE-288](ISSUE-288.md) - `LevelThresholds` mutates the map inside `ConcurrentHashMap.computeIfAbsent`
+- [x] [ISSUE-288](ISSUE-288.md) - `LevelThresholds` mutates the map inside `ConcurrentHashMap.computeIfAbsent`
 - [ ] [ISSUE-289](ISSUE-289.md) - Failed preference load silently overwrites the player's real preferences on the next flush
 - [ ] [ISSUE-290](ISSUE-290.md) - Deleting or renaming a nested skill through the GUI silently does nothing
 - [ ] [ISSUE-291](ISSUE-291.md) - Reload success clears the staging directory and wipes edits made while the reload was in flight

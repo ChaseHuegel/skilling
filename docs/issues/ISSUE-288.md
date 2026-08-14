@@ -5,8 +5,8 @@
 - **Agent Role:** You are an expert backend engineer executing this task.
 
 ## Implementation Requirements
-- [ ] Evict cleared keys outside the mapping function (e.g., before the `computeIfAbsent` call in `table()`), or switch to a bounded CHM with explicit eviction, or guard eviction with a lock.
-- [ ] Add a stress test: repeated concurrent `getLevelForXp` while a reload clears the cache completes without hanging or corrupting thresholds.
+- [x] Evict cleared keys outside the mapping function (e.g., before the `computeIfAbsent` call in `table()`), or switch to a bounded CHM with explicit eviction, or guard eviction with a lock.
+- [x] Add a stress test: repeated concurrent `getLevelForXp` while a reload clears the cache completes without hanging or corrupting thresholds.
 
 ## Technical Specifications & Context
 - **Target Files:** `skilling-api/src/main/java/io/github/chasehuegel/skilling/engine/LevelThresholds.java:55-59` (the offending block), tests at `skilling-api/src/test/java/io/github/chasehuegel/skilling/engine/LevelThresholdsTest.java`. Callers: `getLevelForXp` from event handlers and the async worker.
@@ -14,6 +14,6 @@
 - **Constraints:** Keep lookups O(log n) and off the mutation of live maps from concurrent readers.
 
 ## Verification & Definition of Done
-- [ ] Stress test passes without hang/corruption.
-- [ ] `./gradlew test` and `./gradlew build` pass.
-- [ ] Edge case handled: reload rebuilds thresholds while players are earning XP.
+- [x] Stress test passes without hang/corruption.
+- [x] `./gradlew test` and `./gradlew build` pass.
+- [x] Edge case handled: reload rebuilds thresholds while players are earning XP.

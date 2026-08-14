@@ -52,12 +52,14 @@ final class LevelThresholds {
      */
     static Table table(ParameterEvaluator evaluator, int maxLevel) {
         Key key = new Key(evaluator);
-        ConcurrentMap<Integer, Table> byLevel = CACHE.computeIfAbsent(key, k -> {
-            // Drop keys whose evaluator was garbage-collected (after a reload) so
-            // the weak cache cannot grow without bound.
-            CACHE.keySet().removeIf(Key::cleared);
-            return new ConcurrentHashMap<>();
-        });
+        // Drop keys whose evaluator was garbage-collected (after a reload) so the
+        // weak cache cannot grow without bound. This runs OUTSIDE the mapping
+        // function below: the CHM contract forbids updating a map from its own
+        // computeIfAbsent mapping function (it can livelock or corrupt). The scan
+        // is O(distinct live evaluators) — bounded by the number of loaded skills
+        // — so it stays cheap even on the hot getLevelForXp path.
+        CACHE.keySet().removeIf(Key::cleared);
+        ConcurrentMap<Integer, Table> byLevel = CACHE.computeIfAbsent(key, k -> new ConcurrentHashMap<>());
         // compute() is atomic per (evaluator, maxLevel): the mapping function runs
         // at most once per key, and unrelated keys never wait on it.
         return byLevel.compute(maxLevel, (level, existing) ->
