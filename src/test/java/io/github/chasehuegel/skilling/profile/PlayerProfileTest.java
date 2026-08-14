@@ -31,6 +31,23 @@ class PlayerProfileTest {
     }
 
     @Test
+    void addXpClampsANegativeResultToZero() {
+        var profile = new PlayerProfile(UUID.randomUUID());
+        profile.addXp("mining", -100);
+        assertEquals(0L, profile.getXp("mining"),
+                "a genuinely negative result must clamp to zero, not flip to Long.MAX_VALUE");
+    }
+
+    @Test
+    void addXpNegativeNetStillClampsToZero() {
+        var profile = new PlayerProfile(UUID.randomUUID());
+        profile.setXp("mining", 10);
+        profile.addXp("mining", -40);
+        assertEquals(0L, profile.getXp("mining"),
+                "a net-negative sum must clamp to zero");
+    }
+
+    @Test
     void setXpMarksDirty() {
         var profile = new PlayerProfile(UUID.randomUUID());
         profile.setXp("mining", 200);

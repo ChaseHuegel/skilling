@@ -728,10 +728,15 @@ public final class Skilling extends JavaPlugin {
             // Flush remaining dirty profiles on a worker thread and await with a
             // bounded timeout so shutdown never blocks the main thread indefinitely
             // while still persisting pending data before the pool closes.
+            var flush = asyncBatchWorker.flushDirtyProfilesAsync();
             try {
-                asyncBatchWorker.flushDirtyProfilesAsync().get(5, java.util.concurrent.TimeUnit.SECONDS);
+                flush.get(5, java.util.concurrent.TimeUnit.SECONDS);
             } catch (Exception e) {
-                getLogger().log(Level.WARNING, "Timed out flushing profiles on shutdown", e);
+                getLogger().log(Level.WARNING, "Flush still running on shutdown; waiting for it to finish", e);
+                // Never close the pool under an in-flight flush: a slow flush that
+                // outlives the timeout would otherwise fail with "pool not
+                // initialized" and lose the pending data.
+                flush.join();
             }
         }
         if (databaseManager != null) {

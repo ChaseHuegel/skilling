@@ -28,7 +28,7 @@
 - [x] [ISSUE-293](ISSUE-293.md) - `skilling.use` permission used by player commands is undeclared, making `/skills` ops-only
 - [x] [ISSUE-294](ISSUE-294.md) - Shipped `template-skill.yml` is rejected by the parser; it lacks the required ability `trigger`
 - [x] [ISSUE-296](ISSUE-296.md) - Engine minor fixes: block metadata, event ordering, and mechanic edge cases
-- [ ] [ISSUE-297](ISSUE-297.md) - Database/profile minor fixes: leaks, shutdown ordering, and silent data-loss edges
+- [x] [ISSUE-297](ISSUE-297.md) - Database/profile minor fixes: leaks, shutdown ordering, and silent data-loss edges
 - [ ] [ISSUE-298](ISSUE-298.md) - Web backend security hardening: origin checks, auth timing, and resource bounds
 - [ ] [ISSUE-299](ISSUE-299.md) - Web GUI behavior fixes: reload rollback, staged reads, performance, and serialization
 

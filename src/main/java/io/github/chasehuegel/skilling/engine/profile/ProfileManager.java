@@ -231,6 +231,7 @@ public final class ProfileManager {
      */
     public void unloadProfile(UUID playerUuid) {
         profiles.remove(playerUuid);
+        sessionGenerations.remove(playerUuid);
     }
 
     /**
@@ -243,7 +244,11 @@ public final class ProfileManager {
      * @return true if the entry was removed
      */
     public boolean unloadProfile(UUID playerUuid, PlayerProfile instance) {
-        return profiles.remove(playerUuid, instance);
+        boolean removed = profiles.remove(playerUuid, instance);
+        if (removed) {
+            sessionGenerations.remove(playerUuid);
+        }
+        return removed;
     }
 
     /**
@@ -263,7 +268,13 @@ public final class ProfileManager {
         if (sessionGenerations.getOrDefault(playerUuid, 0L) != expectedGeneration) {
             return false;
         }
-        return profiles.remove(playerUuid, instance);
+        boolean removed = profiles.remove(playerUuid, instance);
+        if (removed) {
+            // The player left with no reconnect; drop the generation entry so the
+            // sessionGenerations map cannot grow without bound across unique players.
+            sessionGenerations.remove(playerUuid);
+        }
+        return removed;
     }
 
     /**
@@ -324,25 +335,6 @@ public final class ProfileManager {
             profile.markPreferencesLoaded();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to load preferences for player " + playerUuid, e);
-        }
-    }
-
-    /**
-     * Saves a player's preferences to the database.
-     *
-     * @param playerUuid the player's UUID
-     * @param json       the JSON-serialized preferences
-     */
-    public void savePreferences(UUID playerUuid, String json) {
-        if (!databaseManager.isInitialized()) return;
-        String sql = "INSERT INTO player_preferences (player_uuid, preferences) VALUES (?, ?) ON CONFLICT(player_uuid) DO UPDATE SET preferences = excluded.preferences";
-        try (Connection conn = databaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, playerUuid.toString());
-            stmt.setString(2, json);
-            stmt.executeUpdate();
-        } catch (Exception ignored) {
-            // Best-effort save
         }
     }
 }

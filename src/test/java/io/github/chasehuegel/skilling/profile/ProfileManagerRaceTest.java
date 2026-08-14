@@ -108,6 +108,49 @@ class ProfileManagerRaceTest {
     }
 
     @Test
+    void unloadWithGenerationEvictsTheSessionGenerationEntry() {
+        ProfileManager manager = newManager();
+        UUID uuid = UUID.randomUUID();
+
+        PlayerProfile profile = manager.loadProfile(uuid).join();
+        profile.addXp("mining", 500);
+        long generationAtQuit = manager.sessionGeneration(uuid);
+        assertEquals(1L, generationAtQuit);
+
+        // A successful no-reconnect unload must also drop the generation entry so
+        // sessionGenerations cannot grow without bound across unique players.
+        assertTrue(manager.unloadProfile(uuid, profile, generationAtQuit));
+        assertEquals(0L, manager.sessionGeneration(uuid),
+                "the generation entry must be evicted with the unloaded profile");
+    }
+
+    @Test
+    void unloadWithoutGenerationEvictsTheSessionGenerationEntry() {
+        ProfileManager manager = newManager();
+        UUID uuid = UUID.randomUUID();
+
+        PlayerProfile profile = manager.loadProfile(uuid).join();
+        assertTrue(manager.unloadProfile(uuid, profile));
+        assertEquals(0L, manager.sessionGeneration(uuid),
+                "the generation entry must be evicted with the unloaded profile");
+    }
+
+    @Test
+    void reconnectedProfileKeepsItsGenerationEntry() {
+        ProfileManager manager = newManager();
+        UUID uuid = UUID.randomUUID();
+
+        PlayerProfile profile = manager.loadProfile(uuid).join();
+        long generationAtQuit = manager.sessionGeneration(uuid);
+        // A reconnect while the quit flush is in flight bumps the generation and
+        // the unload is rejected; the entry must stay for the live session.
+        manager.loadProfile(uuid).join();
+        assertFalse(manager.unloadProfile(uuid, profile, generationAtQuit));
+        assertTrue(manager.sessionGeneration(uuid) > generationAtQuit,
+                "a reconnected player must keep a live generation entry");
+    }
+
+    @Test
     void asyncHydrationDoesNotOverwriteXpMutatedAfterLoadBegan() {
         ProfileManager manager = newManager();
         UUID uuid = UUID.randomUUID();

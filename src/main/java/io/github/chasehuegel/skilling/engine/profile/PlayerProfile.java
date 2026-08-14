@@ -156,10 +156,17 @@ public final class PlayerProfile implements PlayerProfileView {
      * @param amount  the amount to add
      */
     public void addXp(String skillId, long amount) {
-        xpMap.merge(skillId, amount, (old, added) -> {
-            long sum = old + added;
-            // Saturate instead of wrapping to a negative value on overflow.
-            return sum < 0 ? Long.MAX_VALUE : sum;
+        // compute() (not merge) so the clamp runs even for a brand-new key; merge
+        // would insert a negative amount verbatim on first use.
+        xpMap.compute(skillId, (k, old) -> {
+            long sum = (old == null ? 0L : old) + amount;
+            if (sum < 0) {
+                // A positive overflow must saturate to MAX_VALUE instead of
+                // wrapping negative; a genuinely negative result clamps to zero
+                // rather than flipping to an absurd MAX_VALUE.
+                return old != null && old > 0 && amount > 0 ? Long.MAX_VALUE : 0L;
+            }
+            return sum;
         });
         modCount.incrementAndGet();
     }

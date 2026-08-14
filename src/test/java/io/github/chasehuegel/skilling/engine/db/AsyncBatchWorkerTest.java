@@ -163,6 +163,66 @@ class AsyncBatchWorkerTest {
         }
     }
 
+    @Test
+    void contendedPeriodicFlushIsDeferredAndNotSilentlyDropped() throws Exception {
+        DatabaseManager db = newDatabase();
+        ProfileManager profileManager = new ProfileManager(db);
+        UUID uuid = UUID.randomUUID();
+        PlayerProfile profile = profileManager.loadProfile(uuid).join();
+        profile.setXp("mining", 500);
+
+        AsyncBatchWorker worker = newWorker(db, profileManager);
+
+        // Simulate a quit-flush holding the write lock while the periodic run fires:
+        // the run must queue a deferred flush instead of silently skipping.
+        java.lang.reflect.Field lockField = AsyncBatchWorker.class.getDeclaredField("lock");
+        lockField.setAccessible(true);
+        var lock = (java.util.concurrent.locks.ReentrantLock) lockField.get(worker);
+        java.lang.reflect.Field deferredField = AsyncBatchWorker.class.getDeclaredField("deferredFlush");
+        deferredField.setAccessible(true);
+        var deferred = (java.util.concurrent.atomic.AtomicBoolean) deferredField.get(worker);
+
+        // Hold the lock on a separate thread so run()'s tryLock genuinely fails
+        // (ReentrantLock would let the same thread re-acquire it).
+        var held = new java.util.concurrent.CountDownLatch(1);
+        var release = new java.util.concurrent.CountDownLatch(1);
+        Thread holder = new Thread(() -> {
+            lock.lock();
+            try {
+                held.countDown();
+                release.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                lock.unlock();
+            }
+        });
+        holder.start();
+        held.await();
+
+        worker.run();
+        assertEquals(true, deferred.get(), "a contended periodic run must queue a deferred flush");
+
+        release.countDown();
+        holder.join();
+
+        // The holder's next pass consumes the deferred request and persists the
+        // profile (including XP earned after the contention) promptly.
+        profile.setXp("mining", 900);
+        worker.flushDirtyProfiles();
+        assertEquals(false, deferred.get(), "the deferred flush must be consumed");
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT xp FROM player_skills WHERE player_uuid = ? AND skill_id = 'mining'")) {
+            stmt.setString(1, uuid.toString());
+            try (var rs = stmt.executeQuery()) {
+                assertEquals(true, rs.next());
+                assertEquals(900L, rs.getLong(1));
+            }
+        }
+    }
+
     private static org.bukkit.entity.Player mockPlayer(UUID uuid) {
         org.bukkit.entity.Player player = mock(org.bukkit.entity.Player.class);
         when(player.getUniqueId()).thenReturn(uuid);

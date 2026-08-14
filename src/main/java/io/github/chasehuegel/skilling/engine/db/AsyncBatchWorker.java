@@ -42,6 +42,8 @@ public final class AsyncBatchWorker implements Runnable {
     private final ProfileManager profileManager;
     private final RequirementEngine requirementEngine;
     private final ReentrantLock lock = new ReentrantLock();
+    /** Set when a periodic run finds the lock held; the holder flushes again. */
+    private final java.util.concurrent.atomic.AtomicBoolean deferredFlush = new java.util.concurrent.atomic.AtomicBoolean(false);
     private int taskId = -1;
 
     public AsyncBatchWorker(Skilling plugin, DatabaseManager databaseManager, ProfileManager profileManager) {
@@ -73,20 +75,37 @@ public final class AsyncBatchWorker implements Runnable {
     public void run() {
         if (lock.tryLock()) {
             try {
-                doFlush();
+                flushLoop();
             } finally {
                 lock.unlock();
             }
+        } else {
+            // A quit-flush or manual flush holds the lock; queue a deferred flush
+            // so this skipped periodic run is retried promptly instead of waiting
+            // a full interval.
+            deferredFlush.set(true);
         }
     }
 
     public void flushDirtyProfiles() {
         lock.lock();
         try {
-            doFlush();
+            flushLoop();
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Runs a flush, re-running while a deferred request arrived (a periodic run
+     * that found the lock held), so a contended flush is retried right after the
+     * holder finishes instead of silently skipping a full interval.
+     */
+    private void flushLoop() {
+        do {
+            deferredFlush.set(false);
+            doFlush();
+        } while (deferredFlush.get());
     }
 
     /**

@@ -78,6 +78,17 @@ public final class PlayerListener implements Listener {
         bossBarPool.removeAll(player);
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clear(player.getUniqueId());
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
+        if (profile != null && profile.isDirty() && !profile.isInitialized()) {
+            // The hydration failed at login, so this profile is an in-memory-only
+            // placeholder that the write-behind flush never persists. Unload it and
+            // log the dropped session XP loudly instead of letting it vanish with a
+            // single SEVERE at hydration time.
+            Skilling.getInstance().getLogger().log(Level.WARNING,
+                    "Dropping unsaved session XP for " + player.getName()
+                            + ": the profile was never initialized from the database (a login-time DB failure)");
+            profileManager.unloadProfile(player.getUniqueId(), profile);
+            return;
+        }
         if (profile != null && profile.isDirty()) {
             // Capture the session generation now; if the player rejoins while the
             // flush is in flight, the reconnect bumps the generation and the
