@@ -50,6 +50,19 @@ public final class FeedbackDebouncer {
     }
 
     /**
+     * Attempts to mark feedback for the given player, scoped to the owning skill
+     * so two skills sharing an ability id keep independent failure feedback.
+     *
+     * @param player    the player receiving feedback
+     * @param skillId   the owning skill id
+     * @param abilityId the ability identifier
+     * @return true if this feedback should proceed, false if it should be suppressed
+     */
+    public boolean tryDebounce(Player player, String skillId, String abilityId) {
+        return tryDebounce(player.getUniqueId(), skillId, abilityId);
+    }
+
+    /**
      * Attempts to mark feedback for the given player UUID and ability key.
      *
      * @param playerUuid the player's UUID
@@ -57,13 +70,28 @@ public final class FeedbackDebouncer {
      * @return true if this feedback should proceed, false if it should be suppressed
      */
     public boolean tryDebounce(UUID playerUuid, String abilityId) {
+        return tryDebounce(playerUuid, null, abilityId);
+    }
+
+    /**
+     * Attempts to mark feedback for the given player UUID, scoped to the owning
+     * skill so two skills sharing an ability id keep independent failure
+     * feedback.
+     *
+     * @param playerUuid the player's UUID
+     * @param skillId    the owning skill id, or null for an unqualified ability
+     * @param abilityId  the ability identifier
+     * @return true if this feedback should proceed, false if it should be suppressed
+     */
+    public boolean tryDebounce(UUID playerUuid, String skillId, String abilityId) {
         long now = System.currentTimeMillis();
+        String key = skillId == null || skillId.isBlank() ? abilityId : skillId + ":" + abilityId;
 
         Map<String, Long> abilities = lastFeedback.computeIfAbsent(playerUuid, k -> new ConcurrentHashMap<>());
         java.util.concurrent.atomic.AtomicBoolean allowed = new java.util.concurrent.atomic.AtomicBoolean(false);
-        // compute() is atomic per ability key, so among concurrent callers only
+        // compute() is atomic per key, so among concurrent callers only
         // the first observes a stale/absent timestamp and claims the interval slot.
-        abilities.compute(abilityId, (key, last) -> {
+        abilities.compute(key, (k, last) -> {
             if (last != null && (now - last) < intervalMs) {
                 return last; // suppressed: leave the existing timestamp
             }

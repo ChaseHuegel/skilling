@@ -629,7 +629,7 @@ public final class SkillEventListener implements Listener {
             // executing mechanic.
             RequirementResult check;
             try {
-                check = requirementEngine.check(player, ability.id(), ability.requirements(),
+                check = requirementEngine.check(player, skill.id(), ability.id(), ability.requirements(),
                         skillLevel, ability.unlockLevel());
             } catch (RuntimeException ex) {
                 // A malformed requirement that slipped past load validation must
@@ -641,7 +641,7 @@ public final class SkillEventListener implements Listener {
             }
             debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
             if (!check.success()) {
-                if (feedbackDebouncer.tryDebounce(player, ability.id())) {
+                if (feedbackDebouncer.tryDebounce(player, skill.id(), ability.id())) {
                     var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());
                     if (failure != null && !failure.actionBar().isBlank()) {
                         String msg = failure.actionBar();
@@ -701,7 +701,7 @@ public final class SkillEventListener implements Listener {
                 debug("    -> no mechanic executed, skipping consume and feedback");
                 continue;
             }
-            requirementEngine.consume(player, ability.id(), ability.requirements(),
+            requirementEngine.consume(player, skill.id(), ability.id(), ability.requirements(),
                     skillLevel, ability.unlockLevel());
 
             String abilityMsg = ability.feedback().message();

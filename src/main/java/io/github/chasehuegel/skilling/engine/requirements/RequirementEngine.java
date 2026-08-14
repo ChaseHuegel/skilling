@@ -41,10 +41,20 @@ public final class RequirementEngine {
      */
     public static final double MAX_COOLDOWN_SECONDS = 86_400.0;
 
-    private final Map<String, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
+    private final Map<String, Map<CooldownKey, Long>> cooldowns = new ConcurrentHashMap<>();
     private final Map<String, Material> materialCache = new ConcurrentHashMap<>();
     private TagResolver tagResolver;
     private final StateFilterRegistry stateFilterRegistry;
+
+    /**
+     * Identifies an ability cooldown by its owning skill and ability id, so two
+     * skills that share an ability id (e.g. a reusable {@code haste} base ability)
+     * keep independent cooldowns.
+     *
+     * @param skillId   the owning skill id
+     * @param abilityId the ability id
+     */
+    private record CooldownKey(String skillId, String abilityId) {}
 
     /**
      * Clamps a cooldown duration to {@link #MAX_COOLDOWN_SECONDS} so the expiry
@@ -76,20 +86,22 @@ public final class RequirementEngine {
      * Returns a {@link RequirementResult} — never throws.
      *
      * @param player       the player attempting the ability
+     * @param skillId      the owning skill id (cooldowns are scoped per skill)
      * @param abilityId    the ability identifier used for cooldown tracking
      * @param requirements the ability's requirements definition
      * @param skillLevel   the player's current level in the relevant skill
      * @param unlockLevel  the level at which the ability is unlocked
      * @return the result of the check
      */
-    public RequirementResult check(Player player, String abilityId, SkillDefinition.Requirements requirements,
+    public RequirementResult check(Player player, String skillId, String abilityId,
+                                   SkillDefinition.Requirements requirements,
                                    int skillLevel, int unlockLevel) {
         // Check cooldown
         double cdSec = requirements.cooldown().evaluate(skillLevel, unlockLevel);
         if (cdSec > 0) {
             var abilityCooldowns = cooldowns.get(player.getUniqueId().toString());
             if (abilityCooldowns != null) {
-                long remaining = getRemainingCooldown(player, abilityId);
+                long remaining = getRemainingCooldown(player, skillId, abilityId);
                 if (remaining > 0) {
                     return RequirementResult.failed(FailureReason.COOLDOWN, Map.of(
                             "time", String.format("%.1f", remaining / 1000.0)
@@ -145,17 +157,19 @@ public final class RequirementEngine {
      * <p>Should only be called if {@link #check} returned a passing result.
      *
      * @param player       the player who activated the ability
+     * @param skillId      the owning skill id (cooldowns are scoped per skill)
      * @param abilityId    the ability identifier used for cooldown tracking
      * @param requirements the ability's requirements definition
      * @param skillLevel   the player's current level in the relevant skill
      * @param unlockLevel  the level at which the ability is unlocked
      */
-    public void consume(Player player, String abilityId, SkillDefinition.Requirements requirements,
+    public void consume(Player player, String skillId, String abilityId,
+                        SkillDefinition.Requirements requirements,
                         int skillLevel, int unlockLevel) {
         // Apply cooldown
         double cdSec = requirements.cooldown().evaluate(skillLevel, unlockLevel);
         if (cdSec > 0) {
-            applyCooldown(player, abilityId, (long) (clampCooldownSeconds(cdSec) * 1000));
+            applyCooldown(player, skillId, abilityId, (long) (clampCooldownSeconds(cdSec) * 1000));
         }
 
         // Consume items
@@ -271,18 +285,18 @@ public final class RequirementEngine {
         };
     }
 
-    private long getRemainingCooldown(Player player, String abilityId) {
+    private long getRemainingCooldown(Player player, String skillId, String abilityId) {
         var abilityCooldowns = cooldowns.get(player.getUniqueId().toString());
         if (abilityCooldowns == null) return 0;
-        Long expiresAt = abilityCooldowns.get(abilityId);
+        Long expiresAt = abilityCooldowns.get(new CooldownKey(skillId, abilityId));
         if (expiresAt == null) return 0;
         long remaining = expiresAt - System.currentTimeMillis();
         return Math.max(0, remaining);
     }
 
-    private void applyCooldown(Player player, String abilityId, long durationMs) {
+    private void applyCooldown(Player player, String skillId, String abilityId, long durationMs) {
         cooldowns.computeIfAbsent(player.getUniqueId().toString(), k -> new ConcurrentHashMap<>())
-                .put(abilityId, System.currentTimeMillis() + durationMs);
+                .put(new CooldownKey(skillId, abilityId), System.currentTimeMillis() + durationMs);
     }
 
     /**
@@ -311,7 +325,7 @@ public final class RequirementEngine {
     public void pruneExpiredCooldowns() {
         long now = System.currentTimeMillis();
         for (var playerEntry : cooldowns.entrySet()) {
-            Map<String, Long> abilityCooldowns = playerEntry.getValue();
+            Map<CooldownKey, Long> abilityCooldowns = playerEntry.getValue();
             if (abilityCooldowns == null) continue;
             abilityCooldowns.entrySet().removeIf(e -> e.getValue() <= now);
             if (abilityCooldowns.isEmpty()) {

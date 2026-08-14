@@ -100,4 +100,19 @@ class FeedbackDebouncerTest {
 
         assertEquals(1, emissions.get(), "exactly one concurrent caller may emit within the interval");
     }
+
+    @Test
+    void sharedAbilityIdKeepsIndependentFeedbackPerSkill() {
+        var debouncer = new FeedbackDebouncer(500);
+        UUID uuid = UUID.randomUUID();
+
+        assertTrue(debouncer.tryDebounce(uuid, "skill_a", "haste"),
+                "first skill feedback must proceed");
+        assertFalse(debouncer.tryDebounce(uuid, "skill_a", "haste"),
+                "the same skill's feedback must be debounced");
+
+        // Another skill sharing the ability id must not be suppressed.
+        assertTrue(debouncer.tryDebounce(uuid, "skill_b", "haste"),
+                "a shared ability id in another skill must keep its own feedback");
+    }
 }

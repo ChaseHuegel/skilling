@@ -81,7 +81,7 @@ class RequirementEngineTest {
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        var result = engine.check(player, "test_ability", requirements, 10, 5);
+        var result = engine.check(player, "test_skill", "test_ability", requirements, 10, 5);
         assertTrue(result.success());
     }
 
@@ -92,7 +92,7 @@ class RequirementEngineTest {
         when(player.isSneaking()).thenReturn(true);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        var result = engine.check(player, "test_ability", requirements, 10, 5);
+        var result = engine.check(player, "test_skill", "test_ability", requirements, 10, 5);
         assertTrue(result.success());
     }
 
@@ -103,7 +103,7 @@ class RequirementEngineTest {
         when(player.isSneaking()).thenReturn(false);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        var result = engine.check(player, "test_ability", requirements, 10, 5);
+        var result = engine.check(player, "test_skill", "test_ability", requirements, 10, 5);
         assertEquals(FailureReason.MISSING_STATE, result.failureReason());
     }
 
@@ -126,7 +126,7 @@ class RequirementEngineTest {
         contents[0] = coal;
         when(inventory.getContents()).thenReturn(contents);
 
-        engine.consume(player, "test_ability", requirements, 10, 5);
+        engine.consume(player, "test_skill", "test_ability", requirements, 10, 5);
         verify(coal).setAmount(4);
     }
 
@@ -136,9 +136,9 @@ class RequirementEngineTest {
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        engine.consume(player, "test_ability", requirements, 10, 5);
+        engine.consume(player, "test_skill", "test_ability", requirements, 10, 5);
 
-        var result = engine.check(player, "test_ability", requirements, 10, 5);
+        var result = engine.check(player, "test_skill", "test_ability", requirements, 10, 5);
         assertEquals(FailureReason.COOLDOWN, result.failureReason());
     }
 
@@ -148,10 +148,10 @@ class RequirementEngineTest {
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        engine.consume(player, "test_ability", requirements, 10, 5);
+        engine.consume(player, "test_skill", "test_ability", requirements, 10, 5);
         engine.clearCooldowns(player);
 
-        var result = engine.check(player, "test_ability", requirements, 10, 5);
+        var result = engine.check(player, "test_skill", "test_ability", requirements, 10, 5);
         assertTrue(result.success());
     }
 
@@ -178,11 +178,11 @@ class RequirementEngineTest {
 
         // Off-hand absent -> fail.
         when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.OFF_HAND)).thenReturn(null);
-        assertTrue(engine.check(player, "test_ability", requirements, 10, 5).failureReason() != null);
+        assertTrue(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).failureReason() != null);
 
         // Off-hand present -> pass even though only the off-hand slot is inspected.
         when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.OFF_HAND)).thenReturn(offHandShield);
-        assertTrue(engine.check(player, "test_ability", requirements, 10, 5).success());
+        assertTrue(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).success());
     }
 
     @Test
@@ -203,11 +203,11 @@ class RequirementEngineTest {
         var contents = new ItemStack[36];
         contents[0] = coal2;
         when(inventory.getContents()).thenReturn(contents);
-        assertFalse(engine.check(player, "test_ability", requirements, 10, 5).success());
+        assertFalse(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).success());
 
         // 3 coal -> pass.
         when(coal2.getAmount()).thenReturn(3);
-        assertTrue(engine.check(player, "test_ability", requirements, 10, 5).success());
+        assertTrue(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).success());
     }
 
     @Test
@@ -226,7 +226,7 @@ class RequirementEngineTest {
         when(coal.getAmount()).thenReturn(5);
         when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.HAND)).thenReturn(coal);
 
-        engine.consume(player, "test_ability", requirements, 10, 5);
+        engine.consume(player, "test_skill", "test_ability", requirements, 10, 5);
         // Amount 2 removed from the main-hand stack (5 -> 3), not the whole inventory.
         verify(coal).setAmount(3);
     }
@@ -243,7 +243,7 @@ class RequirementEngineTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
         assertThrows(IllegalArgumentException.class,
-                () -> engine.check(player, "test_ability", requirements, 10, 5));
+                () -> engine.check(player, "test_skill", "test_ability", requirements, 10, 5));
     }
 
     @Test
@@ -261,7 +261,7 @@ class RequirementEngineTest {
         when(standingPlayer.getUniqueId()).thenReturn(UUID.randomUUID());
 
         for (Player p : List.of(sneakingPlayer, standingPlayer)) {
-            boolean requirementPasses = engine.check(p, "a", requirements, 10, 5).success();
+            boolean requirementPasses = engine.check(p, "test_skill", "a", requirements, 10, 5).success();
             boolean filterPasses = registry.evaluate("is_sneaking", p, null, "");
             assertEquals(filterPasses, requirementPasses, "requirement and filter must agree");
         }
@@ -278,9 +278,9 @@ class RequirementEngineTest {
         when(player.getWorld()).thenReturn(world);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        assertTrue(engine.check(player, "a",
+        assertTrue(engine.check(player, "test_skill", "a",
                 new SkillDefinition.Requirements(0, List.of("dimension:nether"), List.of()), 10, 5).success());
-        assertFalse(engine.check(player, "a",
+        assertFalse(engine.check(player, "test_skill", "a",
                 new SkillDefinition.Requirements(0, List.of("dimension:overworld"), List.of()), 10, 5).success());
         assertTrue(registry.evaluate("dimension", player, null, "nether"));
         assertFalse(registry.evaluate("dimension", player, null, "overworld"));
@@ -293,7 +293,7 @@ class RequirementEngineTest {
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        assertFalse(engine.check(player, "a",
+        assertFalse(engine.check(player, "test_skill", "a",
                 new SkillDefinition.Requirements(0, List.of("not_a_state"), List.of()), 10, 5).success());
         assertFalse(registry.evaluate("not_a_state", player, null, ""));
     }
@@ -324,8 +324,8 @@ class RequirementEngineTest {
         when(inventory.getContents()).thenReturn(new ItemStack[]{coal});
 
         long before = realResolver.resolutionCount();
-        assertTrue(engine.check(player, "a", requirements, 10, 5).success());
-        assertTrue(engine.check(player, "a", requirements, 10, 5).success());
+        assertTrue(engine.check(player, "test_skill", "a", requirements, 10, 5).success());
+        assertTrue(engine.check(player, "test_skill", "a", requirements, 10, 5).success());
         assertEquals(before, realResolver.resolutionCount(),
                 "the flattened tag set must be reused, not re-resolved per check or slot");
     }
@@ -341,7 +341,7 @@ class RequirementEngineTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getFoodLevel()).thenReturn(3);
 
-        var result = engine.check(player, "a", requirements, 10, 5);
+        var result = engine.check(player, "test_skill", "a", requirements, 10, 5);
         assertEquals(FailureReason.EXHAUSTION, result.failureReason());
     }
 
@@ -357,7 +357,7 @@ class RequirementEngineTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getFoodLevel()).thenReturn(5);
 
-        assertTrue(engine.check(player, "a", requirements, 10, 5).success());
+        assertTrue(engine.check(player, "test_skill", "a", requirements, 10, 5).success());
     }
 
     @Test
@@ -371,7 +371,7 @@ class RequirementEngineTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getFoodLevel()).thenReturn(6);
 
-        assertTrue(engine.check(player, "a", requirements, 10, 5).success());
+        assertTrue(engine.check(player, "test_skill", "a", requirements, 10, 5).success());
     }
 
     @Test
@@ -385,7 +385,7 @@ class RequirementEngineTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getFoodLevel()).thenReturn(10);
 
-        engine.consume(player, "a", requirements, 10, 5);
+        engine.consume(player, "test_skill", "a", requirements, 10, 5);
         verify(player).setFoodLevel(8);
     }
 
@@ -400,7 +400,7 @@ class RequirementEngineTest {
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getFoodLevel()).thenReturn(2);
 
-        engine.consume(player, "a", requirements, 10, 5);
+        engine.consume(player, "test_skill", "a", requirements, 10, 5);
         verify(player).setFoodLevel(0);
     }
 
@@ -416,7 +416,7 @@ class RequirementEngineTest {
         when(player.getInventory()).thenReturn(inventory);
         when(inventory.getContents()).thenReturn(new ItemStack[36]);
 
-        var result = engine.check(player, "a", requirements, 10, 5);
+        var result = engine.check(player, "test_skill", "a", requirements, 10, 5);
         assertEquals(FailureReason.MISSING_ITEM, result.failureReason());
     }
 
@@ -434,7 +434,7 @@ class RequirementEngineTest {
         when(player.getInventory()).thenReturn(inventory);
         when(inventory.getContents()).thenReturn(new ItemStack[36]);
 
-        var result = engine.check(player, "a", requirements, 10, 5);
+        var result = engine.check(player, "test_skill", "a", requirements, 10, 5);
         assertEquals(FailureReason.MISSING_ITEM, result.failureReason());
     }
 
@@ -463,7 +463,7 @@ class RequirementEngineTest {
         when(coal.getAmount()).thenReturn(5);
         when(inventory.getItem(org.bukkit.inventory.EquipmentSlot.HAND)).thenReturn(coal);
 
-        engine.consume(player, "a", requirements, 10, 5);
+        engine.consume(player, "test_skill", "a", requirements, 10, 5);
         // Only the ores-tagged stack is consumed (5 -> 4); non-matching stacks untouched.
         verify(coal).setAmount(4);
     }

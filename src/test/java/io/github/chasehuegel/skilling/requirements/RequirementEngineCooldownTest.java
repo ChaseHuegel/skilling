@@ -55,9 +55,9 @@ class RequirementEngineCooldownTest {
     void scalarCooldownBlocksSecondUse() {
         var req = requirements(new ConstantEvaluator(5.0));
         var player = mockPlayer();
-        assertTrue(engine.check(player, "ability", req, 10, 5).success());
-        engine.consume(player, "ability", req, 10, 5);
-        var result = engine.check(player, "ability", req, 10, 5);
+        assertTrue(engine.check(player, "test_skill", "ability", req, 10, 5).success());
+        engine.consume(player, "test_skill", "ability", req, 10, 5);
+        var result = engine.check(player, "test_skill", "ability", req, 10, 5);
         assertEquals(FailureReason.COOLDOWN, result.failureReason());
     }
 
@@ -65,9 +65,9 @@ class RequirementEngineCooldownTest {
     void zeroCooldownSkipsCooldownGate() {
         var req = requirements(new ConstantEvaluator(0.0));
         var player = mockPlayer();
-        assertTrue(engine.check(player, "ability", req, 10, 5).success());
-        engine.consume(player, "ability", req, 10, 5);
-        assertTrue(engine.check(player, "ability", req, 10, 5).success());
+        assertTrue(engine.check(player, "test_skill", "ability", req, 10, 5).success());
+        engine.consume(player, "test_skill", "ability", req, 10, 5);
+        assertTrue(engine.check(player, "test_skill", "ability", req, 10, 5).success());
     }
 
     @Test
@@ -77,11 +77,11 @@ class RequirementEngineCooldownTest {
         // that lifts it is time, not a relog.
         var req = requirements(new ConstantEvaluator(0.2));
         var player = mockPlayer();
-        assertTrue(engine.check(player, "ability", req, 10, 5).success());
-        engine.consume(player, "ability", req, 10, 5);
+        assertTrue(engine.check(player, "test_skill", "ability", req, 10, 5).success());
+        engine.consume(player, "test_skill", "ability", req, 10, 5);
 
         // Simulate a relog: nothing happens to cooldown state.
-        assertEquals(FailureReason.COOLDOWN, engine.check(player, "ability", req, 10, 5).failureReason());
+        assertEquals(FailureReason.COOLDOWN, engine.check(player, "test_skill", "ability", req, 10, 5).failureReason());
     }
 
     @Test
@@ -90,16 +90,16 @@ class RequirementEngineCooldownTest {
         var shortReq = requirements(new ConstantEvaluator(0.05));
         var longReq = requirements(new ConstantEvaluator(10.0));
 
-        engine.consume(player, "short", shortReq, 10, 5);
-        engine.consume(player, "long", longReq, 10, 5);
+        engine.consume(player, "test_skill", "short", shortReq, 10, 5);
+        engine.consume(player, "test_skill", "long", longReq, 10, 5);
 
         // Let the short cooldown expire, then prune.
         Thread.sleep(80);
         engine.pruneExpiredCooldowns();
 
-        assertEquals(FailureReason.COOLDOWN, engine.check(player, "long", longReq, 10, 5).failureReason(),
+        assertEquals(FailureReason.COOLDOWN, engine.check(player, "test_skill", "long", longReq, 10, 5).failureReason(),
                 "an active cooldown must survive pruning");
-        assertTrue(engine.check(player, "short", shortReq, 10, 5).success(),
+        assertTrue(engine.check(player, "test_skill", "short", shortReq, 10, 5).success(),
                 "an expired cooldown must be released after pruning");
     }
 
@@ -110,9 +110,9 @@ class RequirementEngineCooldownTest {
         // The clamp must keep the cooldown enforced for the clamped maximum.
         var req = requirements(new ConstantEvaluator(1e12));
         var player = mockPlayer();
-        assertTrue(engine.check(player, "ability", req, 10, 5).success());
-        engine.consume(player, "ability", req, 10, 5);
-        assertEquals(FailureReason.COOLDOWN, engine.check(player, "ability", req, 10, 5).failureReason(),
+        assertTrue(engine.check(player, "test_skill", "ability", req, 10, 5).success());
+        engine.consume(player, "test_skill", "ability", req, 10, 5);
+        assertEquals(FailureReason.COOLDOWN, engine.check(player, "test_skill", "ability", req, 10, 5).failureReason(),
                 "a huge cooldown must remain enforced, not overflow to an instant expiry");
     }
 
@@ -122,5 +122,36 @@ class RequirementEngineCooldownTest {
         assertEquals(3600.0, RequirementEngine.clampCooldownSeconds(3600.0), 1e-9);
         assertEquals(RequirementEngine.MAX_COOLDOWN_SECONDS,
                 RequirementEngine.clampCooldownSeconds(1e12), 1e-9);
+    }
+
+    @Test
+    void sharedAbilityIdCoolsDownIndependentlyPerSkill() {
+        var req = requirements(new ConstantEvaluator(5.0));
+        var player = mockPlayer();
+
+        // Skill A's "haste" activates and goes on cooldown.
+        assertTrue(engine.check(player, "skill_a", "haste", req, 10, 5).success());
+        engine.consume(player, "skill_a", "haste", req, 10, 5);
+        assertEquals(FailureReason.COOLDOWN,
+                engine.check(player, "skill_a", "haste", req, 10, 5).failureReason());
+
+        // Skill B shares the ability id but must keep an independent cooldown.
+        assertTrue(engine.check(player, "skill_b", "haste", req, 10, 5).success(),
+                "a shared ability id in another skill must not be on cooldown");
+        engine.consume(player, "skill_b", "haste", req, 10, 5);
+        assertEquals(FailureReason.COOLDOWN,
+                engine.check(player, "skill_b", "haste", req, 10, 5).failureReason());
+    }
+
+    @Test
+    void singleSkillAbilityStillCoolsDownExactlyAsBefore() {
+        var req = requirements(new ConstantEvaluator(5.0));
+        var player = mockPlayer();
+
+        assertTrue(engine.check(player, "only_skill", "haste", req, 10, 5).success());
+        engine.consume(player, "only_skill", "haste", req, 10, 5);
+        assertEquals(FailureReason.COOLDOWN,
+                engine.check(player, "only_skill", "haste", req, 10, 5).failureReason(),
+                "a single skill with the ability id must behave exactly as before");
     }
 }

@@ -16,7 +16,7 @@
 - [x] [ISSUE-281](ISSUE-281.md) - Unknown item-requirement slot throws on the event path and aborts ability dispatch
 - [x] [ISSUE-282](ISSUE-282.md) - `level_up` XP sources can self-trigger an unbounded XP cascade
 - [x] [ISSUE-283](ISSUE-283.md) - AttributeModifierHelper applies a modifier before scheduling removal, leaking a permanent stacking buff
-- [ ] [ISSUE-284](ISSUE-284.md) - Cooldowns and failure-feedback debounce keyed by `abilityId` alone collide across skills
+- [x] [ISSUE-284](ISSUE-284.md) - Cooldowns and failure-feedback debounce keyed by `abilityId` alone collide across skills
 - [ ] [ISSUE-285](ISSUE-285.md) - Offline `/skills addxp` can double-grant XP when a login races the write
 - [ ] [ISSUE-286](ISSUE-286.md) - Level anchor mismatch between the threshold table and `setlevel`/XP-bar math
 - [ ] [ISSUE-287](ISSUE-287.md) - SQLite multi-writer pool with no busy-timeout tuning causes intermittent "database is locked"
