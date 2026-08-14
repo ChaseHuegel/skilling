@@ -39,8 +39,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -82,6 +84,20 @@ class SkillEventListenerFireAbilitiesTest {
         }
     }
 
+    /** Cancels the damage event, simulating a dodge/block/cancel ability. */
+    public static class CancelMechanic implements SkillMechanic {
+        public static final AtomicInteger EXECUTIONS = new AtomicInteger();
+
+        @Override
+        public boolean execute(Player player, Map<String, Object> params, Event event) {
+            EXECUTIONS.incrementAndGet();
+            if (event instanceof org.bukkit.event.entity.EntityDamageEvent de) {
+                de.setCancelled(true);
+            }
+            return true;
+        }
+    }
+
     @TempDir
     Path tempDir;
 
@@ -95,6 +111,7 @@ class SkillEventListenerFireAbilitiesTest {
         CountingMechanic.EXECUTIONS.set(0);
         NoOpMechanic.EXECUTIONS.set(0);
         ThrowingMechanic.EXECUTIONS.set(0);
+        CancelMechanic.EXECUTIONS.set(0);
     }
 
     private void buildSkillWithAbility(String abilityRequirementsBlock) throws IOException {
@@ -215,7 +232,7 @@ class SkillEventListenerFireAbilitiesTest {
         buildSkillWithAbility("""
                     requirements:
                       items:
-                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                        - { action: "cost", tag: "minecraft:coal", amount: 1, slot: "ANY" }
                 """);
 
         // Give the player 5 coal (mocked, matching RequirementEngineTest).
@@ -241,7 +258,7 @@ class SkillEventListenerFireAbilitiesTest {
                     requirements:
                       cooldown: 10.0
                       items:
-                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                        - { action: "cost", tag: "minecraft:coal", amount: 1, slot: "ANY" }
                 """, """
                   - { type: "test:noop" }
             """);
@@ -274,7 +291,7 @@ class SkillEventListenerFireAbilitiesTest {
                     requirements:
                       cooldown: 10.0
                       items:
-                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                        - { action: "cost", tag: "minecraft:coal", amount: 1, slot: "ANY" }
                 """, """
                   - { type: "test:throw" }
             """);
@@ -306,7 +323,7 @@ class SkillEventListenerFireAbilitiesTest {
                     requirements:
                       cooldown: 10.0
                       items:
-                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                        - { action: "cost", tag: "minecraft:coal", amount: 1, slot: "ANY" }
                 """, """
                   - { type: "test:count" }
                   - { type: "test:throw" }
@@ -366,7 +383,7 @@ class SkillEventListenerFireAbilitiesTest {
         buildSkillWithMechanicsAndFeedback("""
                     requirements:
                       items:
-                        - { action: "cost", tag: "minecraft:coal", amount: 1 }
+                        - { action: "cost", tag: "minecraft:coal", amount: 1, slot: "ANY" }
                 """, """
                   - { type: "test:count" }
             """, """
@@ -453,5 +470,110 @@ class SkillEventListenerFireAbilitiesTest {
         // failed ability); the good ability that follows must still fire.
         assertEquals(1, CountingMechanic.EXECUTIONS.get(),
                 "remaining abilities must still fire when a requirement check throws");
+    }
+
+    @Test
+    void fallDamageDoesNotFireAfterTheDamageWasCancelled() throws IOException {
+        SkillManager skillManager = io.github.chasehuegel.skilling.TestSkillManager.newWith(
+                reg -> {
+                    reg.register("test:count", CountingMechanic.class, java.util.List.of());
+                    reg.register("test:cancel", CancelMechanic.class, java.util.List.of());
+                });
+
+        Path skillsDir = tempDir.resolve("skills");
+        Files.createDirectories(skillsDir);
+        Files.writeString(skillsDir.resolve("test.yml"), """
+                id: test_skill
+                max_level: 100
+                display: { name: "Test", color: "GREEN", style: "SOLID" }
+                progression: { curve: "constant", base_xp: 100.0 }
+                xp_sources: []
+                abilities:
+                  - id: dodge
+                    display_name: "Dodge"
+                    unlock_level: 1
+                    trigger: "entity_damage_taken"
+                    mechanics:
+                      - { type: "test:cancel" }
+                    feedback: { notify: { action_bar: false } }
+                  - id: acrobat
+                    display_name: "Acrobat"
+                    unlock_level: 1
+                    trigger: "fall_damage"
+                    mechanics:
+                      - { type: "test:count" }
+                    feedback: { notify: { action_bar: false } }
+                """);
+        skillManager.loadSkills(skillsDir.toFile());
+
+        DatabaseManager db = mock(DatabaseManager.class);
+        when(db.isInitialized()).thenReturn(false);
+        profileManager = new ProfileManager(db);
+        PlayerProfile profile = profileManager.loadProfile(uuid).join();
+        profile.setXp("test_skill", 10000);
+
+        player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(uuid);
+
+        MechanicRegistry mechReg = new MechanicRegistry();
+        mechReg.register("test:count", CountingMechanic.class, java.util.List.of());
+        mechReg.register("test:cancel", CancelMechanic.class, java.util.List.of());
+
+        var tagResolver = new TagResolver(new CustomTagLoader());
+        Skilling plugin = mock(Skilling.class);
+        Server server = mock(Server.class);
+        when(plugin.getServer()).thenReturn(server);
+        when(server.getScheduler()).thenReturn(mock(org.bukkit.scheduler.BukkitScheduler.class));
+        when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("fall-cancel-test"));
+
+        listener = new SkillEventListener(plugin, skillManager, profileManager, tagResolver,
+                new RequirementEngine(tagResolver, new StateFilterRegistry()), mechReg,
+                new FeedbackDebouncer(500), mock(BossBarPool.class), new StateFilterRegistry());
+
+        var event = mock(org.bukkit.event.entity.EntityDamageEvent.class);
+        when(event.getEntity()).thenReturn(player);
+        when(event.getCause()).thenReturn(org.bukkit.event.entity.EntityDamageEvent.DamageCause.FALL);
+        // Mirror the real event: setCancelled flips the isCancelled state.
+        boolean[] cancelled = {false};
+        doAnswer(inv -> { cancelled[0] = true; return null; }).when(event).setCancelled(anyBoolean());
+        when(event.isCancelled()).thenAnswer(inv -> cancelled[0]);
+
+        listener.onEntityDamageTaken(event);
+
+        assertEquals(1, CancelMechanic.EXECUTIONS.get(),
+                "the dodge ability must fire on the fall's damage_taken dispatch");
+        assertEquals(0, CountingMechanic.EXECUTIONS.get(),
+                "fall_damage must not fire after the damage was cancelled");
+    }
+
+    @Test
+    void chainedBlockBreakStillClearsPlayerPlacedMetadata() throws Exception {
+        buildSkillWithAbility("""
+                    requirements:
+                      cooldown: 10.0
+                """);
+
+        var loc = new org.bukkit.Location(mock(org.bukkit.World.class), 1, 2, 3);
+        var block = mock(org.bukkit.block.Block.class);
+        when(block.hasMetadata("player_placed")).thenReturn(true);
+        when(block.getLocation()).thenReturn(loc);
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(block);
+        when(event.getPlayer()).thenReturn(player);
+
+        // Mark the block as mid-chain so onBlockBreak takes the early-return path.
+        var method = io.github.chasehuegel.skilling.engine.mechanic.impl.ChainBreakMechanic.class
+                .getDeclaredMethod("processingSet");
+        method.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        var processing = (java.util.Set<org.bukkit.Location>) method.invoke(null);
+        processing.add(loc);
+        try {
+            listener.onBlockBreak(event);
+        } finally {
+            processing.remove(loc);
+        }
+
+        verify(block).removeMetadata(eq("player_placed"), any(org.bukkit.plugin.Plugin.class));
     }
 }

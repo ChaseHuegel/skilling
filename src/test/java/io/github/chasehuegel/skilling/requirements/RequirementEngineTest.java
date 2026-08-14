@@ -13,10 +13,15 @@ import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -189,7 +194,7 @@ class RequirementEngineTest {
     void possessionWithAmountRequiresThatManyItems() {
         var requirements = new SkillDefinition.Requirements(
                 0, List.of(),
-                List.of(new SkillDefinition.ItemRequirement("possession", "minecraft:coal", "HAND", 3, 0.0))
+                List.of(new SkillDefinition.ItemRequirement("possession", "minecraft:coal", "ANY", 3, 0.0))
         );
         var player = mock(Player.class);
         var inventory = mock(PlayerInventory.class);
@@ -311,7 +316,7 @@ class RequirementEngineTest {
         var engine = new RequirementEngine(realResolver, newStateFilterRegistry());
         var requirements = new SkillDefinition.Requirements(
                 0, List.of(),
-                List.of(new SkillDefinition.ItemRequirement("possession", "#c:ores", "HAND", 1, 0.0))
+                List.of(new SkillDefinition.ItemRequirement("possession", "#c:ores", "ANY", 1, 0.0))
         );
 
         var player = mock(Player.class);
@@ -408,7 +413,7 @@ class RequirementEngineTest {
     void missingCostItemFailsCheckWithMissingItem() {
         var requirements = new SkillDefinition.Requirements(
                 0, List.of(),
-                List.of(new SkillDefinition.ItemRequirement("cost", "minecraft:coal", "HAND", 1, 0.0))
+                List.of(new SkillDefinition.ItemRequirement("cost", "minecraft:coal", "ANY", 1, 0.0))
         );
         var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
@@ -426,9 +431,8 @@ class RequirementEngineTest {
         // match set rather than NPEing; the YAML path rejects it at load.
         var requirements = new SkillDefinition.Requirements(
                 0, List.of(),
-                List.of(new SkillDefinition.ItemRequirement("possession", null, "HAND", 1, 0.0))
-        );
-        var player = mock(Player.class);
+                List.of(new SkillDefinition.ItemRequirement("possession", null, "ANY", 1, 0.0))
+        );        var player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         var inventory = mock(PlayerInventory.class);
         when(player.getInventory()).thenReturn(inventory);
@@ -466,5 +470,87 @@ class RequirementEngineTest {
         engine.consume(player, "test_skill", "a", requirements, 10, 5);
         // Only the ores-tagged stack is consumed (5 -> 4); non-matching stacks untouched.
         verify(coal).setAmount(4);
+    }
+
+    @Test
+    void handSlotOnlyScansTheMainHand() {
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("possession", "minecraft:coal", "HAND", 1, 0.0))
+        );
+        var player = mock(Player.class);
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        var coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(1);
+        // The item lives in the off hand only; HAND must not pay from anywhere.
+        when(inventory.getItem(EquipmentSlot.OFF_HAND)).thenReturn(coal);
+        assertFalse(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).success(),
+                "HAND must not scan the whole inventory");
+
+        // Coal in the main hand passes.
+        when(inventory.getItem(EquipmentSlot.HAND)).thenReturn(coal);
+        assertTrue(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).success());
+    }
+
+    @Test
+    void anySlotScansTheWholeInventory() {
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("possession", "minecraft:coal", "ANY", 1, 0.0))
+        );
+        var player = mock(Player.class);
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        var coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(1);
+        // The item sits in a backpack slot, not the hand.
+        var contents = new ItemStack[36];
+        contents[9] = coal;
+        when(inventory.getContents()).thenReturn(contents);
+
+        assertTrue(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).success(),
+                "ANY must scan the whole inventory");
+    }
+
+    @ParameterizedTest
+    @MethodSource("concreteSlotMappings")
+    void concreteSlotResolvesToExactlyThatEquipmentSlot(String slot, EquipmentSlot bukkitSlot) {
+        var requirements = new SkillDefinition.Requirements(
+                0, List.of(),
+                List.of(new SkillDefinition.ItemRequirement("possession", "minecraft:coal", slot, 1, 0.0))
+        );
+        var player = mock(Player.class);
+        var inventory = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        var coal = mock(ItemStack.class);
+        when(coal.getType()).thenReturn(Material.COAL);
+        when(coal.getAmount()).thenReturn(1);
+        when(inventory.getItem(bukkitSlot)).thenReturn(coal);
+
+        assertTrue(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).success(),
+                "slot '" + slot + "' must resolve to " + bukkitSlot);
+    }
+
+    static java.util.stream.Stream<Arguments> concreteSlotMappings() {
+        return java.util.stream.Stream.of(
+                Arguments.of("HAND", EquipmentSlot.HAND),
+                Arguments.of("MAIN_HAND", EquipmentSlot.HAND),
+                Arguments.of("OFF_HAND", EquipmentSlot.OFF_HAND),
+                Arguments.of("HEAD", EquipmentSlot.HEAD),
+                Arguments.of("HELMET", EquipmentSlot.HEAD),
+                Arguments.of("CHEST", EquipmentSlot.CHEST),
+                Arguments.of("LEGS", EquipmentSlot.LEGS),
+                Arguments.of("FEET", EquipmentSlot.FEET),
+                Arguments.of("BOOTS", EquipmentSlot.FEET)
+        );
     }
 }

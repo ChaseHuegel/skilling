@@ -257,9 +257,11 @@ public final class RequirementEngine {
     private static org.bukkit.inventory.EquipmentSlot resolveSlot(String slot) {
         if (slot == null || slot.isBlank()) return null;
         return switch (slot.toUpperCase()) {
-            case "HAND", "ANY", "ALL" -> null;
-            case "MAIN_HAND" -> org.bukkit.inventory.EquipmentSlot.HAND;
+            // HAND is the main hand only; ANY/ALL scope to the whole inventory so
+            // a hand-scoped cost cannot be paid from anywhere on the body.
+            case "HAND", "MAIN_HAND" -> org.bukkit.inventory.EquipmentSlot.HAND;
             case "OFF_HAND" -> org.bukkit.inventory.EquipmentSlot.OFF_HAND;
+            case "ANY", "ALL" -> null;
             case "HEAD", "HELMET" -> org.bukkit.inventory.EquipmentSlot.HEAD;
             case "CHEST" -> org.bukkit.inventory.EquipmentSlot.CHEST;
             case "LEGS" -> org.bukkit.inventory.EquipmentSlot.LEGS;

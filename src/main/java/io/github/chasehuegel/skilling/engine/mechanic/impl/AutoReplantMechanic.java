@@ -32,10 +32,13 @@ public final class AutoReplantMechanic implements SkillMechanic {
         if (!(data instanceof Ageable ageable)) return false;
         if (ageable.getAge() < ageable.getMaximumAge()) return false;
 
-        // Schedule replant on next tick so drops happen first
+        // Schedule replant on next tick so drops happen first. Replant only when
+        // the spot is still empty and the player is still relevant: a block placed
+        // over the harvested crop must never be overwritten.
         org.bukkit.Bukkit.getScheduler().runTask(
             io.github.chasehuegel.skilling.Skilling.getInstance(),
             () -> {
+                if (block.getType() != Material.AIR || !player.isOnline()) return;
                 block.setType(type);
                 BlockData newData = block.getBlockData();
                 if (newData instanceof Ageable newAgeable) {

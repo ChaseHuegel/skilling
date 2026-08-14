@@ -25,6 +25,8 @@ progression:
   # Every curve is derived from these two keys only:
   base_xp: 50                   # XP required for level 1 (linear step = base_xp * 0.1. Constant value = base_xp)
   exponent: 2.5                 # Exponent for the polynomial curve (ignored by linear/constant)
+  # Note: curve: constant is degenerate — any XP >= base_xp resolves straight to
+  # max_level. Use linear or polynomial for a real progression curve.
 
 # ----------------------------------------
 # EXPERIENCE SOURCES

@@ -97,6 +97,12 @@ public final class SkillEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
+        // Drop the player_placed marker with the destroyed block — including
+        // chained/harvested neighbors — so a block that regenerates in this spot
+        // is not still treated as player-placed.
+        if (event.getBlock().hasMetadata("player_placed")) {
+            event.getBlock().removeMetadata("player_placed", plugin);
+        }
         // Chained/harvested blocks broken by ChainBreakMechanic or
         // AreaHarvestMechanic are handled by the origin event; do not grant XP or
         // fire abilities again per block.
@@ -108,11 +114,6 @@ public final class SkillEventListener implements Listener {
         debug("block_break fired for " + event.getPlayer().getName()
                 + " breaking " + event.getBlock().getType());
         dispatch(event.getPlayer(), event, "block_break");
-        // Drop the player_placed marker with the destroyed block so a block that
-        // regenerates in this spot is not still treated as player-placed.
-        if (event.getBlock().hasMetadata("player_placed")) {
-            event.getBlock().removeMetadata("player_placed", plugin);
-        }
     }
 
     /**
@@ -183,7 +184,9 @@ public final class SkillEventListener implements Listener {
         }
         if (event.getEntity() instanceof Player player) {
             dispatch(player, event, "entity_damage_taken");
-            if (event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+            // A dodge/block/cancel ability may have negated the fall while the
+            // entity_damage_taken dispatch ran; do not fire fall_damage for it.
+            if (event.getCause() == EntityDamageEvent.DamageCause.FALL && !event.isCancelled()) {
                 dispatch(player, event, "fall_damage");
             }
         }

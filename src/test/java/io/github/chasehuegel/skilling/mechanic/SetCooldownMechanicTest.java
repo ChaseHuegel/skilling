@@ -41,4 +41,20 @@ class SetCooldownMechanicTest {
         assertFalse(mechanic.execute(player, Map.of("material", "minecraft:shield", "ticks", 0.0),
                 BukkitMock.mockBlockBreakEvent()));
     }
+
+    @Test
+    void roundsFractionalTicksInsteadOfTruncating() {
+        var player = BukkitMock.mockPlayer();
+        assertTrue(mechanic.execute(player, Map.of("material", "minecraft:shield", "ticks", 2.6),
+                BukkitMock.mockBlockBreakEvent()));
+        verify(player).setCooldown(Material.SHIELD, 3);
+    }
+
+    @Test
+    void clampsHugeTicksToTheCeiling() {
+        var player = BukkitMock.mockPlayer();
+        assertTrue(mechanic.execute(player, Map.of("material", "minecraft:shield", "ticks", 1e9),
+                BukkitMock.mockBlockBreakEvent()));
+        verify(player).setCooldown(Material.SHIELD, 20 * 60 * 5);
+    }
 }
