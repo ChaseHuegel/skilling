@@ -11,7 +11,30 @@
 
 ### Bugs
 - [x] [ISSUE-278](ISSUE-278.md) - Fix pre-existing ChainBreakMechanicTest budget failures
+- [ ] [ISSUE-279](ISSUE-279.md) - Shaded JAR omits the SQLite JDBC driver and ships un-remapped service files
+- [ ] [ISSUE-280](ISSUE-280.md) - SkillManager raw casts throw ClassCastException instead of fail-fast IllegalArgumentException
+- [ ] [ISSUE-281](ISSUE-281.md) - Unknown item-requirement slot throws on the event path and aborts ability dispatch
+- [ ] [ISSUE-282](ISSUE-282.md) - `level_up` XP sources can self-trigger an unbounded XP cascade
+- [ ] [ISSUE-283](ISSUE-283.md) - AttributeModifierHelper applies a modifier before scheduling removal, leaking a permanent stacking buff
+- [ ] [ISSUE-284](ISSUE-284.md) - Cooldowns and failure-feedback debounce keyed by `abilityId` alone collide across skills
+- [ ] [ISSUE-285](ISSUE-285.md) - Offline `/skills addxp` can double-grant XP when a login races the write
+- [ ] [ISSUE-286](ISSUE-286.md) - Level anchor mismatch between the threshold table and `setlevel`/XP-bar math
+- [ ] [ISSUE-287](ISSUE-287.md) - SQLite multi-writer pool with no busy-timeout tuning causes intermittent "database is locked"
+- [ ] [ISSUE-288](ISSUE-288.md) - `LevelThresholds` mutates the map inside `ConcurrentHashMap.computeIfAbsent`
+- [ ] [ISSUE-289](ISSUE-289.md) - Failed preference load silently overwrites the player's real preferences on the next flush
+- [ ] [ISSUE-290](ISSUE-290.md) - Deleting or renaming a nested skill through the GUI silently does nothing
+- [ ] [ISSUE-291](ISSUE-291.md) - Reload success clears the staging directory and wipes edits made while the reload was in flight
+- [ ] [ISSUE-292](ISSUE-292.md) - Frontend is silently omitted from the JAR on clean builds and never rebuilt on source changes
+- [ ] [ISSUE-293](ISSUE-293.md) - `skilling.use` permission used by player commands is undeclared, making `/skills` ops-only
+- [ ] [ISSUE-294](ISSUE-294.md) - Shipped `template-skill.yml` is rejected by the parser; it lacks the required ability `trigger`
+- [ ] [ISSUE-296](ISSUE-296.md) - Engine minor fixes: block metadata, event ordering, and mechanic edge cases
+- [ ] [ISSUE-297](ISSUE-297.md) - Database/profile minor fixes: leaks, shutdown ordering, and silent data-loss edges
+- [ ] [ISSUE-298](ISSUE-298.md) - Web backend security hardening: origin checks, auth timing, and resource bounds
+- [ ] [ISSUE-299](ISSUE-299.md) - Web GUI behavior fixes: reload rollback, staged reads, performance, and serialization
 
 ### Improvements
+- [ ] [ISSUE-295](ISSUE-295.md) - Plugin version is hardcoded to `1.0-SNAPSHOT`; tagged releases never report the tag version
+- [ ] [ISSUE-300](ISSUE-300.md) - Build/CI/frontend hygiene: duplicate tests, E2E artifacts, relocation, and doc drift
 
 ### Research
+- [ ] [ISSUE-301](ISSUE-301.md) - Design decision: hardcoded gameplay tables vs the data-driven golden rule
