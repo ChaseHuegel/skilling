@@ -83,6 +83,7 @@ abilities:
   - id: "geologist"
     display_name: "Geologist"
     unlock_level: 1
+    trigger: "block_break"                     # Required: the event that activates this ability
 
     display:
       # {yield_chance} is injected dynamically by the ParameterEvaluator during UI generation
@@ -111,6 +112,7 @@ abilities:
   - id: "vein_miner"
     display_name: "Vein Miner"
     unlock_level: 15
+    trigger: "block_break"                     # Required: the event that activates this ability
 
     display:
       lore:
