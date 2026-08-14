@@ -52,8 +52,8 @@ public final class LevelUpDispatcher {
         // bossbar.max_active <= 0 disables the XP boss bar entirely.
         if (bar == null) return;
 
-        long xpForCurrent = (long) skill.progression().evaluator().evaluate(level, 0);
-        long xpForNext = (long) skill.progression().evaluator().evaluate(level + 1, 0);
+        long xpForCurrent = skill.getXpForLevel(level);
+        long xpForNext = skill.getXpForLevel(level + 1);
         long intoLevel = totalXp - xpForCurrent;
         long needed = xpForNext - xpForCurrent;
         // Clamp to [0,1]: negative total XP (from a stale/corrupt row) or a total

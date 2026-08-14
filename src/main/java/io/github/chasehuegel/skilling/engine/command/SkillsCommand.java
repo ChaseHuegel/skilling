@@ -274,7 +274,7 @@ public final class SkillsCommand {
                 return;
             }
             int oldLevel = def.getLevelForXp(profile.getXp(skillId));
-            long xp = (long) def.progression().evaluator().evaluate(level, 0);
+            long xp = def.getXpForLevel(level);
             profile.setXp(skillId, xp);
             profile.invalidatePageCache();
             int actualLevel = def.getLevelForXp(profile.getXp(skillId));
@@ -296,7 +296,7 @@ public final class SkillsCommand {
             sender.sendMessage(render("error", Map.of("message", "Unknown skill: " + skillId)));
             return;
         }
-        long xp = (long) def.progression().evaluator().evaluate(level, 0);
+        long xp = def.getXpForLevel(level);
         var offlinePlayer = Bukkit.getOfflinePlayer(playerName);
         if (!offlinePlayer.hasPlayedBefore()) {
             sendUsage(sender, USAGE_SETLEVEL);

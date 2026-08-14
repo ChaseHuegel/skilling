@@ -25,6 +25,12 @@ class SkillDefinitionLevelTest {
                 List.of(), List.of(), List.of());
     }
 
+    private SkillDefinition skillWithEvaluator(ParameterEvaluator evaluator, int maxLevel) {
+        return new SkillDefinition("test", maxLevel, null,
+                new SkillDefinition.Progression("custom", 0, 0, evaluator),
+                List.of(), List.of(), List.of());
+    }
+
     @Test
     void nanRequirementDoesNotReportMaxLevel() {
         var skill = skillWithEvaluator((l, u) -> Double.NaN);
@@ -149,5 +155,44 @@ class SkillDefinitionLevelTest {
         assertEquals(afterFirst, evals.get(),
                 "an unrelated evaluator must not reuse the first skill's thresholds");
         assertTrue(second.getLevelForXp(250) == 2);
+    }
+
+    @Test
+    void linearCurveXpForLevelLandsExactlyAtThatLevel() {
+        var linear = skillWithEvaluator(new LinearEvaluator(100.0, 10.0, 0, Double.MAX_VALUE), 100);
+
+        // base_xp is the exact level-1 requirement under the shared anchor, so a
+        // setlevel command using getXpForLevel must resolve back to that level.
+        assertEquals(100L, linear.getXpForLevel(1));
+        assertEquals(110L, linear.getXpForLevel(2));
+
+        for (int level = 1; level <= 50; level++) {
+            long xp = linear.getXpForLevel(level);
+            assertEquals(level, linear.getLevelForXp(xp),
+                    "setlevel must land exactly on the requested level");
+            assertEquals(level - 1, linear.getLevelForXp(xp - 1),
+                    "one XP below the threshold must still be the previous level");
+        }
+    }
+
+    @Test
+    void xpBarMathUsesTheSameAnchorAsLevelThresholds() {
+        var linear = skillWithEvaluator(new LinearEvaluator(100.0, 10.0, 0, Double.MAX_VALUE), 100);
+        for (int level = 1; level < 50; level++) {
+            long current = linear.getXpForLevel(level);
+            long next = linear.getXpForLevel(level + 1);
+            long mid = current + (next - current) / 2;
+            assertEquals(level, linear.getLevelForXp(mid),
+                    "a midpoint between thresholds must resolve to the current level");
+        }
+    }
+
+    @Test
+    void polynomialAndConstantCurvesAreUnchangedByTheAnchor() {
+        var polynomial = skillWithEvaluator(new PolynomialEvaluator(100.0, 2.5), 100);
+        var constant = skillWithEvaluator(new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(100.0), 100);
+        assertEquals(100L, polynomial.getXpForLevel(1));
+        assertEquals(100L, constant.getXpForLevel(1));
+        assertEquals(5, polynomial.getLevelForXp(polynomial.getXpForLevel(5)));
     }
 }

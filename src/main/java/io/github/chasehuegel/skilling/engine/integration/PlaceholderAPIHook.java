@@ -78,17 +78,17 @@ public class PlaceholderAPIHook {
             case "level" -> String.valueOf(level);
             case "xp" -> String.valueOf(xp);
             case "max_xp" -> {
-                long next = (long) skill.progression().evaluator().evaluate(level + 1, 0);
+                long next = skill.getXpForLevel(level + 1);
                 yield String.valueOf(next);
             }
             case "progress" -> {
-                long current = (long) skill.progression().evaluator().evaluate(level, 0);
-                long next = (long) skill.progression().evaluator().evaluate(level + 1, 0);
+                long current = skill.getXpForLevel(level);
+                long next = skill.getXpForLevel(level + 1);
                 double pct = (double) (xp - current) / (next - current) * 100;
                 yield String.format("%.1f", Math.min(pct, 100.0));
             }
             case "remaining" -> {
-                long next = (long) skill.progression().evaluator().evaluate(level + 1, 0);
+                long next = skill.getXpForLevel(level + 1);
                 yield String.valueOf(Math.max(0, next - xp));
             }
             default -> "";

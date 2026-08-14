@@ -266,6 +266,20 @@ public record SkillDefinition(
     ) {}
 
     /**
+     * Computes the total XP required to reach the given level, anchored at level
+     * 1 so {@code base_xp} is the exact level-1 requirement across all
+     * progression curves. {@code LevelThresholds} builds its table with the same
+     * anchor, so {@code getLevelForXp(getXpForLevel(level)) == level} and the
+     * XP bar / setlevel math agree with actual leveling.
+     *
+     * @param level the target level
+     * @return the XP threshold for the level
+     */
+    public long getXpForLevel(int level) {
+        return (long) progression().evaluator().evaluate(level, 1);
+    }
+
+    /**
      * Computes the level corresponding to the given raw XP for this skill's progression curve.
      *
      * <p>Thresholds are precomputed once per evaluator (see {@code LevelThresholds}) and

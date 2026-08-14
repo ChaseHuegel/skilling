@@ -24,6 +24,9 @@ progression:
   curve: "polynomial"           # Evaluator type for the overall curve
   base_xp: 50
   exponent: 2.5
+  # Anchor: base_xp is the exact level-1 requirement for every curve. A linear
+  # curve adds `step` (base_xp * 0.1) per level above 1, so the thresholds,
+  # /skills setlevel, and the XP bar all agree.
 
 # ----------------------------------------
 # EXPERIENCE SOURCES

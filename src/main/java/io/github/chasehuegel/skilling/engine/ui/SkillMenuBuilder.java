@@ -202,8 +202,8 @@ public final class SkillMenuBuilder {
         int maxLevel = skill.maxLevel();
         boolean maxed = level >= maxLevel;
 
-        long xpForCurrent = level > 0 ? (long) skill.progression().evaluator().evaluate(level, 0) : 0;
-        long xpForNext = level < maxLevel ? (long) skill.progression().evaluator().evaluate(level + 1, 0) : 0;
+        long xpForCurrent = level > 0 ? skill.getXpForLevel(level) : 0;
+        long xpForNext = level < maxLevel ? skill.getXpForLevel(level + 1) : 0;
         long xpInto = currentXp - xpForCurrent;
         // At max level there is no next threshold; pin the needed value to the
         // XP into the level so the progress line reads full ("XP: 5 / 5") and
