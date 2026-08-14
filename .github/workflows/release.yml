@@ -33,15 +33,15 @@ jobs:
         working-directory: web/frontend
         run: npm run build
 
-      - name: Build plugin
-        run: ./gradlew build --no-daemon
-
-      - name: Run tests
-        run: ./gradlew test --no-daemon
-
       - name: Extract version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Build plugin
+        run: ./gradlew build -Pversion=${{ steps.get_version.outputs.VERSION }} --no-daemon
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
 
       - name: Generate release notes
         id: release_notes

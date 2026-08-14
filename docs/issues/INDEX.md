@@ -33,7 +33,7 @@
 - [ ] [ISSUE-299](ISSUE-299.md) - Web GUI behavior fixes: reload rollback, staged reads, performance, and serialization
 
 ### Improvements
-- [ ] [ISSUE-295](ISSUE-295.md) - Plugin version is hardcoded to `1.0-SNAPSHOT`; tagged releases never report the tag version
+- [x] [ISSUE-295](ISSUE-295.md) - Plugin version is hardcoded to `1.0-SNAPSHOT`; tagged releases never report the tag version
 - [ ] [ISSUE-300](ISSUE-300.md) - Build/CI/frontend hygiene: duplicate tests, E2E artifacts, relocation, and doc drift
 
 ### Research

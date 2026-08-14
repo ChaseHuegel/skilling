@@ -5,9 +5,9 @@
 - **Agent Role:** You are an expert build/CI engineer executing this task.
 
 ## Implementation Requirements
-- [ ] Make Gradle derive the version from the release tag (e.g., `-Pversion=${VERSION}` in the release job, or `git describe` in the build).
-- [ ] Verify the expanded `paper-plugin.yml` in the built artifact matches the tag.
-- [ ] Keep the local dev version at `1.0-SNAPSHOT`.
+- [x] Make Gradle derive the version from the release tag (e.g., `-Pversion=${VERSION}` in the release job, or `git describe` in the build).
+- [x] Verify the expanded `paper-plugin.yml` in the built artifact matches the tag.
+- [x] Keep the local dev version at `1.0-SNAPSHOT`.
 
 ## Technical Specifications & Context
 - **Target Files:** `gradle.properties:2` (`version=1.0-SNAPSHOT`), `.github/workflows/release.yml:42-44` (tag extracted into `VERSION`, never passed to Gradle), `build.gradle.kts:112-116` (`processResources` expands `${version}` into `paper-plugin.yml`).
@@ -15,6 +15,6 @@
 - **Constraints:** Do not break the local `./gradlew build` / `runServer` dev loop.
 
 ## Verification & Definition of Done
-- [ ] A dry run of the release job produces an artifact whose `paper-plugin.yml` version equals the tag.
-- [ ] Local build still reports `1.0-SNAPSHOT`.
-- [ ] `./gradlew build` passes.
+- [x] A dry run of the release job produces an artifact whose `paper-plugin.yml` version equals the tag.
+- [x] Local build still reports `1.0-SNAPSHOT`.
+- [x] `./gradlew build` passes.
