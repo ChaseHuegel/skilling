@@ -38,8 +38,9 @@ dependencies {
     // Jackson is provided by the Paper runtime; compileOnly so the plugin
     // never shades it (Javalin's default JSON mapper is Jackson).
     compileOnly("com.fasterxml.jackson.core:jackson-databind:2.13.4.2")
-    implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("org.slf4j:jul-to-slf4j:2.0.17")
+    // slf4j-api is provided by the Paper runtime; compileOnly so the shaded JAR
+    // does not duplicate the server's bundled 2.0.x and trigger binder conflicts.
+    compileOnly("org.slf4j:slf4j-api:2.0.17")
 
     // External integrations
     implementation("org.bstats:bstats-bukkit:3.1.0")
@@ -113,9 +114,16 @@ tasks {
         relocate("io.javalin", "io.github.chasehuegel.skilling.libs.javalin")
         relocate("org.eclipse.jetty", "io.github.chasehuegel.skilling.libs.jetty")
         relocate("org.bstats", "io.github.chasehuegel.skilling.libs.bstats")
+        // Javalin pulls in kotlin-stdlib; relocate it (and its annotations) so the
+        // shaded JAR never ships an unrelocated kotlin.* payload.
+        relocate("kotlin", "io.github.chasehuegel.skilling.libs.kotlin")
+        relocate("org.jetbrains", "io.github.chasehuegel.skilling.libs.jetbrains")
         // Rewrite META-INF/services/* class names so ServiceLoader discovery
         // follows the relocated packages instead of pointing at dead paths.
         mergeServiceFiles()
+        // Paper provides slf4j-api at runtime; drop it entirely so the shaded
+        // JAR never carries a duplicate org/slf4j payload next to the server's.
+        exclude("org/slf4j/**")
         minimize {
             // The SQLite JDBC driver is reached only through ServiceLoader at
             // runtime, so minimization cannot prove it reachable. Keep the

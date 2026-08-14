@@ -34,7 +34,7 @@
 
 ### Improvements
 - [x] [ISSUE-295](ISSUE-295.md) - Plugin version is hardcoded to `1.0-SNAPSHOT`; tagged releases never report the tag version
-- [ ] [ISSUE-300](ISSUE-300.md) - Build/CI/frontend hygiene: duplicate tests, E2E artifacts, relocation, and doc drift
+- [x] [ISSUE-300](ISSUE-300.md) - Build/CI/frontend hygiene: duplicate tests, E2E artifacts, relocation, and doc drift
 
 ### Research
 - [ ] [ISSUE-301](ISSUE-301.md) - Design decision: hardcoded gameplay tables vs the data-driven golden rule

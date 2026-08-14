@@ -74,6 +74,9 @@ it is preserved read-only through the round-trip.
 | `GET` | `/api/staging/status` | inline | Check pending changes |
 | `DELETE` | `/api/staging` | inline | Discard all staged changes |
 | `POST` | `/api/reload` | `ReloadHandler.reload` | Apply staged + reload |
+| `GET` | `/api/mechanics` | inline (`WebServer`) | Registered mechanic types and their parameter names |
+| `GET` | `/api/triggers` | inline (`WebServer`) | Registered trigger keys |
+| `GET` | `/api/state-filters` | `StateFilterHandler.list` | Registered player-state filter keys |
 | `GET` | `/api/materials` | `RecommendedListsHandler.materials` | Exhaustive item material list from `Registry.MATERIAL` |
 | `GET` | `/api/sounds` | `RecommendedListsHandler.sounds` | Exhaustive sound-event list from `Registry.SOUND_EVENT` |
 | `GET` | `/api/particles` | `RecommendedListsHandler.particles` | Exhaustive particle list from `Registry.PARTICLE_TYPE` |
@@ -106,12 +109,12 @@ The skill card icons render actual Minecraft item textures via a public CDN. Thi
 The Minecraft release version used for asset URLs is set in `web/frontend/.env`:
 
 ```
-VITE_MINECRAFT_ASSETS_VERSION=1.21.4
+VITE_MINECRAFT_ASSETS_VERSION=1.21.8
 ```
 
-This defaults to `1.21.4` (matching the current Paper API target). To change it, edit the `.env` file and rebuild the frontend: `cd web/frontend && npm run build`.
+This defaults to `1.21.8` (matching the current Paper API target). To change it, edit the `.env` file and rebuild the frontend: `cd web/frontend && npm run build`.
 
-The version must correspond to a branch in the [InventivetalentDev/minecraft-assets](https://github.com/InventivetalentDev/minecraft-assets) repository (e.g., `1.21.4`, `1.21.3`, etc.).
+The version must correspond to a branch in the [InventivetalentDev/minecraft-assets](https://github.com/InventivetalentDev/minecraft-assets) repository (e.g., `1.21.8`, `1.21.4`, etc.).
 
 #### Texture CDN Source
 

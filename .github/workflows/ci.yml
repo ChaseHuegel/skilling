@@ -21,12 +21,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -50,11 +44,9 @@ jobs:
         working-directory: web/frontend
         run: npm run build
 
+      # build runs the tests; no separate ./gradlew test step.
       - name: Build plugin with Gradle
         run: ./gradlew build --no-daemon
-
-      - name: Run tests
-        run: ./gradlew test --no-daemon
 
       - name: Upload test report
         if: always()

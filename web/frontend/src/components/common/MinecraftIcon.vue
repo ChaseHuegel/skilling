@@ -40,7 +40,7 @@ const errored = ref(false);
 const imageLoaded = ref(false);
 
 const CDN_BASE = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets';
-const VERSION = import.meta.env.VITE_MINECRAFT_ASSETS_VERSION || '1.21.4';
+const VERSION = import.meta.env.VITE_MINECRAFT_ASSETS_VERSION || '1.21.8';
 
 const itemName = computed(() => {
     const clean = props.material.replace(/^minecraft:/, '');

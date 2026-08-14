@@ -241,7 +241,7 @@ const config = reactive({
             info: '&7{message}',
         },
     },
-    web: { enabled: false, port: 8082, username: 'admin', password: 'skilling' },
+    web: { enabled: false, port: 8082, username: 'admin', password: '' },
 });
 
 const isDirty = computed(() => JSON.stringify(config) !== cleanConfig.value);
