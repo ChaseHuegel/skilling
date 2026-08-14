@@ -12,9 +12,9 @@ package io.github.chasehuegel.skilling.engine.mechanic.impl;
  * {@code core:chain_break}.
  *
  * <p><b>YAML key:</b> {@code core:level_break}
- * <br>Params: {@code chain_limit} (max total blocks broken including the origin),
- * {@code target} (optional; a material or tag reference restricting the chain,
- * defaults to the origin block's own material)
+ * <br>Params: {@code chain_limit} (max chained blocks broken; the origin does not
+ * count against it), {@code target} (optional; a material or tag reference
+ * restricting the chain, defaults to the origin block's own material)
  */
 public final class LevelBreakMechanic extends ChainBreakMechanic {
 

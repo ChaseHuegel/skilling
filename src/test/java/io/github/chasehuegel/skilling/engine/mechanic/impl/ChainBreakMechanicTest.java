@@ -180,13 +180,13 @@ class ChainBreakMechanicTest {
             new ChainBreakMechanic().execute(player, Map.of("chain_limit", 100_000), event);
         }
 
-        // chain_limit counts the origin, so the mechanic breaks cap - 1 chained blocks.
-        assertEquals(ChainBreakMechanic.MAX_CHAIN_LIMIT - 1, broken.get(),
+        // chain_limit excludes the origin, so the mechanic breaks cap chained blocks.
+        assertEquals(ChainBreakMechanic.MAX_CHAIN_LIMIT, broken.get(),
                 "an oversized chain_limit must be clamped, not executed raw");
     }
 
     @Test
-    void chainLimitCountsOriginSoChainsOneFewer() {
+    void chainLimitExcludesOriginSoChainsUpToLimit() {
         var world = mock(World.class);
         var origin = block(world, 0, 0, 0, Material.STONE);
         var n1 = block(world, 1, 0, 0, Material.STONE);
@@ -230,16 +230,16 @@ class ChainBreakMechanicTest {
         try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
             when(Bukkit.getPluginManager()).thenReturn(pluginManager);
 
-            // chain_limit 3 = origin + 2 chained blocks, so n3 must not break.
+            // chain_limit excludes the origin, so all 3 chained blocks break.
             new ChainBreakMechanic().execute(player, Map.of("chain_limit", 3), event);
         }
 
         verify(n1).breakNaturally(tool);
         verify(n2).breakNaturally(tool);
-        verify(n3, never()).breakNaturally(tool);
-        // Two chained blocks were broken; the tool lost 1 durability each.
-        verify(meta, times(2)).setDamage(6);
-        verify(inv, times(2)).setItemInMainHand(tool);
+        verify(n3).breakNaturally(tool);
+        // Three chained blocks were broken; the tool lost 1 durability each.
+        verify(meta, times(3)).setDamage(6);
+        verify(inv, times(3)).setItemInMainHand(tool);
     }
 
     @Test

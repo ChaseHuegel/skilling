@@ -32,9 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * O(1) per-neighbor membership test, so no tag resolution happens per block.
  *
  * <p><b>YAML key:</b> {@code core:chain_break}
- * <br>Params: {@code chain_limit} (max total blocks broken including the origin),
- * {@code target} (optional; a material or tag reference restricting the chain,
- * defaults to the origin block's own material)
+ * <br>Params: {@code chain_limit} (max chained blocks broken; the origin does not
+ * count against it), {@code target} (optional; a material or tag reference
+ * restricting the chain, defaults to the origin block's own material)
  */
 public class ChainBreakMechanic implements SkillMechanic {
 

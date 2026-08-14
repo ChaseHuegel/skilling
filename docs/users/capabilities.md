@@ -72,7 +72,7 @@ the tagged `logs` blocks and every connected `leaves` block.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `chain_limit` | double | `0` | Maximum connected blocks to break (clamped to 128 so an oversized value cannot freeze the server) |
+| `chain_limit` | double | `0` | Maximum connected blocks to break, not counting the origin (clamped to 128 so an oversized value cannot freeze the server) |
 | `target` | string | (none) | Optional material or tag reference (`#minecraft:logs`, `#c:logs`, or `minecraft:oak_log`). When present, only blocks matching the resolved set chain |
 
 **Event:** `BlockBreakEvent`
@@ -89,7 +89,7 @@ for chained blocks).
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `chain_limit` | double | `0` | Maximum connected blocks to break (clamped to 128) |
+| `chain_limit` | double | `0` | Maximum connected blocks to break, not counting the origin (clamped to 128) |
 | `target` | string | (none) | Optional material or tag reference (`#minecraft:logs`, `#c:logs`, or `minecraft:oak_log`). When present, only blocks matching the resolved set chain |
 
 **Event:** `BlockBreakEvent`
