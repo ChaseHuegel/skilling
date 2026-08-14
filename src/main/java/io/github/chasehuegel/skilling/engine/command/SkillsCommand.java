@@ -418,14 +418,20 @@ public final class SkillsCommand {
                 stmt.setLong(3, amount);
                 stmt.setLong(4, amount);
                 stmt.executeUpdate();
-                // Fold the grant into a profile that joined during the write; its
-                // baseline matches the pre-write DB value, so adding the amount
-                // again reproduces the DB result.
+                // Fold the grant into a profile that joined during the write.
+                // The profile may have hydrated from a snapshot taken after the
+                // write committed (already containing the grant) or before it
+                // (missing it), so a relative addXp could double the amount. Set
+                // the absolute post-write value read back from the DB instead,
+                // which is idempotent under either timing.
                 PlayerProfile joined = profileManager.getProfile(uuid);
                 if (joined != null) {
-                    joined.addXp(skillId, amount);
-                    joined.invalidatePageCache();
-                    joined.addPendingFanfare(skillId);
+                    long postWriteXp = readXp(conn, uuidStr, skillId);
+                    if (postWriteXp >= 0) {
+                        joined.setXp(skillId, postWriteXp);
+                        joined.invalidatePageCache();
+                        joined.addPendingFanfare(skillId);
+                    }
                 }
                 Bukkit.getScheduler().runTask(plugin, () ->
                     sender.sendMessage(render("success", Map.of("message",
@@ -435,6 +441,33 @@ public final class SkillsCommand {
                     sender.sendMessage(render("error", Map.of("message", "Database error: " + e.getMessage()))));
             }
         });
+    }
+
+    /**
+     * Reads a player's current XP for a skill from the database.
+     *
+     * @param conn     an open connection (autocommit, so prior writes are visible)
+     * @param uuidStr  the player's UUID string
+     * @param skillId  the skill id
+     * @return the persisted XP, or -1 when the read fails (caller must not fold)
+     */
+    private static long readXp(java.sql.Connection conn, String uuidStr, String skillId) {
+        String sql = "SELECT xp FROM player_skills WHERE player_uuid = ? AND skill_id = ?";
+        try (var sel = conn.prepareStatement(sql)) {
+            sel.setString(1, uuidStr);
+            sel.setString(2, skillId);
+            try (var rs = sel.executeQuery()) {
+                return rs.next() ? rs.getLong(1) : 0L;
+            }
+        } catch (Exception e) {
+            // The grant is already committed. A failed read-back must not set the
+            // live profile to a wrong value; skip the fold and let the write-behind
+            // flush from the (possibly stale) profile reconcile on the next cycle.
+            java.util.logging.Logger.getLogger("skilling.command").log(java.util.logging.Level.WARNING,
+                    "Failed to read back XP for " + uuidStr + "/" + skillId
+                            + " after an offline grant; skipping the live-profile fold", e);
+            return -1L;
+        }
     }
 
     private void reset(CommandSender sender, String playerName, String skillId) {
