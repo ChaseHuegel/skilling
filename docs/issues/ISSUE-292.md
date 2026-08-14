@@ -5,10 +5,10 @@
 - **Agent Role:** You are an expert build engineer executing this task.
 
 ## Implementation Requirements
-- [ ] Wire the frontend source into the JAR unconditionally, e.g. `from(buildFrontend)` or `from(buildFrontend.map { ... })`, so the decision is made at execution time.
-- [ ] Declare `inputs.dir("src")` (plus `package.json`, `vite.config.ts`) on `buildFrontend` so source changes invalidate it.
-- [ ] Fail or loudly warn when `node_modules` is missing instead of silently degrading.
-- [ ] Add a verification step: after `./gradlew clean build`, assert the JAR contains the built frontend assets under `web/frontend`.
+- [x] Wire the frontend source into the JAR unconditionally, e.g. `from(buildFrontend)` or `from(buildFrontend.map { ... })`, so the decision is made at execution time.
+- [x] Declare `inputs.dir("src")` (plus `package.json`, `vite.config.ts`) on `buildFrontend` so source changes invalidate it.
+- [x] Fail or loudly warn when `node_modules` is missing instead of silently degrading.
+- [x] Add a verification step: after `./gradlew clean build`, assert the JAR contains the built frontend assets under `web/frontend`.
 
 ## Technical Specifications & Context
 - **Target Files:** `build.gradle.kts:60-80` (`shouldBuildFrontend`, `buildFrontend` task, `processResources` wiring) and `:82-84` (`shadowJar` dependsOn).
@@ -16,6 +16,6 @@
 - **Constraints:** Do not force a frontend build when running `runServer` in a dev loop without Node. Use Gradle task wiring, not shell commands.
 
 ## Verification & Definition of Done
-- [ ] `./gradlew clean build` on a fresh checkout produces a JAR containing the frontend assets.
-- [ ] Editing a `.vue` file and rerunning `buildFrontend` rebuilds (not UP-TO-DATE).
-- [ ] `cd web/frontend && npm run build` still passes.
+- [x] `./gradlew clean build` on a fresh checkout produces a JAR containing the frontend assets.
+- [x] Editing a `.vue` file and rerunning `buildFrontend` rebuilds (not UP-TO-DATE).
+- [x] `cd web/frontend && npm run build` still passes.

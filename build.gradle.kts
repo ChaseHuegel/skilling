@@ -67,17 +67,29 @@ val buildFrontend = tasks.register("buildFrontend", Exec::class.java) {
     description = "Build the Vue frontend for production"
     workingDir = file("web/frontend")
     commandLine("npm", "run", "build")
-    outputs.dir("web/frontend/dist")
-    onlyIf { shouldBuildFrontend.get() }
+    // Declare inputs so source/package changes invalidate the task; without them
+    // Gradle marks it UP-TO-DATE whenever dist exists and Vue edits never rebuild.
+    inputs.dir(file("web/frontend/src"))
+    inputs.files(file("web/frontend/package.json"), file("web/frontend/package-lock.json"),
+            file("web/frontend/vite.config.ts"))
+    outputs.dir(file("web/frontend/dist"))
+    onlyIf {
+        if (shouldBuildFrontend.get()) {
+            true
+        } else {
+            logger.lifecycle("Skipping frontend build: web/frontend/node_modules is missing")
+            false
+        }
+    }
 }
 
 tasks.named<Copy>("processResources") {
     dependsOn(buildFrontend)
-    val frontendDist = file("web/frontend/dist")
-    if (frontendDist.exists()) {
-        from("web/frontend/dist") {
-            into("web/frontend")
-        }
+    // Wire the frontend in through the task's outputs so the decision is made at
+    // execution time: a clean checkout builds then bundles the dist, and a
+    // frontend build skipped for a no-Node dev loop simply contributes nothing.
+    from(buildFrontend.map { it.outputs.files.singleFile }) {
+        into("web/frontend")
     }
 }
 
@@ -151,6 +163,21 @@ val verifyShadedJar = tasks.register("verifyShadedJar") {
 
 tasks.named("shadowJar") {
     finalizedBy(verifyShadedJar)
+}
+
+val verifyFrontendInJar = tasks.register("verifyFrontendInJar") {
+    description = "Verify the shaded JAR bundles the built frontend"
+    doLast {
+        val jar = tasks.shadowJar.get().archiveFile.get().asFile
+        val tree = zipTree(jar)
+        val hasIndex = tree.matching { include("web/frontend/index.html") }.files.isNotEmpty()
+        check(hasIndex) { "Shaded JAR is missing the built frontend (web/frontend/index.html)" }
+    }
+    onlyIf { shouldBuildFrontend.get() }
+}
+
+tasks.named("shadowJar") {
+    finalizedBy(verifyFrontendInJar)
 }
 
 publishing {
