@@ -95,7 +95,9 @@ public final class GuiLayoutHandler {
         var reserved = java.util.Set.of(lastRowStart, lastRowStart + 4, lastRowStart + 8);
         for (var page : dto.pages()) {
             Set<Integer> used = new java.util.HashSet<>();
-            for (int slot : page.slots().keySet()) {
+            Set<String> usedSkills = new java.util.HashSet<>();
+            for (var entry : page.slots().entrySet()) {
+                int slot = entry.getKey();
                 if (slot < 0 || slot >= maxSlot) {
                     return "page '" + page.label() + "' has invalid slot " + slot
                             + " (must be 0-" + (maxSlot - 1) + " for " + dto.rows() + " rows)";
@@ -106,6 +108,11 @@ public final class GuiLayoutHandler {
                 }
                 if (!used.add(slot)) {
                     return "page '" + page.label() + "' has duplicate slot " + slot;
+                }
+                String skillId = entry.getValue();
+                if (skillId != null && !usedSkills.add(skillId)) {
+                    return "page '" + page.label() + "' assigns skill '" + skillId
+                            + "' more than once (a skill can appear at most once per page)";
                 }
             }
         }

@@ -30,6 +30,10 @@ public final class SkillHandler {
     private final SkillManager skillManager;
     private final StagingManager stagingManager;
     private final File skillsDir;
+    /** Cache of {@code id → relative path} for live skills, so GET/{id} and
+     * collision checks do not re-walk and re-parse the whole tree per request. */
+    private final java.util.concurrent.ConcurrentHashMap<String, String> skillPathIndex =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     public SkillHandler(SkillManager skillManager, StagingManager stagingManager, File skillsDir) {
         this.skillManager = skillManager;
@@ -90,6 +94,7 @@ public final class SkillHandler {
             String yaml = SkillSerializer.toYaml(dto);
             validateStagedSkill(yaml);
             stagingManager.stageSkillFile(dto.id(), yaml);
+            invalidateSkillIndex();
             ctx.status(201).json(Map.of("status", "ok", "id", dto.id()));
         } catch (IllegalArgumentException e) {
             ctx.status(400).json(Map.of("status", "error", "message", e.getMessage()));
@@ -127,6 +132,7 @@ public final class SkillHandler {
             } else {
                 stagingManager.stageSkillFile(oldId, yaml);
             }
+            invalidateSkillIndex();
             ctx.json(Map.of("status", "ok", "id", newId));
         } catch (IllegalArgumentException e) {
             ctx.status(400).json(Map.of("status", "error", "message", e.getMessage()));
@@ -149,6 +155,7 @@ public final class SkillHandler {
         }
 
         stagingManager.stageSkillDeletion(id, relativeLivePath(id));
+        invalidateSkillIndex();
         ctx.json(Map.of("status", "ok", "id", id));
     }
 
@@ -184,24 +191,54 @@ public final class SkillHandler {
      * Staged files are ignored, so this answers "does a live skill with this id
      * already exist?" for collision checks.
      *
+     * <p>Resolved paths are cached (id → relative path) so repeated lookups do not
+     * re-walk and re-parse the skills tree; {@link #invalidateSkillIndex()} clears
+     * the cache whenever staging or a reload may change the live files.
+     *
      * @param id the skill id
      * @return the matching live file, or null
      */
     private File liveSkillFile(String id) {
+        String cached = skillPathIndex.get(id);
+        if (cached != null) {
+            File file = cached.isEmpty() ? null : new File(skillsDir, cached);
+            return file != null && file.isFile() ? file : null;
+        }
         File namedFile = confinedLiveFile(id);
-        if (namedFile != null && namedFile.exists()) return namedFile;
+        if (namedFile != null && namedFile.exists()) {
+            cacheSkill(id, namedFile);
+            return namedFile;
+        }
         if (!skillsDir.exists() || !skillsDir.isDirectory()) return null;
         // Walk recursively in sorted relative-path order (matching SkillManager's
         // load order) so the file returned is the one the engine actually used.
         for (File f : collectSkillFiles()) {
             try {
                 SkillDetailDTO dto = SkillSerializer.parseSkillFile(f);
-                if (dto.id().equals(id)) return f;
+                if (dto.id().equals(id)) {
+                    cacheSkill(id, f);
+                    return f;
+                }
             } catch (Exception ignored) {
                 // Skip files that can't be parsed
             }
         }
+        skillPathIndex.put(id, "");
         return null;
+    }
+
+    private void cacheSkill(String id, File file) {
+        skillPathIndex.put(id, skillsDir.toPath().toAbsolutePath().normalize()
+                .relativize(file.toPath().toAbsolutePath().normalize())
+                .toString());
+    }
+
+    /**
+     * Clears the live-skill path index. Called when staging operations (create,
+     * update, delete) or a reload may change the set of live skill files.
+     */
+    public void invalidateSkillIndex() {
+        skillPathIndex.clear();
     }
 
     /**

@@ -100,6 +100,22 @@ class GuiLayoutHandlerValidationTest {
     }
 
     @Test
+    void updateRejectsDuplicateSkillIdOnOnePage() {
+        StagingManager staging = mock(StagingManager.class);
+        Context ctx = mock(Context.class, RETURNS_SELF);
+        // Two slots claim the same skill; the serializer would silently keep one.
+        GuiLayoutDTO dto = new GuiLayoutDTO("Test", 4, List.of(
+            new GuiLayoutDTO.GuiPageDTO("Combat", Map.of(0, "swords", 9, "swords"), "minecraft:book", 0)
+        ), 1);
+        when(ctx.bodyAsClass(GuiLayoutDTO.class)).thenReturn(dto);
+
+        handlerWith(staging).update(ctx);
+
+        verify(ctx).status(400);
+        verify(staging, never()).stageGuiFile(anyString());
+    }
+
+    @Test
     void getPrefersStagedLayoutOverLive() throws Exception {
         StagingManager staging = new StagingManager(tempDir.toFile());
         java.nio.file.Files.writeString(tempDir.resolve("gui.yml"),

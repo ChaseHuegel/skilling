@@ -22,14 +22,31 @@ public final class ReloadHandler {
     private final Skilling plugin;
     private final StagingManager stagingManager;
     private final LockdownManager lockdownManager;
+    private final Runnable skillIndexInvalidator;
+    /** Single-flight guard: concurrent reloads must not interleave the lockdown sequence. */
+    private final java.util.concurrent.atomic.AtomicBoolean reloadInProgress = new java.util.concurrent.atomic.AtomicBoolean(false);
 
     public ReloadHandler(Skilling plugin, StagingManager stagingManager, LockdownManager lockdownManager) {
+        this(plugin, stagingManager, lockdownManager, () -> {});
+    }
+
+    public ReloadHandler(Skilling plugin, StagingManager stagingManager, LockdownManager lockdownManager,
+                         Runnable skillIndexInvalidator) {
         this.plugin = plugin;
         this.stagingManager = stagingManager;
         this.lockdownManager = lockdownManager;
+        this.skillIndexInvalidator = skillIndexInvalidator;
     }
 
     public void reload(Context ctx) {
+        if (!reloadInProgress.compareAndSet(false, true)) {
+            ctx.status(409).json(Map.of(
+                "success", false,
+                "message", "A reload is already in progress",
+                "errors", List.of("Concurrent reload rejected")
+            ));
+            return;
+        }
         try {
             List<String> errors = new ArrayList<>();
 
@@ -48,10 +65,13 @@ public final class ReloadHandler {
             // A mid-apply copy failure throws here, leaving staging intact for retry.
             List<String> applied = stagingManager.applyAndBackup();
             if (applied.isEmpty() && stagingManager.hasPendingChanges()) {
-                ctx.status(500).json(Map.of(
+                // applyAndBackup returns empty only when its locked re-check found a
+                // conflict that appeared after the initial check; that is a client
+                // conflict (409), not a server error (500).
+                ctx.status(409).json(Map.of(
                     "success", false,
-                    "message", "Failed to apply staged changes",
-                    "errors", List.of("No files were applied")
+                    "message", "Conflict detected: live files modified since staging",
+                    "errors", stagingManager.checkConflicts()
                 ));
                 return;
             }
@@ -84,20 +104,29 @@ public final class ReloadHandler {
                 // succeeded, so an edit staged while the apply/reload window was
                 // in flight is preserved instead of being wiped by a full clear.
                 stagingManager.clearApplied(applied);
+                // The live skills changed; drop the id→path cache so lookups
+                // re-resolve against the new tree.
+                skillIndexInvalidator.run();
                 ctx.json(Map.of(
                     "success", true,
                     "message", "Changes applied. Plugin reloaded successfully.",
                     "errors", List.of()
                 ));
             } else {
+                // The live files were already copied into place; restore them from
+                // the apply's backup so the engine's old state and the live tree
+                // stay consistent, then preserve staging for a retry.
+                stagingManager.restoreApplied(applied);
                 ctx.status(500).json(Map.of(
                     "success", false,
-                    "message", "Reload completed with errors; staging preserved for retry",
+                    "message", "Reload completed with errors; live files restored and staging preserved for retry",
                     "errors", errors
                 ));
             }
         } catch (Exception e) {
             WebError.internal(ctx, LOGGER, "Reload failed", e);
+        } finally {
+            reloadInProgress.set(false);
         }
     }
 }

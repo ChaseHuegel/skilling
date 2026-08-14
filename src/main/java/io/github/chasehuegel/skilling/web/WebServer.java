@@ -70,7 +70,8 @@ public final class WebServer {
             var tagHandler = new TagHandler(stagingManager,
                     new File(new File(plugin.getDataFolder(), "tags"), "base.yml"));
             var configHandler = new ConfigHandler(stagingManager, new File(plugin.getDataFolder(), "config.yml"));
-            var reloadHandler = new ReloadHandler(plugin, stagingManager, lockdownManager);
+            var reloadHandler = new ReloadHandler(plugin, stagingManager, lockdownManager,
+                    skillHandler::invalidateSkillIndex);
 
             routes.before(ctx -> {
                 ctx.res().setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");

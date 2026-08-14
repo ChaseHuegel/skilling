@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -204,5 +205,34 @@ class StagingManagerConcurrencyTest {
 
         File marker = new File(sm.getStagingDir(), "deleted_skills/blasting.yml.deleted");
         assertTrue(!marker.exists(), "a consumed deletion marker must be dropped");
+    }
+
+    @Test
+    void restoreAppliedRollsBackLiveFilesFromTheBackup() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        File liveTags = new File(new File(tempDir.toFile(), "tags"), "base.yml");
+        Files.createDirectories(liveTags.toPath().getParent());
+        Files.writeString(liveTags.toPath(), "debug_logging: false\n");
+
+        sm.stageTagsFile("debug_logging: true\n");
+        List<String> applied = sm.applyAndBackup();
+        assertEquals("debug_logging: true\n", Files.readString(liveTags.toPath()));
+
+        sm.restoreApplied(applied);
+        assertEquals("debug_logging: false\n", Files.readString(liveTags.toPath()),
+                "a failed reload must restore the live file from the apply backup");
+    }
+
+    @Test
+    void restoreAppliedRemovesFilesThatDidNotExistBeforeApply() throws Exception {
+        StagingManager sm = new StagingManager(tempDir.toFile());
+        File skillsDir = new File(tempDir.toFile(), "skills");
+        sm.stageSkillFile("mining", "id: mining\nmax_level: 100\n");
+        List<String> applied = sm.applyAndBackup();
+        assertTrue(new File(skillsDir, "mining.yml").exists());
+
+        sm.restoreApplied(applied);
+        assertFalse(new File(skillsDir, "mining.yml").exists(),
+                "a file that did not exist before apply must be removed on rollback");
     }
 }

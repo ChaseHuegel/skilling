@@ -30,7 +30,7 @@
 - [x] [ISSUE-296](ISSUE-296.md) - Engine minor fixes: block metadata, event ordering, and mechanic edge cases
 - [x] [ISSUE-297](ISSUE-297.md) - Database/profile minor fixes: leaks, shutdown ordering, and silent data-loss edges
 - [x] [ISSUE-298](ISSUE-298.md) - Web backend security hardening: origin checks, auth timing, and resource bounds
-- [ ] [ISSUE-299](ISSUE-299.md) - Web GUI behavior fixes: reload rollback, staged reads, performance, and serialization
+- [x] [ISSUE-299](ISSUE-299.md) - Web GUI behavior fixes: reload rollback, staged reads, performance, and serialization
 
 ### Improvements
 - [x] [ISSUE-295](ISSUE-295.md) - Plugin version is hardcoded to `1.0-SNAPSHOT`; tagged releases never report the tag version

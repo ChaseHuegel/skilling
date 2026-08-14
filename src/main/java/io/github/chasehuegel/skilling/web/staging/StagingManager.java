@@ -37,6 +37,7 @@ public final class StagingManager {
     private final File configFile;
     private final File tagsFile;
     private final File guiFile;
+    private volatile File lastBackupDir;
 
     public StagingManager(File dataFolder) {
         this.stagingDir = new File(dataFolder, ".web_staging");
@@ -67,6 +68,24 @@ public final class StagingManager {
      */
     public File stagedGuiFile() {
         return new File(stagingDir, "gui.yml");
+    }
+
+    /**
+     * The staged config.yml file, if a config edit is pending.
+     *
+     * @return the staged config.yml file (may not exist)
+     */
+    public File stagedConfigFile() {
+        return new File(stagingDir, "config.yml");
+    }
+
+    /**
+     * The staged tags/base.yml file, if a tags edit is pending.
+     *
+     * @return the staged tags/base.yml file (may not exist)
+     */
+    public File stagedTagsFile() {
+        return new File(new File(stagingDir, "tags"), "base.yml");
     }
 
     public boolean hasPendingChanges() {
@@ -307,6 +326,7 @@ public final class StagingManager {
                 File backupDir = new File(stagingDir,
                         "backup/" + System.nanoTime() + "-" + UUID.randomUUID());
                 backupDir.mkdirs();
+                lastBackupDir = backupDir;
 
                 // Process deletions before applying new files
                 File deletedSkillsDir = new File(stagingDir, "deleted_skills");
@@ -378,6 +398,45 @@ public final class StagingManager {
             // modification. Genuine post-staging edits still conflict.
             writeStatus(status().files());
             return applied;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Rolls back the live files that were just applied, restoring them from the
+     * latest apply's backup directory (or deleting them when they did not exist
+     * before the apply). Used when the reload rebuild fails, so the live tree
+     * returns to its pre-apply state while staging is preserved for retry.
+     *
+     * @param applied the {@code applyAndBackup()} applied-file list
+     */
+    public void restoreApplied(List<String> applied) {
+        lock.lock();
+        try {
+            File backupDir = lastBackupDir;
+            if (backupDir == null || !backupDir.isDirectory()) return;
+            for (String path : applied) {
+                File live = resolveLiveFile(path);
+                if (live == null) continue;
+                File backup = new File(backupDir, live.getName());
+                if (backup.exists() && backup.isFile()) {
+                    try {
+                        atomicCopy(backup, live);
+                        LOGGER.info("Restored live file from backup: " + path);
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Failed to restore live file " + path + " from backup", e);
+                    }
+                } else if (live.exists()) {
+                    // No backup means the file did not exist before the apply; delete it.
+                    if (live.delete()) {
+                        LOGGER.info("Removed newly-applied live file: " + path);
+                    }
+                }
+            }
+            // Re-snapshot the restored files so a retry apply does not report them
+            // as external modifications.
+            writeStatus(status().files());
         } finally {
             lock.unlock();
         }

@@ -27,9 +27,21 @@ public final class ConfigHandler {
         this.configFile = configFile;
     }
 
+    /**
+     * The config file to read and merge against: the staged file when an edit is
+     * pending, otherwise the live file. A staged file always reflects the full
+     * merged config, so reading it keeps a second save on top of the first.
+     *
+     * @return the staged config file if it exists, else the live one
+     */
+    private File sourceConfigFile() {
+        File staged = stagingManager.stagedConfigFile();
+        return staged != null && staged.exists() ? staged : configFile;
+    }
+
     public void get(Context ctx) {
         try {
-            org.bukkit.configuration.file.YamlConfiguration config = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(configFile);
+            org.bukkit.configuration.file.YamlConfiguration config = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(sourceConfigFile());
             Map<String, Object> result = new LinkedHashMap<>();
 
             Map<String, Object> db = new LinkedHashMap<>();
@@ -181,12 +193,13 @@ public final class ConfigHandler {
             // before anything is written into config.yml.
             validate(body);
 
-            // Merge the editor payload over the LIVE config rather than rebuilding
-            // from a whitelist, so keys the editor does not know about (setup.first_run,
-            // admin-added sections, future keys) survive the round-trip. Only keys
-            // actually present in the body are overwritten; everything else stays.
+            // Merge the editor payload over the STAGED config (when one exists)
+            // rather than the live one, so a second save before reload does not
+            // destroy the first pending edit. Keys the editor does not know about
+            // (setup.first_run, admin-added sections, future keys) survive the
+            // round-trip. Only keys actually present in the body are overwritten.
             org.bukkit.configuration.file.YamlConfiguration liveConfig =
-                    org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(configFile);
+                    org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(sourceConfigFile());
 
             Map<String, Object> db = section(body, "database");
             if (db.containsKey("poolSize")) liveConfig.set("database.pool_size", db.get("poolSize"));

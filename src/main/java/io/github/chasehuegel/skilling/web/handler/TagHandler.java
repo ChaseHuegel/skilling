@@ -29,12 +29,24 @@ public final class TagHandler {
         this.tagsFile = tagsFile;
     }
 
+    /**
+     * The tags file to read: the staged file when an edit is pending, otherwise
+     * the live file, so a second save before reload reflects the pending edit.
+     *
+     * @return the staged tags/base.yml if it exists, else the live one
+     */
+    private File sourceTagsFile() {
+        File staged = stagingManager.stagedTagsFile();
+        return staged != null && staged.exists() ? staged : tagsFile;
+    }
+
     public void get(Context ctx) {
         try {
             Map<String, List<String>> tags = new LinkedHashMap<>();
             Map<String, List<String>> entityTags = new LinkedHashMap<>();
-            if (tagsFile.exists()) {
-                String content = Files.readString(tagsFile.toPath(), StandardCharsets.UTF_8);
+            File source = sourceTagsFile();
+            if (source.exists()) {
+                String content = Files.readString(source.toPath(), StandardCharsets.UTF_8);
                 var yaml = new org.yaml.snakeyaml.Yaml();
                 Map<String, Object> raw = yaml.load(content);
                 if (raw != null) {
