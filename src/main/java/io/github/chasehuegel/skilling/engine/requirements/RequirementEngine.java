@@ -254,6 +254,23 @@ public final class RequirementEngine {
         };
     }
 
+    /**
+     * Returns whether a requirement {@code slot} value is a known slot name.
+     * The event path resolves slots lazily; validating at load (SkillManager)
+     * rejects a typo before it can throw mid-dispatch.
+     *
+     * @param slot the raw slot string from YAML
+     * @return true when the slot is a known name
+     */
+    public static boolean isKnownSlot(String slot) {
+        if (slot == null || slot.isBlank()) return false;
+        return switch (slot.toUpperCase()) {
+            case "HAND", "ANY", "ALL", "MAIN_HAND", "OFF_HAND", "HEAD", "HELMET",
+                 "CHEST", "LEGS", "FEET", "BOOTS" -> true;
+            default -> false;
+        };
+    }
+
     private long getRemainingCooldown(Player player, String abilityId) {
         var abilityCooldowns = cooldowns.get(player.getUniqueId().toString());
         if (abilityCooldowns == null) return 0;

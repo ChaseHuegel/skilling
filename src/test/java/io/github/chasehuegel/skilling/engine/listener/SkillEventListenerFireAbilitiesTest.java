@@ -17,6 +17,7 @@ import io.github.chasehuegel.skilling.engine.registry.MechanicRegistry;
 import io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry;
 import io.github.chasehuegel.skilling.engine.registry.TriggerRegistry;
 import io.github.chasehuegel.skilling.engine.requirements.RequirementEngine;
+import io.github.chasehuegel.skilling.engine.requirements.RequirementResult;
 import io.github.chasehuegel.skilling.engine.tag.CustomTagLoader;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Material;
@@ -385,5 +386,72 @@ class SkillEventListenerFireAbilitiesTest {
         // failure-feedback isBlank() check; the dispatch completes.
         assertEquals(0, CountingMechanic.EXECUTIONS.get(),
                 "the failing requirement must gate the mechanic, not crash the dispatch");
+    }
+
+    @Test
+    void throwingRequirementCheckDoesNotAbortRemainingAbilities() throws IOException {
+        RequirementEngine throwingEngine = mock(RequirementEngine.class);
+        when(throwingEngine.check(any(), eq("good"), any(), anyInt(), anyInt()))
+                .thenReturn(RequirementResult.PASSED);
+        when(throwingEngine.check(any(), eq("bad"), any(), anyInt(), anyInt()))
+                .thenThrow(new IllegalArgumentException("Unknown item requirement slot: ARMS"));
+
+        SkillManager skillManager = io.github.chasehuegel.skilling.TestSkillManager.newWith(
+                reg -> reg.register("test:count", CountingMechanic.class, java.util.List.of()));
+
+        Path skillsDir = tempDir.resolve("skills");
+        Files.createDirectories(skillsDir);
+        Files.writeString(skillsDir.resolve("test.yml"), """
+                id: test_skill
+                max_level: 100
+                display: { name: "Test", color: "GREEN", style: "SOLID" }
+                progression: { curve: "constant", base_xp: 100.0 }
+                xp_sources: []
+                abilities:
+                  - id: bad
+                    display_name: "Bad"
+                    unlock_level: 1
+                    trigger: "block_break"
+                    mechanics:
+                      - { type: "test:count" }
+                  - id: good
+                    display_name: "Good"
+                    unlock_level: 1
+                    trigger: "block_break"
+                    mechanics:
+                      - { type: "test:count" }
+                """);
+        skillManager.loadSkills(skillsDir.toFile());
+
+        DatabaseManager db = mock(DatabaseManager.class);
+        when(db.isInitialized()).thenReturn(false);
+        profileManager = new ProfileManager(db);
+        PlayerProfile profile = profileManager.loadProfile(uuid).join();
+        profile.setXp("test_skill", 10000);
+
+        player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(uuid);
+
+        MechanicRegistry mechReg = new MechanicRegistry();
+        mechReg.register("test:count", CountingMechanic.class, java.util.List.of());
+
+        var tagResolver = new TagResolver(new CustomTagLoader());
+        Skilling plugin = mock(Skilling.class);
+        Server server = mock(Server.class);
+        when(plugin.getServer()).thenReturn(server);
+        when(server.getScheduler()).thenReturn(mock(org.bukkit.scheduler.BukkitScheduler.class));
+        when(plugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("requirement-failure-test"));
+
+        listener = new SkillEventListener(plugin, skillManager, profileManager, tagResolver,
+                throwingEngine, mechReg, new FeedbackDebouncer(500), mock(BossBarPool.class),
+                new StateFilterRegistry());
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+
+        // The bad ability's check failure must be isolated (logged, treated as a
+        // failed ability); the good ability that follows must still fire.
+        assertEquals(1, CountingMechanic.EXECUTIONS.get(),
+                "remaining abilities must still fire when a requirement check throws");
     }
 }

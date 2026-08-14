@@ -591,8 +591,18 @@ public final class SkillEventListener implements Listener {
             // mechanic meant the first mechanic's consume applied the cooldown,
             // blocking every later mechanic, and item costs were deducted per
             // executing mechanic.
-            RequirementResult check = requirementEngine.check(player, ability.id(), ability.requirements(),
-                    skillLevel, ability.unlockLevel());
+            RequirementResult check;
+            try {
+                check = requirementEngine.check(player, ability.id(), ability.requirements(),
+                        skillLevel, ability.unlockLevel());
+            } catch (RuntimeException ex) {
+                // A malformed requirement that slipped past load validation must
+                // not abort the dispatch: log it and treat the ability as failed
+                // so the remaining abilities and XP sources still fire.
+                plugin.getLogger().log(Level.WARNING, "Requirement check failed for ability "
+                        + ability.id() + " in skill " + skill.id(), ex);
+                continue;
+            }
             debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
             if (!check.success()) {
                 if (feedbackDebouncer.tryDebounce(player, ability.id())) {

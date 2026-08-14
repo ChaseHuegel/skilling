@@ -446,4 +446,32 @@ class SkillManagerTest {
                 () -> skillManager.parseSkill(config));
         assertTrue(ex.getMessage().contains("amount"));
     }
+
+    @Test
+    void unknownItemRequirementSlotThrowsAtParse() {
+        var config = minimalSkill();
+        config.set("abilities", java.util.List.of(java.util.Map.of(
+                "id", "a", "unlock_level", 1, "trigger", "block_break",
+                "requirements", java.util.Map.of("items",
+                        java.util.List.of(java.util.Map.of(
+                                "tag", "#c:logs", "slot", "ARMS"))))));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> skillManager.parseSkill(config));
+        assertTrue(ex.getMessage().contains("slot"));
+        assertTrue(ex.getMessage().contains("ARMS"));
+    }
+
+    @Test
+    void knownItemRequirementSlotsStillParse() {
+        for (String slot : java.util.List.of("HAND", "ANY", "ALL", "MAIN_HAND", "OFF_HAND",
+                "HEAD", "HELMET", "CHEST", "LEGS", "FEET", "BOOTS")) {
+            var config = minimalSkill();
+            config.set("abilities", java.util.List.of(java.util.Map.of(
+                    "id", "a", "unlock_level", 1, "trigger", "block_break",
+                    "requirements", java.util.Map.of("items",
+                            java.util.List.of(java.util.Map.of(
+                                    "tag", "#c:logs", "slot", slot))))));
+            skillManager.parseSkill(config);
+        }
+    }
 }
