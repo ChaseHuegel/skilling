@@ -3,7 +3,9 @@
 # ==========================================
 
 database:
-  # Maximum number of connections in the HikariCP pool
+  # SQLite permits exactly one writer, so the pool is always a single
+  # connection (all writes serialize through it). Retained for documentation
+  # only; not read by the engine.
   pool_size: 10
   # Use SQLite Write-Ahead Logging for concurrent reads/writes
   wal_mode: true

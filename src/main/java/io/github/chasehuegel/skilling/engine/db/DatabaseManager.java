@@ -20,12 +20,20 @@ public final class DatabaseManager {
     }
 
     public void initialize(YamlConfiguration config) throws SQLException {
-        int poolSize = config.getInt("database.pool_size", 10);
         boolean walMode = config.getBoolean("database.wal_mode", true);
 
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:sqlite:" + new File(dataFolder, "data.db").getAbsolutePath());
-        hikariConfig.setMaximumPoolSize(poolSize);
+        // busy_timeout is a per-connection pragma in SQLite; the sqlite-jdbc
+        // driver applies it from the URL on every pooled connection. A write that
+        // finds the single writer busy waits up to 5s instead of failing with
+        // "database is locked".
+        hikariConfig.setJdbcUrl("jdbc:sqlite:" + new File(dataFolder, "data.db").getAbsolutePath()
+                + "?busy_timeout=5000");
+        // SQLite permits exactly one writer. A multi-connection pool only adds
+        // lock contention that surfaces as SQLITE_BUSY, so cap it at a single
+        // connection; the write-behind flush, quit flushes, and offline admin
+        // commands serialize on it instead of fighting each other.
+        hikariConfig.setMaximumPoolSize(1);
         // foreign_keys is a per-connection pragma in SQLite, so run it on every
         // pooled connection instead of just the bootstrap one.
         hikariConfig.setConnectionInitSql("PRAGMA foreign_keys = ON;");

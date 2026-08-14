@@ -8,8 +8,8 @@ Global settings for the Skilling engine.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `database.pool_size` | int | `10` | Maximum connections in the HikariCP pool |
-| `database.wal_mode` | bool | `true` | Enable SQLite Write-Ahead Logging for concurrent reads/writes |
+| `database.pool_size` | int | `10` | Retained for compatibility; SQLite permits one writer, so the pool is always a single connection |
+| `database.wal_mode` | bool | `true` | Enable SQLite Write-Ahead Logging for concurrent reads/writes. A 5s `busy_timeout` waits out transient write locks instead of failing with "database is locked" |
 
 ### titles
 
