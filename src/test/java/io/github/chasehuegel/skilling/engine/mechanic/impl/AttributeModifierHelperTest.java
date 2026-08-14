@@ -305,6 +305,44 @@ class AttributeModifierHelperTest {
     }
 
     @Test
+    void zeroDurationProducesNoModifier() {
+        List<AttributeModifier> active = new ArrayList<>();
+        Player player = playerWithRecordingInstance(attribute, active);
+
+        boolean applied = AttributeModifierHelper.applyTransient(player, attribute,
+                UUID.randomUUID(), "test", 1.0, 0);
+
+        assertEquals(false, applied, "a zero-duration buff must be a no-op");
+        assertTrue(active.isEmpty(), "a zero-duration buff must not add a modifier");
+    }
+
+    @Test
+    void negativeDurationProducesNoModifier() {
+        List<AttributeModifier> active = new ArrayList<>();
+        Player player = playerWithRecordingInstance(attribute, active);
+
+        boolean applied = AttributeModifierHelper.applyTransient(player, attribute,
+                UUID.randomUUID(), "test", 1.0, -5);
+
+        assertEquals(false, applied, "a negative-duration buff must be a no-op");
+        assertTrue(active.isEmpty(), "a negative-duration buff must not add a modifier");
+    }
+
+    @Test
+    void repeatedZeroDurationActivationsNeverAccumulateModifiers() {
+        List<AttributeModifier> active = new ArrayList<>();
+        Player player = playerWithRecordingInstance(attribute, active);
+
+        for (int i = 0; i < 5; i++) {
+            AttributeModifierHelper.applyTransient(player, attribute,
+                    UUID.randomUUID(), "test", 1.0, 0);
+        }
+
+        assertTrue(active.isEmpty(),
+                "repeated zero-duration activations must never accumulate modifiers");
+    }
+
+    @Test
     void clearAllStripsModifiersAndClearsTracker() {
         try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
             List<AttributeModifier> active = new ArrayList<>();

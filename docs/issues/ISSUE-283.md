@@ -5,10 +5,10 @@
 - **Agent Role:** You are an expert backend engineer executing this task.
 
 ## Implementation Requirements
-- [ ] Clamp `durationSeconds` to at least 0 and only apply the modifier when `durationSeconds > 0`.
-- [ ] Ensure the removal is scheduled before or atomically with the apply so the modifier can never outlive its intent.
-- [ ] Where feasible, run the per-mechanic parameter validators on parsed (possibly level-scaled) evaluator output, not only on constant parameters.
-- [ ] Add a unit test: a negative and a zero `duration` produce no attribute modifier at all.
+- [x] Clamp `durationSeconds` to at least 0 and only apply the modifier when `durationSeconds > 0`.
+- [x] Ensure the removal is scheduled before or atomically with the apply so the modifier can never outlive its intent.
+- [x] Where feasible, run the per-mechanic parameter validators on parsed (possibly level-scaled) evaluator output, not only on constant parameters.
+- [x] Add a unit test: a negative and a zero `duration` produce no attribute modifier at all.
 
 ## Technical Specifications & Context
 - **Target Files:** `src/main/java/io/github/chasehuegel/skilling/engine/mechanic/impl/AttributeModifierHelper.java:89-104`, `src/main/java/io/github/chasehuegel/skilling/engine/mechanic/impl/ModifyAttributeMechanic.java:50`, `src/main/java/io/github/chasehuegel/skilling/engine/mechanic/impl/MechanicParamValidators.java` (load-time `nonNegative` validation at `SkillManager.java:617-621` only sees constant params).
@@ -16,6 +16,6 @@
 - **Constraints:** Keep the transient-modifier semantics for positive durations unchanged.
 
 ## Verification & Definition of Done
-- [ ] New tests cover negative, zero, and positive durations.
-- [ ] `./gradlew test` and `./gradlew build` pass.
-- [ ] Edge case handled: repeated activations of a zero-duration buff never accumulate modifiers.
+- [x] New tests cover negative, zero, and positive durations.
+- [x] `./gradlew test` and `./gradlew build` pass.
+- [x] Edge case handled: repeated activations of a zero-duration buff never accumulate modifiers.

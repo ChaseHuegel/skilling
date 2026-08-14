@@ -72,6 +72,12 @@ public final class AttributeModifierHelper {
      */
     static boolean applyTransient(Player player, Attribute attribute, UUID uuid, String modifierName,
                                   double amount, int durationSeconds) {
+        // A non-positive duration is a no-op. Applying the modifier before the
+        // scheduled removal would throw on a non-positive delay and leak a
+        // permanent buff; with a fresh random UUID per activation (no stable
+        // uuid configured) repeated activations would stack it without bound.
+        if (durationSeconds <= 0) return false;
+
         AttributeInstance inst = player.getAttribute(attribute);
         if (inst == null) return false;
 
