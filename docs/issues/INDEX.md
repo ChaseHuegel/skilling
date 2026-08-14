@@ -14,7 +14,7 @@
 - [x] [ISSUE-279](ISSUE-279.md) - Shaded JAR omits the SQLite JDBC driver and ships un-remapped service files
 - [x] [ISSUE-280](ISSUE-280.md) - SkillManager raw casts throw ClassCastException instead of fail-fast IllegalArgumentException
 - [x] [ISSUE-281](ISSUE-281.md) - Unknown item-requirement slot throws on the event path and aborts ability dispatch
-- [ ] [ISSUE-282](ISSUE-282.md) - `level_up` XP sources can self-trigger an unbounded XP cascade
+- [x] [ISSUE-282](ISSUE-282.md) - `level_up` XP sources can self-trigger an unbounded XP cascade
 - [ ] [ISSUE-283](ISSUE-283.md) - AttributeModifierHelper applies a modifier before scheduling removal, leaking a permanent stacking buff
 - [ ] [ISSUE-284](ISSUE-284.md) - Cooldowns and failure-feedback debounce keyed by `abilityId` alone collide across skills
 - [ ] [ISSUE-285](ISSUE-285.md) - Offline `/skills addxp` can double-grant XP when a login races the write

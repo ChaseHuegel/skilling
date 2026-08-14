@@ -505,6 +505,24 @@ public final class SkillEventListener implements Listener {
     }
 
     private void dispatch(Player player, Event event, String triggerKey) {
+        dispatch(player, event, triggerKey, new java.util.HashSet<>());
+    }
+
+    /**
+     * Dispatches a trigger to the XP and ability pipeline.
+     *
+     * <p>The {@code levelUpCascade} set carries the skills whose level-up has
+     * already been dispatched in the current event chain. It is threaded through
+     * the recursive {@code level_up} dispatch so a {@code level_up} XP reward that
+     * crosses another threshold cannot re-enter {@code grantXp} for the same skill
+     * forever; each skill's level-up feedback fires at most once per actual level-up.
+     *
+     * @param player          the player to dispatch for
+     * @param event           the triggering event
+     * @param triggerKey      the trigger key (e.g. {@code block_break})
+     * @param levelUpCascade  skills already dispatched for {@code level_up} in this chain
+     */
+    private void dispatch(Player player, Event event, String triggerKey, Set<String> levelUpCascade) {
         if (plugin.isReloading()) return;
         debug("trigger fired: " + triggerKey + " for " + player.getName());
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
@@ -513,11 +531,12 @@ public final class SkillEventListener implements Listener {
             return;
         }
 
-        grantXp(player, profile, event, triggerKey);
+        grantXp(player, profile, event, triggerKey, levelUpCascade);
         fireAbilities(player, profile, event, triggerKey);
     }
 
-    private void grantXp(Player player, PlayerProfile profile, Event event, String triggerKey) {
+    private void grantXp(Player player, PlayerProfile profile, Event event, String triggerKey,
+                         Set<String> levelUpCascade) {
         // A skill's level is computed once per dispatch and shared by its XP
         // sources; level-ups advance it in place so later sources in the same
         // event see the updated level.
@@ -538,6 +557,17 @@ public final class SkillEventListener implements Listener {
                     .getMultiplier(player.getUniqueId());
             long rounded = computeXpGain(reward, scalar, global, player.getUniqueId());
             if (rounded > 0) {
+                if ("level_up".equals(triggerKey)) {
+                    // A level_up reward must advance the skill at most one level
+                    // per level-up event; without this clamp a large reward would
+                    // leap several thresholds in one grant and re-enter grantXp
+                    // through the nested level_up dispatch.
+                    int targetLevel = Math.min(oldLevel + 1, skill.maxLevel());
+                    rounded = clampGrantToLevel(skill, profile.getXp(skill.id()), rounded, targetLevel);
+                    if (rounded <= 0) {
+                        continue;
+                    }
+                }
                 profile.addXp(skill.id(), rounded);
                 int newLevel = skill.getLevelForXp(profile.getXp(skill.id()));
                 showXpBossBar(player, skill, profile);
@@ -551,13 +581,19 @@ public final class SkillEventListener implements Listener {
                     skillLevel = newLevel;
                     levelBySkill.put(skill, newLevel);
                     profile.invalidatePageCache();
-                    var levelUpEvent = new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
-                            player, skill.id(), newLevel);
-                    Bukkit.getPluginManager().callEvent(levelUpEvent);
-                    // Route the Skilling level-up through the trigger pipeline so
-                    // trigger: level_up abilities and XP sources fire.
-                    dispatch(player, levelUpEvent, "level_up");
-                    broadcastLevelUp(player, skill, newLevel);
+                    // Fire level-up feedback exactly once per actual level-up. The
+                    // cascade set makes the nested dispatch a no-op for a skill that
+                    // already leveled up in this chain, so a level_up XP reward that
+                    // crosses another threshold cannot recursively pump the skill.
+                    if (levelUpCascade.add(skill.id())) {
+                        var levelUpEvent = new io.github.chasehuegel.skilling.engine.event.SkillingLevelUpEvent(
+                                player, skill.id(), newLevel);
+                        Bukkit.getPluginManager().callEvent(levelUpEvent);
+                        // Route the Skilling level-up through the trigger pipeline so
+                        // trigger: level_up abilities and XP sources fire.
+                        dispatch(player, levelUpEvent, "level_up", levelUpCascade);
+                        broadcastLevelUp(player, skill, newLevel);
+                    }
                 }
                 debug("  [" + skill.id() + "] granted " + rounded + " XP (" + triggerKey
                         + ") base=" + reward + " scalar=" + scalar + " global=" + global
@@ -896,6 +932,35 @@ public final class SkillEventListener implements Listener {
         // Non-finite inputs (NaN/Infinity) must never round to 0 or Long.MAX_VALUE.
         if (!Double.isFinite(xp) || xp <= 0) return 0;
         return Math.round(xp);
+    }
+
+    /**
+     * Clamps an XP grant so the resulting total resolves to at most
+     * {@code targetLevel}. Used for {@code level_up} rewards so a single level-up
+     * event advances a skill by exactly one level, breaking the self-triggering
+     * cascade. Binary-searches the largest total whose level does not exceed the
+     * target via the public {@link SkillDefinition#getLevelForXp} (no access to
+     * the internal threshold table from this package). Runs only on the level_up
+     * path, never on the hot block/item loops.
+     *
+     * @param skill      the skill receiving the grant
+     * @param currentXp  the skill's XP before the grant
+     * @param requested  the raw grant amount
+     * @param targetLevel the maximum level the grant may reach
+     * @return the clamped grant amount (may be 0 or negative)
+     */
+    static long clampGrantToLevel(SkillDefinition skill, long currentXp, long requested, int targetLevel) {
+        long lo = currentXp;
+        long hi = currentXp + requested;
+        while (lo < hi) {
+            long mid = lo + (hi - lo + 1) / 2;
+            if (skill.getLevelForXp(mid) > targetLevel) {
+                hi = mid - 1;
+            } else {
+                lo = mid;
+            }
+        }
+        return lo - currentXp;
     }
 
     /**
