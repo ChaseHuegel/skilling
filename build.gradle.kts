@@ -5,6 +5,8 @@ plugins {
     id("maven-publish")
 }
 
+import java.util.jar.JarFile
+
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
@@ -99,7 +101,18 @@ tasks {
         relocate("io.javalin", "io.github.chasehuegel.skilling.libs.javalin")
         relocate("org.eclipse.jetty", "io.github.chasehuegel.skilling.libs.jetty")
         relocate("org.bstats", "io.github.chasehuegel.skilling.libs.bstats")
-        minimize()
+        // Rewrite META-INF/services/* class names so ServiceLoader discovery
+        // follows the relocated packages instead of pointing at dead paths.
+        mergeServiceFiles()
+        minimize {
+            // The SQLite JDBC driver is reached only through ServiceLoader at
+            // runtime, so minimization cannot prove it reachable. Keep the
+            // whole driver dependency to preserve the JDBC entry point.
+            exclude(dependency("org.xerial:sqlite-jdbc:.*"))
+            // cloud-core discovers parser contributors through ServiceLoader
+            // when a CommandManager is created; keep the extras module intact.
+            exclude(dependency("org.incendo:cloud-minecraft-extras:.*"))
+        }
     }
 
     runServer {
@@ -118,6 +131,26 @@ tasks {
     assemble {
         dependsOn(shadowJar)
     }
+}
+
+val verifyShadedJar = tasks.register("verifyShadedJar") {
+    description = "Verify the shaded JAR keeps the relocated SQLite driver and its ServiceLoader entry"
+    doLast {
+        val jar = tasks.shadowJar.get().archiveFile.get().asFile
+        val tree = zipTree(jar)
+        val requiredClass = "io/github/chasehuegel/skilling/libs/sqlite/JDBC.class"
+        val hasDriverClass = tree.matching { include(requiredClass) }.files.isNotEmpty()
+        val serviceFiles = tree.matching { include("META-INF/services/java.sql.Driver") }.files
+        val serviceText = serviceFiles.singleOrNull()?.readText() ?: ""
+        check(hasDriverClass) { "Shaded JAR is missing the relocated SQLite driver: $requiredClass" }
+        check(serviceText.contains("io.github.chasehuegel.skilling.libs.sqlite.JDBC")) {
+            "Service file META-INF/services/java.sql.Driver does not reference the relocated driver: $serviceText"
+        }
+    }
+}
+
+tasks.named("shadowJar") {
+    finalizedBy(verifyShadedJar)
 }
 
 publishing {
