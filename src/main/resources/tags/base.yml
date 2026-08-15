@@ -242,8 +242,8 @@ custom_tags:
     - "minecraft:pumpkin_seeds"
     - "minecraft:melon_seeds"
     - "minecraft:beetroot_seeds"
-    - "minecraft:raw_cod"
-    - "minecraft:raw_salmon"
+    - "minecraft:cod"
+    - "minecraft:salmon"
     - "minecraft:golden_apple"
     - "minecraft:golden_carrot"
 
