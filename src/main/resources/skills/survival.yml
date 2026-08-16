@@ -1,0 +1,233 @@
+# ==========================================
+# SURVIVAL SKILL
+# ==========================================
+# The wilderness-resilience skill. It grants permanent max hearts as it levels,
+# earns XP from enduring environmental hazards and wilderness activities, and
+# turns a campfire into a portable, lesser beacon: stoking the fire (Sneak +
+# Right-Click with coal, L25) grows into the same gesture granting allies
+# Absorption (L75) and a Speed/Haste/Resistance aura (L100). Beds complete the
+# camping kit (L50 Well Rested).
+#
+# XP loop: endure fire/drowning/suffocation damage, swim, explore new chunks,
+# cook food on campfires, sleep, and craft campfires.
+id: "survival"
+max_level: 100
+display: { name: "Survival", icon: "minecraft:campfire", color: "ORANGE", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+xp_sources:
+  # Enduring the wild. Tanking sources are damage-scaled (R per raw half-heart
+  # of damage taken), mirroring the unarmored/armor skills' convention. burn is
+  # doubled because fire ticks are the frequent environmental hazard.
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "cause:burn" } ]
+    reward: { constant: 14.0 }
+    scaling: damage
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "cause:burn" } ]
+    reward: { constant: 14.0 }
+    scaling: damage
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "cause:drowning" } ]
+    reward: { constant: 18.0 }
+    scaling: damage
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "cause:suffocation" } ]
+    reward: { constant: 18.0 }
+    scaling: damage
+  # Campfire cooking: placing a raw food on a lit campfire to cook.
+  - trigger: "player_interact"
+    filters:
+      - target: "#minecraft:campfires"
+      - tool: "#c:campfire_foods"
+    reward: { constant: 60.0 }
+  # Swimming: sprint-swimming toggles sprint, so sprinting in water is the swim.
+  - trigger: "sprint"
+    filters: [ { state: "is_in_water" } ]
+    reward: { constant: 45.0 }
+  # Exploring: generating a brand-new chunk (chunk_load only fires for isNewChunk).
+  - trigger: "chunk_load"
+    reward: { constant: 50.0 }
+  # Sleeping: passing the night in a bed.
+  - trigger: "sleep"
+    reward: { constant: 80.0 }
+  # Camping kit: crafting a campfire or soul campfire.
+  - trigger: "craft_item"
+    filters: [ { target: "#c:campfires" } ]
+    reward: { constant: 60.0 }
+abilities:
+  # -- FOUNDATIONAL (L1): the primary scalar. Persistent max hearts.
+  - id: "wildborn"
+    display_name: "Wildborn"
+    unlock_level: 1
+    trigger: "level_up"
+    display:
+      lore:
+        # amount is in half-hearts (the max_health attribute unit): +25 at
+        # level 100 is +12.5 hearts on top of the vanilla 10.
+        - "&7Wildborn vitality: +&a{amount}&7 max health."
+    mechanics:
+      - type: "core:persistent_attribute"
+        parameters:
+          attribute: { constant: "minecraft:max_health" }
+          amount: { linear: { base: 0.0, step: 0.25, max: 25.0 } }
+          uuid: { constant: "7f1c6e2a-9b4d-4a6f-b8e2-3d5a0c1f9e77" }
+    feedback: { notify: { action_bar: false } }
+
+  # -- QoL PASSIVE (L15): chance to ignore environmental tick damage. Three
+  # mechanics, one per cause, sharing the same chance so the lore value is exact.
+  - id: "endure"
+    display_name: "Endure"
+    unlock_level: 15
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7Ignore &a{chance}%&7 of fire, drowning, and suffocation tick damage." ] }
+    mechanics:
+      - type: "core:cancel_damage"
+        filters: [ { state: "cause:burn" } ]
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+      - type: "core:cancel_damage"
+        filters: [ { state: "cause:drowning" } ]
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+      - type: "core:cancel_damage"
+        filters: [ { state: "cause:suffocation" } ]
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+    feedback: { notify: { action_bar: false } }
+
+  # -- PRIMARY ABILITY (L25): the stoke. Sneak + Right-Click a lit campfire
+  # with coal to spend the fuel and warm nearby allies.
+  - id: "stoke"
+    display_name: "Stoke"
+    unlock_level: 25
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Stoke a lit campfire: nearby players & pets gain &a{duration}s&7 of Regeneration (radius &a{radius}&7)."
+        - "&7Costs 1 coal + 1 hunger."
+        - "&8Requires: Sneaking, coal in hand, lit campfire, 20s cooldown, 3+ hunger."
+    requirements:
+      cooldown: { linear: { base: 20.0, step: -0.1, min: 10.0 } }
+      state: [ "is_sneaking" ]
+      items:
+        - action: "possession"
+          tag: "minecraft:coal"
+          slot: "MAIN_HAND"
+        - action: "cost"
+          tag: "minecraft:coal"
+          amount: 1
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eStoke cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires coal to stoke the campfire!" }
+      exhaustion: { action_bar: "&cToo exhausted to stoke the fire!" }
+    mechanics:
+      - type: "core:field_aura"
+        filters: [ { target: "#minecraft:campfires" } ]
+        parameters:
+          effect: { constant: "minecraft:regeneration" }
+          radius: { linear: { base: 4.0, step: 0.08, max: 10.0 } }
+          duration: { linear: { base: 8.0, step: 0.1, max: 15.0 } }
+          amplifier: { constant: 0.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&6✦ Stoke! The fire roars to life. ✦" }
+      particles:
+        - type: "minecraft:campfire_cosy_smoke"
+          count: 24
+          speed: 0.2
+          target: "target"
+      sounds:
+        - type: "minecraft:block.fire.ambient"
+          volume: 0.6
+          pitch: 1.5
+          target: "self"
+
+  # -- MAJOR PASSIVE (L50): beds complete the camping kit. Passing the night
+  # grants golden hearts for the day and a short waking regeneration.
+  - id: "well_rested"
+    display_name: "Well Rested"
+    unlock_level: 50
+    trigger: "sleep"
+    display:
+      lore:
+        - "&7Sleeping passes the night: &a{duration}s&7 of Absorption & a short burst of Regeneration on waking."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect: { constant: "minecraft:absorption" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 120.0, step: 7.2, max: 480.0 } }
+          amplifier: { linear: { base: 0.0, step: 0.02, max: 1.0 } }
+      - type: "core:field_aura"
+        parameters:
+          effect: { constant: "minecraft:regeneration" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 3.0, step: 0.04, max: 5.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+
+  # -- SYNERGY PASSIVE (L75): the stoke grows. Tending the fire now also wraps
+  # nearby allies in Absorption. Rides the same Sneak + Right-Click gesture as
+  # Stoke (no extra fuel cost); the shared cooldown keeps the two in sync.
+  - id: "kindling"
+    display_name: "Kindling"
+    unlock_level: 75
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Tending a lit campfire grants nearby players & pets &a{duration}s&7 of Absorption (radius &a{radius}&7)."
+        - "&8Requires: Sneaking, lit campfire, 20s cooldown."
+    requirements:
+      cooldown: { linear: { base: 20.0, step: -0.1, min: 10.0 } }
+      state: [ "is_sneaking" ]
+    on_failure:
+      cooldown: { action_bar: "&eKindling cooling down: {time}s" }
+    mechanics:
+      - type: "core:field_aura"
+        filters: [ { target: "#minecraft:campfires" } ]
+        parameters:
+          effect: { constant: "minecraft:absorption" }
+          radius: { linear: { base: 6.0, step: 0.24, max: 12.0 } }
+          duration: { linear: { base: 20.0, step: 0.8, max: 40.0 } }
+          amplifier: { linear: { base: 0.0, step: 0.04, max: 1.0 } }
+    feedback: { notify: { action_bar: false } }
+
+  # -- MASTERY CAPSTONE (L100): the lesser beacon. Tending the fire radiates
+  # Speed, Haste, and Resistance to nearby players & pets. Rides the same
+  # gesture as Stoke, with the synced cooldown.
+  - id: "lesser_beacon"
+    display_name: "Lesser Beacon"
+    unlock_level: 100
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Tending a lit campfire radiates &a{duration}s&7 of Speed, Haste & Resistance (radius &a{radius}&7)."
+        - "&8Requires: Sneaking, lit campfire, 20s cooldown."
+    requirements:
+      cooldown: { linear: { base: 20.0, step: -0.1, min: 10.0 } }
+      state: [ "is_sneaking" ]
+    on_failure:
+      cooldown: { action_bar: "&eLesser Beacon cooling down: {time}s" }
+    mechanics:
+      - type: "core:field_aura"
+        filters: [ { target: "#minecraft:campfires" } ]
+        parameters:
+          effect: { constant: "minecraft:speed" }
+          radius: { linear: { base: 8.0, step: 0.32, max: 16.0 } }
+          duration: { linear: { base: 15.0, step: 0.6, max: 30.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { target: "#minecraft:campfires" } ]
+        parameters:
+          effect: { constant: "minecraft:haste" }
+          radius: { linear: { base: 8.0, step: 0.32, max: 16.0 } }
+          duration: { linear: { base: 15.0, step: 0.6, max: 30.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { target: "#minecraft:campfires" } ]
+        parameters:
+          effect: { constant: "minecraft:resistance" }
+          radius: { linear: { base: 8.0, step: 0.32, max: 16.0 } }
+          duration: { linear: { base: 15.0, step: 0.6, max: 30.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }

@@ -422,6 +422,71 @@ abilities:
     feedback: { notify: { action_bar: false } }
 ```
 
+**Persistent attributes (max hearts and similar):** to grow a player's max
+hearts (or any attribute) as the skill levels, bind a `core:persistent_attribute`
+mechanic to the `level_up` trigger. The engine re-evaluates the level-scaled
+`amount` at the player's current level on join, reload, online `setlevel`, and
+`reset`, and strips the bonus when the level drops below `unlock_level`. The
+`uuid` must be a stable constant so re-applies replace the modifier instead of
+stacking. `minecraft:max_health` is in half-hearts: `20.0` is the vanilla 10
+hearts, so `amount: 25.0` at level 100 is an extra 12.5 hearts.
+
+```yaml
+abilities:
+  - id: "wildborn"
+    display_name: "Wildborn"
+    unlock_level: 1
+    trigger: "level_up"                  # Re-evaluated on every level change
+    display:
+      lore: [ "&7Wildborn vitality: +&a{amount}&7 max health." ]
+    mechanics:
+      - type: "core:persistent_attribute"
+        parameters:
+          attribute: { constant: "minecraft:max_health" }
+          amount: { linear: { base: 0.0, step: 0.25, max: 25.0 } }
+          uuid: { constant: "7f1c6e2a-9b4d-4a6f-b8e2-3d5a0c1f9e77" }
+    feedback: { notify: { action_bar: false } }
+```
+
+**Environmental damage:** bind XP sources and abilities to specific damage
+causes with the `cause` state filter on the `entity_damage_taken` trigger.
+`burn` matches fire, fire ticks, and lava; `fire`, `lava`, `drowning`,
+`suffocation`, `cactus`, and `starvation` each match their single cause. The
+filter fails closed on any other event, so a `cause` reference is only
+meaningful on `entity_damage_taken`. Damage-scaled rewards use
+`scaling: damage`.
+
+```yaml
+xp_sources:
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "cause:burn" } ]
+    reward: { constant: 14.0 }
+    scaling: damage
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "cause:drowning" } ]
+    reward: { constant: 18.0 }
+    scaling: damage
+
+abilities:
+  - id: "endure"
+    display_name: "Endure"
+    unlock_level: 15
+    trigger: "entity_damage_taken"
+    mechanics:
+      - type: "core:cancel_damage"
+        filters: [ { state: "cause:burn" } ]
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+```
+
+**Exploration and camping triggers:** the `chunk_load` trigger fires when a
+player explores freshly generated terrain (`isNewChunk()`), `sleep` fires when a
+player passes the night, and `sprint` combined with the `is_in_water` state
+filter fires when a player starts swimming. These pair with campfire-themed
+XP sources: `player_interact` on `#minecraft:campfires` with a
+`#c:campfire_foods` tool places food to cook, and `craft_item` filtered on
+`#c:campfires` rewards crafting campfires.
+
 **Ability lore convention:** any ability with a `requirements:` block must surface
 its costs and conditions in its lore so players see them before using the ability.
 A `&7Costs` line lists what the ability consumes (exhaustion hunger, `cost` items).

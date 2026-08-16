@@ -150,6 +150,8 @@ are retroactive:
 * **On player join** (`PlayerListener`), after the profile loads.
 * **After `/skills reload`** (`LockdownManager` invalidate phase), against the
   freshly rebuilt skill set.
+* **After online `/skills setlevel` and `/skills reset`** (`SkillsCommand`), so
+  an in-session level change re-syncs persistent effects immediately.
 
 Reconciliation runs for each `level_up`-triggered ability whose owning-skill
 level meets `unlock_level`, executing only `UnlockMechanic` entries with
@@ -157,6 +159,14 @@ level meets `unlock_level`, executing only `UnlockMechanic` entries with
 abilities never fire outside their event dispatch. This covers players who
 passed the milestone before the config existed or whose level was set while
 offline.
+
+Persistent attribute mechanics (`core:persistent_attribute`) are the
+level-scaled counterpart to the binary unlock: they grant a scaling attribute
+modifier that is re-evaluated at the player's current level. Before re-applying
+the active set, reconciliation strips every plugin-owned persistent modifier
+(marker key `skilling:persistent_*`) from the player, so a de-level, a reset,
+or a removed/renamed skill recomputes from scratch instead of leaking stale
+bonus attributes (e.g. extra max hearts).
 
 ## 5. User Interface Architecture
 

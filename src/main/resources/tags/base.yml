@@ -257,6 +257,27 @@ custom_tags:
     - "minecraft:cooked_salmon"
     - "minecraft:baked_potato"
 
+  # Raw foods that cook on a campfire (the vanilla campfire recipes). Used by
+  # the survival skill's campfire-cooking XP source, which rewards placing the
+  # item on a lit campfire.
+  campfire_foods:
+    - "minecraft:beef"
+    - "minecraft:chicken"
+    - "minecraft:porkchop"
+    - "minecraft:mutton"
+    - "minecraft:rabbit"
+    - "minecraft:cod"
+    - "minecraft:salmon"
+    - "minecraft:potato"
+    - "minecraft:kelp"
+
+  # Campfire blocks in item form, for craft_item target filters. The vanilla
+  # #minecraft:campfires tag is a block tag; this item-form tag is unambiguous
+  # when matching a crafted recipe result.
+  campfires:
+    - "minecraft:campfire"
+    - "minecraft:soul_campfire"
+
   potions:
     - "minecraft:potion"
     - "minecraft:splash_potion"

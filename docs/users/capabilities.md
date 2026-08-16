@@ -780,6 +780,51 @@ abilities:
 **Event:** `level_up` (the milestone moment). Join and `/skills reload` also
 reconcile unlock mechanics for players already past the milestone.
 
+### core:persistent_attribute
+
+Permanently adjusts a player attribute (for example `minecraft:max_health`)
+by a level-scaled amount, replacing any prior modifier with the same stable
+UUID instead of stacking. This is the mechanic behind skills that grow a
+player's max hearts or other persistent attributes as the skill levels.
+
+The modifier is transient: it is never written to the player's NBT, so
+removing the plugin (or restarting without it) returns the player's
+attributes to vanilla values. Because the mechanic implements
+`UnlockMechanic`, the engine re-runs it on player join, after
+`/skills reload`, and after an online `/skills setlevel` or `/skills reset`,
+evaluating `amount` at the player's current level. Re-running is idempotent
+per amount, and a level that drops below the ability's `unlock_level`
+strips the bonus, so a de-level or reset cannot leave stale extra hearts.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `attribute` | string | none (required) | Namespaced attribute key (e.g., `minecraft:max_health`, `minecraft:max_absorption`, `minecraft:armor_toughness`) |
+| `amount` | double | `0` | Additive modifier amount (evaluated at the current level). Non-positive removes the modifier |
+| `uuid` | string | none (required) | Stable modifier UUID constant. Repeated executions with the same UUID refresh, never stack |
+
+**YAML usage:**
+
+```yaml
+abilities:
+  - id: wildborn
+    display_name: "Wildborn"
+    unlock_level: 1
+    trigger: "level_up"
+    mechanics:
+      - type: "core:persistent_attribute"
+        parameters:
+          attribute: { constant: "minecraft:max_health" }
+          amount: { linear: { base: 0.0, step: 0.25, max: 25.0 } }
+          uuid: { constant: "7f1c6e2a-9b4d-4a6f-b8e2-3d5a0c1f9e77" }
+    feedback: { notify: { action_bar: false } }
+```
+
+**Event:** `level_up` (the level where the ability unlocks). Join, reload,
+online `setlevel`, and `reset` also reconcile persistent attribute mechanics
+for players already past the milestone.
+
 ## Effect & Attribute Parameter Keys
 
 Mechanics that accept an `effect` parameter (`core:apply_status`, `core:aoe_effect`,
@@ -864,6 +909,8 @@ attribute: { constant: "minecraft:movement_speed" }
 | `resurrect` | `EntityResurrectEvent` | Totem of Undying activation |
 | `cure_villager` | `EntityTransformEvent` | A zombie villager finishes converting into a villager (reason `CURED`). Attribution follows the player who initiated the cure (`ZombieVillager.getConversionPlayer()`). A cure that completes after that player logs off grants nothing |
 | `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
+| `chunk_load` | `ChunkLoadEvent` | Exploring freshly generated terrain. Fires only when a chunk is generated for the first time (`isNewChunk()`), routed to nearby players. Loading a chunk from disk does not fire it |
+| `sleep` | `PlayerDeepSleepEvent` | Player sleeps long enough to pass the night or storm. Checking into and back out of a bed does not fire it |
 
 ## Built-In State Filters
 
@@ -891,6 +938,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
 | `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |
 | `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
+| `cause` | `burn`, `fire`, `lava`, `drowning`, `suffocation`, `cactus`, `starvation` | The `EntityDamageEvent` damage cause on the `entity_damage_taken` trigger. `burn` matches fire, fire ticks, and lava. Fails closed on any non-damage event or other cause. Values are validated at load |
 
 The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`
 custom tags (in `tags/base.yml`) reproduce the historical armor tiers as data. No

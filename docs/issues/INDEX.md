@@ -34,7 +34,7 @@
 
 ### Improvements
 - [x] [ISSUE-302](ISSUE-302.md) - Engine pieces for a persistent-attribute Survival skill (persistent_attribute, reconcile hardening, cause filter, chunk_load, sleep)
-- [ ] [ISSUE-303](ISSUE-303.md) - Bundled Survival skill: max hearts, environmental resilience, campfire/bed camping through-line
+- [x] [ISSUE-303](ISSUE-303.md) - Bundled Survival skill: max hearts, environmental resilience, campfire/bed camping through-line
 - [x] [ISSUE-295](ISSUE-295.md) - Plugin version is hardcoded to `1.0-SNAPSHOT`; tagged releases never report the tag version
 - [x] [ISSUE-300](ISSUE-300.md) - Build/CI/frontend hygiene: duplicate tests, E2E artifacts, relocation, and doc drift
 

@@ -205,6 +205,8 @@ skill YAMLs):
 | `#c:holy_blocks` | Beacon, conduit, lanterns, glowstone, gold block, `#minecraft:candles` (Piety) |
 | `#c:crops` | `#minecraft:crops`, sugar cane, melon, pumpkin, cocoa |
 | `#c:foods` | Cooked meats, baked potato (cooking sources) |
+| `#c:campfire_foods` | Raw foods that cook on a campfire: beef, chicken, porkchop, mutton, rabbit, cod, salmon, potato, kelp (survival cooking source) |
+| `#c:campfires` | `minecraft:campfire`, `minecraft:soul_campfire` (item-form, for craft filtering) |
 | `#c:potions` | Potion, splash/lingering potions, honey bottle |
 | `#c:shields` | `minecraft:shield` |
 | `#c:wooden_products` | `#minecraft:planks`, wooden slabs/stairs, crafting table, chest, ladder |

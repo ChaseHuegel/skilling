@@ -235,3 +235,27 @@ abilities:
   #     notify:
   #       action_bar: false          # Silent by default; the recipe-book toast is the feedback
   #       chat: false
+
+  # -- ABILITY 4: Persistent Attribute (Level-Scaled Passive) --
+  # core:persistent_attribute grants a scaling, persistent attribute bonus (e.g.
+  # max hearts) that replaces instead of stacking. Bind it to the "level_up"
+  # trigger so the engine re-evaluates it on join, reload, online setlevel, and
+  # reset at the player's current level; a level below unlock_level strips it.
+  # "amount" is the level-scaled scalar (max_health is in half-hearts: 20 = 10
+  # hearts). "uuid" must be a stable constant so re-applies replace, never stack.
+  # - id: "wildborn"
+  #   display_name: "Wildborn"
+  #   unlock_level: 1
+  #   trigger: "level_up"
+  #   display:
+  #     lore:
+  #       - "&7Wildborn vitality: +&a{amount}&7 max health."
+  #   mechanics:
+  #     - type: "core:persistent_attribute"
+  #       parameters:
+  #         attribute: { constant: "minecraft:max_health" }
+  #         amount: { linear: { base: 0.0, step: 0.25, max: 25.0 } }
+  #         uuid: { constant: "7f1c6e2a-9b4d-4a6f-b8e2-3d5a0c1f9e77" }
+  #   feedback:
+  #     notify:
+  #       action_bar: false          # Silent passive; no per-level-up spam

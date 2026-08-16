@@ -154,7 +154,7 @@ public final class Skilling extends JavaPlugin {
                                       "unarmed.yml", "one_handed.yml", "dual_wield.yml",
                                       "shields.yml", "unarmored.yml", "husbandry.yml",
                                       "throwing.yml", "acrobatics.yml", "piety.yml",
-                                      "bard.yml", "wizardry.yml"};
+                                      "bard.yml", "wizardry.yml", "survival.yml"};
             for (String skill : bundledSkills) {
                 if (!new File(getDataFolder(), "skills/" + skill).exists()) {
                     getLogger().info("Generating default " + skill + "...");

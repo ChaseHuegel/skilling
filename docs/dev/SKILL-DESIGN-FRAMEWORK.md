@@ -73,6 +73,16 @@ $$\text{Value} = (\text{PlayerLevel}) \times \text{PrimaryStep}$$
   them silent (no action-bar/chat spam) since the grant itself (e.g. the
   recipe-book toast) is the feedback. The engine reconciles them on join and
   after reload so players already past the milestone are caught up.
+* **Persistent Attribute Modifiers:** `core:persistent_attribute` is the
+  level-scaled cousin of the persistent unlock: it grants a *scaling* attribute
+  bonus (e.g. max hearts) that is re-evaluated at the player's current level on
+  every reconcile (join, reload, online `setlevel`, `reset`) and on each
+  `level_up`. Because it always recomputes from the current level, a level below
+  the ability's `unlock_level` strips the bonus rather than leaving stale state.
+  It stays inside the sub-scaling model — the `amount` parameter is the dynamic
+  scalar that grows between the unlock level and Level 100 — so it is not an
+  exception to the no-static-milestones rule, but its persistent, attribute-
+  modifying behavior pairs with the persistent-unlock reconcile machinery.
 * **Standard Evaluation Formulas for Configs:**
 * **Linear Sub-Growth:**
 

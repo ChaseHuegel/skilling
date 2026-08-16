@@ -52,7 +52,8 @@ class BundledTagsAndSkillsConsistencyTest {
             "stone_products", "herbs", "heavy_weapons", "light_weapons", "tools",
             "leather_armor", "light_armor", "medium_armor", "heavy_armor",
             "unarmored", "bows", "instruments", "fishing_rods", "holy_blocks",
-            "crops", "raw_crops", "tame_offerings", "foods", "potions", "shields",
+            "crops", "raw_crops", "tame_offerings", "foods", "campfire_foods",
+            "campfires", "potions", "shields",
             "wooden_products", "shovels"
     );
 
