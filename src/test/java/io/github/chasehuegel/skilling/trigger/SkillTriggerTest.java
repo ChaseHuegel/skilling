@@ -6,6 +6,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.BlockBreakTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.BlockPlaceTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.BreedAnimalsTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.BrewPotionTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.ChunkLoadTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.CollectXpTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.ConsumeItemTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.CraftItemTrigger;
@@ -29,6 +30,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.RideHorseTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickAirTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickBlockTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickEntityTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.SleepTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SneakTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SprintTrigger;
 
@@ -58,6 +60,8 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+import io.papermc.paper.event.player.PlayerDeepSleepEvent;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -111,7 +115,9 @@ class SkillTriggerTest {
                     Arguments.of(new RideHorseTrigger(), "ride_horse", VehicleEnterEvent.class),
                     Arguments.of(new CureVillagerTrigger(), "cure_villager", EntityTransformEvent.class),
                     Arguments.of(new SneakTrigger(), "sneak", PlayerToggleSneakEvent.class),
-                    Arguments.of(new SprintTrigger(), "sprint", PlayerToggleSprintEvent.class)
+                    Arguments.of(new SprintTrigger(), "sprint", PlayerToggleSprintEvent.class),
+                    Arguments.of(new ChunkLoadTrigger(), "chunk_load", ChunkLoadEvent.class),
+                    Arguments.of(new SleepTrigger(), "sleep", PlayerDeepSleepEvent.class)
             );
         }
     }

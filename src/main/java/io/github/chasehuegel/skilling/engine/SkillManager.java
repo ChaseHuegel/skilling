@@ -554,6 +554,14 @@ public final class SkillManager {
                         + " state 'biome' value '" + value + "' is not a valid namespaced key", e);
             }
         }
+        if ("cause".equals(key)) {
+            String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
+            if (!io.github.chasehuegel.skilling.engine.requirements.DamageCauseFilter.isValidValue(value)) {
+                throw new IllegalArgumentException(context
+                        + " state 'cause' value '" + value
+                        + "' is not a supported damage cause (burn, fire, lava, drowning, suffocation, cactus, starvation)");
+            }
+        }
         if (colonIdx > 0 && (state.startsWith("equipped_all:") || state.startsWith("equipped_any:"))) {
             validateTagReference(state.substring(colonIdx + 1));
         }

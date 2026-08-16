@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -102,6 +103,17 @@ class SkillEventListenerReconcileUnlocksTest {
                     mechanics:
                       - type: "test:plain"
                     feedback: { notify: { action_bar: false } }
+                  - id: persistent_health
+                    display_name: "Persistent Health"
+                    unlock_level: 50
+                    trigger: "level_up"
+                    mechanics:
+                      - type: "core:persistent_attribute"
+                        parameters:
+                          attribute: { constant: "minecraft:max_health" }
+                          amount: { linear: { base: 0.0, step: 0.25, max: 25.0 } }
+                          uuid: { constant: "3f2b9c4a-1e5d-4a6b-8c7d-9e0f1a2b3c4d" }
+                    feedback: { notify: { action_bar: false } }
                 """);
         Files.writeString(skillsDir.resolve("trigger.yml"), """
                 id: trigger_skill
@@ -134,6 +146,8 @@ class SkillEventListenerReconcileUnlocksTest {
         MechanicRegistry mechReg = new MechanicRegistry();
         mechReg.register("test:unlock", CountingUnlockMechanic.class, List.of("recipe"));
         mechReg.register("test:plain", CountingPlainMechanic.class, List.of());
+        mechReg.register("core:persistent_attribute", io.github.chasehuegel.skilling.engine.mechanic.impl.PersistentAttributeMechanic.class,
+                List.of("attribute", "amount", "uuid"));
 
         listener = new SkillEventListener(mock(io.github.chasehuegel.skilling.Skilling.class),
                 skillManager, profileManager, new TagResolver(new CustomTagLoader()),
@@ -176,5 +190,37 @@ class SkillEventListenerReconcileUnlocksTest {
         listener.reconcileMilestoneUnlocks(player, profile);
 
         assertEquals(1, CountingUnlockMechanic.EXECUTIONS.get());
+    }
+
+    @Test
+    void persistentAttributeScalesToCurrentLevelAndStripsOnDeLevel() {
+        List<org.bukkit.attribute.AttributeModifier> active = new java.util.ArrayList<>();
+        org.bukkit.attribute.AttributeInstance inst = mock(org.bukkit.attribute.AttributeInstance.class);
+        org.mockito.Mockito.doAnswer(inv -> {
+            active.add(inv.getArgument(0));
+            return null;
+        }).when(inst).addTransientModifier(any(org.bukkit.attribute.AttributeModifier.class));
+        org.mockito.Mockito.doAnswer(inv -> {
+            active.removeIf(m -> m.getUniqueId().equals(((org.bukkit.attribute.AttributeModifier) inv.getArgument(0)).getUniqueId()));
+            return null;
+        }).when(inst).removeModifier(any(org.bukkit.attribute.AttributeModifier.class));
+        when(inst.getModifiers()).thenReturn(active);
+        when(player.getAttribute(any())).thenReturn(inst);
+
+        // constant curve: XP 10000 -> level 100, unlock at 50. amount =
+        // 0 + 0.25 * (100 - 50) = 12.5, evaluated at the current level.
+        profile.setXp("test_skill", 10000);
+        listener.reconcileMilestoneUnlocks(player, profile);
+
+        assertEquals(1, active.size());
+        assertEquals(12.5, active.get(0).getAmount(),
+                "reconciliation must evaluate level-scaled params at the player's current level");
+
+        // De-leveling below the unlock must strip the stale modifier and not
+        // re-apply it (constant curve: XP 0 -> level 0 < 50).
+        profile.setXp("test_skill", 0);
+        listener.reconcileMilestoneUnlocks(player, profile);
+
+        assertEquals(0, active.size(), "a de-leveled persistent bonus must be stripped");
     }
 }

@@ -260,6 +260,31 @@ public final class MechanicParamValidators {
     }
 
     /**
+     * Validates a required, parseable UUID parameter (used by persistent-attribute
+     * mechanics so their stable modifier key is fixed at load time). A missing or
+     * malformed value is rejected because it would produce a duplicate stacking
+     * modifier at runtime.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the UUID
+     * @throws IllegalArgumentException if the UUID is missing or malformed
+     */
+    public static void uuid(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key)) {
+            throw new IllegalArgumentException(context + ": missing required parameter '" + key + "'");
+        }
+        Object raw = params.get(key);
+        String value = raw == null ? "" : String.valueOf(raw);
+        try {
+            java.util.UUID.fromString(value);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(context + ": parameter '" + key
+                    + "' must be a valid UUID, got: " + raw, e);
+        }
+    }
+
+    /**
      * Validates a non-negative radius parameter, skipping it when absent.
      *
      * @param context the load context (skill/ability) for error messages

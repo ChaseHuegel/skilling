@@ -284,6 +284,10 @@ public final class SkillsCommand {
             if (actualLevel > oldLevel) {
                 broadcastLevelUp(target, def, actualLevel);
             }
+            // Re-sync persistent abilities (e.g. core:persistent_attribute) against
+            // the new level on both raise and lower, mirroring join/reload
+            // reconciliation so setlevel never leaves a stale attribute bonus.
+            plugin.getSkillEventListener().reconcileMilestoneUnlocks(target, profile);
         } else {
             handleOfflineSetLevel(sender, playerName, skillId, level);
         }
@@ -492,6 +496,9 @@ public final class SkillsCommand {
                 bossBarPool.removeAll(target);
                 sender.sendMessage(render("success", Map.of("message", "Reset all skills for " + playerName + ".")));
             }
+            // A reset drops the player to level 1 in every affected skill, so
+            // strip and re-apply persistent modifiers (e.g. max-hearts bonuses).
+            plugin.getSkillEventListener().reconcileMilestoneUnlocks(target, profile);
         } else {
             handleOfflineReset(sender, playerName, skillId);
         }

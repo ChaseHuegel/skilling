@@ -265,9 +265,26 @@ public final class SkillEventListener implements Listener {
     }
 
     private void dispatchToNearby(Event event, org.bukkit.Location location, String triggerKey) {
+        dispatchToNearby(event, location, triggerKey, 5);
+    }
+
+    /**
+     * Dispatches a trigger to every nearby player within the given radius.
+     *
+     * <p>Used for world events without an owning player (brewing, chunk
+     * generation). The radius default of 5 suits block-scale events; exploration
+     * uses a larger radius because new chunks generate around the player's
+     * view distance rather than at their feet.
+     *
+     * @param event       the triggering event
+     * @param location    the event location
+     * @param triggerKey  the trigger key to dispatch
+     * @param radius      the search radius in blocks
+     */
+    private void dispatchToNearby(Event event, org.bukkit.Location location, String triggerKey, double radius) {
         // BrewEvent.getContents().getLocation() can be null; nothing to do without a world.
         if (location == null || location.getWorld() == null) return;
-        var players = location.getWorld().getNearbyPlayers(location, 5, p -> true);
+        var players = location.getWorld().getNearbyPlayers(location, radius, p -> true);
         for (Player player : players) {
             dispatch(player, event, triggerKey);
         }
@@ -505,6 +522,33 @@ public final class SkillEventListener implements Listener {
         if (event.getEntity() instanceof Player player && event.isGliding()) {
             dispatch(player, event, "elytra_glide");
         }
+    }
+
+    /**
+     * Handles {@link ChunkLoadEvent} and routes it as a {@code chunk_load} trigger
+     * for nearby players when the chunk was generated for the first time, so
+     * exploring uncharted land is the rewarded action rather than merely loading
+     * a chunk from disk.
+     *
+     * @param event the chunk load event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onChunkLoad(org.bukkit.event.world.ChunkLoadEvent event) {
+        if (!event.isNewChunk()) return;
+        org.bukkit.Location center = event.getChunk().getBlock(8, 0, 8).getLocation();
+        dispatchToNearby(event, center, "chunk_load", 16);
+    }
+
+    /**
+     * Handles {@link PlayerDeepSleepEvent} and routes it as a {@code sleep} trigger
+     * when a player passes the night, so only a genuine sleep (not checking into
+     * and back out of a bed) is rewarded.
+     *
+     * @param event the deep sleep event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDeepSleep(io.papermc.paper.event.player.PlayerDeepSleepEvent event) {
+        dispatch(event.getPlayer(), event, "sleep");
     }
 
     private void dispatch(Player player, Event event, String triggerKey) {
@@ -1109,6 +1153,11 @@ public final class SkillEventListener implements Listener {
      * @param profile the player's live profile (XP already hydrated)
      */
     public void reconcileMilestoneUnlocks(Player player, PlayerProfile profile) {
+        // Recompute persistent effects from scratch: strip every leftover
+        // persistent attribute modifier before re-applying the active ones, so a
+        // de-level, a reset, or a removed/renamed skill cannot leave a stale
+        // bonus (e.g. extra max hearts) on the player.
+        io.github.chasehuegel.skilling.engine.mechanic.impl.PersistentAttributeMechanic.stripPersistentModifiers(player);
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
             for (SkillDefinition.Ability ability : skill.abilities()) {

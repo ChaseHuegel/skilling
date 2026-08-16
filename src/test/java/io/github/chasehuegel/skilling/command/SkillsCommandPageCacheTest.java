@@ -87,7 +87,9 @@ class SkillsCommandPageCacheTest {
         player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(uuid);
 
-        command = new SkillsCommand(mock(Skilling.class), skillManager, profileManager,
+        Skilling plugin = mock(Skilling.class);
+        when(plugin.getSkillEventListener()).thenReturn(mock(io.github.chasehuegel.skilling.engine.listener.SkillEventListener.class));
+        command = new SkillsCommand(plugin, skillManager, profileManager,
                 mock(SkillMenuBuilder.class), mock(LockdownManager.class),
                 bossBarPool = new BossBarPool(2, 40));
     }

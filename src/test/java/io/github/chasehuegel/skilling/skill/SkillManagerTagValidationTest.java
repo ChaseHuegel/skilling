@@ -151,4 +151,20 @@ class SkillManagerTagValidationTest {
         var def = manager.parseSkill(skillWithFilterState("player_placed:false"));
         org.junit.jupiter.api.Assertions.assertEquals(1, def.xpSources().size());
     }
+
+    @Test
+    void unknownCauseValueFailsLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> manager.parseSkill(skillWithFilterState("cause:explosion")));
+        assertTrue(ex.getMessage().contains("cause"),
+                "the cause rule must be named: " + ex.getMessage());
+    }
+
+    @Test
+    void knownCauseValuePassesLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        var def = manager.parseSkill(skillWithFilterState("cause:burn"));
+        org.junit.jupiter.api.Assertions.assertEquals(1, def.xpSources().size());
+    }
 }

@@ -438,6 +438,12 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.particle(ctx, p, "particle"));
         mechReg.register("core:unlock_recipe", UnlockRecipeMechanic.class, List.of("recipe"),
                 (ctx, p) -> MechanicParamValidators.recipe(ctx, p, "recipe"));
+        mechReg.register("core:persistent_attribute", PersistentAttributeMechanic.class, List.of("attribute", "amount", "uuid"),
+                (ctx, p) -> {
+                    MechanicParamValidators.attribute(ctx, p, "attribute");
+                    MechanicParamValidators.uuid(ctx, p, "uuid");
+                    MechanicParamValidators.nonNegative(ctx, p, "amount");
+                });
     }
 
     /** Registers the built-in triggers into the given registry. */
@@ -479,6 +485,8 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("resurrect", ResurrectTrigger.class);
         trigReg.register("cure_villager", CureVillagerTrigger.class);
         trigReg.register("elytra_glide", ElytraGlideTrigger.class);
+        trigReg.register("chunk_load", ChunkLoadTrigger.class);
+        trigReg.register("sleep", SleepTrigger.class);
     }
 
     /** Registers the built-in state filters into the given registry. */
@@ -491,6 +499,9 @@ public final class Skilling extends JavaPlugin {
         sf.register("is_on_fire", (p, e, v) -> p.getFireTicks() > 0);
         sf.register("is_riding", (p, e, v) -> p.isInsideVehicle());
         sf.register("is_blocking", (p, e, v) -> p.isBlocking());
+
+        sf.register("cause", (p, e, v) ->
+                io.github.chasehuegel.skilling.engine.requirements.DamageCauseFilter.evaluate(e, v));
 
         sf.register("player_placed", (p, e, v) -> {
             // Value-aware: player_placed:true matches player-placed blocks,

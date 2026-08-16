@@ -277,6 +277,72 @@ class SkillManagerMechanicParamValidationTest {
     }
 
     @Test
+    void persistentAttributeMissingUuidFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:persistent_attribute"
+                        parameters:
+                          attribute: { constant: "minecraft:movement_speed" }
+                          amount: { constant: 5.0 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
+        assertTrue(ex.getMessage().contains("uuid"), ex.getMessage());
+    }
+
+    @Test
+    void persistentAttributeMalformedUuidFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:persistent_attribute"
+                        parameters:
+                          attribute: { constant: "minecraft:movement_speed" }
+                          amount: { constant: 5.0 }
+                          uuid: { constant: "not-a-uuid" }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
+        assertTrue(ex.getMessage().contains("not-a-uuid"), ex.getMessage());
+    }
+
+    @Test
+    void persistentAttributeMissingAttributeFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:persistent_attribute"
+                        parameters:
+                          uuid: { constant: "3f2b9c4a-1e5d-4a6b-8c7d-9e0f1a2b3c4d" }
+                          amount: { constant: 5.0 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
+        assertTrue(ex.getMessage().contains("attribute"), ex.getMessage());
+    }
+
+    @Test
+    void persistentAttributeNegativeConstantAmountFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:persistent_attribute"
+                        parameters:
+                          attribute: { constant: "minecraft:movement_speed" }
+                          uuid: { constant: "3f2b9c4a-1e5d-4a6b-8c7d-9e0f1a2b3c4d" }
+                          amount: { constant: -1.0 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
+        assertTrue(ex.getMessage().contains("amount"), ex.getMessage());
+    }
+
+    @Test
+    void validPersistentAttributeLoads() throws Exception {
+        writeSkill("""
+                      - type: "core:persistent_attribute"
+                        parameters:
+                          attribute: { constant: "minecraft:movement_speed" }
+                          amount: { linear: { base: 0.0, step: 0.25, max: 25.0 } }
+                          uuid: { constant: "3f2b9c4a-1e5d-4a6b-8c7d-9e0f1a2b3c4d" }
+                """);
+        assertDoesNotThrow(() -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
+    }
+
+    @Test
     void invalidOnFailureSoundFailsToLoad() throws Exception {
         writeAbilityWithFeedback("""
                     on_failure:
