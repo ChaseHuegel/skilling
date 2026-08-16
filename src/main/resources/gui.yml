@@ -83,6 +83,7 @@ pages:
       light_armor: 2
       medium_armor: 3
       unarmored: 4
+      survival: 5
 
   mobility:
     title: "&eMobility"
