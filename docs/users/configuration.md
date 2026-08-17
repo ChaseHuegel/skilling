@@ -188,6 +188,7 @@ skill YAMLs):
 | `#c:gems` | `minecraft:diamond`, `minecraft:emerald`, `minecraft:amethyst_shard` |
 | `#c:stone` | `#minecraft:stone_crafting_materials`, `#minecraft:base_stone_overworld`, `#minecraft:base_stone_nether` |
 | `#c:excavatable` | Dirt, grass, gravel, sand, clay, soul sand/soil, podzol, mycelium, rooted dirt |
+| `#c:suspicious_blocks` | `minecraft:suspicious_sand`, `minecraft:suspicious_gravel` (excavation archaeology sources) |
 | `#c:veinminer` | `#c:stone`, `#c:ores` |
 | `#c:stone_products` | Decorative stone blocks, walls, slabs, stairs, glass |
 | `#c:herbs` | `#minecraft:flowers`, `#minecraft:tall_flowers`, sugar cane, cactus, mushrooms, etc. |

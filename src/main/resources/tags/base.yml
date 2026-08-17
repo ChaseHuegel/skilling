@@ -68,6 +68,12 @@ custom_tags:
     - "minecraft:coarse_dirt"
     - "minecraft:rooted_dirt"
 
+  # Archaeology blocks that hold brushable relic items. Used by the excavation
+  # skill's brushing (player_interact) and digging (block_break) XP sources.
+  suspicious_blocks:
+    - "minecraft:suspicious_sand"
+    - "minecraft:suspicious_gravel"
+
   veinminer:
     - "#c:stone"
     - "#c:ores"

@@ -9,6 +9,15 @@ xp_sources:
   - trigger: "craft_item"
     filters: [ { target: "#c:shovels" } ]
     reward: { constant: 34.7 }
+  - trigger: "player_interact"
+    filters: [ { tool: "minecraft:brush" }, { target: "#c:suspicious_blocks" } ]
+    reward: { constant: 120.0 }
+  - trigger: "block_break"
+    filters: [ { target: "#c:suspicious_blocks" }, { state: "player_placed:false" } ]
+    reward: { constant: 40.0 }
+  - trigger: "craft_item"
+    filters: [ { target: "minecraft:decorated_pot" } ]
+    reward: { constant: 60.0 }
 abilities:
   - id: "dig_double"
     display_name: "Dig Double"
