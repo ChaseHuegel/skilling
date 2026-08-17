@@ -5,9 +5,9 @@
 - **Agent Role:** You are an expert content engineer editing bundled skill YAML. Engine trigger `potion_splash` comes from ISSUE-305.
 
 ## Implementation Requirements
-- [ ] Add an Alchemy XP source on the `potion_splash` trigger (~40), covering both splash (non-lingering) and lingering potion throws.
-- [ ] Verify the `potion_splash` trigger fires for a plain splash potion throw (not only lingering). If the trigger does not already cover both, extend ISSUE-305's trigger or add the missing event handler in this ticket.
-- [ ] No new abilities are added to Alchemy.
+- [x] Add an Alchemy XP source on the `potion_splash` trigger (~40), covering both splash (non-lingering) and lingering potion throws.
+- [x] Verify the `potion_splash` trigger fires for a plain splash potion throw (not only lingering). If the trigger does not already cover both, extend ISSUE-305's trigger or add the missing event handler in this ticket.
+- [x] No new abilities are added to Alchemy.
 
 ## Technical Specifications & Context
 - **Target Files:** `src/main/resources/skills/alchemy.yml`.
@@ -15,6 +15,6 @@
 - **Constraints:** Flat, low reward. A large-area splash must not multiply into a big grant.
 
 ## Verification & Definition of Done
-- [ ] Dispatch test covers both `PotionSplashEvent` and `LingeringPotionSplashEvent` under `potion_splash`.
-- [ ] Bundled-skill auto-sweeps pass.
-- [ ] `./gradlew build` and `./gradlew test` pass.
+- [x] Dispatch test covers both `PotionSplashEvent` and `LingeringPotionSplashEvent` under `potion_splash`.
+- [x] Bundled-skill auto-sweeps pass.
+- [x] `./gradlew build` and `./gradlew test` pass.

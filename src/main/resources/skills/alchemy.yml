@@ -11,6 +11,8 @@ xp_sources:
   - trigger: "consume_item"
     filters: [ { target: "#c:potions" } ]
     reward: { constant: 666.7 }
+  - trigger: "potion_splash"
+    reward: { constant: 40.0 }
   # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=667 far exceeds the ~150/action rare
   # ceiling. Brewing cannot be made high-frequency, so this is the accepted residual gap.
 abilities:
