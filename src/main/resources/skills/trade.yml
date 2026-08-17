@@ -1,0 +1,106 @@
+id: "trade"
+max_level: 100
+display: { name: "Trade", icon: "minecraft:emerald", color: "GREEN", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+xp_sources:
+  - trigger: "trade"
+    reward: { constant: 60.0 }
+  - trigger: "barter"
+    reward: { constant: 60.0 }
+abilities:
+  - id: "emerald_eye"
+    display_name: "Emerald Eye"
+    unlock_level: 1
+    trigger: "trade"
+    display: { lore: [ "&7Trades have a &a{chance}%&7 chance to pay a bonus emerald." ] }
+    mechanics:
+      - type: "core:trade_bonus"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.4, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "word_of_mouth"
+    display_name: "Word of Mouth"
+    unlock_level: 15
+    trigger: "trade"
+    display: { lore: [ "&7Trading grants the villager &a{amount}&7 XP so it tiers up faster." ] }
+    mechanics:
+      - type: "core:villager_xp"
+        parameters:
+          amount: { linear: { base: 1.0, step: 0.1, max: 10.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "recruiter"
+    display_name: "Recruiter"
+    unlock_level: 25
+    trigger: "right_click_air"
+    display:
+      lore:
+        - "&7Sneak + Right-Click to summon a jobless villager."
+        - "&7Costs 1 emerald."
+        - "&8Requires: Sneaking, 1 emerald, cooldown, 3+ hunger."
+    requirements:
+      cooldown: { linear: { base: 60.0, step: -0.4, max: 20.0 } }
+      state: [ "is_sneaking" ]
+      items: [ { action: "cost", tag: "minecraft:emerald", amount: 1 } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eRecruiter cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires 1 Emerald!" }
+    mechanics:
+      - type: "core:summon_villager"
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&a✦ Recruiter! ✦" }
+      sounds: [ { type: "minecraft:entity.villager.ambient", volume: 0.6, pitch: 1.2, target: "self" } ]
+  - id: "golden_tongue"
+    display_name: "Golden Tongue"
+    unlock_level: 50
+    trigger: "barter"
+    display: { lore: [ "&7Barter outcomes gain a bonus emerald with &a{chance}%&7 chance." ] }
+    mechanics:
+      - type: "core:barter_luck"
+        parameters:
+          chance: { linear: { base: 20.0, step: 0.5, max: 60.0 } }
+    feedback: { notify: { action_bar: false } }
+  - id: "fresh_stock"
+    display_name: "Fresh Stock"
+    unlock_level: 75
+    trigger: "right_click_entity"
+    display:
+      lore:
+        - "&7Sneak + Right-Click a villager to re-roll its offers."
+        - "&7Costs 1 emerald."
+        - "&8Requires: Sneaking, 1 emerald, cooldown, 3+ hunger."
+    requirements:
+      cooldown: { linear: { base: 120.0, step: -0.8, max: 30.0 } }
+      state: [ "is_sneaking" ]
+      items: [ { action: "cost", tag: "minecraft:emerald", amount: 1 } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eFresh Stock cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires 1 Emerald!" }
+    mechanics:
+      - type: "core:reroll_trades"
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&e✦ Fresh Stock! ✦" }
+      sounds: [ { type: "minecraft:entity.villager.no", volume: 0.6, pitch: 1.5, target: "self" } ]
+  - id: "traveling_merchant"
+    display_name: "Traveling Merchant"
+    unlock_level: 100
+    trigger: "right_click_air"
+    display:
+      lore:
+        - "&7Sneak + Right-Click to summon a wandering trader."
+        - "&7Costs 8 emeralds."
+        - "&8Requires: Sneaking, 8 emeralds, cooldown, 3+ hunger."
+    requirements:
+      cooldown: { linear: { base: 600.0, step: -4.0, max: 300.0 } }
+      state: [ "is_sneaking" ]
+      items: [ { action: "cost", tag: "minecraft:emerald", amount: 8 } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eTraveling Merchant cooling down: {time}s" }
+      missing_item: { action_bar: "&cRequires 8 Emeralds!" }
+    mechanics:
+      - type: "core:summon_wandering_trader"
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&6✦ Traveling Merchant! ✦" }
+      sounds: [ { type: "minecraft:entity.wandering_trader.yes", volume: 0.6, pitch: 1.2, target: "self" } ]

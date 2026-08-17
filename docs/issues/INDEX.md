@@ -10,7 +10,7 @@
 - [x] [ISSUE-309](ISSUE-309.md) - Smithing: smithing-table and mending XP sources
 - [x] [ISSUE-310](ISSUE-310.md) - Alchemy: potion-throw XP sources (splash and lingering)
 - [x] [ISSUE-311](ISSUE-311.md) - Husbandry: honey harvest and sniffer XP sources (honey_level gated)
-- [ ] [ISSUE-312](ISSUE-312.md) - New bundled skill: Trade (draft design, refinement required)
+- [x] [ISSUE-312](ISSUE-312.md) - New bundled skill: Trade (draft design, refinement required)
 - [ ] [ISSUE-313](ISSUE-313.md) - New bundled skill: Exploration
 
 ### Research

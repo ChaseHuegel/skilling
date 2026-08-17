@@ -154,7 +154,8 @@ public final class Skilling extends JavaPlugin {
                                       "unarmed.yml", "one_handed.yml", "dual_wield.yml",
                                       "shields.yml", "unarmored.yml", "husbandry.yml",
                                       "throwing.yml", "acrobatics.yml", "piety.yml",
-                                      "bard.yml", "wizardry.yml", "survival.yml"};
+                                      "bard.yml", "wizardry.yml", "survival.yml",
+                                      "trade.yml"};
             for (String skill : bundledSkills) {
                 if (!new File(getDataFolder(), "skills/" + skill).exists()) {
                     getLogger().info("Generating default " + skill + "...");
@@ -446,6 +447,15 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.uuid(ctx, p, "uuid");
                     MechanicParamValidators.nonNegative(ctx, p, "amount");
                 });
+        mechReg.register("core:trade_bonus", TradeBonusMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:villager_xp", VillagerXpMechanic.class, List.of("amount"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "amount"));
+        mechReg.register("core:summon_villager", SummonVillagerMechanic.class, List.of());
+        mechReg.register("core:barter_luck", BarterLuckMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:reroll_trades", RerollTradesMechanic.class, List.of());
+        mechReg.register("core:summon_wandering_trader", SummonWanderingTraderMechanic.class, List.of());
     }
 
     /** Registers the built-in triggers into the given registry. */

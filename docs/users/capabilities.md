@@ -841,6 +841,74 @@ abilities:
 online `setlevel`, and `reset` also reconcile persistent attribute mechanics
 for players already past the milestone.
 
+### core:trade_bonus
+
+Gives the player a bonus emerald on a completed villager trade, added directly
+to the player's inventory. The merchant recipe result is never changed.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) to pay the bonus emerald |
+
+**Event:** `PlayerTradeEvent` (`trade` trigger)
+
+### core:villager_xp
+
+Grants the traded villager bonus experience on a completed trade, so its offers
+tier up faster than the vanilla trade loop alone. No-op on merchants without a
+villager experience concept (for example a wandering trader).
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `amount` | double | `0` | Bonus experience points added to the villager's total |
+
+**Event:** `PlayerTradeEvent` (`trade` trigger)
+
+### core:summon_villager
+
+Summons a jobless villager (profession `NONE`) at the player's location on a
+right-click. The villager is a normal vanilla entity with no Skilling state.
+
+**Parameters:** None
+
+**Event:** `PlayerInteractEvent` (`right_click_air` or `right_click_block` trigger)
+
+### core:barter_luck
+
+Improves the outcome of a piglin barter by adding a bonus emerald to the
+outcome list with a configurable chance.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) to add the bonus emerald |
+
+**Event:** `PiglinBarterEvent` (`barter` trigger)
+
+### core:reroll_trades
+
+Re-rolls a villager's trade offers when the player right-clicks it, by cycling
+its profession through `NONE` and back. The villager keeps its profession,
+type, and level. A jobless villager is left untouched.
+
+**Parameters:** None
+
+**Event:** `PlayerInteractEntityEvent` (`right_click_entity` trigger)
+
+### core:summon_wandering_trader
+
+Summons a wandering trader at the player's location on a right-click. The
+trader keeps vanilla despawn behavior and carries no Skilling state.
+
+**Parameters:** None
+
+**Event:** `PlayerInteractEvent` (`right_click_air` or `right_click_block` trigger)
+
 ## Effect & Attribute Parameter Keys
 
 Mechanics that accept an `effect` parameter (`core:apply_status`, `core:aoe_effect`,

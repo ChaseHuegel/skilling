@@ -147,6 +147,12 @@ XP. A non-positive result (e.g. a fully-negated hit) grants nothing. Omit
 > anyone present awards XP. Bind a low flat reward to keep a large compost farm
 > from flooding the skill. The `fertilize` trigger fires when a player uses
 > bonemeal on a block; bind `core:area_fertilize` abilities to it.
+>
+> **Trading:** the `trade` trigger fires when a player completes a villager
+> trade, and the `barter` trigger fires when a piglin barters with a player
+> (routed to nearby players). Bind flat rewards to both, and bind the
+> `core:trade_bonus`, `core:villager_xp`, and `core:barter_luck` abilities to
+> them.
 
 ### abilities
 
