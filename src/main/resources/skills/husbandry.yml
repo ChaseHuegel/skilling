@@ -43,28 +43,25 @@ abilities:
           uuid: { constant: "bbe92a19-add1-5ada-b964-a6c1c1961f1f" }
           duration: { constant: 15.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "gentle_hands"
-    display_name: "Gentle Hands"
+  - id: "mob_porter"
+    display_name: "Mob Porter"
     unlock_level: 25
     trigger: "right_click_entity"
     display:
       lore:
-        - "&7Sneak-right-click an untamed mob to tame it: &a{chance}%&7."
-        - "&7Costs 1 tame food + 0.5 hunger."
-        - "&8Requires: Sneaking, holding a tame food, 30s cooldown, 3+ hunger."
+        - "&7Right-Click a portable mob with an empty hand to carry it on your shoulders."
+        - "&7Carry up to &a{max_passengers}&7 mobs at once."
+        - "&8Requires: Empty hand, cooldown."
     requirements:
-      cooldown: 30.0
-      state: [ "is_sneaking" ]
-      items: [ { action: "cost", tag: "#c:tame_offerings", amount: 1, slot: "MAIN_HAND" } ]
-      exhaustion: { amount: 0.5, minimum: 3.0 }
+      cooldown: { linear: { base: 5.0, step: -0.03, max: 2.0 } }
     on_failure:
-      cooldown: { action_bar: "&eGentle Hands cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires a tame food in hand!" }
+      cooldown: { action_bar: "&cMob Porter cooling down: {time}s" }
     mechanics:
-      - type: "core:instant_tame"
+      - type: "core:pick_up_mob"
+        filters: [ { state: "target_type:#c:portable_mobs" } ]
         parameters:
-          chance: { linear: { base: 40.0, step: 0.8, max: 80.0 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&a✦ Gentle Hands! ✦" } }
+          max_passengers: { linear: { base: 1.0, step: 0.04, max: 4.0 } }
+    feedback: { notify: { action_bar: false } }
   - id: "herd_growth"
     display_name: "Herd Growth"
     unlock_level: 50

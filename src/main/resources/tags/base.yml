@@ -343,3 +343,26 @@ entity_tags:
     - "minecraft:drowned"
     - "minecraft:stray"
     - "minecraft:husk"
+
+  # Mobs the husbandry skill's Mob Porter can carry on the player's shoulders.
+  # A permissive, curated default: villagers, farm animals, and neutral pets.
+  # Server owners edit this tag (or add their own target_type filter) to allow
+  # hostile mobs or to restrict what can be picked up.
+  portable_mobs:
+    - "minecraft:villager"
+    - "minecraft:cow"
+    - "minecraft:pig"
+    - "minecraft:sheep"
+    - "minecraft:chicken"
+    - "minecraft:rabbit"
+    - "minecraft:goat"
+    - "minecraft:horse"
+    - "minecraft:donkey"
+    - "minecraft:mule"
+    - "minecraft:cat"
+    - "minecraft:wolf"
+    - "minecraft:fox"
+    - "minecraft:panda"
+    - "minecraft:bee"
+    - "minecraft:axolotl"
+    - "minecraft:armadillo"

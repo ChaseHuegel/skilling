@@ -160,6 +160,19 @@ XP. A non-positive result (e.g. a fully-negated hit) grants nothing. Omit
 > players), the `vault_change` trigger fires when a trial vault changes state,
 > and the `recipe_discover` trigger fires when a player unlocks a recipe. Bind
 > flat rewards to these to build a travel-and-scavenging loop.
+>
+> **Mob carrying:** bind `core:pick_up_mob` to the `right_click_entity` trigger
+> to carry a mob on the player's shoulders with an empty hand, and bind
+> `core:drop_passengers` to `right_click_air` to set it down. Gate which mobs
+> are portable with a `target_type` filter and an entity tag:
+>
+> ```yaml
+> mechanics:
+>   - type: "core:pick_up_mob"
+>     filters: [ { state: "target_type:#c:portable_mobs" } ]
+>     parameters:
+>       max_passengers: { constant: 1 }
+> ```
 
 ### abilities
 

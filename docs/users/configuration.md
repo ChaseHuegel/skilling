@@ -217,6 +217,7 @@ skill YAMLs):
 | Entity tag | Members |
 |---|---|
 | `#c:undead` | `#minecraft:zombies`, `#minecraft:skeletons`, wither skeleton, phantom, zombified piglin, drowned, stray, husk |
+| `#c:portable_mobs` | Villagers, farm animals (cow, pig, sheep, chicken, rabbit, goat, horse, donkey, mule), cats, wolves, foxes, pandas, bees, axolotls, armadillos (husbandry Mob Porter) |
 
 > **Web GUI:** The Tags page edits both `custom_tags` and `entity_tags` in
 > `tags/base.yml`. Each kind is shown in its own section ("Material Tags" and
