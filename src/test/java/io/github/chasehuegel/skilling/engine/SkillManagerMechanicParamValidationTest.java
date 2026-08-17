@@ -126,6 +126,28 @@ class SkillManagerMechanicParamValidationTest {
     }
 
     @Test
+    void negativeAreaFertilizeRadiusFailsToLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:area_fertilize"
+                        parameters:
+                          radius: { constant: -1.0 }
+                """);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
+        assertTrue(ex.getMessage().contains("radius"), ex.getMessage());
+    }
+
+    @Test
+    void validAreaFertilizeRadiusPassesLoad() throws Exception {
+        writeSkill("""
+                      - type: "core:area_fertilize"
+                        parameters:
+                          radius: { constant: 3.0 }
+                """);
+        assertDoesNotThrow(() -> newSkillManager().parseSkill(tempDir.resolve("skills/test.yml").toFile()));
+    }
+
+    @Test
     void missingAttributeFailsToLoad() throws Exception {
         writeSkill("""
                       - type: "core:modify_attribute"

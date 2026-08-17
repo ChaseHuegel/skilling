@@ -563,6 +563,26 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
+     * Handles {@link BlockFertilizeEvent} and routes it as a {@code fertilize}
+     * trigger to the player who used the bonemeal. Nested events raised by
+     * {@code core:area_fertilize} spreading bonemeal are skipped so the spread
+     * cannot re-enter the pipeline and cascade recursively.
+     *
+     * @param event the block fertilize event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFertilize(org.bukkit.event.block.BlockFertilizeEvent event) {
+        if (io.github.chasehuegel.skilling.engine.mechanic.impl.AreaFertilizeMechanic
+                .isFertilizeProcessing(event.getBlock())) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (player != null) {
+            dispatch(player, event, "fertilize");
+        }
+    }
+
+    /**
      * Handles {@link PlayerTradeEvent} and routes it as a {@code trade} trigger.
      *
      * @param event the player trade event
@@ -1218,6 +1238,9 @@ public final class SkillEventListener implements Listener {
                 return ie.getClickedBlock().getType();
             }
             return null;
+        }
+        if (event instanceof org.bukkit.event.block.BlockFertilizeEvent fe) {
+            return fe.getBlock().getType();
         }
         return null;
     }

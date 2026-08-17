@@ -407,6 +407,8 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "yield_chance", 100));
         mechReg.register("core:fishing_loot", FishingLootMechanic.class, List.of("multiplier"));
         mechReg.register("core:area_harvest", AreaHarvestMechanic.class, List.of("radius", "max_blocks"));
+        mechReg.register("core:area_fertilize", AreaFertilizeMechanic.class, List.of("radius"),
+                (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
         mechReg.register("core:auto_replant", AutoReplantMechanic.class, List.of());
         mechReg.register("core:durability_save", DurabilitySaveMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
@@ -488,6 +490,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("chunk_load", ChunkLoadTrigger.class);
         trigReg.register("sleep", SleepTrigger.class);
         trigReg.register("compost", CompostTrigger.class);
+        trigReg.register("fertilize", FertilizeTrigger.class);
         trigReg.register("trade", TradeTrigger.class);
         trigReg.register("barter", BarterTrigger.class);
         trigReg.register("recipe_discover", RecipeDiscoverTrigger.class);

@@ -544,6 +544,22 @@ with the tool breaking at max durability).
 
 **Event:** `BlockBreakEvent`
 
+### core:area_fertilize
+
+When a player uses bonemeal on a block, also grows the matching same-type blocks
+in a radius around it, so one bonemeal feeds a small patch. The radius is
+clamped to 8. Bonemeal remains the required catalyst. The nested grow events
+from the spread do not re-trigger abilities, so the effect cannot cascade
+recursively.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `radius` | double | `1` | Radius in blocks to fertilize (clamped to 8) |
+
+**Event:** `BlockFertilizeEvent` (`fertilize` trigger)
+
 ### core:auto_replant
 
 Automatically replants crops after harvesting.
@@ -912,6 +928,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `chunk_load` | `ChunkLoadEvent` | Exploring freshly generated terrain. Fires only when a chunk is generated for the first time (`isNewChunk()`), routed to nearby players. Loading a chunk from disk does not fire it |
 | `sleep` | `PlayerDeepSleepEvent` | Player sleeps long enough to pass the night or storm. Checking into and back out of a bed does not fire it |
 | `compost` | `CompostItemEvent` | An item is composted into a composter. Routed to nearby players of the composter |
+| `fertilize` | `BlockFertilizeEvent` | A player uses bonemeal on a block. Fires only when a player caused the fertilize. Nested grows from `core:area_fertilize` do not re-fire it |
 | `trade` | `PlayerTradeEvent` | Trading with a villager |
 | `barter` | `PiglinBarterEvent` | A piglin barters with a player. Routed to nearby players of the piglin |
 | `recipe_discover` | `PlayerRecipeDiscoverEvent` | Unlocking a new crafting recipe |

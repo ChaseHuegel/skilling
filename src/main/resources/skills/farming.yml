@@ -9,6 +9,8 @@ xp_sources:
   - trigger: "craft_item"
     filters: [ { target: "minecraft:bread" } ]   # wheat is not a craft result. Bread is the wheat product
     reward: { constant: 24.5 }
+  - trigger: "compost"
+    reward: { constant: 25.0 }
   # crop_grow removed: unbounded free XP source. Replaced by harvest XP only
 abilities:
   - id: "green_thumb"
@@ -56,16 +58,16 @@ abilities:
     feedback:
       notify: { action_bar: true, chat: false, message: "&a✦ Harvest Wave! ✦" }
       sounds: [ { type: "minecraft:item.crop.plant", volume: 0.5, pitch: 1.2, target: "self" } ]
-  - id: "nutrient_rich"
-    display_name: "Nutrient Rich"
+  - id: "compost_bloom"
+    display_name: "Compost Bloom"
     unlock_level: 50
-    trigger: "block_break"
-    display: { lore: [ "&7Crop breaks yield +&a{yield_chance}%&7 bonus crops." ] }
+    trigger: "fertilize"
+    display: { lore: [ "&7Bonemeal grows matching crops in a &a{radius}&7-block radius." ] }
     mechanics:
-      - type: "core:yield_multiplier"
+      - type: "core:area_fertilize"
         filters: [ { target: "#minecraft:crops" } ]
         parameters:
-          yield_chance: { linear: { base: 1.0, step: 0.03, max: 5.0 } }
+          radius: { linear: { base: 1.0, step: 0.02, max: 3.0 } }   # continuous growth 50→100
     feedback: { notify: { action_bar: false } }
   - id: "hearty_meal"
     display_name: "Hearty Meal"

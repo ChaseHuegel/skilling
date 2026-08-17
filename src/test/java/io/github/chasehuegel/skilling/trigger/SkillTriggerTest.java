@@ -20,6 +20,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.EntityDamageTakenTrigg
 import io.github.chasehuegel.skilling.engine.trigger.impl.EntityDamageTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.EntityKillTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FallDamageTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.FertilizeTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FishingTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FurnaceExtractTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LevelUpTrigger;
@@ -50,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.stream.Stream;
 
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
@@ -141,6 +143,7 @@ class SkillTriggerTest {
                     Arguments.of(new ChunkLoadTrigger(), "chunk_load", ChunkLoadEvent.class),
                     Arguments.of(new SleepTrigger(), "sleep", PlayerDeepSleepEvent.class),
                     Arguments.of(new CompostTrigger(), "compost", CompostItemEvent.class),
+                    Arguments.of(new FertilizeTrigger(), "fertilize", BlockFertilizeEvent.class),
                     Arguments.of(new TradeTrigger(), "trade", PlayerTradeEvent.class),
                     Arguments.of(new BarterTrigger(), "barter", PiglinBarterEvent.class),
                     Arguments.of(new RecipeDiscoverTrigger(), "recipe_discover", PlayerRecipeDiscoverEvent.class),

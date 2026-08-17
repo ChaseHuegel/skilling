@@ -142,6 +142,12 @@ A source with `scaling: damage` grants `round(reward × damage × global modifie
 XP. A non-positive result (e.g. a fully-negated hit) grants nothing. Omit
 `scaling` for the default flat reward.
 
+> **Composting:** the `compost` trigger fires when an item is composted into a
+> composter and routes to nearby players of the composter, so a farm run by
+> anyone present awards XP. Bind a low flat reward to keep a large compost farm
+> from flooding the skill. The `fertilize` trigger fires when a player uses
+> bonemeal on a block; bind `core:area_fertilize` abilities to it.
+
 ### abilities
 
 Each entry defines an unlockable ability with mechanics.
