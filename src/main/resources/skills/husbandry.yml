@@ -1,124 +1,186 @@
-id: "husbandry"
+id: husbandry
+display_name: Husbandry
 max_level: 100
-display: { name: "Husbandry", icon: "minecraft:wheat", color: "GREEN", style: "SEGMENTED_10" }
-progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+display:
+  name: Husbandry
+  icon: minecraft:wheat
+  color: GREEN
+  style: SEGMENTED_10
+progression:
+  curve: polynomial
+  base_xp: 50.0
+  exponent: 2.5
 xp_sources:
-  - trigger: "breed_animals"
-    reward: { constant: 256.4 }
-  - trigger: "player_shear"
-    reward: { constant: 256.4 }
-  - trigger: "player_tame"
-    reward: { constant: 256.4 }
-  - trigger: "player_interact"
-    filters: [ { target: "#minecraft:beehives" }, { tool: "minecraft:glass_bottle" }, { state: "honey_level:above:4" } ]
-    reward: { constant: 60.0 }
-  - trigger: "player_interact"
-    filters: [ { target: "#minecraft:beehives" }, { tool: "minecraft:shears" }, { state: "honey_level:above:4" } ]
-    reward: { constant: 60.0 }
-  - trigger: "sniffer"
-    reward: { constant: 60.0 }
-  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=256 exceeds the ~60/action ceiling.
-  # breed/shear/tame are inherently frequency-capped. The honest residual is
-  # ~80-120 h rather than inflating a single action absurdly.
+  - trigger: breed_animals
+    reward:
+      constant:
+        value: 256.4
+  - trigger: player_shear
+    reward:
+      constant:
+        value: 256.4
+  - trigger: player_tame
+    reward:
+      constant:
+        value: 256.4
+  - trigger: player_interact
+    filters:
+      - target: '#minecraft:beehives'
+      - tool: minecraft:glass_bottle
+      - state: honey_level:above:4
+    reward:
+      constant:
+        value: 60
+  - trigger: player_interact
+    filters:
+      - target: '#minecraft:beehives'
+      - tool: minecraft:shears
+      - state: honey_level:above:4
+    reward:
+      constant:
+        value: 60
+  - trigger: sniffer
+    reward:
+      constant:
+        value: 60
 abilities:
-  - id: "animal_bond"
-    display_name: "Animal Bond"
-    unlock_level: 1
-    trigger: "breed_animals"
-    display: { lore: [ "&7Breeding & shearing XP &a{multiplier}x&7." ] }
+  - id: animal_bond
+    display_name: Animal Bond
+    trigger: breed_animals
+    display:
+      lore:
+        - '&7Breeding & shearing XP &a{multiplier}x&7.'
     mechanics:
-      - type: "core:xp_bonus"
+      - type: core:xp_bonus
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "shearing_mastery"
-    display_name: "Shearing Mastery"
+          multiplier:
+            linear:
+              base: 1.05
+              step: 0.01
+              max: 1.6
+  - id: shearing_mastery
+    display_name: Shearing Mastery
     unlock_level: 15
-    trigger: "player_shear"
-    display: { lore: [ "&7Shearing grants &a{amount}&7 armor for {duration}s (vs animal retaliation)." ] }
-    mechanics:
-      - type: "core:armor_bonus"
-        parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
-          uuid: { constant: "bbe92a19-add1-5ada-b964-a6c1c1961f1f" }
-          duration: { constant: 15.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "mob_porter"
-    display_name: "Mob Porter"
-    unlock_level: 25
-    trigger: "right_click_entity"
+    trigger: player_shear
     display:
       lore:
-        - "&7Right-Click a portable mob with an empty hand to carry it on your shoulders."
-        - "&7Right-click a carried mob (or click air) to set it down."
-        - "&7Carry up to &a{max_passengers}&7 mobs at once."
-        - "&8Requires: Empty hand, cooldown."
+        - '&7Shearing grants &a{amount}&7 armor for {duration}s (vs animal retaliation).'
+    mechanics:
+      - type: core:armor_bonus
+        parameters:
+          amount:
+            linear:
+              base: 1
+              step: 0.02
+              max: 3
+          uuid:
+            constant: bbe92a19-add1-5ada-b964-a6c1c1961f1f
+          duration:
+            constant:
+              value: 15
+  - id: mob_porter
+    display_name: Mob Porter
+    unlock_level: 25
+    trigger: right_click_entity
+    display:
+      lore:
+        - '&7Sneak + Right-Click a portable mob with an empty hand to carry it on your shoulders.'
+        - '&7Carry up to &a{max_passengers}&7 mobs at once.'
+        - '&8Requires: Empty hand.'
     requirements:
-      cooldown: { linear: { base: 5.0, step: -0.03, max: 2.0 } }
-    on_failure:
-      cooldown: { action_bar: "&cMob Porter cooling down: {time}s" }
+      state:
+        - is_sneaking
     mechanics:
-      - type: "core:pick_up_mob"
-        filters: [ { state: "target_type:#c:portable_mobs" } ]
+      - type: core:pick_up_mob
+        filters:
+          - state: target_type:#c:portable_mobs
         parameters:
-          max_passengers: { linear: { base: 1.0, step: 0.04, max: 4.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "set_down"
-    display_name: "Set Down"
+          max_passengers:
+            linear:
+              base: 1
+              step: 0.04
+              max: 4
+  - id: set_down
+    display_name: Set Down
     unlock_level: 25
-    trigger: "right_click_air"
+    trigger: sneak
     display:
       lore:
-        - "&7Right-Click air (or right-click a carried mob) to set it down."
-        - "&8Requires: Empty hand."
+        - '&7Sneak to set down carried mobs.'
+        - '&8Requires: Empty hand.'
     mechanics:
-      - type: "core:drop_passengers"
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&a✦ Set Down! ✦" }
-      sounds: [ { type: "minecraft:entity.villager.hurt", volume: 0.4, pitch: 1.5, target: "self" } ]
-  - id: "herd_growth"
-    display_name: "Herd Growth"
+      - type: core:drop_passengers
+        parameters: {
+        }
+  - id: herd_growth
+    display_name: Herd Growth
     unlock_level: 50
-    trigger: "breed_animals"
-    display: { lore: [ "&7Breeding grants &a{amount}&7 knockback resistance for {duration}s." ] }
-    mechanics:
-      - type: "core:knockback_resist"
-        parameters:
-          amount: { linear: { base: 0.1, step: 0.005, max: 0.5 } }
-          uuid: { constant: "35acb93d-aa99-5d0c-bcde-c4e4959bca0c" }
-          duration: { constant: 20.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "animal_whisperer"
-    display_name: "Animal Whisperer"
-    unlock_level: 75
-    trigger: "ride_horse"
-    display: { lore: [ "&7Mounting grants &a{multiplier}x&7 speed for {duration}s." ] }
-    mechanics:
-      - type: "core:speed_bonus"
-        parameters:
-          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
-          uuid: { constant: "6093ffbe-f598-5af3-801e-8618fa98ec40" }
-          duration: { constant: 30.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "master_husbander"
-    display_name: "Master Husbander"
-    unlock_level: 100
-    trigger: "right_click_entity"
+    trigger: breed_animals
     display:
       lore:
-        - "&7Sneak-right-click to tame any tameable mob: &a{chance}%&7."
-        - "&7Costs 1 tame food + 1 hunger."
-        - "&8Requires: Sneaking, holding a tame food, 10s cooldown, 3+ hunger."
+        - '&7Breeding grants &a{amount}&7 knockback resistance for {duration}s.'
+    mechanics:
+      - type: core:knockback_resist
+        parameters:
+          amount:
+            linear:
+              base: 0.1
+              step: 0.005
+              max: 0.5
+          uuid:
+            constant: 35acb93d-aa99-5d0c-bcde-c4e4959bca0c
+          duration:
+            constant:
+              value: 20
+  - id: animal_whisperer
+    display_name: Animal Whisperer
+    unlock_level: 75
+    trigger: ride_horse
+    display:
+      lore:
+        - '&7Mounting grants &a{multiplier}x&7 speed for {duration}s.'
+    mechanics:
+      - type: core:speed_bonus
+        parameters:
+          multiplier:
+            linear:
+              base: 1.1
+              step: 0.003
+              max: 1.3
+          uuid:
+            constant: 6093ffbe-f598-5af3-801e-8618fa98ec40
+          duration:
+            constant:
+              value: 30
+  - id: master_husbander
+    display_name: Master Husbander
+    unlock_level: 100
+    trigger: right_click_entity
+    display:
+      lore:
+        - '&7Sneak-right-click to tame any tameable mob: &a{chance}%&7.'
+        - '&7Costs 1 tame food + 1 hunger.'
+        - '&8Requires: Sneaking, holding a tame food, 10s cooldown, 3+ hunger.'
     requirements:
       cooldown: 10.0
-      state: [ "is_sneaking" ]
-      items: [ { action: "cost", tag: "#c:tame_offerings", amount: 1, slot: "MAIN_HAND" } ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure:
-      cooldown: { action_bar: "&eMaster Husbander cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires a tame food in hand!" }
+      state:
+        - is_sneaking
+      items:
+        - action: cost
+          tag: '#c:tame_offerings'
+          slot: MAIN_HAND
+          amount: 1
+      exhaustion:
+        amount: 1.0
+        minimum: 3.0
     mechanics:
-      - type: "core:instant_tame"
+      - type: core:instant_tame
         parameters:
-          chance: { constant: 100.0 }
-    feedback: { notify: { action_bar: false } }
+          chance:
+            constant:
+              value: 100
+    on_failure:
+      cooldown:
+        action_bar: '&eMaster Husbander cooling down: {time}s'
+      missing_item:
+        action_bar: '&cRequires a tame food in hand!'
