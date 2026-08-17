@@ -33,6 +33,15 @@
 - [x] [ISSUE-299](ISSUE-299.md) - Web GUI behavior fixes: reload rollback, staged reads, performance, and serialization
 
 ### Improvements
+- [ ] [ISSUE-305](ISSUE-305.md) - Engine triggers and state filter for the gameplay-coverage batch (compost, trade, barter, recipe_discover, smith, mend, map_fill, cartography, vault_change, sniffer, potion_splash, honey_level)
+- [ ] [ISSUE-306](ISSUE-306.md) - Excavation: archaeology XP sources (brushing, suspicious blocks, decorated pots)
+- [ ] [ISSUE-307](ISSUE-307.md) - Building: redstone craft and place XP sources
+- [ ] [ISSUE-308](ISSUE-308.md) - Farming: compost XP and the Compost Bloom ability (core:area_fertilize)
+- [ ] [ISSUE-309](ISSUE-309.md) - Smithing: smithing-table and mending XP sources
+- [ ] [ISSUE-310](ISSUE-310.md) - Alchemy: potion-throw XP sources (splash and lingering)
+- [ ] [ISSUE-311](ISSUE-311.md) - Husbandry: honey harvest and sniffer XP sources (honey_level gated)
+- [ ] [ISSUE-312](ISSUE-312.md) - New bundled skill: Trade (draft design, refinement required)
+- [ ] [ISSUE-313](ISSUE-313.md) - New bundled skill: Exploration
 - [x] [ISSUE-302](ISSUE-302.md) - Engine pieces for a persistent-attribute Survival skill (persistent_attribute, reconcile hardening, cause filter, chunk_load, sleep)
 - [x] [ISSUE-303](ISSUE-303.md) - Bundled Survival skill: max hearts, environmental resilience, campfire/bed camping through-line
 - [x] [ISSUE-295](ISSUE-295.md) - Plugin version is hardcoded to `1.0-SNAPSHOT`; tagged releases never report the tag version
