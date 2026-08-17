@@ -14,6 +14,10 @@ xp_sources:
     reward: { constant: 64.1 }
   - trigger: "repair"
     reward: { constant: 64.1 }
+  - trigger: "smith"
+    reward: { constant: 80.0 }
+  - trigger: "mend"
+    reward: { constant: 30.0 }
 abilities:
   - id: "efficient_smith"
     display_name: "Efficient Smith"
