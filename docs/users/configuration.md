@@ -191,6 +191,7 @@ skill YAMLs):
 | `#c:suspicious_blocks` | `minecraft:suspicious_sand`, `minecraft:suspicious_gravel` (excavation archaeology sources) |
 | `#c:veinminer` | `#c:stone`, `#c:ores` |
 | `#c:stone_products` | Decorative stone blocks, walls, slabs, stairs, glass |
+| `#c:redstone_components` | Redstone dust, torches, repeaters, comparators, pistons, observers, hoppers, dispensers, droppers, redstone lamps, levers, daylight detectors, target blocks, note blocks, crafters, tripwire hooks, and rails (building redstone sources) |
 | `#c:herbs` | `#minecraft:flowers`, `#minecraft:tall_flowers`, sugar cane, cactus, mushrooms, etc. |
 | `#c:heavy_weapons` | Iron/diamond/netherite swords and axes, mace |
 | `#c:light_weapons` | Wooden/stone/golden swords, trident |

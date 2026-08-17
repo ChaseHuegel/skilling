@@ -19,6 +19,12 @@ xp_sources:
     filters:
       - target: "#minecraft:planks"
     reward: { constant: 43.9 }
+  - trigger: "craft_item"
+    filters: [ { target: "#c:redstone_components" } ]
+    reward: { constant: 60.0 }
+  - trigger: "block_place"
+    filters: [ { target: "#c:redstone_components" } ]
+    reward: { constant: 30.0 }
 abilities:
   - id: "scaffolding"
     display_name: "Scaffolding"

@@ -97,6 +97,33 @@ custom_tags:
     - "minecraft:glass"
     - "minecraft:glass_pane"
 
+  # Redstone wiring and mechanism blocks, for the building skill's redstone
+  # construction XP sources (craft and place). Powers only the act of building
+  # contraptions, never raw BlockRedstoneEvent current (anti-grind, REPORT
+  # SKILL-COVERAGE 3.2).
+  redstone_components:
+    - "minecraft:redstone"
+    - "minecraft:redstone_torch"
+    - "minecraft:repeater"
+    - "minecraft:comparator"
+    - "minecraft:piston"
+    - "minecraft:sticky_piston"
+    - "minecraft:observer"
+    - "minecraft:hopper"
+    - "minecraft:dispenser"
+    - "minecraft:dropper"
+    - "minecraft:redstone_lamp"
+    - "minecraft:lever"
+    - "minecraft:daylight_detector"
+    - "minecraft:target"
+    - "minecraft:note_block"
+    - "minecraft:crafter"
+    - "minecraft:tripwire_hook"
+    - "minecraft:rail"
+    - "minecraft:powered_rail"
+    - "minecraft:detector_rail"
+    - "minecraft:activator_rail"
+
   herbs:
     - "#minecraft:flowers"
     - "minecraft:sugar_cane"

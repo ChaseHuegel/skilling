@@ -5,10 +5,10 @@
 - **Agent Role:** You are an expert content engineer editing bundled skill YAML and tags.
 
 ## Implementation Requirements
-- [ ] Add a `#c:redstone_components` tag to `src/main/resources/tags/base.yml` covering redstone dust, redstone torch, repeater, comparator, piston, sticky piston, observer, hopper, dispenser, dropper, redstone lamp, lever, daylight detector, target block, note block, crafter, tripwire hook, and rails, with a doc comment.
-- [ ] Add a Building XP source for crafting redstone components: `craft_item` filtered on `target: "#c:redstone_components"` (~60).
-- [ ] Add a Building XP source for placing redstone components: `block_place` filtered on `target: "#c:redstone_components"` (~30).
-- [ ] Do NOT add `note_play` or `craft_crafter` triggers or sources, and do NOT add abilities for redstone.
+- [x] Add a `#c:redstone_components` tag to `src/main/resources/tags/base.yml` covering redstone dust, redstone torch, repeater, comparator, piston, sticky piston, observer, hopper, dispenser, dropper, redstone lamp, lever, daylight detector, target block, note block, crafter, tripwire hook, and rails, with a doc comment.
+- [x] Add a Building XP source for crafting redstone components: `craft_item` filtered on `target: "#c:redstone_components"` (~60).
+- [x] Add a Building XP source for placing redstone components: `block_place` filtered on `target: "#c:redstone_components"` (~30).
+- [x] Do NOT add `note_play` or `craft_crafter` triggers or sources, and do NOT add abilities for redstone.
 
 ## Technical Specifications & Context
 - **Target Files:** `src/main/resources/skills/building.yml`, `src/main/resources/tags/base.yml`.
@@ -16,6 +16,6 @@
 - **Constraints:** No raw `BlockRedstoneEvent` hooks (anti-grind and player-attribution risks, per REPORT_SKILL-COVERAGE section 3.2). Reward the act of building contraptions, not powering them.
 
 ## Verification & Definition of Done
-- [ ] Bundled-skill auto-sweeps pass.
-- [ ] `./gradlew build` and `./gradlew test` pass.
-- [ ] `docs/users/configuration.md` documents the new tag.
+- [x] Bundled-skill auto-sweeps pass.
+- [x] `./gradlew build` and `./gradlew test` pass.
+- [x] `docs/users/configuration.md` documents the new tag.
