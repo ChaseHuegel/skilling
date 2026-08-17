@@ -487,6 +487,17 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("elytra_glide", ElytraGlideTrigger.class);
         trigReg.register("chunk_load", ChunkLoadTrigger.class);
         trigReg.register("sleep", SleepTrigger.class);
+        trigReg.register("compost", CompostTrigger.class);
+        trigReg.register("trade", TradeTrigger.class);
+        trigReg.register("barter", BarterTrigger.class);
+        trigReg.register("recipe_discover", RecipeDiscoverTrigger.class);
+        trigReg.register("smith", SmithTrigger.class);
+        trigReg.register("mend", MendTrigger.class);
+        trigReg.register("map_fill", MapFillTrigger.class);
+        trigReg.register("cartography", CartographyTrigger.class);
+        trigReg.register("vault_change", VaultChangeTrigger.class);
+        trigReg.register("sniffer", SnifferTrigger.class);
+        trigReg.register("potion_splash", PotionSplashTrigger.class);
     }
 
     /** Registers the built-in state filters into the given registry. */
@@ -511,6 +522,32 @@ public final class Skilling extends JavaPlugin {
                 return be.getBlock().hasMetadata("player_placed") == expectPlaced;
             }
             return true;
+        });
+
+        sf.register("honey_level", (p, e, v) -> {
+            // Gates honey-harvest XP on the clicked beehive actually holding
+            // honey: below:N, above:N, exactly:N read the hive's honey level.
+            // Fails closed for non-interaction events, non-beehive clicks, and
+            // malformed or unsupported values.
+            String[] parts = v.split(":", 2);
+            if (parts.length < 2) return false;
+            int threshold;
+            try {
+                threshold = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException ex) {
+                return false;
+            }
+            if (!(e instanceof org.bukkit.event.player.PlayerInteractEvent ie)) return false;
+            var block = ie.getClickedBlock();
+            if (block == null) return false;
+            if (!(block.getBlockData() instanceof org.bukkit.block.data.type.Beehive beehive)) return false;
+            int honeyLevel = beehive.getHoneyLevel();
+            return switch (parts[0]) {
+                case "below" -> honeyLevel < threshold;
+                case "above" -> honeyLevel > threshold;
+                case "exactly" -> honeyLevel == threshold;
+                default -> false;
+            };
         });
 
         sf.register("dimension", (p, e, v) -> {

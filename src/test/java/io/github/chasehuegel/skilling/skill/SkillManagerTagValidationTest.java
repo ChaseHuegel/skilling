@@ -167,4 +167,38 @@ class SkillManagerTagValidationTest {
         var def = manager.parseSkill(skillWithFilterState("cause:burn"));
         org.junit.jupiter.api.Assertions.assertEquals(1, def.xpSources().size());
     }
+
+    @Test
+    void honeyLevelUnknownComparisonFailsLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> manager.parseSkill(skillWithFilterState("honey_level:around:3")));
+        assertTrue(ex.getMessage().contains("honey_level"),
+                "the honey_level rule must be named: " + ex.getMessage());
+    }
+
+    @Test
+    void honeyLevelMissingLevelFailsLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> manager.parseSkill(skillWithFilterState("honey_level:above")));
+        assertTrue(ex.getMessage().contains("honey_level"),
+                "the honey_level rule must be named: " + ex.getMessage());
+    }
+
+    @Test
+    void honeyLevelNonIntegerFailsLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> manager.parseSkill(skillWithFilterState("honey_level:below:lots")));
+        assertTrue(ex.getMessage().contains("honey_level"),
+                "the honey_level rule must be named: " + ex.getMessage());
+    }
+
+    @Test
+    void honeyLevelValidPassesLoad() {
+        var manager = skillManager(new TagResolver(new CustomTagLoader()));
+        var def = manager.parseSkill(skillWithFilterState("honey_level:below:5"));
+        org.junit.jupiter.api.Assertions.assertEquals(1, def.xpSources().size());
+    }
 }

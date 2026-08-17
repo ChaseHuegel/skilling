@@ -562,6 +562,25 @@ public final class SkillManager {
                         + "' is not a supported damage cause (burn, fire, lava, drowning, suffocation, cactus, starvation)");
             }
         }
+        if ("honey_level".equals(key)) {
+            String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
+            String[] parts = value.split(":", 2);
+            String comparison = parts[0];
+            if (!comparison.equals("below") && !comparison.equals("above") && !comparison.equals("exactly")) {
+                throw new IllegalArgumentException(context
+                        + " state 'honey_level' comparison must be below, above, or exactly, got '" + comparison + "'");
+            }
+            if (parts.length < 2) {
+                throw new IllegalArgumentException(context
+                        + " state 'honey_level' is missing a honey level, use " + comparison + ":N");
+            }
+            try {
+                Integer.parseInt(parts[1]);
+            } catch (NumberFormatException ex) {
+                throw new IllegalArgumentException(context
+                        + " state 'honey_level' level '" + parts[1] + "' is not an integer", ex);
+            }
+        }
         if (colonIdx > 0 && (state.startsWith("equipped_all:") || state.startsWith("equipped_any:"))) {
             validateTagReference(state.substring(colonIdx + 1));
         }

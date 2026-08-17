@@ -911,6 +911,17 @@ attribute: { constant: "minecraft:movement_speed" }
 | `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
 | `chunk_load` | `ChunkLoadEvent` | Exploring freshly generated terrain. Fires only when a chunk is generated for the first time (`isNewChunk()`), routed to nearby players. Loading a chunk from disk does not fire it |
 | `sleep` | `PlayerDeepSleepEvent` | Player sleeps long enough to pass the night or storm. Checking into and back out of a bed does not fire it |
+| `compost` | `CompostItemEvent` | An item is composted into a composter. Routed to nearby players of the composter |
+| `trade` | `PlayerTradeEvent` | Trading with a villager |
+| `barter` | `PiglinBarterEvent` | A piglin barters with a player. Routed to nearby players of the piglin |
+| `recipe_discover` | `PlayerRecipeDiscoverEvent` | Unlocking a new crafting recipe |
+| `smith` | `SmithItemEvent` | Taking an item out of a smithing table |
+| `mend` | `PlayerItemMendEvent` | An item repairs itself with the Mending enchantment |
+| `map_fill` | `PlayerMapFilledEvent` | A player's map fills with terrain for the first time |
+| `cartography` | `CartographyItemEvent` | Taking an item out of a cartography table |
+| `vault_change` | `VaultChangeStateEvent` | A trial vault changes state. Fires only when the change has a player cause |
+| `sniffer` | `EntityFertilizeEggEvent` | Breeding a sniffer. Fires only when a player does the breeding |
+| `potion_splash` | `PotionSplashEvent` / `LingeringPotionSplashEvent` | Throwing a splash or lingering potion that breaks. Fires only when a player threw it |
 
 ## Built-In State Filters
 
@@ -939,6 +950,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |
 | `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
 | `cause` | `burn`, `fire`, `lava`, `drowning`, `suffocation`, `cactus`, `starvation` | The `EntityDamageEvent` damage cause on the `entity_damage_taken` trigger. `burn` matches fire, fire ticks, and lava. Fails closed on any non-damage event or other cause. Values are validated at load |
+| `honey_level` | `below:N`, `above:N`, `exactly:N` | The honey level of a beehive clicked on `player_interact`. Fails closed on non-beehive clicks. Values are validated at load |
 
 The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`
 custom tags (in `tags/base.yml`) reproduce the historical armor tiers as data. No

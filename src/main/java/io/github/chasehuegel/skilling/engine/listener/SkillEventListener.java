@@ -551,6 +551,150 @@ public final class SkillEventListener implements Listener {
         dispatch(event.getPlayer(), event, "sleep");
     }
 
+    /**
+     * Handles {@link CompostItemEvent} and routes it as a {@code compost} trigger
+     * for nearby players of the composter block.
+     *
+     * @param event the compost item event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCompost(io.papermc.paper.event.block.CompostItemEvent event) {
+        dispatchToNearby(event, event.getBlock().getLocation(), "compost");
+    }
+
+    /**
+     * Handles {@link PlayerTradeEvent} and routes it as a {@code trade} trigger.
+     *
+     * @param event the player trade event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTrade(io.papermc.paper.event.player.PlayerTradeEvent event) {
+        dispatch(event.getPlayer(), event, "trade");
+    }
+
+    /**
+     * Handles {@link PiglinBarterEvent} and routes it as a {@code barter} trigger
+     * for nearby players of the bartering piglin.
+     *
+     * @param event the piglin barter event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBarter(org.bukkit.event.entity.PiglinBarterEvent event) {
+        dispatchToNearby(event, event.getEntity().getLocation(), "barter");
+    }
+
+    /**
+     * Handles {@link PlayerRecipeDiscoverEvent} and routes it as a
+     * {@code recipe_discover} trigger.
+     *
+     * @param event the player recipe discover event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onRecipeDiscover(org.bukkit.event.player.PlayerRecipeDiscoverEvent event) {
+        dispatch(event.getPlayer(), event, "recipe_discover");
+    }
+
+    /**
+     * Handles {@link SmithItemEvent} and routes it as a {@code smith} trigger to
+     * the player viewing the smithing table.
+     *
+     * @param event the smith item event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSmith(org.bukkit.event.inventory.SmithItemEvent event) {
+        if (event.getView().getPlayer() instanceof Player player) {
+            dispatch(player, event, "smith");
+        }
+    }
+
+    /**
+     * Handles {@link PlayerItemMendEvent} and routes it as a {@code mend} trigger.
+     *
+     * @param event the player item mend event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMend(org.bukkit.event.player.PlayerItemMendEvent event) {
+        dispatch(event.getPlayer(), event, "mend");
+    }
+
+    /**
+     * Handles {@link PlayerMapFilledEvent} and routes it as a {@code map_fill} trigger.
+     *
+     * @param event the player map filled event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMapFill(io.papermc.paper.event.player.PlayerMapFilledEvent event) {
+        dispatch(event.getPlayer(), event, "map_fill");
+    }
+
+    /**
+     * Handles {@link CartographyItemEvent} and routes it as a {@code cartography}
+     * trigger to the player viewing the cartography table.
+     *
+     * @param event the cartography item event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCartography(io.papermc.paper.event.player.CartographyItemEvent event) {
+        if (event.getView().getPlayer() instanceof Player player) {
+            dispatch(player, event, "cartography");
+        }
+    }
+
+    /**
+     * Handles {@link VaultChangeStateEvent} and routes it as a
+     * {@code vault_change} trigger to the triggering player when one is present.
+     *
+     * @param event the vault change state event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onVaultChange(io.papermc.paper.event.block.VaultChangeStateEvent event) {
+        Player player = event.getPlayer();
+        if (player != null) {
+            dispatch(player, event, "vault_change");
+        }
+    }
+
+    /**
+     * Handles {@link EntityFertilizeEggEvent} and routes it as a {@code sniffer}
+     * trigger to the breeding player when the breeder is a player.
+     *
+     * @param event the entity fertilize egg event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSniffer(io.papermc.paper.event.entity.EntityFertilizeEggEvent event) {
+        Player breeder = event.getBreeder();
+        if (breeder != null) {
+            dispatch(breeder, event, "sniffer");
+        }
+    }
+
+    /**
+     * Handles {@link PotionSplashEvent} and routes it as a {@code potion_splash}
+     * trigger to the throwing player when the thrower is a player.
+     *
+     * @param event the potion splash event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPotionSplash(org.bukkit.event.entity.PotionSplashEvent event) {
+        if (event.getEntity().getShooter() instanceof Player player) {
+            dispatch(player, event, "potion_splash");
+        }
+    }
+
+    /**
+     * Handles {@link LingeringPotionSplashEvent} and routes it as a
+     * {@code potion_splash} trigger to the throwing player when the thrower is a
+     * player.
+     *
+     * @param event the lingering potion splash event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onLingeringPotionSplash(org.bukkit.event.entity.LingeringPotionSplashEvent event) {
+        if (event.getEntity().getShooter() instanceof Player player) {
+            dispatch(player, event, "potion_splash");
+        }
+    }
+
     private void dispatch(Player player, Event event, String triggerKey) {
         dispatch(player, event, triggerKey, new java.util.HashSet<>());
     }

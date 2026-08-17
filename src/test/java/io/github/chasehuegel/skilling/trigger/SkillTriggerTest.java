@@ -6,8 +6,11 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.BlockBreakTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.BlockPlaceTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.BreedAnimalsTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.BrewPotionTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.BarterTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.CartographyTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.ChunkLoadTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.CollectXpTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.CompostTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.ConsumeItemTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.CraftItemTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.CropGrowTrigger;
@@ -24,15 +27,23 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.LaunchProjectileTrigge
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickAirTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickBlockTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickEntityTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.MapFillTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.MendTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.PlayerInteractTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.PotionSplashTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.ProjectileHitTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.RecipeDiscoverTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RideHorseTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickAirTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickBlockTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickEntityTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SleepTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.SmithTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.SnifferTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SneakTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SprintTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.TradeTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.VaultChangeTrigger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -47,21 +58,32 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTransformEvent;
+import org.bukkit.event.entity.PiglinBarterEvent;
+import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
+import org.bukkit.event.inventory.SmithItemEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerItemMendEvent;
+import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import io.papermc.paper.event.block.CompostItemEvent;
+import io.papermc.paper.event.block.VaultChangeStateEvent;
+import io.papermc.paper.event.entity.EntityFertilizeEggEvent;
+import io.papermc.paper.event.player.CartographyItemEvent;
 import io.papermc.paper.event.player.PlayerDeepSleepEvent;
+import io.papermc.paper.event.player.PlayerMapFilledEvent;
+import io.papermc.paper.event.player.PlayerTradeEvent;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -117,7 +139,18 @@ class SkillTriggerTest {
                     Arguments.of(new SneakTrigger(), "sneak", PlayerToggleSneakEvent.class),
                     Arguments.of(new SprintTrigger(), "sprint", PlayerToggleSprintEvent.class),
                     Arguments.of(new ChunkLoadTrigger(), "chunk_load", ChunkLoadEvent.class),
-                    Arguments.of(new SleepTrigger(), "sleep", PlayerDeepSleepEvent.class)
+                    Arguments.of(new SleepTrigger(), "sleep", PlayerDeepSleepEvent.class),
+                    Arguments.of(new CompostTrigger(), "compost", CompostItemEvent.class),
+                    Arguments.of(new TradeTrigger(), "trade", PlayerTradeEvent.class),
+                    Arguments.of(new BarterTrigger(), "barter", PiglinBarterEvent.class),
+                    Arguments.of(new RecipeDiscoverTrigger(), "recipe_discover", PlayerRecipeDiscoverEvent.class),
+                    Arguments.of(new SmithTrigger(), "smith", SmithItemEvent.class),
+                    Arguments.of(new MendTrigger(), "mend", PlayerItemMendEvent.class),
+                    Arguments.of(new MapFillTrigger(), "map_fill", PlayerMapFilledEvent.class),
+                    Arguments.of(new CartographyTrigger(), "cartography", CartographyItemEvent.class),
+                    Arguments.of(new VaultChangeTrigger(), "vault_change", VaultChangeStateEvent.class),
+                    Arguments.of(new SnifferTrigger(), "sniffer", EntityFertilizeEggEvent.class),
+                    Arguments.of(new PotionSplashTrigger(), "potion_splash", PotionSplashEvent.class)
             );
         }
     }
