@@ -24,7 +24,9 @@ import java.util.Map;
  * the pickup never collides with vanilla feed/breed/shear/tame/trade
  * interactions on the clicked mob. The number of simultaneously carried mobs is
  * capped by {@code max_passengers} (a level-scalable count), and a target that
- * is already a passenger of the player is a no-op.
+ * is already a passenger of the player is set down again (a right-click
+ * toggle), so dropping a carried mob works even when the click registers as an
+ * entity interaction rather than an air click.
  *
  * <p>Per the {@link SkillMechanic} return contract, {@code false} is returned
  * when the mechanic could not act (wrong event, a non-living or player target,
@@ -43,6 +45,13 @@ public final class PickUpMobMechanic implements SkillMechanic {
         if (player.getInventory().getItemInMainHand().getType() != Material.AIR) return false;
         if (!(interact.getRightClicked() instanceof LivingEntity target)) return false;
         if (target instanceof Player) return false;
+
+        // Right-clicking a mob that is already riding the player sets it down
+        // again (a toggle), so dropping works even when the click hits the
+        // carried passenger instead of air.
+        if (player.getPassengers().contains(target)) {
+            return target.leaveVehicle();
+        }
 
         int maxPassengers = ((Number) params.getOrDefault("max_passengers", 1.0)).intValue();
         if (maxPassengers <= 0) return false;

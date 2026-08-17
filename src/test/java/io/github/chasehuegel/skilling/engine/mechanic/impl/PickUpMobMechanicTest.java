@@ -117,6 +117,20 @@ class PickUpMobMechanicTest {
     }
 
     @Test
+    void rightClickingCarriedPassengerSetsItDown() {
+        var player = emptyHandedPlayer();
+        var target = mock(Cow.class);
+        when(player.getPassengers()).thenReturn(List.of(target));
+        when(target.leaveVehicle()).thenReturn(true);
+        var event = clickOn(player, target);
+
+        assertTrue(new PickUpMobMechanic().execute(player, Map.of(), event),
+                "right-clicking a carried mob must toggle it down");
+        verify(target).leaveVehicle();
+        verify(player, org.mockito.Mockito.never()).addPassenger(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
     void defaultsToSinglePassenger() {
         var player = emptyHandedPlayer();
         when(player.getPassengers()).thenReturn(List.of());

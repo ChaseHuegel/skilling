@@ -15,14 +15,14 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Verifies {@code core:drop_passengers}: an empty-hand right-click of air ejects
- * every carried mob, while a held item, a non-air interaction, or an empty
- * passenger load is a no-op.
+ * Verifies {@code core:drop_passengers}: every carried mob is dismounted via
+ * {@code leaveVehicle()} (per passenger, rather than a single {@code eject()}
+ * that can silently no-op on a player), and a drop with no passengers is a
+ * no-op that spends no cost or cooldown.
  */
 class DropPassengersMechanicTest {
 
@@ -30,12 +30,6 @@ class DropPassengersMechanicTest {
 
     static {
         when(AIR.getType()).thenReturn(Material.AIR);
-    }
-
-    private static PlayerInteractEvent airClick(Player player) {
-        var event = mock(PlayerInteractEvent.class);
-        when(event.getAction()).thenReturn(Action.RIGHT_CLICK_AIR);
-        return event;
     }
 
     private static Player emptyHandedPlayer() {
@@ -47,46 +41,39 @@ class DropPassengersMechanicTest {
     }
 
     @Test
-    void returnsFalseForNonInteractEvent() {
-        assertFalse(new DropPassengersMechanic().execute(emptyHandedPlayer(), Map.of(),
-                mock(org.bukkit.event.entity.EntityDamageEvent.class)));
-    }
-
-    @Test
-    void returnsFalseForNonAirRightClick() {
+    void ejectsEveryCarriedMobViaLeaveVehicle() {
+        var cow1 = mock(Cow.class);
+        var cow2 = mock(Cow.class);
+        when(cow1.leaveVehicle()).thenReturn(true);
+        when(cow2.leaveVehicle()).thenReturn(true);
         var player = emptyHandedPlayer();
+        when(player.getPassengers()).thenReturn(List.of(cow1, cow2));
+
         var event = mock(PlayerInteractEvent.class);
-        when(event.getAction()).thenReturn(Action.RIGHT_CLICK_BLOCK);
-        assertFalse(new DropPassengersMechanic().execute(player, Map.of(), event));
-    }
+        when(event.getAction()).thenReturn(Action.RIGHT_CLICK_AIR);
 
-    @Test
-    void returnsFalseWithHeldItem() {
-        var inventory = mock(PlayerInventory.class);
-        var held = mock(ItemStack.class);
-        when(held.getType()).thenReturn(Material.WHEAT);
-        when(inventory.getItemInMainHand()).thenReturn(held);
-        var player = mock(Player.class);
-        when(player.getInventory()).thenReturn(inventory);
-
-        assertFalse(new DropPassengersMechanic().execute(player, Map.of(), airClick(player)));
-        verify(player, never()).eject();
+        assertTrue(new DropPassengersMechanic().execute(player, Map.of(), event));
+        verify(cow1).leaveVehicle();
+        verify(cow2).leaveVehicle();
     }
 
     @Test
     void returnsFalseWhenCarryingNothing() {
         var player = emptyHandedPlayer();
         when(player.getPassengers()).thenReturn(List.of());
-        assertFalse(new DropPassengersMechanic().execute(player, Map.of(), airClick(player)));
-        verify(player, never()).eject();
+        assertFalse(new DropPassengersMechanic().execute(player, Map.of(),
+                mock(org.bukkit.event.entity.EntityDamageEvent.class)));
     }
 
     @Test
-    void ejectsAllCarriedMobsOnEmptyHandAirClick() {
+    void partialDismountFailureStillReportsTrueForSuccessfulOnes() {
+        var cow = mock(Cow.class);
+        when(cow.leaveVehicle()).thenReturn(false);
         var player = emptyHandedPlayer();
-        when(player.getPassengers()).thenReturn(List.of(mock(Cow.class), mock(Cow.class)));
-        when(player.eject()).thenReturn(true);
-        assertTrue(new DropPassengersMechanic().execute(player, Map.of(), airClick(player)));
-        verify(player).eject();
+        when(player.getPassengers()).thenReturn(List.of(cow));
+
+        assertFalse(new DropPassengersMechanic().execute(player, Map.of(),
+                mock(org.bukkit.event.entity.EntityDamageEvent.class)),
+                "no passenger actually dismounted");
     }
 }
