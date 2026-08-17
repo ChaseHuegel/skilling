@@ -167,6 +167,13 @@ class SkillEventListenerGameplayCoverageTriggerTest {
                     mechanics:
                       - { type: "test:record" }
                     feedback: { notify: { action_bar: false } }
+                  - id: loot_ability
+                    display_name: "Loot"
+                    unlock_level: 1
+                    trigger: "loot"
+                    mechanics:
+                      - { type: "test:record" }
+                    feedback: { notify: { action_bar: false } }
                 """);
         skillManager.loadSkills(skillsDir.toFile());
 
@@ -346,6 +353,26 @@ class SkillEventListenerGameplayCoverageTriggerTest {
     }
 
     @Test
+    void lootDispatchesToNearbyPlayers() {
+        var event = mock(org.bukkit.event.world.LootGenerateEvent.class);
+        var context = mock(org.bukkit.loot.LootContext.class);
+        when(event.getLootContext()).thenReturn(context);
+        when(context.getLocation()).thenReturn(location);
+        when(world.getNearbyPlayers(any(Location.class), eq(16.0), any())).thenReturn(java.util.List.of(player));
+        listener.onLoot(event);
+        assertDispatched(org.bukkit.event.world.LootGenerateEvent.class);
+    }
+
+    @Test
+    void lootSkipsWhenContextIsNull() {
+        var event = mock(org.bukkit.event.world.LootGenerateEvent.class);
+        when(event.getLootContext()).thenReturn(null);
+        listener.onLoot(event);
+        assertTrue(RecordingMechanic.EVENTS.isEmpty(),
+                "a loot event without a context must not dispatch");
+    }
+
+    @Test
     void compostSkipsWhenWorldIsNull() {
         var event = mock(io.papermc.paper.event.block.CompostItemEvent.class);
         var block = mock(Block.class);
@@ -371,6 +398,7 @@ class SkillEventListenerGameplayCoverageTriggerTest {
         assertTrue(handler("onSniffer").ignoreCancelled());
         assertTrue(handler("onPotionSplash").ignoreCancelled());
         assertTrue(handler("onLingeringPotionSplash").ignoreCancelled());
+        assertTrue(handler("onLoot").ignoreCancelled());
         assertFalse(handler("onPotionSplash").priority().name().equals("LOWEST"),
                 "the potion handlers must not run early");
     }
@@ -394,6 +422,7 @@ class SkillEventListenerGameplayCoverageTriggerTest {
             case "onSniffer" -> io.papermc.paper.event.entity.EntityFertilizeEggEvent.class;
             case "onPotionSplash" -> PotionSplashEvent.class;
             case "onLingeringPotionSplash" -> LingeringPotionSplashEvent.class;
+            case "onLoot" -> org.bukkit.event.world.LootGenerateEvent.class;
             default -> throw new IllegalArgumentException("unknown handler: " + name);
         };
     }

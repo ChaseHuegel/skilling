@@ -155,7 +155,7 @@ public final class Skilling extends JavaPlugin {
                                       "shields.yml", "unarmored.yml", "husbandry.yml",
                                       "throwing.yml", "acrobatics.yml", "piety.yml",
                                       "bard.yml", "wizardry.yml", "survival.yml",
-                                      "trade.yml"};
+                                      "trade.yml", "exploration.yml"};
             for (String skill : bundledSkills) {
                 if (!new File(getDataFolder(), "skills/" + skill).exists()) {
                     getLogger().info("Generating default " + skill + "...");
@@ -501,6 +501,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("sleep", SleepTrigger.class);
         trigReg.register("compost", CompostTrigger.class);
         trigReg.register("fertilize", FertilizeTrigger.class);
+        trigReg.register("loot", LootTrigger.class);
         trigReg.register("trade", TradeTrigger.class);
         trigReg.register("barter", BarterTrigger.class);
         trigReg.register("recipe_discover", RecipeDiscoverTrigger.class);

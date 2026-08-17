@@ -996,6 +996,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `chunk_load` | `ChunkLoadEvent` | Exploring freshly generated terrain. Fires only when a chunk is generated for the first time (`isNewChunk()`), routed to nearby players. Loading a chunk from disk does not fire it |
 | `sleep` | `PlayerDeepSleepEvent` | Player sleeps long enough to pass the night or storm. Checking into and back out of a bed does not fire it |
 | `compost` | `CompostItemEvent` | An item is composted into a composter. Routed to nearby players of the composter |
+| `loot` | `LootGenerateEvent` | World loot is generated (e.g., a container or trial-chamber vault fills). Routed to nearby players of the loot location, so group play counts for all present |
 | `fertilize` | `BlockFertilizeEvent` | A player uses bonemeal on a block. Fires only when a player caused the fertilize. Nested grows from `core:area_fertilize` do not re-fire it |
 | `trade` | `PlayerTradeEvent` | Trading with a villager |
 | `barter` | `PiglinBarterEvent` | A piglin barters with a player. Routed to nearby players of the piglin |

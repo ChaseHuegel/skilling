@@ -153,6 +153,13 @@ XP. A non-positive result (e.g. a fully-negated hit) grants nothing. Omit
 > (routed to nearby players). Bind flat rewards to both, and bind the
 > `core:trade_bonus`, `core:villager_xp`, and `core:barter_luck` abilities to
 > them.
+>
+> **Exploration:** the `map_fill` trigger fires when a player's map fills, the
+> `cartography` trigger fires when an item comes out of a cartography table,
+> the `loot` trigger fires when world loot is generated (routed to nearby
+> players), the `vault_change` trigger fires when a trial vault changes state,
+> and the `recipe_discover` trigger fires when a player unlocks a recipe. Bind
+> flat rewards to these to build a travel-and-scavenging loop.
 
 ### abilities
 

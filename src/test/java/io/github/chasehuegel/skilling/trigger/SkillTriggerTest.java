@@ -28,6 +28,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.LaunchProjectileTrigge
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickAirTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickBlockTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickEntityTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.LootTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.MapFillTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.MendTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.PlayerInteractTrigger;
@@ -79,6 +80,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.LootGenerateEvent;
 import io.papermc.paper.event.block.CompostItemEvent;
 import io.papermc.paper.event.block.VaultChangeStateEvent;
 import io.papermc.paper.event.entity.EntityFertilizeEggEvent;
@@ -150,6 +152,7 @@ class SkillTriggerTest {
                     Arguments.of(new SmithTrigger(), "smith", SmithItemEvent.class),
                     Arguments.of(new MendTrigger(), "mend", PlayerItemMendEvent.class),
                     Arguments.of(new MapFillTrigger(), "map_fill", PlayerMapFilledEvent.class),
+                    Arguments.of(new LootTrigger(), "loot", LootGenerateEvent.class),
                     Arguments.of(new CartographyTrigger(), "cartography", CartographyItemEvent.class),
                     Arguments.of(new VaultChangeTrigger(), "vault_change", VaultChangeStateEvent.class),
                     Arguments.of(new SnifferTrigger(), "sniffer", EntityFertilizeEggEvent.class),

@@ -583,6 +583,21 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
+     * Handles {@link LootGenerateEvent} and routes it as a {@code loot} trigger
+     * for nearby players of the loot location.
+     *
+     * @param event the loot generate event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onLoot(org.bukkit.event.world.LootGenerateEvent event) {
+        org.bukkit.loot.LootContext context = event.getLootContext();
+        if (context == null) return;
+        org.bukkit.Location location = context.getLocation();
+        if (location == null || location.getWorld() == null) return;
+        dispatchToNearby(event, location, "loot", 16);
+    }
+
+    /**
      * Handles {@link PlayerTradeEvent} and routes it as a {@code trade} trigger.
      *
      * @param event the player trade event
