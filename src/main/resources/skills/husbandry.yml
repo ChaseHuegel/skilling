@@ -50,6 +50,7 @@ abilities:
     display:
       lore:
         - "&7Right-Click a portable mob with an empty hand to carry it on your shoulders."
+        - "&7Right-click a carried mob (or click air) to set it down."
         - "&7Carry up to &a{max_passengers}&7 mobs at once."
         - "&8Requires: Empty hand, cooldown."
     requirements:
@@ -68,11 +69,13 @@ abilities:
     trigger: "right_click_air"
     display:
       lore:
-        - "&7Right-Click air with an empty hand to set down every mob you carry."
+        - "&7Right-Click air (or right-click a carried mob) to set it down."
         - "&8Requires: Empty hand."
     mechanics:
       - type: "core:drop_passengers"
-    feedback: { notify: { action_bar: false } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&a✦ Set Down! ✦" }
+      sounds: [ { type: "minecraft:entity.villager.hurt", volume: 0.4, pitch: 1.5, target: "self" } ]
   - id: "herd_growth"
     display_name: "Herd Growth"
     unlock_level: 50

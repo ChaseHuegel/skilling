@@ -163,8 +163,10 @@ XP. A non-positive result (e.g. a fully-negated hit) grants nothing. Omit
 >
 > **Mob carrying:** bind `core:pick_up_mob` to the `right_click_entity` trigger
 > to carry a mob on the player's shoulders with an empty hand, and bind
-> `core:drop_passengers` to `right_click_air` to set it down. Gate which mobs
-> are portable with a `target_type` filter and an entity tag:
+> `core:drop_passengers` to `right_click_air` to set it down. Right-clicking a
+> carried mob again also sets it down (a toggle), so the drop works whether the
+> click registers as an air click or as an interaction with the carried mob.
+> Gate which mobs are portable with a `target_type` filter and an entity tag:
 >
 > ```yaml
 > mechanics:
