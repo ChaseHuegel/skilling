@@ -1020,7 +1020,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `resurrect` | `EntityResurrectEvent` | Totem of Undying activation |
 | `cure_villager` | `EntityTransformEvent` | A zombie villager finishes converting into a villager (reason `CURED`). Attribution follows the player who initiated the cure (`ZombieVillager.getConversionPlayer()`). A cure that completes after that player logs off grants nothing |
 | `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
-| `chunk_load` | `ChunkLoadEvent` | Exploring freshly generated terrain. Fires only when a chunk is generated for the first time (`isNewChunk()`), dispatched to players within their view distance (new chunks generate at the edge of the view, not at the player's feet). Loading a chunk from disk does not fire it |
+| `chunk_load` | `ChunkLoadEvent` | Exploring freshly generated terrain. Fires only when a chunk is generated for the first time (`isNewChunk()`), dispatched to players within their view distance (new chunks generate at the edge of the view, not at the player's feet). Throttled to once per player per 5 seconds because new terrain generates many chunks at once. Loading a chunk from disk does not fire it |
 | `sleep` | `PlayerDeepSleepEvent` | Player sleeps long enough to pass the night or storm. Checking into and back out of a bed does not fire it |
 | `compost` | `CompostItemEvent` | An item is composted into a composter. Routed to nearby players of the composter |
 | `loot` | `LootGenerateEvent` | World loot is generated (e.g., a container or trial-chamber vault fills). Routed to nearby players of the loot location, so group play counts for all present |

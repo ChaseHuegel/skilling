@@ -166,6 +166,18 @@ class SkillEventListenerChunkLoadTest {
     }
 
     @Test
+    void dispatchIsThrottledPerPlayer() {
+        // New terrain generates many chunks at once; a second chunk in the same
+        // throttle window must not dispatch again for the same player.
+        placePlayer(8, 8, 64);
+        listener.onChunkLoad(chunkEvent(true));
+        assertEquals(1, RecordingMechanic.EVENTS.size());
+        listener.onChunkLoad(chunkEvent(true));
+        assertEquals(1, RecordingMechanic.EVENTS.size(),
+                "a second chunk within the throttle window must not dispatch again");
+    }
+
+    @Test
     void farAwayPlayerInSameWorldReceivesNothing() {
         placePlayer(1000, 1000, 64);
         listener.onChunkLoad(chunkEvent(true));

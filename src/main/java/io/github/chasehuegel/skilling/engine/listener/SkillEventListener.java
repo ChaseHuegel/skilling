@@ -55,6 +55,14 @@ import java.util.logging.Level;
  */
 public final class SkillEventListener implements Listener {
 
+    /**
+     * Minimum milliseconds between {@code chunk_load} dispatches per player.
+     * New terrain generates many chunks at once across the player's view, so an
+     * unthrottled dispatch turns exploration into a flood of XP and ability
+     * refreshes; the window bounds it to a steady trickle.
+     */
+    static final long CHUNK_LOAD_THROTTLE_MS = 5000;
+
     private final Skilling plugin;
     private final SkillManager skillManager;
     private final ProfileManager profileManager;
@@ -64,6 +72,8 @@ public final class SkillEventListener implements Listener {
     private final FeedbackDebouncer feedbackDebouncer;
     private final BossBarPool bossBarPool;
     private io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry stateFilterRegistry;
+    private final java.util.concurrent.ConcurrentMap<UUID, Long> chunkLoadLastDispatch =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     public SkillEventListener(Skilling plugin, SkillManager skillManager, ProfileManager profileManager,
                               TagResolver tagResolver, RequirementEngine requirementEngine,
@@ -550,9 +560,14 @@ public final class SkillEventListener implements Listener {
             // +1 chunk of margin so the leading-edge chunks that generate at the
             // boundary of the player's view are caught, not just the ones inside it.
             double reach = (Math.max(4, player.getClientViewDistance()) + 1) * 16.0;
-            if (dx * dx + dz * dz <= reach * reach) {
-                dispatch(player, event, "chunk_load");
-            }
+            if (dx * dx + dz * dz > reach * reach) continue;
+            // Throttle per player: new terrain generates many chunks at once, so
+            // gate the dispatch to once per throttle window to bound the XP rate.
+            long now = System.currentTimeMillis();
+            Long last = chunkLoadLastDispatch.get(player.getUniqueId());
+            if (last != null && now - last < CHUNK_LOAD_THROTTLE_MS) continue;
+            chunkLoadLastDispatch.put(player.getUniqueId(), now);
+            dispatch(player, event, "chunk_load");
         }
     }
 
