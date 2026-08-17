@@ -39,10 +39,12 @@ abilities:
     mechanics:
       - type: "core:speed_bonus"
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.001, max: 1.15 } }   # weak, sub-scaling
+          multiplier: { linear: { base: 1.10, step: 0.0015, max: 1.25 } }   # weak but noticeable, sub-scaling
           uuid: { constant: "8d96db25-38ce-5f64-a2ca-60a4bc6bcb4e" }
           duration: { linear: { base: 20.0, step: 1.0, max: 120.0 } }
-    feedback: { notify: { action_bar: false } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Pathfinder! ✦" }
+      sounds: [ { type: "minecraft:entity.experience_orb.pickup", volume: 0.4, pitch: 1.6, target: "self" } ]
 
   # -- QOL PASSIVE (L15): cartography work feeds a short XP boost.
   - id: "cartographers_eye"
