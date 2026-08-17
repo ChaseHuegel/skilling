@@ -62,6 +62,17 @@ abilities:
         parameters:
           max_passengers: { linear: { base: 1.0, step: 0.04, max: 4.0 } }
     feedback: { notify: { action_bar: false } }
+  - id: "set_down"
+    display_name: "Set Down"
+    unlock_level: 25
+    trigger: "right_click_air"
+    display:
+      lore:
+        - "&7Right-Click air with an empty hand to set down every mob you carry."
+        - "&8Requires: Empty hand."
+    mechanics:
+      - type: "core:drop_passengers"
+    feedback: { notify: { action_bar: false } }
   - id: "herd_growth"
     display_name: "Herd Growth"
     unlock_level: 50
