@@ -100,6 +100,17 @@ class StateFilterTargetTypeTest {
     }
 
     @Test
+    void rightClickedEntityMatchesExactTypeAndTag() {
+        org.bukkit.event.player.PlayerInteractEntityEvent event =
+                mock(org.bukkit.event.player.PlayerInteractEntityEvent.class);
+        LivingEntity clicked = entity(EntityType.WITHER_SKELETON);
+        when(event.getRightClicked()).thenReturn(clicked);
+        assertTrue(registry.evaluate("target_type", player, event, "minecraft:wither_skeleton"));
+        assertTrue(registry.evaluate("target_type", player, event, "#c:undead"));
+        assertFalse(registry.evaluate("target_type", player, event, "minecraft:cow"));
+    }
+
+    @Test
     void unsupportedEventFailsClosed() {
         PlayerInteractEvent event = mock(PlayerInteractEvent.class);
         assertFalse(registry.evaluate("target_type", player, event, "minecraft:zombie"));

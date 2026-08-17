@@ -909,6 +909,33 @@ trader keeps vanilla despawn behavior and carries no Skilling state.
 
 **Event:** `PlayerInteractEvent` (`right_click_air` or `right_click_block` trigger)
 
+### core:pick_up_mob
+
+Carries a mob as a rider of the player on a right-click of the mob. Any
+non-player living mob can be carried: hostile, neutral, passive, or friendly,
+including villagers. Which mobs are portable is data-driven: bind the ability to
+the `right_click_entity` trigger and gate it with a `target_type` filter and a
+`#...` entity tag. The player must have an empty main hand (the empty-hand
+carry gesture), so vanilla feed/breed/shear/tame/trade interactions are never
+interrupted.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `max_passengers` | double | `1` | How many mobs the player can carry at once |
+
+**Event:** `PlayerInteractEntityEvent` (`right_click_entity` trigger)
+
+### core:drop_passengers
+
+Sets down every carried mob on an empty-hand right-click of air, the companion
+gesture to `core:pick_up_mob`.
+
+**Parameters:** None
+
+**Event:** `PlayerInteractEvent` (`right_click_air` trigger)
+
 ## Effect & Attribute Parameter Keys
 
 Mechanics that accept an `effect` parameter (`core:apply_status`, `core:aoe_effect`,
@@ -1030,7 +1057,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `health` | `below:N%`, `above:N%` | Player health percentage |
 | `hunger` | `below:N`, `above:N` | Player food level |
 | `biome` | `minecraft:biome_id` | Player's current biome. Values are validated at load |
-| `target_type` | `minecraft:entity_id` or `<#entity_tag>` | Type of the target entity. Matches the damaged entity on `entity_damage`/`entity_damage_taken` and the killed entity on `entity_kill`. A `#...` value (e.g. `#c:undead`, `#minecraft:zombies`) resolves through the `entity_tags` store in `tags/base.yml`. Fails closed on events with no target entity |
+| `target_type` | `minecraft:entity_id` or `<#entity_tag>` | Type of the target entity. Matches the damaged entity on `entity_damage`/`entity_damage_taken`, the killed entity on `entity_kill`, and the clicked entity on `right_click_entity`. A `#...` value (e.g. `#c:undead`, `#minecraft:zombies`) resolves through the `entity_tags` store in `tags/base.yml`. Fails closed on events with no target entity |
 | `offhand` | `empty`, `weapon` | Offhand item state |
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
 | `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |

@@ -456,6 +456,9 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:reroll_trades", RerollTradesMechanic.class, List.of());
         mechReg.register("core:summon_wandering_trader", SummonWanderingTraderMechanic.class, List.of());
+        mechReg.register("core:pick_up_mob", PickUpMobMechanic.class, List.of("max_passengers"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "max_passengers"));
+        mechReg.register("core:drop_passengers", DropPassengersMechanic.class, List.of());
     }
 
     /** Registers the built-in triggers into the given registry. */
@@ -703,7 +706,10 @@ public final class Skilling extends JavaPlugin {
     /**
      * Resolves the entity whose type a {@code target_type} filter compares
      * against, for the events that carry a target entity: entity damage (the
-     * damaged entity) and entity death (the killed entity).
+     * damaged entity), entity death (the killed entity), and a right-clicked
+     * entity (the clicked mob, so {@code target_type} gates {@code
+     * right_click_entity} mechanics such as {@code core:instant_tame} and
+     * {@code core:pick_up_mob}).
      *
      * @param e the triggering event
      * @return the target entity type, or null for events without a target entity
@@ -714,6 +720,9 @@ public final class Skilling extends JavaPlugin {
         }
         if (e instanceof org.bukkit.event.entity.EntityDeathEvent ede) {
             return ede.getEntity().getType();
+        }
+        if (e instanceof org.bukkit.event.player.PlayerInteractEntityEvent pe) {
+            return pe.getRightClicked().getType();
         }
         return null;
     }
