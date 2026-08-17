@@ -28,9 +28,12 @@ xp_sources:
 abilities:
   # -- FOUNDATIONAL (L1): the travel scalar. Exploring new land grants a weak
   # speed buff that becomes a consistent travel aid as its duration scales up.
+  # Unlocks at level 0 (the starting level): exploring grants no exploration XP
+  # (chunk_load XP stays with Survival), so a level-1 gate would lock the
+  # skill's own foundational passive forever.
   - id: "pathfinder"
     display_name: "Pathfinder"
-    unlock_level: 1
+    unlock_level: 0
     trigger: "chunk_load"
     display: { lore: [ "&7Exploring new land grants &a{duration}s&7 of Speed (&a{multiplier}x&7)." ] }
     mechanics:

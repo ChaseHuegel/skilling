@@ -45,8 +45,11 @@ xp_sources:
     filters: [ { state: "is_in_water" } ]
     reward: { constant: 45.0 }
   # Exploring: generating a brand-new chunk (chunk_load only fires for isNewChunk).
+  # New terrain generates many chunks at once, so the engine throttles chunk_load
+  # dispatch to once per player per 5 seconds; the low flat reward keeps a long
+  # exploration session a steady trickle rather than a fast track.
   - trigger: "chunk_load"
-    reward: { constant: 50.0 }
+    reward: { constant: 10.0 }
   # Sleeping: passing the night in a bed.
   - trigger: "sleep"
     reward: { constant: 80.0 }
