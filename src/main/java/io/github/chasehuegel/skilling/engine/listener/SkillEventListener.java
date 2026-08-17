@@ -526,17 +526,34 @@ public final class SkillEventListener implements Listener {
 
     /**
      * Handles {@link ChunkLoadEvent} and routes it as a {@code chunk_load} trigger
-     * for nearby players when the chunk was generated for the first time, so
-     * exploring uncharted land is the rewarded action rather than merely loading
-     * a chunk from disk.
+     * for players exploring freshly generated chunks, so exploring uncharted land
+     * is the rewarded action rather than merely loading a chunk from disk.
+     *
+     * <p>New chunks generate at the edge of a player's view distance, not at the
+     * player's feet, and their center sits at the chunk's ground plane, so the
+     * reach must be horizontal and span the client view distance in blocks; a
+     * block-scale 3D radius would never reach the exploring player.
      *
      * @param event the chunk load event
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChunkLoad(org.bukkit.event.world.ChunkLoadEvent event) {
         if (!event.isNewChunk()) return;
-        org.bukkit.Location center = event.getChunk().getBlock(8, 0, 8).getLocation();
-        dispatchToNearby(event, center, "chunk_load", 16);
+        org.bukkit.Chunk chunk = event.getChunk();
+        org.bukkit.World world = chunk.getWorld();
+        double chunkCenterX = (chunk.getX() << 4) + 8;
+        double chunkCenterZ = (chunk.getZ() << 4) + 8;
+        for (Player player : world.getPlayers()) {
+            org.bukkit.Location loc = player.getLocation();
+            double dx = loc.getX() - chunkCenterX;
+            double dz = loc.getZ() - chunkCenterZ;
+            // +1 chunk of margin so the leading-edge chunks that generate at the
+            // boundary of the player's view are caught, not just the ones inside it.
+            double reach = (Math.max(4, player.getClientViewDistance()) + 1) * 16.0;
+            if (dx * dx + dz * dz <= reach * reach) {
+                dispatch(player, event, "chunk_load");
+            }
+        }
     }
 
     /**
