@@ -39,4 +39,5 @@
 - [x] [ISSUE-300](ISSUE-300.md) - Build/CI/frontend hygiene: duplicate tests, E2E artifacts, relocation, and doc drift
 
 ### Research
+- [x] [ISSUE-304](ISSUE-304.md) - Research: Minecraft gameplay coverage audit and new-skill/ability proposals
 - [x] [ISSUE-301](ISSUE-301.md) - Design decision: hardcoded gameplay tables vs the data-driven golden rule
