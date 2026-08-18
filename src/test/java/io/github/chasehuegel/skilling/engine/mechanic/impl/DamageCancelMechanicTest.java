@@ -60,8 +60,19 @@ class DamageCancelMechanicTest {
         var player = mock(Player.class);
         var event = damageOn(player);
 
-        assertTrue(new DamageCancelMechanic().execute(player, Map.of("chance", 50.0), event));
+        var mechanic = new DamageCancelMechanic();
+        assertTrue(mechanic.execute(player, Map.of("chance", 50.0), event));
         verify(event, never()).setCancelled(true);
+    }
+
+    @Test
+    void failedRollReportsNoProc() {
+        DamageCancelMechanic.setRandomSource(() -> 99.0);
+        var player = mock(Player.class);
+        var mechanic = new DamageCancelMechanic();
+        mechanic.execute(player, Map.of("chance", 50.0), damageOn(player));
+
+        assertFalse(mechanic.didProc(), "a missed roll must not report a proc");
     }
 
     @Test
@@ -70,8 +81,29 @@ class DamageCancelMechanicTest {
         var player = mock(Player.class);
         var event = damageOn(player);
 
-        assertTrue(new DamageCancelMechanic().execute(player, Map.of("chance", 50.0), event));
+        var mechanic = new DamageCancelMechanic();
+        assertTrue(mechanic.execute(player, Map.of("chance", 50.0), event));
         verify(event).setCancelled(true);
+    }
+
+    @Test
+    void successfulRollReportsProc() {
+        DamageCancelMechanic.setRandomSource(() -> 10.0);
+        var player = mock(Player.class);
+        var mechanic = new DamageCancelMechanic();
+        mechanic.execute(player, Map.of("chance", 50.0), damageOn(player));
+
+        assertTrue(mechanic.didProc(), "a landed roll must report a proc");
+    }
+
+    @Test
+    void noOpExecutionReportsNoProc() {
+        var player = mock(Player.class);
+        var mechanic = new DamageCancelMechanic();
+        // Wrong event type: execute returns false and nothing should have procced.
+        assertFalse(mechanic.execute(player, Map.of("chance", 100.0),
+                mock(org.bukkit.event.block.BlockBreakEvent.class)));
+        assertFalse(mechanic.didProc());
     }
 
     @Test

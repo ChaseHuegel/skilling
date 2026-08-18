@@ -1,23 +1,48 @@
+# ==========================================
+# ACROBATICS SKILL
+# ==========================================
+# The movement and evasion skill. It earns XP from fearless movement and fall
+# mastery: surviving falls, throwing ender pearls, sprint-jumping, and gliding.
+# Its abilities turn a fall into momentum: landing grants a speed burst (L1) and
+# a chance to land unhurt (L15), sneaking then jumping costs hunger for a real
+# leap (L25), taking a hit can be dodged (L50), elytra flights end with a surge
+# (L75), and the master permanently moves and jumps like gravity is lighter
+# (L100).
+#
+# XP loop: take fall damage (risk), throw ender pearls (material cost),
+# sprint-jump (hunger cost, the grindable driver), and glide (opportunity).
 id: "acrobatics"
 max_level: 100
 display: { name: "Acrobatics", icon: "minecraft:feather", color: "WHITE", style: "SOLID" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Falling is the skill's core loop: reward per raw damage point (a 4-heart
+  # fall is 8 damage), mirroring the armor/tanking skills' damage-scaled
+  # convention. Feather falling and soft landings reduce the XP earned, which is
+  # the honest cost of being good at not falling.
   - trigger: "fall_damage"
-    reward: { constant: 14.0 }      # per raw damage point (8 ≈ 4-heart fall). Damage-scaled
+    reward: { constant: 14.0 }
     scaling: damage
+  # Throwing an ender pearl costs the pearl; each throw pays a flat reward.
   - trigger: "launch_projectile"
     filters: [ { target: "minecraft:ender_pearl" } ]
     reward: { constant: 111.1 }
-  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=111 exceeds the ~60/action ceiling.
-  # Accepted residual gap (tanking skills are inherently frequency-capped).
-  # sprint/sneak XP removed (trivial toggle spam)
+  # Gliding needs an elytra and altitude; each flight start pays once.
+  - trigger: "elytra_glide"
+    reward: { constant: 60.0 }
+  # Sprint-jumping is the grindable source: it burns hunger, so the reward is
+  # small per jump and the cost scales with the player's parkour stamina.
+  - trigger: "jump"
+    filters: [ { state: "is_sprinting" } ]
+    reward: { constant: 15.0 }
 abilities:
+  # -- FOUNDATIONAL (L1): landing keeps you moving. Sub-scaling from level 1 so
+  # the speed growth is felt across the whole climb.
   - id: "light_feet"
     display_name: "Light Feet"
     unlock_level: 1
     trigger: "fall_damage"
-    display: { lore: [ "&7Taking fall damage grants &a{multiplier}x&7 speed for {duration}s." ] }
+    display: { lore: [ "&7Surviving a fall grants &a{multiplier}x&7 speed for &a{duration}s&7." ] }
     mechanics:
       - type: "core:speed_bonus"
         parameters:
@@ -25,6 +50,8 @@ abilities:
           uuid: { constant: "bc67b59a-ea91-5708-af4f-8e088383251a" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
+  # -- QOL PASSIVE (L15): 10% -> 40% chance to land unhurt. Success-gated
+  # feedback so a clean landing is visible without a cue on every missed roll.
   - id: "soft_landing"
     display_name: "Soft Landing"
     unlock_level: 15
@@ -34,75 +61,100 @@ abilities:
       - type: "core:cancel_damage"
         filters: [ { state: "is_on_ground" } ]
         parameters:
-          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
-    feedback: { notify: { action_bar: false } }
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&fSoft landing!" }
+      sounds: [ { type: "minecraft:entity.player.big_fall", volume: 0.4, pitch: 1.6, target: "self" } ]
+      success_only: true
+  # -- PRIMARY ABILITY (L25): sneak + jump, gated by hunger (1 hunger, need 3+).
+  # No cooldown: the food cost is the gate, and Jump Boost potions and beacons
+  # stay as the free alternative.
   - id: "leap"
     display_name: "Leap"
     unlock_level: 25
-    trigger: "sneak"
+    trigger: "jump"
     display:
       lore:
-        - "&7Sneak+Jump to leap &a{multiplier}x&7 higher for {duration}s."
-        - "&8Requires: Sneaking, on ground, 8s cooldown."
+        - "&7Sneak+Jump to leap &a{multiplier}x&7 higher."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, 3+ hunger."
     requirements:
-      cooldown: 8.0
-      state: [ "is_sneaking", "is_on_ground" ]
-    on_failure: { cooldown: { action_bar: "&eLeap cooling down: {time}s" } }
+      state: [ "is_sneaking" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to leap!" }
     mechanics:
       - type: "core:modify_jump"
         parameters:
           multiplier: { linear: { base: 1.3, step: 0.01, max: 1.8 } }
           uuid: { constant: "5ce1a199-41ed-5b8e-80d8-474db73cbee6" }
-          duration: { constant: 1.0 }   # single leap
+          duration: { constant: 1.5 }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&f✦ Leap! ✦" }
-      sounds: [ { type: "minecraft:entity.enderman.teleport", volume: 0.3, pitch: 1.5, target: "self" } ]
+      notify: { action_bar: true, chat: false, message: "&fLeap!" }
+      sounds: [ { type: "minecraft:entity.horse.jump", volume: 0.4, pitch: 1.2, target: "self" } ]
+  # -- MAJOR PASSIVE (L50): taking a hit may dodge it and start a speed burst.
+  # Dodges reach 25% at level 100 (base 8, step 0.34). Success-gated feedback
+  # so the player trusts the dodge is really happening.
   - id: "agile"
     display_name: "Agile"
     unlock_level: 50
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Taking damage grants &a{chance}%&7 dodge & &a{multiplier}x&7 speed for {duration}s." ] }
+    display:
+      lore:
+        - "&7Taking damage grants &a{chance}%&7 dodge & &a{multiplier}x&7 speed for &a{duration}s&7."
     mechanics:
       - type: "core:dodge"
         parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+          chance: { linear: { base: 8.0, step: 0.34, max: 25.0 } }
       - type: "core:speed_bonus"
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
+          multiplier: { linear: { base: 1.1, step: 0.004, max: 1.3 } }
           uuid: { constant: "51178d5c-1948-5617-8f93-81dc01571e58" }
           duration: { constant: 8.0 }
-    feedback: { notify: { action_bar: false } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&fDodged!" }
+      sounds: [ { type: "minecraft:entity.player.attack.sweep", volume: 0.4, pitch: 1.4, target: "self" } ]
+      success_only: true
+  # -- SYNERGY PASSIVE (L75): an elytra flight ends with a long speed and jump
+  # surge. A single shared multiplier (both mechanics read the {multiplier}
+  # token) so the lore stays accurate; the duration is the sub-scaling scalar.
   - id: "endurance"
     display_name: "Endurance"
     unlock_level: 75
-    trigger: "elytra_glide"          # P2-8 synergy: gliding
-    display: { lore: [ "&7Gliding grants &a{multiplier}x&7 speed & jump on landing for {duration}s." ] }
+    trigger: "elytra_glide"
+    display: { lore: [ "&7Gliding ends with &a{multiplier}x&7 speed & jump for &a{duration}s&7." ] }
     mechanics:
       - type: "core:speed_bonus"
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
+          multiplier: { constant: 1.3 }
           uuid: { constant: "00578402-d942-5ac2-91d8-e6da1cf83e8d" }
-          duration: { constant: 15.0 }
+          duration: { linear: { base: 60.0, step: 2.4, max: 120.0 } }
       - type: "core:modify_jump"
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.004, max: 1.5 } }
+          multiplier: { constant: 1.3 }
           uuid: { constant: "00578402-d942-5ac2-91d8-e6da1cf83e8d" }
-          duration: { constant: 15.0 }
+          duration: { linear: { base: 60.0, step: 2.4, max: 120.0 } }
     feedback: { notify: { action_bar: false } }
+  # -- MASTERY CAPSTONE (L100): a permanent, re-evaluated passive. Movement
+  # speed and jump strength are constant strong values (the capstone has no
+  # levels left to grow), giving an honest, never-obsolete reward. Static lore
+  # because the resolver renders one {amount} per ability.
   - id: "gravity_defier"
     display_name: "Gravity Defier"
     unlock_level: 100
-    trigger: "fall_damage"
-    display: { lore: [ "&7Permanent &a{multiplier}x&7 speed & jump while airborne-landed." ] }
+    trigger: "level_up"
+    display:
+      lore:
+        - "&7Permanent &a+20%&7 speed and &a+25%&7 jump strength."
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:persistent_attribute"
         parameters:
-          multiplier: { linear: { base: 1.3, step: 0.002, max: 1.4 } }
+          attribute: { constant: "minecraft:movement_speed" }
+          amount: { constant: 0.02 }
           uuid: { constant: "6619f61a-7b3c-5a90-97e2-16dd792a3930" }
-          duration: { linear: { base: 30.0, step: 0.5, max: 60.0 } }
-      - type: "core:modify_jump"
+      - type: "core:persistent_attribute"
         parameters:
-          multiplier: { linear: { base: 1.6, step: 0.005, max: 1.8 } }
-          uuid: { constant: "6619f61a-7b3c-5a90-97e2-16dd792a3930" }
-          duration: { linear: { base: 30.0, step: 0.5, max: 60.0 } }
+          attribute: { constant: "minecraft:jump_strength" }
+          amount: { constant: 0.1 }
+          uuid: { constant: "6619f61a-7b3c-5a95-97e2-16dd792a3930" }
     feedback: { notify: { action_bar: false } }

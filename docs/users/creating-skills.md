@@ -286,6 +286,7 @@ player levels up.
 | `notify.message` | string | Message text |
 | `particles` | list | Particle effect configurations |
 | `sounds` | list | Sound effect configurations |
+| `success_only` | bool | When `true`, the feedback fires only when a proc-aware mechanic (e.g. `core:dodge`, `core:cancel_damage`) actually succeeded, not on every execution attempt. Use it so a chance-based ability never spams a cue on a missed roll. Has no effect on abilities without a proc-aware mechanic |
 
 Particle and sound entries support a `target` field set to `"self"` (played at the player's location) or `"target"` (played at the target entity/location).
 

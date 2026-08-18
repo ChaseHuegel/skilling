@@ -72,6 +72,7 @@ interface Ability {
     message: string
     particles: ParticleConfig[]
     sounds: SoundConfig[]
+    successOnly: boolean
   }
   // Reference-shaped abilities (a bare `- id` entry) carry client-only markers:
   // isReference flags the entry, inheritedTrigger/inheritedDisplayName show the
@@ -168,6 +169,7 @@ function emptyAbility(): Ability {
       message: '',
       particles: [],
       sounds: [],
+      successOnly: false,
     },
   }
 }
@@ -711,6 +713,14 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
                   @change="updateFeedback(idx, { chat: ($event.target as HTMLInputElement).checked })"
                 />
                 Chat
+              </label>
+              <label class="toggle-check">
+                <input
+                  type="checkbox"
+                  :checked="ability.feedback.successOnly"
+                  @change="updateFeedback(idx, { successOnly: ($event.target as HTMLInputElement).checked })"
+                />
+                Only on success (proc)
               </label>
             </div>
 

@@ -168,6 +168,54 @@ public class UnlockQuestMechanic implements UnlockMechanic {
 Register it as usual; the registry reports it through `isUnlock(...)` and the
 engine's reconciliation path picks it up automatically.
 
+### Proc-Aware Mechanics and Success-Gated Feedback
+
+A mechanic whose effect is probabilistic (a dodge, block, or cancel that
+succeeds only when a chance roll wins) can implement `ProcAwareMechanic` so the
+engine can gate an ability's `feedback.success_only` cues to the roll actually
+landing. Without this, feedback fires on every execution attempt — a player
+would get a "Dodged!" cue even on a missed roll, making the ability feel noisy.
+
+Implement the extra `didProc()` method to report whether the most recent
+`execute` actually produced its effect. Mechanics are prototype-scoped
+(recreated per dispatch), so storing the roll outcome on the instance is
+thread-safe.
+
+```java
+import io.github.chasehuegel.skilling.engine.mechanic.ProcAwareMechanic;
+
+/**
+ * Rolls a chance to negate a player's damage.
+ *
+ * <p>YAML key: {@code myaddon:parry}
+ * <br>Params: {@code chance} (0-100)
+ */
+public class ParryMechanic implements ProcAwareMechanic {
+
+    private boolean procced;
+
+    @Override
+    public boolean execute(Player player, Map<String, Object> params, Event event) {
+        if (!(event instanceof org.bukkit.event.entity.EntityDamageEvent de)
+                || !de.getEntity().equals(player)) {
+            return false;
+        }
+        double chance = ((Number) params.getOrDefault("chance", 0)).doubleValue();
+        procced = ThreadLocalRandom.current().nextDouble(100) <= chance;
+        if (procced) de.setCancelled(true);
+        return true; // an activation attempt regardless of roll outcome
+    }
+
+    @Override
+    public boolean didProc() {
+        return procced;
+    }
+}
+```
+
+An ability using such a mechanic can then set `feedback.success_only: true` so
+its action bar, sounds, and particles fire only when the parry actually lands.
+
 ## Registering a Custom Trigger
 
 Triggers map a YAML trigger key to a Paper event class. Implement `SkillTrigger` as a

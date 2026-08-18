@@ -98,6 +98,24 @@ class SkillEventListenerFireAbilitiesTest {
         }
     }
 
+    /** Proc-aware test mechanic: didProc reflects the injected outcome. */
+    public static class ProcAwareMechanic
+            implements io.github.chasehuegel.skilling.engine.mechanic.ProcAwareMechanic {
+        public static final AtomicInteger EXECUTIONS = new AtomicInteger();
+        public static volatile boolean OUTCOME = true;
+
+        @Override
+        public boolean execute(Player player, Map<String, Object> params, Event event) {
+            EXECUTIONS.incrementAndGet();
+            return true;
+        }
+
+        @Override
+        public boolean didProc() {
+            return OUTCOME;
+        }
+    }
+
     @TempDir
     Path tempDir;
 
@@ -112,6 +130,8 @@ class SkillEventListenerFireAbilitiesTest {
         NoOpMechanic.EXECUTIONS.set(0);
         ThrowingMechanic.EXECUTIONS.set(0);
         CancelMechanic.EXECUTIONS.set(0);
+        ProcAwareMechanic.EXECUTIONS.set(0);
+        ProcAwareMechanic.OUTCOME = true;
     }
 
     private void buildSkillWithAbility(String abilityRequirementsBlock) throws IOException {
@@ -140,6 +160,7 @@ class SkillEventListenerFireAbilitiesTest {
                     reg.register("test:count", CountingMechanic.class, java.util.List.of());
                     reg.register("test:noop", NoOpMechanic.class, java.util.List.of());
                     reg.register("test:throw", ThrowingMechanic.class, java.util.List.of());
+                    reg.register("test:proc", ProcAwareMechanic.class, java.util.List.of());
                 });
 
         Path skillsDir = tempDir.resolve("skills");
@@ -173,6 +194,7 @@ class SkillEventListenerFireAbilitiesTest {
         mechReg.register("test:count", CountingMechanic.class, java.util.List.of());
         mechReg.register("test:noop", NoOpMechanic.class, java.util.List.of());
         mechReg.register("test:throw", ThrowingMechanic.class, java.util.List.of());
+        mechReg.register("test:proc", ProcAwareMechanic.class, java.util.List.of());
 
         var tagResolver = new TagResolver(new CustomTagLoader());
         RequirementEngine requirementEngine = new RequirementEngine(tagResolver, new StateFilterRegistry());
@@ -575,5 +597,75 @@ class SkillEventListenerFireAbilitiesTest {
         }
 
         verify(block).removeMetadata(eq("player_placed"), any(org.bukkit.plugin.Plugin.class));
+    }
+
+    @Test
+    void successOnlyFeedbackSuppressedWhenProcMisses() throws IOException {
+        ProcAwareMechanic.OUTCOME = false;
+        buildSkillWithMechanicsAndFeedback("""
+                """, """
+                  - { type: "test:proc" }
+            """, """
+            feedback:
+              notify:
+                action_bar: true
+                chat: false
+                message: "&fDodged!"
+              success_only: true
+            """);
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+
+        // The mechanic ran but the roll missed, so the success-gated action bar
+        // must not fire.
+        assertEquals(1, ProcAwareMechanic.EXECUTIONS.get());
+        verify(player, never()).sendActionBar(any(net.kyori.adventure.text.Component.class));
+    }
+
+    @Test
+    void successOnlyFeedbackFiresWhenProcLands() throws IOException {
+        ProcAwareMechanic.OUTCOME = true;
+        buildSkillWithMechanicsAndFeedback("""
+                """, """
+                  - { type: "test:proc" }
+            """, """
+            feedback:
+              notify:
+                action_bar: true
+                chat: false
+                message: "&fDodged!"
+              success_only: true
+            """);
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+
+        assertEquals(1, ProcAwareMechanic.EXECUTIONS.get());
+        verify(player).sendActionBar(any(net.kyori.adventure.text.Component.class));
+    }
+
+    @Test
+    void nonProcAwareAbilityIsUnaffectedBySuccessOnlyFlag() throws IOException {
+        ProcAwareMechanic.OUTCOME = false;
+        buildSkillWithMechanicsAndFeedback("""
+                """, """
+                  - { type: "test:count" }
+            """, """
+            feedback:
+              notify:
+                action_bar: true
+                chat: false
+                message: "&fActivated!"
+              success_only: true
+            """);
+
+        BlockBreakEvent event = mock(BlockBreakEvent.class);
+        listener.fireAbilities(player, profileManager.getProfile(uuid), event, "block_break");
+
+        // A mistaken success_only flag on an ability without a proc-aware mechanic
+        // must not silence its feedback.
+        assertEquals(1, CountingMechanic.EXECUTIONS.get());
+        verify(player).sendActionBar(any(net.kyori.adventure.text.Component.class));
     }
 }

@@ -87,7 +87,7 @@ const FALLBACK_TRIGGERS = [
   'consume_item', 'fishing', 'crop_grow', 'breed_animals', 'sprint', 'sneak',
   'ride_horse', 'collect_xp', 'level_up', 'enchant_item', 'shoot_bow',
   'item_damage', 'player_shear', 'player_tame', 'launch_projectile',
-  'projectile_hit', 'resurrect', 'cure_villager', 'elytra_glide',
+  'projectile_hit', 'resurrect', 'cure_villager', 'elytra_glide', 'jump',
 ]
 
 function updateSource(index: number, patch: Partial<XpSource>) {

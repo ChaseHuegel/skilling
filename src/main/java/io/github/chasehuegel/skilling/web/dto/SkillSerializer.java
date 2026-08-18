@@ -210,7 +210,8 @@ public final class SkillSerializer {
             boolVal(notify, "chat", false),
             str(notify, "message", ""),
             particles != null ? particles : List.of(),
-            sounds != null ? sounds : List.of()
+            sounds != null ? sounds : List.of(),
+            boolVal(fbMap, "success_only", false)
         );
 
         // Parse on_failure
@@ -333,7 +334,8 @@ public final class SkillSerializer {
                 && (a.feedback().actionBar() || a.feedback().chat()
                         || (a.feedback().message() != null && !a.feedback().message().isBlank())
                         || (a.feedback().particles() != null && !a.feedback().particles().isEmpty())
-                        || (a.feedback().sounds() != null && !a.feedback().sounds().isEmpty()));
+                        || (a.feedback().sounds() != null && !a.feedback().sounds().isEmpty())
+                        || a.feedback().successOnly());
         if (hasFeedback) {
             Map<String, Object> fbMap = new LinkedHashMap<>();
             Map<String, Object> notify = new LinkedHashMap<>();
@@ -343,6 +345,9 @@ public final class SkillSerializer {
             fbMap.put("notify", notify);
             fbMap.put("particles", a.feedback().particles() != null ? a.feedback().particles() : List.of());
             fbMap.put("sounds", a.feedback().sounds() != null ? a.feedback().sounds() : List.of());
+            if (a.feedback().successOnly()) {
+                fbMap.put("success_only", true);
+            }
             m.put("feedback", fbMap);
         }
 

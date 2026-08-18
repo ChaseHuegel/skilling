@@ -5,6 +5,7 @@ import io.github.chasehuegel.skilling.engine.SkillDefinition;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
+import io.github.chasehuegel.skilling.engine.mechanic.ProcAwareMechanic;
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
@@ -418,6 +419,11 @@ public final class SkillEventListener implements Listener {
         // Fire only when sneaking starts, not on release.
         if (!event.isSneaking()) return;
         dispatch(event.getPlayer(), event, "sneak");
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerJump(com.destroystokyo.paper.event.player.PlayerJumpEvent event) {
+        dispatch(event.getPlayer(), event, "jump");
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -915,6 +921,8 @@ public final class SkillEventListener implements Listener {
             // Execute each mechanic, preserving per-mechanic filter matching and
             // per-mechanic parameter evaluation.
             boolean anyExecuted = false;
+            boolean procAwareRan = false;
+            boolean procSucceeded = false;
             for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
                 debug("    mechanic=" + entry.type() + " skill=" + skill.id());
                 try {
@@ -934,6 +942,14 @@ public final class SkillEventListener implements Listener {
                     boolean executed = mechanic.execute(player, evaluatedParams, event);
                     if (executed) {
                         anyExecuted = true;
+                        // A proc-aware mechanic whose roll landed gates
+                        // feedback.success_only to the proc actually happening.
+                        if (mechanic instanceof ProcAwareMechanic procAware) {
+                            procAwareRan = true;
+                            if (procAware.didProc()) {
+                                procSucceeded = true;
+                            }
+                        }
                     } else {
                         debug("    -> mechanic returned false (no-op), skipping");
                     }
@@ -962,16 +978,24 @@ public final class SkillEventListener implements Listener {
             requirementEngine.consume(player, skill.id(), ability.id(), ability.requirements(),
                     skillLevel, ability.unlockLevel());
 
+            // Success-gated feedback: when feedback.success_only is set and a
+            // proc-aware mechanic ran, the cues fire only when the roll actually
+            // landed. An ability with no proc-aware mechanic is unaffected, so a
+            // mistaken success_only flag cannot silence every activation.
+            boolean successGatePassed = !ability.feedback().successOnly()
+                    || !procAwareRan
+                    || procSucceeded;
+
             String abilityMsg = ability.feedback().message();
             boolean hasMsg = !abilityMsg.isBlank();
-            if (ability.feedback().actionBar() && hasMsg) {
+            if (successGatePassed && ability.feedback().actionBar() && hasMsg) {
                 FanfareDispatcher.sendActionBar(player, abilityMsg);
                 if (profile.getPreferences().logAbilities()) {
                     player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
                             .deserialize(abilityMsg));
                 }
             }
-            if (ability.feedback().chat() && hasMsg && !ability.feedback().actionBar()) {
+            if (successGatePassed && ability.feedback().chat() && hasMsg && !ability.feedback().actionBar()) {
                 if (profile.getPreferences().logAbilities()) {
                     player.sendMessage(LegacyComponentSerializer.legacyAmpersand()
                             .deserialize(abilityMsg));
@@ -1002,10 +1026,10 @@ public final class SkillEventListener implements Listener {
                     }
                 }, delayTicks);
             }
-            if (!ability.feedback().particles().isEmpty()) {
+            if (successGatePassed && !ability.feedback().particles().isEmpty()) {
                 FanfareDispatcher.dispatchParticles(player, resolveEventTargetLocation(event), ability.feedback().particles());
             }
-            if (!ability.feedback().sounds().isEmpty()) {
+            if (successGatePassed && !ability.feedback().sounds().isEmpty()) {
                 FanfareDispatcher.dispatchSounds(player, resolveEventTargetLocation(event), ability.feedback().sounds());
             }
             debug("    -> done");

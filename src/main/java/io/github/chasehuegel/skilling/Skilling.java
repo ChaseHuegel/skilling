@@ -487,6 +487,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("breed_animals", BreedAnimalsTrigger.class);
         trigReg.register("sprint", SprintTrigger.class);
         trigReg.register("sneak", SneakTrigger.class);
+        trigReg.register("jump", JumpTrigger.class);
         trigReg.register("ride_horse", RideHorseTrigger.class);
         trigReg.register("collect_xp", CollectXpTrigger.class);
         trigReg.register("level_up", LevelUpTrigger.class);

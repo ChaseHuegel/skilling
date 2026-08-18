@@ -1,6 +1,6 @@
 package io.github.chasehuegel.skilling.engine.mechanic.impl;
 
-import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import io.github.chasehuegel.skilling.engine.mechanic.ProcAwareMechanic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -25,10 +25,16 @@ import java.util.function.DoubleSupplier;
  * <p><b>YAML keys:</b> {@code core:dodge}, {@code core:block_damage},
  * {@code core:cancel_damage}
  * <br>Params: {@code chance} (0-100, percentage chance to negate damage)
+ *
+ * <p><b>Proc reporting:</b> implements {@link ProcAwareMechanic} so the engine
+ * can gate {@code feedback.success_only} cues to the roll actually landing —
+ * a dodge that whiffs stays silent, a dodge that saves you flashes feedback.
  */
-public final class DamageCancelMechanic implements SkillMechanic {
+public final class DamageCancelMechanic implements ProcAwareMechanic {
 
     private static volatile DoubleSupplier randomSource = () -> ThreadLocalRandom.current().nextDouble(100);
+
+    private boolean procced;
 
     /**
      * Test-only seam (marked {@code @VisibleForTesting}) to force a deterministic
@@ -46,9 +52,16 @@ public final class DamageCancelMechanic implements SkillMechanic {
         if (!de.getEntity().equals(player)) return false;
         double chance = ((Number) params.getOrDefault("chance", 0)).doubleValue();
         if (chance <= 0) return false;
-        if (randomSource.getAsDouble() <= chance) {
+        // Record whether the roll lands so the engine can gate success-only feedback.
+        procced = randomSource.getAsDouble() <= chance;
+        if (procced) {
             de.setCancelled(true);
         }
         return true;
+    }
+
+    @Override
+    public boolean didProc() {
+        return procced;
     }
 }

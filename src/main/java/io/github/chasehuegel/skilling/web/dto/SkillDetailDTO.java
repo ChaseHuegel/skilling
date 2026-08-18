@@ -99,7 +99,8 @@ public record SkillDetailDTO(
         boolean chat,
         String message,
         List<Map<String, Object>> particles,
-        List<Map<String, Object>> sounds
+        List<Map<String, Object>> sounds,
+        boolean successOnly
     ) {}
 
     public record OnFailureDTO(

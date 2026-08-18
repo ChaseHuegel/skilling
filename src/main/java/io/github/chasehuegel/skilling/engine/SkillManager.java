@@ -696,7 +696,13 @@ public final class SkillManager {
         validateFeedbackParticles("feedback of ability '" + abilityId + "'", particles);
         validateFeedbackSounds("feedback of ability '" + abilityId + "'", sounds);
 
-        return new SkillDefinition.Feedback(actionBar, chat, message, particles, sounds);
+        // success_only gates the feedback to the proc actually landing (e.g. a
+        // dodge roll), so players get certainty that a chance-based ability is
+        // working without a cue spam on every missed roll.
+        boolean successOnly = io.github.chasehuegel.skilling.engine.mechanic.impl.MechanicParamValidators
+                .bool(feedbackContext, map.getOrDefault("success_only", false), "success_only");
+
+        return new SkillDefinition.Feedback(actionBar, chat, message, particles, sounds, successOnly);
     }
 
     /**

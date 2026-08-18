@@ -247,14 +247,24 @@ public record SkillDefinition(
      * @param message   the message text
      * @param particles list of particle configurations
      * @param sounds    list of sound configurations
+     * @param successOnly whether the feedback fires only when a proc-aware
+     *                    mechanic actually succeeded (e.g. a dodge roll lands),
+     *                    instead of on every execution attempt
      */
     public record Feedback(
             boolean actionBar,
             boolean chat,
             String message,
             List<Map<String, Object>> particles,
-            List<Map<String, Object>> sounds
-    ) {}
+            List<Map<String, Object>> sounds,
+            boolean successOnly
+    ) {
+        /** Creates feedback without success-gating (the common case). */
+        public Feedback(boolean actionBar, boolean chat, String message,
+                        List<Map<String, Object>> particles, List<Map<String, Object>> sounds) {
+            this(actionBar, chat, message, particles, sounds, false);
+        }
+    }
 
     /**
      * A command to execute on level-up with placeholder support.

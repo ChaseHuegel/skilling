@@ -209,6 +209,11 @@ abilities:
           volume: 0.5
           pitch: 1.2
           target: "self"                       # Plays at the player location
+      # success_only: true
+      # Optional. When true, the feedback (notify/particles/sounds) fires only
+      # when a proc-aware mechanic (core:dodge, core:cancel_damage, core:block
+      # _damage) actually succeeded, instead of on every execution attempt.
+      # Use it so a chance-based ability never spams a cue on a missed roll.
 
   # -- ABILITY 3: Milestone Unlock (One-Time Passive) --
   # core:unlock_recipe permanently unlocks a recipe book recipe by namespaced

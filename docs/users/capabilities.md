@@ -1006,6 +1006,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `breed_animals` | `EntityBreedEvent` | Breeding animals |
 | `sprint` | `PlayerToggleSprintEvent` | Player starts sprinting (release is not a trigger) |
 | `sneak` | `PlayerToggleSneakEvent` | Player starts sneaking (release is not a trigger) |
+| `jump` | `PlayerJumpEvent` | Player jumps (Packet-level jump detection) |
 | `ride_horse` | `VehicleEnterEvent` | Player mounts a vehicle |
 | `collect_xp` | `PlayerExpChangeEvent` | Collecting vanilla XP orbs |
 | `level_up` | `SkillingLevelUpEvent` | A Skilling skill levels up |
