@@ -43,6 +43,7 @@ class RequirementEngineTest {
     private static io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry newStateFilterRegistry() {
         var registry = new io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry();
         registry.register("is_sneaking", (p, e, v) -> p.isSneaking());
+        registry.register("custom_event_seen", (p, e, v) -> e != null);
         registry.register("dimension", (p, e, v) -> {
             var env = p.getWorld().getEnvironment();
             return switch (v) {
@@ -88,6 +89,17 @@ class RequirementEngineTest {
 
         var result = engine.check(player, "test_skill", "test_ability", requirements, 10, 5);
         assertTrue(result.success());
+    }
+
+    @Test
+    void eventScopedStateRequirementReceivesEvent() {
+        var requirements = new SkillDefinition.Requirements(0, List.of("custom_event_seen"), List.of());
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        org.bukkit.event.Event event = mock(org.bukkit.event.Event.class);
+        assertTrue(engine.check(player, "test_skill", "test_ability", requirements, 10, 5, event).success());
+        assertFalse(engine.check(player, "test_skill", "test_ability", requirements, 10, 5).success());
     }
 
     @Test

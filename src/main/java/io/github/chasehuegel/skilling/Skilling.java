@@ -62,6 +62,14 @@ public final class Skilling extends JavaPlugin {
     /** Key used to tag fireworks spawned by Skilling for visual-only damage suppression. */
     public static final NamespacedKey FIREWORK_KEY = NamespacedKey.fromString("skilling:visual_firework");
 
+    /**
+     * Key used to stamp the firing player's sneak state onto an arrow as it is
+     * released. The {@code was_sneaking} state filter reads this stamp back at
+     * impact time, so a "sneak-shot" condition reflects the stance used to draw
+     * and release the bow rather than the player's stance when the arrow lands.
+     */
+    public static final NamespacedKey SHOT_SNEAK_KEY = NamespacedKey.fromString("skilling:shot_sneak");
+
     private static final String CONFIG_DEBUG_LOGGING = "debug_logging";
     private static final String CONFIG_TITLES_STAY_DURATION = "titles.stay_duration";
     private static final String CONFIG_GLOBAL_XP_MODIFIER = "global_xp_modifier";
@@ -672,6 +680,33 @@ public final class Skilling extends JavaPlugin {
             return target != null && entityType == target;
         });
 
+        // Whether the triggering arrow was released while the player was
+        // sneaking. Reads the sneak stamp written onto the projectile by
+        // onShootBow, so it is true at impact time only when the shot was a
+        // sneak-shot. Fails closed for non-projectile events (a melee swing is
+        // never a shot).
+        sf.register("was_sneaking", (p, e, v) -> {
+            org.bukkit.entity.Projectile proj = Skilling.resolveShotStateProjectile(e);
+            if (proj != null && proj.getPersistentDataContainer()
+                    .has(SHOT_SNEAK_KEY, org.bukkit.persistence.PersistentDataType.BOOLEAN)) {
+                return proj.getPersistentDataContainer()
+                        .get(SHOT_SNEAK_KEY, org.bukkit.persistence.PersistentDataType.BOOLEAN);
+            }
+            return false;
+        });
+
+        // Whether the event's target entity carries a given potion effect. Used
+        // to gate an arrow's bonus against a target already marked (e.g.
+        // corrected by an apply_status ability). Value is a full namespaced key
+        // (e.g. target_status:minecraft:glowing). Fails closed for events without
+        // a living target or an unknown effect.
+        sf.register("target_status", (p, e, v) -> {
+            org.bukkit.entity.LivingEntity target = resolveFilteredTargetEntity(e);
+            if (target == null || v == null || v.isBlank()) return false;
+            org.bukkit.potion.PotionEffectType type = resolveEffectType(v);
+            return type != null && target.hasPotionEffect(type);
+        });
+
         sf.register("offhand", (p, e, v) -> {
             var offhand = p.getInventory().getItemInOffHand().getType();
             return switch (v) {
@@ -738,6 +773,66 @@ public final class Skilling extends JavaPlugin {
             return pe.getRightClicked().getType();
         }
         return null;
+    }
+
+    /**
+     * Resolves the projectile a triggering event originates from, so the
+     * {@code was_sneaking} filter can read the sneak stamp written at shot time.
+     *
+     * @param e the triggering event
+     * @return the projectile, or null for events with no projectile source
+     */
+    private static org.bukkit.entity.Projectile resolveShotStateProjectile(org.bukkit.event.Event e) {
+        if (e instanceof org.bukkit.event.entity.ProjectileHitEvent phe
+                && phe.getEntity() instanceof org.bukkit.entity.Projectile proj) {
+            return proj;
+        }
+        if (e instanceof org.bukkit.event.entity.EntityDamageByEntityEvent de
+                && de.getDamager() instanceof org.bukkit.entity.Projectile proj) {
+            return proj;
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the living target entity a triggering event points at, so a
+     * {@code target_status} filter can inspect its active potion effects.
+     *
+     * @param e the triggering event
+     * @return the target living entity, or null for events without one
+     */
+    private static org.bukkit.entity.LivingEntity resolveFilteredTargetEntity(org.bukkit.event.Event e) {
+        if (e instanceof org.bukkit.event.entity.EntityDamageByEntityEvent de
+                && de.getEntity() instanceof org.bukkit.entity.LivingEntity living) {
+            return living;
+        }
+        if (e instanceof org.bukkit.event.entity.EntityDeathEvent ede
+                && ede.getEntity() instanceof org.bukkit.entity.LivingEntity living) {
+            return living;
+        }
+        if (e instanceof org.bukkit.event.player.PlayerInteractEntityEvent pe
+                && pe.getRightClicked() instanceof org.bukkit.entity.LivingEntity living) {
+            return living;
+        }
+        return null;
+    }
+
+    /**
+     * Resolves a namespaced potion-effect key (e.g. {@code minecraft:glowing})
+     * into a {@link PotionEffectType}, returning null for a malformed or unknown
+     * key instead of throwing on the filter path.
+     *
+     * @param value the namespaced effect key
+     * @return the resolved effect type, or null if unresolvable
+     */
+    private static org.bukkit.potion.PotionEffectType resolveEffectType(String value) {
+        try {
+            org.bukkit.NamespacedKey key = safeNamespacedKey(value);
+            if (key == null) return null;
+            return org.bukkit.Registry.POTION_EFFECT_TYPE.get(key);
+        } catch (RuntimeException ex) {
+            return null;
+        }
     }
 
     /**

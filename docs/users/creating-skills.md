@@ -107,6 +107,8 @@ Available states:
 | `hunger:above:\<value\>` | Player food level is above threshold (0-20) |
 | `biome:\<key\>` | Player is in a specific biome (e.g., `minecraft:plains`) |
 | `target_type:\<key\>` | Damaged entity type matches (e.g., `minecraft:zombie`, `#minecraft:skeletons`) |
+| `was_sneaking` | The triggering arrow was released while sneaking (reads the shot-time stance, so it matches how the bow was released, not the stance when the arrow lands). Only matches bow shots |
+| `target_status:\<effect\>` | The target entity currently has the potion effect (e.g., `target_status:minecraft:glowing`) |
 | `equipped_all:\<target\>` | Every armor slot holds an item matching `target` (a material like `minecraft:leather_helmet` or a `#...` tag like `#c:light_armor`) |
 | `equipped_any:\<target\>` | At least one armor slot holds an item matching `target` |
 

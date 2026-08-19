@@ -430,9 +430,9 @@ class SkillEventListenerFireAbilitiesTest {
     @Test
     void throwingRequirementCheckDoesNotAbortRemainingAbilities() throws IOException {
         RequirementEngine throwingEngine = mock(RequirementEngine.class);
-        when(throwingEngine.check(any(), eq("test_skill"), eq("good"), any(), anyInt(), anyInt()))
+        when(throwingEngine.check(any(), eq("test_skill"), eq("good"), any(), anyInt(), anyInt(), any()))
                 .thenReturn(RequirementResult.PASSED);
-        when(throwingEngine.check(any(), eq("test_skill"), eq("bad"), any(), anyInt(), anyInt()))
+        when(throwingEngine.check(any(), eq("test_skill"), eq("bad"), any(), anyInt(), anyInt(), any()))
                 .thenThrow(new IllegalArgumentException("Unknown item requirement slot: ARMS"));
 
         SkillManager skillManager = io.github.chasehuegel.skilling.TestSkillManager.newWith(

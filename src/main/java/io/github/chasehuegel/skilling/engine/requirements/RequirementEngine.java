@@ -5,6 +5,7 @@ import io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry;
 import io.github.chasehuegel.skilling.engine.tag.TagResolver;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +97,31 @@ public final class RequirementEngine {
     public RequirementResult check(Player player, String skillId, String abilityId,
                                    SkillDefinition.Requirements requirements,
                                    int skillLevel, int unlockLevel) {
+        return check(player, skillId, abilityId, requirements, skillLevel, unlockLevel, null);
+    }
+
+    /**
+     * Evaluates all requirements for an ability without side effects, with access
+     * to the triggering event.
+     *
+     * <p>Checks cooldowns, player state, and item possession in order. The
+     * {@code event} is forwarded to state filters so an event-scoped condition
+     * (e.g. {@code was_sneaking} reading an arrow's shot stamp, or
+     * {@code target_status}) can be evaluated as an ability requirement. A null
+     * event is legal and makes event-scoped state filters fail closed.
+     *
+     * @param player       the player attempting the ability
+     * @param skillId      the owning skill id (cooldowns are scoped per skill)
+     * @param abilityId    the ability identifier used for cooldown tracking
+     * @param requirements the ability's requirements definition
+     * @param skillLevel   the player's current level in the relevant skill
+     * @param unlockLevel  the level at which the ability is unlocked
+     * @param event        the triggering event, or null when none is available
+     * @return the result of the check
+     */
+    public RequirementResult check(Player player, String skillId, String abilityId,
+                                   SkillDefinition.Requirements requirements,
+                                   int skillLevel, int unlockLevel, Event event) {
         // Check cooldown
         double cdSec = requirements.cooldown().evaluate(skillLevel, unlockLevel);
         if (cdSec > 0) {
@@ -112,7 +138,7 @@ public final class RequirementEngine {
 
         // Check player states
         for (String state : requirements.state()) {
-            if (!checkState(player, state)) {
+            if (!checkState(player, state, event)) {
                 return RequirementResult.failed(FailureReason.MISSING_STATE, Map.of(
                         "state", state
                 ));
@@ -187,14 +213,15 @@ public final class RequirementEngine {
         }
     }
 
-    private boolean checkState(Player player, String state) {
+    private boolean checkState(Player player, String state, Event event) {
         int colonIdx = state.indexOf(':');
         String key = colonIdx > 0 ? state.substring(0, colonIdx) : state;
         String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
         // Route through the shared registry so requirement states and XP/mechanic
         // filter states share one implementation and one unknown-state default
-        // (false). Requirement states are player conditions, so no event is used.
-        return stateFilterRegistry.evaluate(key, player, null, value);
+        // (false). Requirement states are player conditions; the triggering event
+        // is forwarded so event-scoped conditions can be evaluated here too.
+        return stateFilterRegistry.evaluate(key, player, event, value);
     }
 
     private boolean hasItems(Player player, String tag, int required, String slot) {

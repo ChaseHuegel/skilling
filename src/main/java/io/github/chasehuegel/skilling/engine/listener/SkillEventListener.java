@@ -448,6 +448,13 @@ public final class SkillEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onShootBow(EntityShootBowEvent event) {
         if (event.getEntity() instanceof Player player) {
+            // Stamp the arrow with the firing stance so a "sneak-shot" ability can
+            // be evaluated at impact time via the was_sneaking state filter. The
+            // player-captured arrow carries the sneak state used to release it.
+            if (event.getProjectile() != null) {
+                event.getProjectile().getPersistentDataContainer().set(
+                        Skilling.SHOT_SNEAK_KEY, PersistentDataType.BOOLEAN, player.isSneaking());
+            }
             dispatch(player, event, "shoot_bow");
         }
     }
@@ -894,7 +901,7 @@ public final class SkillEventListener implements Listener {
             RequirementResult check;
             try {
                 check = requirementEngine.check(player, skill.id(), ability.id(), ability.requirements(),
-                        skillLevel, ability.unlockLevel());
+                        skillLevel, ability.unlockLevel(), event);
             } catch (RuntimeException ex) {
                 // A malformed requirement that slipped past load validation must
                 // not abort the dispatch: log it and treat the ability as failed
