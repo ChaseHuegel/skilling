@@ -139,6 +139,10 @@ public final class FakeRegistryAccess implements RegistryAccess {
         // initialize), but Material.getMaxDurability() treats a null ItemType
         // as "no durability", so null is a safe entry for the ITEM registry.
         if (ItemType.class.equals(type)) return null;
+        // BlockType likewise cannot be instrumented by Mockito in a plain-JUnit
+        // JVM; ItemStack.getType()/getBlockType() lookups on a mocked stack
+        // would otherwise fail. null is the safe entry for the BLOCK registry.
+        if (BlockType.class.equals(type)) return null;
         return mock(type);
     }
 

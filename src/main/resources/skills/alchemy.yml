@@ -3,91 +3,120 @@ max_level: 100
 display: { name: "Alchemy", icon: "minecraft:brewing_stand", color: "PURPLE", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Finishing a brewing batch is the rare, time- and resource-gated source.
   - trigger: "brew_potion"
-    reward: { constant: 666.7 }
-  - trigger: "entity_kill"
-    filters: [ { state: "target_type:#minecraft:zombies" } ]
-    reward: { constant: 666.7 }
-  - trigger: "consume_item"
-    filters: [ { target: "#c:potions" } ]
-    reward: { constant: 666.7 }
+    reward: { constant: 150.0 }
+  # Cheap, spammable via water bottles: the low-value grindable source.
   - trigger: "potion_splash"
     reward: { constant: 40.0 }
-  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=667 far exceeds the ~150/action rare
-  # ceiling. Brewing cannot be made high-frequency, so this is the accepted residual gap.
+  # Drinking a potion costs its ingredients and a share of its effect cooldown.
+  - trigger: "consume_item"
+    filters: [ { target: "#c:potions" } ]
+    reward: { constant: 120.0 }
+  # Witches drop brewing ingredients (redstone, glowstone, sugar, spider eye, glass).
+  - trigger: "entity_kill"
+    filters: [ { state: "target_type:minecraft:witch" } ]
+    reward: { constant: 120.0 }
+  # Ingredient gathering is grow-gated and grindable (nether wart, glowstone).
+  - trigger: "block_break"
+    filters: [ { target: "#c:potion_flora" }, { state: "player_placed:false" } ]
+    reward: { constant: 50.0 }
+  # The ultimate alchemical act: curing a zombie villager. Very rare, big payout.
+  - trigger: "cure_villager"
+    reward: { constant: 400.0 }
 abilities:
+  # L1 identity: the brewing "yield" scalar, mirroring mining/farming/herbalism.
+  - id: "overbrew"
+    display_name: "Overbrew"
+    unlock_level: 1
+    trigger: "brew_potion"
+    display: { lore: [ "&7Brewing grants a &a{chance}%&7 chance at an extra bottle." ] }
+    mechanics:
+      - type: "core:modify_brew_output"
+        parameters:
+          chance: { linear: { base: 5.0, step: 0.45, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
+  # L15 QoL: shorten the brewing cycle (moved up from the old L1 brew-time slot).
   - id: "rapid_brewing"
     display_name: "Rapid Brewing"
-    unlock_level: 1
+    unlock_level: 15
     trigger: "brew_start"
     display: { lore: [ "&7Brew time &a{multiplier}x&7 (faster)." ] }
     mechanics:
       - type: "core:modify_brew_time"
         parameters:
-          multiplier: { linear: { base: 0.9, step: -0.005, max: 0.5 } }   # <1 speeds up
+          multiplier: { linear: { base: 0.9, step: -0.005, max: 0.5 } }
     feedback: { notify: { action_bar: false } }
-  - id: "extended_effects"
-    display_name: "Extended Effects"
-    unlock_level: 15
-    trigger: "brew_potion"
-    display: { lore: [ "&7Brewed potion durations &a{multiplier}x&7." ] }
-    mechanics:
-      - type: "core:modify_potion_duration"
-        parameters:
-          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "catalyst"
-    display_name: "Catalyst"
+  # L25 active: the cauldron transmutation hook. Keep the table data-driven by
+  # adding/removing core:transmute mechanics; the engine picks the one whose
+  # source matches the held main-hand item.
+  - id: "transmutation"
+    display_name: "Transmutation"
     unlock_level: 25
-    trigger: "brew_potion"
+    trigger: "right_click_block"
     display:
       lore:
-        - "&7Shift-brew to gain &a{multiplier}x&7 brewing XP for {duration}s."
-        - "&7Costs 1 hunger + 1 blaze powder."
+        - "&7Sneak + interact a cauldron to transmute metal."
+        - "&74 Iron Ingot &8-> &61 Gold Ingot"
+        - "&74 Gold Ingot &8-> &61 Diamond"
+        - "&7Costs 1 Blaze Powder."
         - "&8Requires: Sneaking, 30s cooldown, 3+ hunger."
     requirements:
-      cooldown: 30.0
+      cooldown: { linear: { base: 30.0, step: -0.2, max: 10.0 } }
       state: [ "is_sneaking" ]
       items: [ { action: "cost", tag: "minecraft:blaze_powder", amount: 1 } ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
+      exhaustion: { amount: 2.0, minimum: 3.0 }
     on_failure:
-      cooldown: { action_bar: "&eCatalyst cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires 1x Blaze Powder!" }
+      cooldown: { action_bar: "&eTransmutation cooling down: {time}s" }
+      missing_item: { action_bar: "&cNothing here can be transmuted." }
+      exhaustion: { action_bar: "&cToo hungry to transmute." }
     mechanics:
-      - type: "core:xp_bonus"
+      - type: "core:transmute"
+        filters: [ { target: "#c:cauldrons" } ]
         parameters:
-          multiplier: { linear: { base: 1.2, step: 0.02, max: 2.5 } }
-          duration: { constant: 30.0 }
-    feedback: { notify: { action_bar: true, chat: false, message: "&d✦ Catalyst! ✦" } }
+          source: { constant: "minecraft:iron_ingot" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 4 }
+          product_count: { constant: 1 }
+      - type: "core:transmute"
+        filters: [ { target: "#c:cauldrons" } ]
+        parameters:
+          source: { constant: "minecraft:gold_ingot" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 4 }
+          product_count: { constant: 1 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Transmuted! ✦" }
+      particles: [ { type: "minecraft:enchant", count: 12, offset: [0.5, 0.5, 0.5], speed: 0.5, target: "target" } ]
+  # L50 major passive: potion potency (amplifier), which also boosts instant potions
+  # that a duration multiplier (old design) could never touch.
   - id: "concentrated_essence"
     display_name: "Concentrated Essence"
     unlock_level: 50
     trigger: "brew_potion"
-    display: { lore: [ "&7Brewed potion durations &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Brewed potions gain +&a{amplifier}&7 potency." ] }
     mechanics:
-      - type: "core:modify_potion_duration"
+      - type: "core:modify_potion_amplifier"
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
+          amplifier: { milestones: { 50: 1, 100: 2 } }
     feedback: { notify: { action_bar: false } }
-  - id: "alchemical_haste"
-    display_name: "Alchemical Haste"
+  # L75 synergy: your own thrown splash/lingering potions no longer harm you or allies.
+  - id: "alchemists_aegis"
+    display_name: "Alchemist's Aegis"
     unlock_level: 75
-    trigger: "brew_potion"
-    display: { lore: [ "&7Brewing grants &a{multiplier}x&7 speed for {duration}s." ] }
+    trigger: "potion_splash"
+    display: { lore: [ "&7Your thrown potions never harm you or allies." ] }
     mechanics:
-      - type: "core:speed_bonus"
-        parameters:
-          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
-          uuid: { constant: "cbfda872-bcb0-5633-8d78-2fdf50bae6ba" }
-          duration: { linear: { base: 10.0, step: 0.2, max: 30.0 } }
+      - type: "core:potion_self_immunity"
     feedback: { notify: { action_bar: false } }
-  - id: "master_alchemist"
-    display_name: "Master Alchemist"
+  # L100 capstone: every brew guarantees an extra bottle (binary, mirrors Perfect Yield).
+  - id: "masters_brew"
+    display_name: "Masters' Brew"
     unlock_level: 100
     trigger: "brew_potion"
-    display: { lore: [ "&7Brewed potion durations &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Every brew yields an extra bottle." ] }
     mechanics:
-      - type: "core:modify_potion_duration"
+      - type: "core:modify_brew_output"
         parameters:
-          multiplier: { linear: { base: 2.0, step: 0.02, max: 3.0 } }
+          chance: { constant: 100.0 }
     feedback: { notify: { action_bar: false } }

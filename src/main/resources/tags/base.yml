@@ -331,6 +331,22 @@ custom_tags:
   shovels:
     - "#minecraft:shovels"
 
+  # Cauldron blocks in block form, used by the alchemy skill's transmutation
+  # (right_click_block target filter). Java cauldrons hold water/lava/powder
+  # snow but never potions, so the alchemy acts use the cauldron purely as a
+  # reaction vessel.
+  cauldrons:
+    - "minecraft:cauldron"
+    - "minecraft:water_cauldron"
+    - "minecraft:lava_cauldron"
+    - "minecraft:powder_snow_cauldron"
+
+  # Brewing-ingredient flora harvested for alchemy XP. Kept distinct from #c:herbs
+  # so the herbalism skill does not double-claim nether wart as its own source.
+  potion_flora:
+    - "minecraft:nether_wart"
+    - "minecraft:glowstone"
+
 # Entity-type tags, resolved via the `target_type` state filter. Values are
 # entity type names and/or vanilla entity tag cross-references.
 entity_tags:

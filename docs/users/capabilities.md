@@ -273,7 +273,77 @@ winning at consumption, so the potion's identity is preserved.
 
 **Event:** `BrewEvent`
 
-### core:aoe_effect
+### core:modify_potion_amplifier
+
+Adds a flat amplifier to every potion effect of a finished brew, raising its
+potency (Speed I becomes Speed II) while leaving the duration untouched. Unlike
+a duration multiplier it also strengthens instant potions (Instant Health,
+Instant Harming), whose duration is effectively fixed. An amplifier of `0` is a
+no-op, so a level-scaled evaluator (e.g. `milestones { 50: 1 }`) spends nothing
+before crossing its threshold.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `amplifier` | double | `0` | Flat amplifier to add to each effect's level |
+
+**Event:** `BrewEvent`
+
+### core:modify_brew_output
+
+The brewing analogue of `core:yield_multiplier`: a chance to grant a bonus
+brewed potion on a finished batch. An extra bottle allows a chance (0-100) that
+a batch yields a bonus bottle, cloned from an existing result. It is placed in a
+free bottle slot of the stand, or granted to the player's inventory (dropped if
+full) so no bonus item is ever lost. Reaching the chance roll counts as an
+activation whether it succeeds or not, so the ability's shared cost/cooldown is
+consumed once per batch and cannot be re-rolled for free.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) of an extra bottle; 100 = always |
+
+**Event:** `BrewEvent`
+
+### core:transmute
+
+Converts a held stack of one material into another on a right-click of a
+cauldron (the alchemy transmutation topic). Each `core:transmute` mechanic
+defines a single source-&gt;product swap; an ability's "transmute table" is
+expressed as several of these mechanics so it stays within the scalar evaluator
+schema. The mechanic reads the player's main-hand item: when it matches `source`
+with at least `source_count` items, `source_count` are consumed and
+`product_count` of `product` are granted (inventory, dropped if full). The
+vanilla cauldron interaction is cancelled. A mechanic whose `source` does not
+match the held item is a no-op, so the remaining swap-mechanics in the same
+ability spend nothing and one activation performs exactly the held swap.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `source` | string | required | Material held in the main hand, e.g. `minecraft:iron_ingot` |
+| `product` | string | required | Material to grant, e.g. `minecraft:gold_ingot` |
+| `source_count` | double | `1` | Number of source items consumed per activation |
+| `product_count` | double | `1` | Number of product items granted per activation |
+
+**Event:** `right_click_block` (`PlayerInteractEvent`, main-hand only)
+
+### core:potion_self_immunity
+
+Shields the thrower and allied players from the potion they threw. On a
+`splash_potion` event, every affected living entity that is the throwing player
+or another player is zeroed out of the splash, so a thrown splash/lingering
+potion never harms the thrower or their own players. Hostile mobs are still hit
+normally. This is the friction-elimination counterpart to brewing offensive
+potions: throw poison or harming at a crowd without friendly fire on your group.
+
+**Parameters:** None
+
+**Event:** `potion_splash` (covers both `PotionSplashEvent` and `LingeringPotionSplashEvent`)
 
 Applies a potion effect to all living entities within a radius of the player, excluding the player themselves. By default (`targets: allies`) hostile mobs are never affected.
 

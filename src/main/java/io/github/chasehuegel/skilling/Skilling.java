@@ -352,6 +352,18 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:saturation_inject", SaturationInjectMechanic.class, List.of("saturation"));
         mechReg.register("core:modify_brew_time", ModifyBrewTimeMechanic.class, List.of("multiplier"));
         mechReg.register("core:modify_potion_duration", ModifyPotionDurationMechanic.class, List.of("multiplier"));
+        mechReg.register("core:modify_potion_amplifier", ModifyPotionAmplifierMechanic.class, List.of("amplifier"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "amplifier"));
+        mechReg.register("core:modify_brew_output", ModifyBrewOutputMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:potion_self_immunity", PotionSelfImmunityMechanic.class, List.of());
+        mechReg.register("core:transmute", TransmuteMechanic.class, List.of("source", "product", "source_count", "product_count"),
+                (ctx, p) -> {
+                    MechanicParamValidators.material(ctx, p, "source");
+                    MechanicParamValidators.material(ctx, p, "product");
+                    MechanicParamValidators.positive(ctx, p, "source_count");
+                    MechanicParamValidators.positive(ctx, p, "product_count");
+                });
         mechReg.register("core:aoe_effect", AoeEffectMechanic.class, List.of("effect", "radius", "duration", "amplifier", "targets"),
                 (ctx, p) -> {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");

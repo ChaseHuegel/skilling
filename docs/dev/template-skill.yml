@@ -215,6 +215,43 @@ abilities:
       # _damage) actually succeeded, instead of on every execution attempt.
       # Use it so a chance-based ability never spams a cue on a missed roll.
 
+  # -- ALCHEMY MECHANICS (referenced examples) --
+  # A "transmute table" is expressed as several core:transmute mechanic entries;
+  # the engine runs the one whose source matches the held main-hand item, and
+  # the rest are no-ops (spending nothing). Requires right_click_block on a
+  # cauldron, sneaking, and a shared cost/cooldown on the ability.
+  # - id: "transmutation"
+  #   display_name: "Transmutation"
+  #   unlock_level: 25
+  #   trigger: "right_click_block"
+  #   requirements:
+  #     cooldown: 30.0
+  #     state: [ "is_sneaking" ]
+  #     items: [ { action: "cost", tag: "minecraft:blaze_powder", amount: 1 } ]
+  #     exhaustion: { amount: 2.0, minimum: 3.0 }
+  #   mechanics:
+  #     - type: "core:transmute"
+  #       filters: [ { target: "#c:cauldrons" } ]
+  #       parameters:
+  #         source: { constant: "minecraft:iron_ingot" }
+  #         product: { constant: "minecraft:gold_ingot" }
+  #         source_count: { constant: 4 }
+  #         product_count: { constant: 1 }
+  # core:modify_brew_output adds a chance (0-100) of an extra bottle per brew:
+  #   mechanics:
+  #     - type: "core:modify_brew_output"
+  #       parameters:
+  #         chance: { linear: { base: 5.0, step: 0.45, max: 50.0 } }
+  # core:modify_potion_amplifier raises brewed-potion potency (+N, level-scaled):
+  #   mechanics:
+  #     - type: "core:modify_potion_amplifier"
+  #       parameters:
+  #         amplifier: { milestones: { 50: 1, 100: 2 } }
+  # core:potion_self_immunity makes your thrown splash/lingering potions never
+  # harm you or allies (bind to the potion_splash trigger):
+  #   mechanics:
+  #     - type: "core:potion_self_immunity"
+
   # -- ABILITY 3: Milestone Unlock (One-Time Passive) --
   # core:unlock_recipe permanently unlocks a recipe book recipe by namespaced
   # key (vanilla, data pack, or another plugin). Bind it to the "level_up"
