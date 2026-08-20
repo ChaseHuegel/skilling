@@ -353,10 +353,11 @@ public final class SkillEventListener implements Listener {
      * Handles {@link PlayerInteractEvent} and routes it as a {@code jukebox_play}
      * trigger when a music disc is actually inserted into an empty jukebox.
      *
-     * <p>The block state is read after the vanilla interaction runs (MONITOR
-     * priority), so a jukebox that is now holding a record means a disc was
-     * placed. Ejecting a disc (clicking an occupied jukebox) leaves it empty and
-     * is skipped, keeping the trigger precise.
+     * <p>The jukebox tile entity's record is not reliably committed by the time
+     * a {@code MONITOR}-priority listener runs, so the state is re-read one tick
+     * later. A jukebox that is holding a record then means a disc was placed;
+     * an ejection or a click with no disc leaves it empty and is skipped, so the
+     * trigger fires only on a real insertion.
      *
      * @param event the player interact event
      */
@@ -366,10 +367,18 @@ public final class SkillEventListener implements Listener {
         if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
         org.bukkit.block.Block clicked = event.getClickedBlock();
         if (clicked == null || clicked.getType() != Material.JUKEBOX) return;
-        if (!(clicked.getState() instanceof org.bukkit.block.Jukebox jukebox)) return;
-        // A right-click that placed a disc leaves the jukebox holding a record.
-        if (!jukebox.hasRecord()) return;
-        dispatch(event.getPlayer(), event, "jukebox_play");
+        org.bukkit.World world = clicked.getWorld();
+        org.bukkit.Location loc = clicked.getLocation().toBlockLocation();
+        Player player = event.getPlayer();
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!player.isOnline()) return;
+            org.bukkit.block.Block block = world.getBlockAt(loc);
+            if (block.getType() != Material.JUKEBOX) return;
+            if (!(block.getState() instanceof org.bukkit.block.Jukebox jukebox)) return;
+            // A right-click that placed a disc leaves the jukebox holding a record.
+            if (!jukebox.hasRecord()) return;
+            dispatch(player, event, "jukebox_play");
+        });
     }
 
     /**
