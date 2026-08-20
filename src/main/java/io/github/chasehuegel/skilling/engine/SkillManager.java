@@ -33,6 +33,23 @@ public final class SkillManager {
     /** Upper bound on {@code max_level}: keeps the per-skill threshold-table allocation sane. */
     private static final int MAX_MAX_LEVEL = 10_000;
 
+    /**
+     * Vanilla mirror of the eight goat-horn instrument keys. Used to fail fast on
+     * an unknown {@code instrument} state value at load without touching the
+     * {@code MusicInstrument} registry, whose statics a plain-JUnit JVM cannot
+     * initialize. Immutable and never exposed in YAML.
+     */
+    private static final java.util.Set<String> KNOWN_GOAT_HORNS = java.util.Set.of(
+            "minecraft:ponder_goat_horn",
+            "minecraft:sing_goat_horn",
+            "minecraft:seek_goat_horn",
+            "minecraft:feel_goat_horn",
+            "minecraft:admire_goat_horn",
+            "minecraft:call_goat_horn",
+            "minecraft:yearn_goat_horn",
+            "minecraft:dream_goat_horn");
+
+
     private static final java.util.regex.Pattern PLACEHOLDER_PATTERN =
             java.util.regex.Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
 
@@ -560,6 +577,17 @@ public final class SkillManager {
                 throw new IllegalArgumentException(context
                         + " state 'cause' value '" + value
                         + "' is not a supported damage cause (burn, fire, lava, drowning, suffocation, cactus, starvation)");
+            }
+        }
+        if ("instrument".equals(key)) {
+            String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
+            // Vanilla mirror of the eight goat-horn instrument keys. Kept as a
+            // plain string table (no Bukkit registry lookup) so load validation
+            // is fail-fast in production and does not touch registry statics
+            // that a plain-JUnit JVM cannot initialize.
+            if (!KNOWN_GOAT_HORNS.contains(value)) {
+                throw new IllegalArgumentException(context
+                        + " state 'instrument' value '" + value + "' is not a known goat horn instrument");
             }
         }
         if ("honey_level".equals(key)) {

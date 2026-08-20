@@ -1,121 +1,320 @@
+# ==========================================
+# BARD SKILL
+# ==========================================
+# The performer, poet, and stagehand. It earns XP from playing instruments,
+# writing and signing books, working the jukebox and note-block stage, and
+# crafting instruments. Performing a goat horn is the beating heart: each level
+# makes the performance a stronger, longer solo (Tempo), and by L25 the horn's
+# own song — which one you play matters — rallies allies or harrows foes
+# (Anthem), empowered into a grand anthem at L100 (Symphony). The written word
+# (Poet, L15) and the music stage (Stage Presence, L50) and the home-front
+# storytelling (Lectern Story, L75) round out the three spirits.
+#
+# Anti-grind notes (XP *_source):
+#   - Playing a goat horn is gated by the vanilla 7s cooldown (a real time cost).
+#   - Tuning a note block is free & plentiful, so it is a low reward (the
+#     "crafting sticks" source).
+#   - Crafting note blocks is cheap & batchable, so it stays low.
+#   - Signing a book and inserting a disc into a jukebox have a material and
+#     time cost, so they pay more.
 id: "bard"
 max_level: 100
 display: { name: "Bard", icon: "minecraft:jukebox", color: "PURPLE", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  - trigger: "player_interact"
-    filters: [ { tool: "#c:instruments" } ]      # goat horn / instrument items only
-    reward: { constant: 54.6 }
+  # Playing a goat horn (vanilla 7s cooldown makes it time-gated).
+  - trigger: "right_click_air"
+    filters: [ { tool: "#c:instruments" } ]
+    reward: { constant: 120.0 }
+  # Signing a book-and-quill into a written book (resource + time cost).
+  - trigger: "sign_book"
+    reward: { constant: 250.0 }
+  # Inserting a music disc into an empty jukebox (renewable material cost).
+  - trigger: "jukebox_play"
+    reward: { constant: 180.0 }
+  # Tuning a note block (plentiful & free -> low return).
+  - trigger: "right_click_block"
+    filters: [ { target: "minecraft:note_block" } ]
+    reward: { constant: 8.0 }
+  # Crafting note blocks (cheap & batchable -> low return).
+  - trigger: "craft_item"
+    filters: [ { target: "minecraft:note_block" } ]
+    reward: { constant: 25.0 }
+  # Crafting a jukebox (diamond cost, occasional).
   - trigger: "craft_item"
     filters: [ { target: "minecraft:jukebox" } ]
-    reward: { constant: 54.6 }
-  - trigger: "block_place"
-    filters: [ { target: "minecraft:jukebox" } ]
-    reward: { constant: 54.6 }
+    reward: { constant: 150.0 }
 abilities:
-  - id: "melody_of_haste"
-    display_name: "Melody of Haste"
+
+  # -- FOUNDATIONAL (L1): the performance scalar. Every performance keeps the
+  # bard moving; the speed and its duration grow with every level, making the
+  # linear engine the bard's largest steady benefit (cooldown-honoring: only a
+  # real horn performance fires it).
+  - id: "tempo"
+    display_name: "Tempo"
     unlock_level: 1
-    trigger: "player_interact"
-    display: { lore: [ "&7Play an instrument to grant allies nearby Speed for {duration}s." ] }
+    trigger: "right_click_air"
+    display: { lore: [ "&7Playing music keeps you in step: gain &a{multiplier}x&7 Speed for &a{duration}s&7, growing with level." ] }
     mechanics:
-      - type: "core:ally_aura"            # P2-5 (players only)
+      - type: "core:speed_bonus"
+        filters: [ { tool: "#c:instruments" } ]
         parameters:
-          effect: { constant: "minecraft:speed" }       # P2-11 (was haste=id3, wrong)
-          radius: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
-          duration: { constant: 5.0 }
-          amplifier: { constant: 0.0 }
+          multiplier: { linear: { base: 1.10, step: 0.002, max: 1.30 } }
+          uuid: { constant: "34d021f8-1a5e-4b7a-9c1d-22f04e283bbf" }
+          duration: { linear: { base: 20.0, step: 1.0, max: 120.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "rhythm_of_strength"
-    display_name: "Rhythm of Strength"
+
+  # -- QOL PASSIVE (L15): the written word refines the craft. Signing a written
+  # book grants a short XP bonus, turning lore-writing into a grind accelerant.
+  - id: "poet"
+    display_name: "Poet"
     unlock_level: 15
-    trigger: "player_interact"
-    display: { lore: [ "&7Play an instrument to grant allies nearby Strength for {duration}s." ] }
+    trigger: "sign_book"
+    display: { lore: [ "&7Signing a written book grants &a{multiplier}x&7 XP for {duration}s." ] }
     mechanics:
-      - type: "core:ally_aura"
+      - type: "core:xp_bonus"
         parameters:
-          effect: { constant: "minecraft:strength" }    # P2-11
-          radius: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
-          duration: { constant: 5.0 }
-          amplifier: { constant: 0.0 }
+          multiplier: { linear: { base: 1.1, step: 0.004, max: 1.5 } }
+          duration: { constant: 30.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "perform"
-    display_name: "Perform"
+
+  # -- PRIMARY ABILITY (L25): Anthem. Free, non-sneak performance: the horn you
+  # play dictates the song. Each horn variant is one field_aura entry selected by
+  # the instrument state filter. Regular horns rally nearby allies & pets;
+  # screaming-goat horns harrow hostile foes. Which horn does what is left out of
+  # the lore so it is discovered through play and collecting. Every song
+  # sub-scales its duration and range with level.
+  - id: "anthem"
+    display_name: "Anthem"
     unlock_level: 25
-    trigger: "player_interact"
+    trigger: "right_click_air"
     display:
       lore:
-        - "&7Sneak-play an instrument to grant allies Regeneration & armor."
-        - "&7Consumes 1 goat horn durability-cooldown."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, instrument in hand, 15s cooldown, 3+ hunger."
-    requirements:
-      cooldown: 15.0
-      state: [ "is_sneaking" ]
-      items: [ { action: "possession", tag: "#c:instruments", slot: "MAIN_HAND" } ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&ePerform cooling down: {time}s" } }
+        - "&7Play an instrument to perform its song."
+        - "&7Each horn rings a different melody: nearby allies & pets rally, or nearby hostile foes are harrowed."
+        - "&7Range & duration grow with level. Collect every horn to learn them all."
     mechanics:
-      - type: "core:ally_aura"
+      # Regular horns: friendly rally (self + pets + allies).
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:ponder_goat_horn" } ]
         parameters:
-          effect: { constant: "minecraft:regeneration" }   # P2-11
-          radius: { linear: { base: 6.0, step: 0.06, max: 12.0 } }
-          duration: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
+          effect: { constant: "minecraft:regeneration" }
+          radius: { linear: { base: 8.0, step: 0.06, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.08, max: 12.0 } }
           amplifier: { constant: 0.0 }
-      - type: "core:set_cooldown"            # P2-9 instrument reuse lockout
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:sing_goat_horn" } ]
         parameters:
-          material: { constant: "minecraft:goat_horn" }
-          ticks: { linear: { base: 40.0, step: -0.2, max: 20.0 } }
+          effect: { constant: "minecraft:speed" }
+          radius: { linear: { base: 8.0, step: 0.06, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.08, max: 12.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:seek_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:haste" }
+          radius: { linear: { base: 8.0, step: 0.06, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.08, max: 12.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:feel_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:strength" }
+          radius: { linear: { base: 8.0, step: 0.06, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.08, max: 12.0 } }
+          amplifier: { constant: 0.0 }
+      # Screaming-goat horns: harrow hostile foes (never the bard or allies).
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:call_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:weakness" }
+          radius: { linear: { base: 8.0, step: 0.06, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.08, max: 12.0 } }
+          amplifier: { constant: 0.0 }
+          targets: { constant: "hostiles" }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:yearn_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:glowing" }
+          radius: { linear: { base: 8.0, step: 0.06, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.08, max: 12.0 } }
+          amplifier: { constant: 0.0 }
+          targets: { constant: "hostiles" }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:dream_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:poison" }
+          radius: { linear: { base: 8.0, step: 0.06, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.08, max: 12.0 } }
+          amplifier: { constant: 0.0 }
+          targets: { constant: "hostiles" }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:admire_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:slowness" }
+          radius: { linear: { base: 8.0, step: 0.06, max: 14.0 } }
+          duration: { linear: { base: 6.0, step: 0.08, max: 12.0 } }
+          amplifier: { constant: 0.0 }
+          targets: { constant: "hostiles" }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&d✦ Perform! ✦" }
-      sounds: [ { type: "minecraft:item.goat_horn.sound.0", volume: 1.0, pitch: 1.0, target: "self" } ]
-  - id: "song_of_protection"
-    display_name: "Song of Protection"
+      notify: { action_bar: false }
+      particles:
+        - type: "minecraft:note"
+          count: 24
+          offset: [1.0, 1.0, 1.0]
+          speed: 0.2
+          target: "self"
+
+  # -- MAJOR (L50): the jukebox stage. Inserting a music disc into a jukebox
+  # sets the tempo for the room — free (no disc is consumed; it sits in the
+  # jukebox to be ejected), rewarding the bard for having reached this
+  # uncommon, grindy skill. Allies & pets gain Haste while hostile foes are
+  # unsettled with Weakness.
+  - id: "stage_presence"
+    display_name: "Stage Presence"
     unlock_level: 50
-    trigger: "player_interact"
-    display: { lore: [ "&7Play an instrument to grant allies nearby Resistance for {duration}s." ] }
+    trigger: "jukebox_play"
+    display:
+      lore:
+        - "&7Insert a music disc into a jukebox: nearby allies & pets gain &a{duration}s&7 of Haste, while hostile foes are weakened."
+        - "&8Requires: an empty jukebox & a music disc."
     mechanics:
-      - type: "core:ally_aura"
+      - type: "core:field_aura"
         parameters:
-          effect: { constant: "minecraft:resistance" }    # P2-11
-          radius: { linear: { base: 6.0, step: 0.06, max: 12.0 } }
-          duration: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
+          effect: { constant: "minecraft:haste" }
+          radius: { linear: { base: 10.0, step: 0.1, max: 16.0 } }
+          duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        parameters:
+          effect: { constant: "minecraft:weakness" }
+          radius: { linear: { base: 10.0, step: 0.1, max: 16.0 } }
+          duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
+          amplifier: { constant: 0.0 }
+          targets: { constant: "hostiles" }
+    feedback:
+      notify: { action_bar: false }
+      particles:
+        - type: "minecraft:note"
+          count: 24
+          offset: [1.0, 1.0, 1.0]
+          speed: 0.2
+          target: "self"
+
+  # -- SYNERGY (L75): the written word across the home front. Placing a book on
+  # a lectern tells your story to those at home before they head out. The story
+  # stays with the party the whole journey (one Minecraft day). A deliberately
+  # non-defensive set — Haste for building, Jump Boost for travel, Night Vision
+  # for the path ahead — so supportive reading does not stack defensively with
+  # the armor skills.
+  - id: "lectern_story"
+    display_name: "Lectern Story"
+    unlock_level: 75
+    trigger: "lectern_place"
+    display:
+      lore:
+        - "&7Place a book on a lectern to tell your story: nearby allies & pets gain &a{duration}s&7 of Haste, Jump Boost & Night Vision."
+        - "&8Requires: an empty lectern & a book in hand."
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect: { constant: "minecraft:haste" }
+          radius: { constant: 20.0 }
+          duration: { constant: 1200.0 }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        parameters:
+          effect: { constant: "minecraft:jump_boost" }
+          radius: { constant: 20.0 }
+          duration: { constant: 1200.0 }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        parameters:
+          effect: { constant: "minecraft:night_vision" }
+          radius: { constant: 20.0 }
+          duration: { constant: 1200.0 }
           amplifier: { constant: 0.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "war_march"
-    display_name: "War March"
-    unlock_level: 75
-    trigger: "player_interact"
-    display: { lore: [ "&7Play an instrument: allies gain Speed & the bard gains armor for {duration}s." ] }
-    mechanics:
-      - type: "core:ally_aura"
-        parameters:
-          effect: { constant: "minecraft:speed" }         # P2-11
-          radius: { linear: { base: 8.0, step: 0.05, max: 14.0 } }
-          duration: { linear: { base: 6.0, step: 0.05, max: 12.0 } }
-          amplifier: { linear: { base: 0.0, step: 0.005, max: 1.0 } }
-      - type: "core:armor_bonus"
-        parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
-          uuid: { constant: "f6428ae1-ff71-5f1e-ada8-0778ea3285db" }
-          duration: { linear: { base: 6.0, step: 0.1, max: 12.0 } }
-    feedback: { notify: { action_bar: false } }
+
+  # -- MASTERY CAPSTONE (L100): Symphony. The same non-sneak performance as
+  # Anthem, but each horn's song surges to a grand anthem — longer duration,
+  # greater range, and a stronger (II) effect. Rides the matching horn so every
+  # collected instrument finds its full voice.
   - id: "symphony"
     display_name: "Symphony"
     unlock_level: 100
-    trigger: "player_interact"
-    display: { lore: [ "&7Play an instrument: allies gain Haste & Strength II for {duration}s in &a{radius}&7." ] }
+    trigger: "right_click_air"
+    display:
+      lore:
+        - "&7Your performance swells into a grand anthem: each horn's song is empowered with greater range, longer duration & a stronger effect."
     mechanics:
-      - type: "core:ally_aura"
+      # Regular horns: empowered rally (self + pets + allies).
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:ponder_goat_horn" } ]
         parameters:
-          effect: { constant: "minecraft:haste" }         # P2-11 (here haste IS intended: mining aid)
-          radius: { linear: { base: 12.0, step: 0.1, max: 16.0 } }
-          duration: { linear: { base: 8.0, step: 0.1, max: 14.0 } }
+          effect: { constant: "minecraft:regeneration" }
+          radius: { constant: 20.0 }
+          duration: { constant: 20.0 }
           amplifier: { constant: 1.0 }
-      - type: "core:ally_aura"
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:sing_goat_horn" } ]
         parameters:
-          effect: { constant: "minecraft:strength" }       # P2-11
-          radius: { linear: { base: 12.0, step: 0.1, max: 16.0 } }
-          duration: { linear: { base: 8.0, step: 0.1, max: 14.0 } }
+          effect: { constant: "minecraft:speed" }
+          radius: { constant: 20.0 }
+          duration: { constant: 20.0 }
           amplifier: { constant: 1.0 }
-    feedback: { notify: { action_bar: false } }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:seek_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:haste" }
+          radius: { constant: 20.0 }
+          duration: { constant: 20.0 }
+          amplifier: { constant: 1.0 }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:feel_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:strength" }
+          radius: { constant: 20.0 }
+          duration: { constant: 20.0 }
+          amplifier: { constant: 1.0 }
+      # Screaming-goat horns: empowered harrow of hostile foes.
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:call_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:weakness" }
+          radius: { constant: 20.0 }
+          duration: { constant: 20.0 }
+          amplifier: { constant: 1.0 }
+          targets: { constant: "hostiles" }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:yearn_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:glowing" }
+          radius: { constant: 20.0 }
+          duration: { constant: 20.0 }
+          amplifier: { constant: 1.0 }
+          targets: { constant: "hostiles" }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:dream_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:poison" }
+          radius: { constant: 20.0 }
+          duration: { constant: 20.0 }
+          amplifier: { constant: 1.0 }
+          targets: { constant: "hostiles" }
+      - type: "core:field_aura"
+        filters: [ { state: "instrument:minecraft:admire_goat_horn" } ]
+        parameters:
+          effect: { constant: "minecraft:slowness" }
+          radius: { constant: 20.0 }
+          duration: { constant: 20.0 }
+          amplifier: { constant: 1.0 }
+          targets: { constant: "hostiles" }
+    feedback:
+      notify: { action_bar: false }
+      particles:
+        - type: "minecraft:note"
+          count: 32
+          offset: [1.2, 1.2, 1.2]
+          speed: 0.3
+          target: "self"

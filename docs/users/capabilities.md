@@ -1106,6 +1106,9 @@ attribute: { constant: "minecraft:movement_speed" }
 | `vault_change` | `VaultChangeStateEvent` | A trial vault changes state. Fires only when the change has a player cause |
 | `sniffer` | `EntityFertilizeEggEvent` | Breeding a sniffer. Fires only when a player does the breeding |
 | `potion_splash` | `PotionSplashEvent` / `LingeringPotionSplashEvent` | Throwing a splash or lingering potion that breaks. Fires only when a player threw it |
+| `sign_book` | `PlayerEditBookEvent` | Signing a book-and-quill into a written book (the "Sign and Close" action). Fires only on an actual signing, never on plain editing, so the resource/time cost is real |
+| `jukebox_play` | `PlayerInteractEvent` | Inserting a music disc into an empty jukebox. Precise: right-clicking an occupied jukebox (an ejection) or clicking with no disc never fires, because dispatch checks the jukebox is populated afterwards |
+| `lectern_place` | `PlayerInsertLecternBookEvent` (Paper) | Placing a book onto an empty lectern. Ejecting a book from an occupied lectern never fires |
 
 ## Built-In State Filters
 
@@ -1135,6 +1138,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
 | `cause` | `burn`, `fire`, `lava`, `drowning`, `suffocation`, `cactus`, `starvation` | The `EntityDamageEvent` damage cause on the `entity_damage_taken` trigger. `burn` matches fire, fire ticks, and lava. Fails closed on any non-damage event or other cause. Values are validated at load |
 | `honey_level` | `below:N`, `above:N`, `exactly:N` | The honey level of a beehive clicked on `player_interact`. Fails closed on non-beehive clicks. Values are validated at load |
+| `instrument` | `minecraft:<instrument_key>` | Matches the specific goat-horn variant held in the main hand, read from the item's `minecraft:instrument` data component (e.g. `instrument:minecraft:sing_goat_horn`). Fails closed for a non-horn, a horn with no instrument data, or an unknown/blank value. Values are validated at load |
 | `was_sneaking` | *(none)* | The triggering arrow was released while the player was sneaking. Reads the sneak stance stamped on the projectile at shot time (see `shoot_bow`), so it reflects how the shot was released rather than the player's stance when the arrow lands. Fails closed for non-projectile events, so it only matches bow shots |
 | `target_status` | `minecraft:effect_key` | The event's target entity currently has the given potion effect (e.g. `state: "target_status:minecraft:glowing"`). Matches the damaged entity on `entity_damage`, the killed entity on `entity_kill`, and the clicked entity on `right_click_entity`. Fails closed on events without a living target or an unknown effect |
 

@@ -27,6 +27,8 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.LevelUpTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LaunchProjectileTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickAirTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickBlockTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.JukeboxPlayTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.LecternPlaceTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickEntityTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LootTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.MapFillTrigger;
@@ -40,6 +42,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickAirTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickBlockTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickEntityTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SleepTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.SignBookTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SmithTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SnifferTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SneakTrigger;
@@ -70,6 +73,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.SmithItemEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -86,6 +90,7 @@ import io.papermc.paper.event.block.VaultChangeStateEvent;
 import io.papermc.paper.event.entity.EntityFertilizeEggEvent;
 import io.papermc.paper.event.player.CartographyItemEvent;
 import io.papermc.paper.event.player.PlayerDeepSleepEvent;
+import io.papermc.paper.event.player.PlayerInsertLecternBookEvent;
 import io.papermc.paper.event.player.PlayerMapFilledEvent;
 import io.papermc.paper.event.player.PlayerTradeEvent;
 
@@ -156,7 +161,10 @@ class SkillTriggerTest {
                     Arguments.of(new CartographyTrigger(), "cartography", CartographyItemEvent.class),
                     Arguments.of(new VaultChangeTrigger(), "vault_change", VaultChangeStateEvent.class),
                     Arguments.of(new SnifferTrigger(), "sniffer", EntityFertilizeEggEvent.class),
-                    Arguments.of(new PotionSplashTrigger(), "potion_splash", PotionSplashEvent.class)
+                    Arguments.of(new PotionSplashTrigger(), "potion_splash", PotionSplashEvent.class),
+                    Arguments.of(new SignBookTrigger(), "sign_book", PlayerEditBookEvent.class),
+                    Arguments.of(new JukeboxPlayTrigger(), "jukebox_play", PlayerInteractEvent.class),
+                    Arguments.of(new LecternPlaceTrigger(), "lectern_place", PlayerInsertLecternBookEvent.class)
             );
         }
     }

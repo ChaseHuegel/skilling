@@ -235,6 +235,44 @@ custom_tags:
   instruments:
     - "minecraft:goat_horn"
 
+  # All music discs in item form. Used to gate the bard's disc-into-jukebox XP
+  # source and the free (no-cost) Stage Presence ability on the jukebox_play
+  # trigger, so only an actual music disc inserted into a jukebox counts.
+  music_discs:
+    - "minecraft:music_disc_13"
+    - "minecraft:music_disc_cat"
+    - "minecraft:music_disc_blocks"
+    - "minecraft:music_disc_chirp"
+    - "minecraft:music_disc_far"
+    - "minecraft:music_disc_mall"
+    - "minecraft:music_disc_mellohi"
+    - "minecraft:music_disc_stal"
+    - "minecraft:music_disc_strad"
+    - "minecraft:music_disc_ward"
+    - "minecraft:music_disc_11"
+    - "minecraft:music_disc_wait"
+    - "minecraft:music_disc_otherside"
+    - "minecraft:music_disc_pigstep"
+    - "minecraft:music_disc_5"
+    - "minecraft:music_disc_relic"
+    - "minecraft:music_disc_creator"
+    - "minecraft:music_disc_creator_music_box"
+    - "minecraft:music_disc_precipice"
+    - "minecraft:music_disc_tears"
+    - "minecraft:music_disc_lava_chicken"
+
+  # Signed written books (the item form, not book & quill). Used by the bard's
+  # Lectern Story ability on the lectern_place trigger so only a completed
+  # (signed) story placed on a lectern summons the party buff.
+  written_books:
+    - "minecraft:written_book"
+
+  # Lectern blocks in item form, for craft/place XP targets where an item-form
+  # tag is unambiguous (the vanilla tag is a block tag).
+  lecterns:
+    - "minecraft:lectern"
+
+
   fishing_rods:
     - "minecraft:fishing_rod"
 

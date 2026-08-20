@@ -203,6 +203,9 @@ skill YAMLs):
 | `#c:unarmored` | Empty slots (`minecraft:air`), elytra, and helmet-slot headwear |
 | `#c:bows` | `minecraft:bow`, `minecraft:crossbow` |
 | `#c:instruments` | `minecraft:goat_horn` (Bard abilities) |
+| `#c:music_discs` | All `minecraft:music_disc_*` (Bard jukebox stage / disc XP) |
+| `#c:written_books` | `minecraft:written_book` (signed books) |
+| `#c:lecterns` | `minecraft:lectern` (item-form) |
 | `#c:fishing_rods` | `minecraft:fishing_rod` |
 | `#c:holy_blocks` | Beacon, conduit, lanterns, glowstone, gold block, `#minecraft:candles` (Piety) |
 | `#c:crops` | `#minecraft:crops`, sugar cane, melon, pumpkin, cocoa |

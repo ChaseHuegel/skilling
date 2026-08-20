@@ -39,9 +39,9 @@ class HusbandryMobCarryAbilityTest {
     }
 
     @Test
-    void setDownBindsDropToRightClickAir() {
+    void setDownBindsDropToSneak() {
         SkillDefinition.Ability setDown = ability("set_down");
-        assertEquals("right_click_air", setDown.trigger());
+        assertEquals("sneak", setDown.trigger());
         assertTrue(setDown.mechanics().stream().anyMatch(m -> "core:drop_passengers".equals(m.type())),
                 "set_down must use core:drop_passengers");
     }

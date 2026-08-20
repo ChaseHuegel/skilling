@@ -337,6 +337,52 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
+     * Handles {@link PlayerInteractEvent} and routes it as a {@code jukebox_play}
+     * trigger when a music disc is actually inserted into an empty jukebox.
+     *
+     * <p>The block state is read after the vanilla interaction runs (MONITOR
+     * priority), so a jukebox that is now holding a record means a disc was
+     * placed. Ejecting a disc (clicking an occupied jukebox) leaves it empty and
+     * is skipped, keeping the trigger precise.
+     *
+     * @param event the player interact event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onJukeboxInsert(PlayerInteractEvent event) {
+        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
+        if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
+        org.bukkit.block.Block clicked = event.getClickedBlock();
+        if (clicked == null || clicked.getType() != Material.JUKEBOX) return;
+        if (!(clicked.getState() instanceof org.bukkit.block.Jukebox jukebox)) return;
+        // A right-click that placed a disc leaves the jukebox holding a record.
+        if (!jukebox.hasRecord()) return;
+        dispatch(event.getPlayer(), event, "jukebox_play");
+    }
+
+    /**
+     * Handles {@link PlayerEditBookEvent} and routes it as a {@code sign_book}
+     * trigger when the player signs a book-and-quill into a written book.
+     *
+     * @param event the player edit book event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSignBook(PlayerEditBookEvent event) {
+        if (!event.isSigning()) return;
+        dispatch(event.getPlayer(), event, "sign_book");
+    }
+
+    /**
+     * Handles {@link PlayerInsertLecternBookEvent} and routes it as a
+     * {@code lectern_place} trigger when a book is placed onto a lectern.
+     *
+     * @param event the player insert lectern book event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onLecternInsert(io.papermc.paper.event.player.PlayerInsertLecternBookEvent event) {
+        dispatch(event.getPlayer(), event, "lectern_place");
+    }
+
+    /**
      * Handles {@link PlayerInteractEntityEvent} and routes it as a
      * {@code right_click_entity} trigger.
      *

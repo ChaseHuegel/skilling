@@ -536,6 +536,9 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("vault_change", VaultChangeTrigger.class);
         trigReg.register("sniffer", SnifferTrigger.class);
         trigReg.register("potion_splash", PotionSplashTrigger.class);
+        trigReg.register("sign_book", SignBookTrigger.class);
+        trigReg.register("jukebox_play", JukeboxPlayTrigger.class);
+        trigReg.register("lectern_place", LecternPlaceTrigger.class);
     }
 
     /** Registers the built-in state filters into the given registry. */
@@ -734,6 +737,18 @@ public final class Skilling extends JavaPlugin {
         // match; `equipped_any` requires at least one. Empty slots are treated as AIR.
         sf.register("equipped_all", (p, e, v) -> matchesEquipped(p, v, true, tagResolver));
         sf.register("equipped_any", (p, e, v) -> matchesEquipped(p, v, false, tagResolver));
+
+        // Matches the specific goat-horn variant held in the main hand, read from
+        // the item's `minecraft:instrument` data component (e.g. sing_goat_horn).
+        // Fails closed for non-horns and horns without an instrument component.
+        sf.register("instrument", (p, e, v) -> {
+            if (v == null || v.isBlank()) return false;
+            var hand = p.getInventory().getItemInMainHand();
+            if (hand == null || hand.getType() != org.bukkit.Material.GOAT_HORN) return false;
+            if (!hand.hasData(io.papermc.paper.datacomponent.DataComponentTypes.INSTRUMENT)) return false;
+            var instrument = hand.getData(io.papermc.paper.datacomponent.DataComponentTypes.INSTRUMENT);
+            return instrument != null && v.equals(instrument.getKey().asString());
+        });
     }
 
     /**
