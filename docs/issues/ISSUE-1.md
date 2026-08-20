@@ -11,13 +11,15 @@
 - [x] Add a `core:drop_loot` mechanic: roll a referenced loot table (vanilla or datapack/plugin) and drop the result naturally at the target; players are valid targets and nothing is removed from them.
 - [x] Add `physical_interaction`, `sensed`, and combined `trip_trap` triggers, and wire dispatch for all three in `SkillEventListener`.
 - [x] Add `#c:pressure_plates`, `#c:sculk_sensors`, `#c:trip_traps`, `#c:humanoid`, and the disjoint `#c:pickpocket_*` entity tags to `tags/base.yml`.
-- [x] Author the bundled `stealth.yml` skill (0-100, six milestones) and the per-type pickpocket loot-table datapack under `run/world/datapacks/stealth/`.
+- [x] Author the bundled `stealth.yml` skill (0-100, six milestones) and the per-type pickpocket loot-table datapack.
+- [x] Bundle the pickpocket datapack into the plugin: zip it under `src/main/resources/datapacks/stealth.zip`, copy it to `plugins/Skilling/datapacks/` on first run, and auto-enable it after the first boot.
+- [x] Add `SkillingBootstrap` (declared as `bootstrapper:` in `paper-plugin.yml`) that discovers `datapacks/*.zip` from the plugin data folder on every `DATAPACK_DISCOVERY` pass, making the folder a general, admin-deletable home for plugin datapacks.
 - [x] Register all new mechanics, triggers, and state filter in `Skilling.registerBuiltin*`.
 - [x] Extend the event-to-material target resolver so `target:` filters match `PlayerInteractEvent` PHYSICAL and `BlockReceiveGameEvent`.
 
 ## Technical Specifications & Context
-- **Target Files:** `src/main/java/io/github/chasehuegel/skilling/Skilling.java`, `src/main/java/io/github/chasehuegel/skilling/engine/listener/SkillEventListener.java`, `src/main/java/io/github/chasehuegel/skilling/engine/mechanic/impl/{SneakSpeedMechanic,CancelEventMechanic,DropLootMechanic}.java`, `src/main/java/io/github/chasehuegel/skilling/engine/trigger/impl/{PhysicalInteractionTrigger,SensedTrigger,TripTrapTrigger}.java`, `src/main/resources/tags/base.yml`, `src/main/resources/skills/stealth.yml`, `run/world/datapacks/stealth/**`, tests, and `docs/users/capabilities.md`.
-- **Dependencies:** Paper API 1.21.8; uses the cancellable `BlockReceiveGameEvent` for sculpt suppression (no `VibrateEvent` exists in this API) and `Action.PHYSICAL` for pressure plates/tripwires (includes tripwires per the API javadoc).
+- **Target Files:** `src/main/java/io/github/chasehuegel/skilling/Skilling.java`, `src/main/java/io/github/chasehuegel/skilling/SkillingBootstrap.java`, `src/main/java/io/github/chasehuegel/skilling/engine/listener/SkillEventListener.java`, `src/main/java/io/github/chasehuegel/skilling/engine/mechanic/impl/{SneakSpeedMechanic,CancelEventMechanic,DropLootMechanic}.java`, `src/main/java/io/github/chasehuegel/skilling/engine/trigger/impl/{PhysicalInteractionTrigger,SensedTrigger,TripTrapTrigger}.java`, `src/main/resources/{paper-plugin.yml,tags/base.yml,skills/stealth.yml,datapacks/stealth.zip}`, tests, and `docs/users/*`.
+- **Dependencies:** Paper API 1.21.8; uses the cancellable `BlockReceiveGameEvent` for sculpt suppression (no `VibrateEvent` exists in this API) and `Action.PHYSICAL` for pressure plates/tripwires (includes tripwires per the API javadoc). Datapack bundling uses the experimental lifecycle `DATAPACK_DISCOVERY` API via a `PluginBootstrap`.
 - **Constraints:** No per-tick tasks; no hardcoded skills/abilities (all YAML plus reusable modules); vanilla-restraint on loot tables.
 
 ## Verification & Definition of Done

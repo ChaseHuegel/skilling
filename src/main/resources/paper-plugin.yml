@@ -1,6 +1,7 @@
 name: Skilling
 version: ${version}
 main: io.github.chasehuegel.skilling.Skilling
+bootstrapper: io.github.chasehuegel.skilling.SkillingBootstrap
 api-version: '1.21'
 authors: [ChaseHuegel]
 description: A high-performance, data-driven RPG skills engine for PaperMC

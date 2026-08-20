@@ -35,6 +35,8 @@ import io.github.chasehuegel.skilling.engine.ui.UIProtectionListener;
 import io.github.chasehuegel.skilling.engine.ui.branding.BrandingConfig;
 import io.github.chasehuegel.skilling.web.WebServer;
 import io.github.chasehuegel.skilling.web.config.WebConfig;
+import io.papermc.paper.datapack.Datapack;
+import io.papermc.paper.datapack.DatapackManager;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -163,7 +165,7 @@ public final class Skilling extends JavaPlugin {
                                       "shields.yml", "unarmored.yml", "husbandry.yml",
                                       "throwing.yml", "acrobatics.yml", "piety.yml",
                                       "bard.yml", "wizardry.yml", "survival.yml",
-                                      "trade.yml", "exploration.yml"};
+                                      "trade.yml", "exploration.yml", "stealth.yml"};
             for (String skill : bundledSkills) {
                 if (!new File(getDataFolder(), "skills/" + skill).exists()) {
                     getLogger().info("Generating default " + skill + "...");
@@ -171,9 +173,26 @@ public final class Skilling extends JavaPlugin {
                 }
             }
 
+            // Seed the bundled datapacks into the plugin data folder so the
+            // bootstrap can discover them. These are ordinary files: an admin
+            // who deletes one simply stops it being served.
+            File datapacksDir = new File(getDataFolder(), "datapacks");
+            if (!datapacksDir.exists() && !datapacksDir.mkdirs()) {
+                getLogger().warning("Could not create datapacks data directory: " + datapacksDir);
+            }
+            if (!new File(datapacksDir, "stealth.zip").exists()) {
+                getLogger().info("Generating default datapacks/stealth.zip...");
+                saveResource("datapacks/stealth.zip", false);
+            }
+
             // Mark setup as complete so bundled files are not regenerated on subsequent starts
             config.set("setup.first_run", false);
             saveConfig();
+
+            // Enabling a datapack reloads data, so defer it until the server has
+            // finished loading. Only needed on the first run, when the bootstrap's
+            // discovery pass may already have run before the zip was copied.
+            getServer().getScheduler().runTaskLater(this, this::enableBundledDatapacks, 200L);
         }
 
         this.debugLogging = config.getBoolean(CONFIG_DEBUG_LOGGING, false);
@@ -1198,5 +1217,31 @@ public final class Skilling extends JavaPlugin {
             sb.append(WEB_PASSWORD_CHARS.charAt(random.nextInt(WEB_PASSWORD_CHARS.length())));
         }
         return sb.toString();
+    }
+
+    /**
+     * Refreshes the datapack list and enables every bundled pack under
+     * {@code plugins/Skilling/datapacks/} that is not already enabled.
+     *
+     * <p>Fires once, shortly after the first run's setup copy, so a bundled pack
+     * that arrived after the server's initial discovery pass still becomes
+     * active without a restart. Enabling a newly found pack reloads data; on
+     * later boots the bootstrap's {@code DATAPACK_DISCOVERY} handler enables
+     * them at server start, so this is a one-time first-run cost.
+     */
+    private void enableBundledDatapacks() {
+        DatapackManager manager = Bukkit.getDatapackManager();
+        manager.refreshPacks();
+        File dir = new File(getDataFolder(), "datapacks");
+        File[] zips = dir.listFiles((d, name) -> name.endsWith(".zip"));
+        if (zips == null) return;
+        for (File zip : zips) {
+            String id = zip.getName().replaceFirst("\\.zip$", "");
+            Datapack pack = manager.getPack(getName() + "/" + id);
+            if (pack != null && !pack.isEnabled()) {
+                getLogger().info("Enabling bundled datapack " + id + "...");
+                pack.setEnabled(true);
+            }
+        }
     }
 }

@@ -18,9 +18,17 @@ plugins/Skilling/
 │   └── base.yml         # Custom tag definitions (#c:ores, #c:logs, etc.)
 ├── abilities/
 │   └── vein_miner.yml   # Example reusable ability
+├── datapacks/           # Plugin-provided datapacks (e.g. stealth.zip) auto-enabled at server start
 ├── template-skill.yml   # Annotated example skill definition
 └── skills/              # Place your .yml skill definitions here (subfolders allowed)
 ```
+
+## Bundled Datapacks
+
+The plugin ships datapacks (for example the Stealth skill's pickpocket loot
+tables) and copies them into `plugins/Skilling/datapacks/` on first run. Each
+pack is discovered and enabled at server start. A datapack you do not want is
+simply deleted from that folder; the plugin does not recreate it.
 
 ## Basic Commands
 
