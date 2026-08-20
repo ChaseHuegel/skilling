@@ -108,12 +108,19 @@ public final class SkillEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        // Drop the player_placed marker with the destroyed block — including
+        // Drop the player_placed markers with the destroyed block — including
         // chained/harvested neighbors — so a block that regenerates in this spot
-        // is not still treated as player-placed.
+        // is not still treated as player-placed. Also drops the owner stamp and
+        // clears any demolition mark on a defused charge.
         if (event.getBlock().hasMetadata("player_placed")) {
             event.getBlock().removeMetadata("player_placed", plugin);
         }
+        if (event.getBlock().hasMetadata(
+                io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.OWNER_META_KEY)) {
+            event.getBlock().removeMetadata(
+                    io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.OWNER_META_KEY, plugin);
+        }
+        io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.clearMark(event.getBlock());
         // Chained/harvested blocks broken by ChainBreakMechanic or
         // AreaHarvestMechanic are handled by the origin event; do not grant XP or
         // fire abilities again per block.
@@ -136,7 +143,62 @@ public final class SkillEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         event.getBlockPlaced().setMetadata("player_placed", new FixedMetadataValue(plugin, true));
+        // Stamp the placing player's UUID so demolition-style mechanics can tell
+        // the owner's placed blocks apart from another player's.
+        event.getBlockPlaced().setMetadata(
+                io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.OWNER_META_KEY,
+                new FixedMetadataValue(plugin, event.getPlayer().getUniqueId()));
         dispatch(event.getPlayer(), event, "block_place");
+    }
+
+    /**
+     * Handles {@link EntityExplodeEvent} so a sneak-placed demolition charge
+     * (marked by {@code core:marked_demolition}) prunes its explosion to only the
+     * owner's construction blocks, sparing terrain and other players' builds.
+     *
+     * @param event the entity explosion event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityExplode(org.bukkit.event.entity.EntityExplodeEvent event) {
+        io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.handleExplosion(event);
+    }
+
+    /**
+     * Re-evaluates {@code core:elytra_flight} whenever a player's inventory may
+     * have changed, so donning or taking off an elytra toggles flight without a
+     * per-tick task. Covers every inventory path: GUI clicks, drags, and an
+     * elytra breaking.
+     *
+     * @param event the inventory click event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryClick(org.bukkit.event.inventory.InventoryClickEvent event) {
+        if (event.getWhoClicked() instanceof Player player) {
+            io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.reevaluate(player);
+        }
+    }
+
+    /**
+     * Re-evaluates {@code core:elytra_flight} after an inventory drag.
+     *
+     * @param event the inventory drag event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryDrag(org.bukkit.event.inventory.InventoryDragEvent event) {
+        if (event.getWhoClicked() instanceof Player player) {
+            io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.reevaluate(player);
+        }
+    }
+
+    /**
+     * Re-evaluates {@code core:elytra_flight} when a player's item breaks (an
+     * elytra reaching zero durability leaves the chest slot).
+     *
+     * @param event the item break event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onItemBreak(org.bukkit.event.player.PlayerItemBreakEvent event) {
+        io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.reevaluate(event.getPlayer());
     }
 
     /**
@@ -1519,6 +1581,10 @@ public final class SkillEventListener implements Listener {
         // de-level, a reset, or a removed/renamed skill cannot leave a stale
         // bonus (e.g. extra max hearts) on the player.
         io.github.chasehuegel.skilling.engine.mechanic.impl.PersistentAttributeMechanic.stripPersistentModifiers(player);
+        // Similarly strip granted elytra flight before re-granting it to players
+        // still past the milestone, so a de-level or reset cannot leave stale
+        // creative flight on the player.
+        io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.stripAll();
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
             for (SkillDefinition.Ability ability : skill.abilities()) {

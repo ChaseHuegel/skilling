@@ -1,132 +1,152 @@
+# ==========================================
+# BUILDING SKILL
+# ==========================================
+# The construction skill. It earns XP from the build loop — craft, place, and
+# tear down — and rewards a builder who is thrifty with materials, fast at
+# tearing things down, and masters the redstone and explosive trades.
+#
+# Abilities: refund placed construction (L1), quick dismantle (L15), extended
+# reach while sneaking (L25), redstone & explosive craft output (L50), controlled
+# demolition of your own structures (L75), and creative flight while wearing an
+# elytra (L100).
+#
+# XP loop: craft construction materials (bulk-scaled, cheap crafts reward a
+# little), place blocks (time-gated), then tear down your own placed blocks
+# (player_placed:true) — the grindable, anti-grind-safe driver.
 id: "building"
 max_level: 100
-display:
-  name: "Building"
-  icon: "minecraft:bricks"
-  color: "YELLOW"
-  style: "SEGMENTED_10"
+display: { name: "Building", icon: "minecraft:bricks", color: "YELLOW", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Placing construction & redstone materials is the core placement loop.
   - trigger: "block_place"
+    filters: [ { target: "#c:construction_blocks" } ]
+    reward: { constant: 35.0 }
+  # Encompassing build blocks until masonry/carpentry later claim their loops.
+  - trigger: "block_place"
+    filters: [ { target: "#c:stone_products" } ]
+    reward: { constant: 40.0 }
+  - trigger: "block_place"
+    filters: [ { target: "#minecraft:planks" } ]
+    reward: { constant: 40.0 }
+  # Tearing down blocks you placed is the grindable driver: time-gated, honest,
+  # and cannot be farmed on natural terrain.
+  - trigger: "block_break"
     filters:
-      - target: "#c:stone_products"
-    reward: { constant: 43.9 }
+      - target: "#c:demolition_blocks"
+      - state: "player_placed:true"
+    reward: { constant: 35.0 }
+  # Crafting construction materials. Bulk-scaled with a modest rate: these are
+  # cheap, spammable crafts, so the per-craft reward is small.
   - trigger: "craft_item"
-    filters:
-      - target: "#minecraft:stone_bricks"      # decorative block crafts only
-    reward: { constant: 43.9 }
-  - trigger: "block_place"
-    filters:
-      - target: "#minecraft:planks"
-    reward: { constant: 43.9 }
-  - trigger: "craft_item"
-    filters: [ { target: "#c:redstone_components" } ]
-    reward: { constant: 60.0 }
-  - trigger: "block_place"
-    filters: [ { target: "#c:redstone_components" } ]
+    filters: [ { target: "#c:construction_crafts" } ]
     reward: { constant: 30.0 }
 abilities:
-  - id: "scaffolding"
-    display_name: "Scaffolding"
+  # -- FOUNDATIONAL (L1): the primary scalar. A chance to refund the construction
+  # block you just placed, so steady building conserves material. Sub-scales from
+  # level 1 so the thrift is felt across the whole climb.
+  - id: "foundation_stockpile"
+    display_name: "Foundation Stockpile"
     unlock_level: 1
-    trigger: "block_place"           # P2-1: only fires on placement
+    trigger: "block_place"
     display:
       lore:
-        - "&7Placing decorative blocks grants &a{amplifier}&7 Haste"
-        - "&7(mining/digging speed) for {duration}s to speed teardown."
+        - "&7Placing construction blocks has &a{chance}%&7 chance to refund the block."
     mechanics:
-      - type: "core:haste_effect"     # honestly described: Haste = break speed
+      - type: "core:block_refund"
+        filters: [ { target: "#c:construction_blocks" } ]
         parameters:
-          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
-          duration: { constant: 30.0 }
+          chance: { linear: { base: 5.0, step: 0.45, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "structural_knowledge"
-    display_name: "Structural Knowledge"
+  # -- QoL PASSIVE (L15): tear down a placed block and the surrounding 3x3 for
+  # re-use. Radius and block budget carry the loop through the levels, so no
+  # later milestone re-treads the same teardown.
+  - id: "quick_dismantle"
+    display_name: "Quick Dismantle"
     unlock_level: 15
-    trigger: "block_place"
-    display:
-      lore: [ "&7Bonus XP from building &a{multiplier}x&7." ]
-    mechanics:
-      - type: "core:xp_bonus"
-        filters:
-          - target: "#c:stone_products"
-        parameters:
-          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.5 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "swift_build"
-    display_name: "Swift Build"
-    unlock_level: 25
-    trigger: "block_place"
-    display:
-      lore:
-        - "&7Shift+Place to gain &a{multiplier}x&7 move speed for {duration}s."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, holding a decorative block, 12s cooldown, 3+ hunger."
-    requirements:
-      cooldown: 12.0
-      state: [ "is_sneaking" ]
-      items:
-        - { action: "possession", tag: "#c:stone_products", slot: "MAIN_HAND" }
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure:
-      cooldown: { action_bar: "&eSwift Build cooling down: {time}s" }
-      exhaustion: { action_bar: "&cToo exhausted to build!" }
-    mechanics:
-      - type: "core:speed_bonus"
-        parameters:
-          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.35 } }
-          uuid: { constant: "30492952-d866-5e97-b1a4-bc2bbafb5bb8" }
-          duration: { linear: { base: 8.0, step: 0.1, max: 20.0 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&e✦ Swift Build! ✦" } }
-  - id: "reinforced_structure"
-    display_name: "Reinforced Structure"
-    unlock_level: 50
-    trigger: "block_place"
-    display:
-      lore: [ "&7While standing on a placed block, gain &a{amount}&7 knockback resistance." ]
-    mechanics:
-      - type: "core:knockback_resist"
-        parameters:
-          amount: { linear: { base: 0.1, step: 0.005, max: 0.6 } }
-          uuid: { constant: "7c4d1621-dcb4-53df-a734-bb375fc0c175" }
-          duration: { constant: 10.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "architects_vision"
-    display_name: "Architect's Vision"
-    unlock_level: 75
     trigger: "block_break"
     display:
       lore:
-        - "&7Sneak-break a decorative block to harvest up to"
-        - "&7&a{max_blocks}&7 same-type decorative blocks for re-use."
-        - "&7Costs 4 hunger."
-        - "&8Requires: Sneaking, holding a decorative block, 15s cooldown, 6+ hunger."
+        - "&7Sneak-break a placed block to dismantle up to &a{max_blocks}&7"
+        - "&7same-type blocks around it for re-use (radius &a{radius}&7)."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, breaking a player-placed block, 3+ hunger."
     requirements:
-      cooldown: 15.0
       state: [ "is_sneaking" ]
-      items:
-        - { action: "possession", tag: "#c:stone_products", slot: "MAIN_HAND" }
-      exhaustion: { amount: 4.0, minimum: 6.0 }
+      exhaustion: { amount: 1.0, minimum: 3.0 }
     on_failure:
-      cooldown: { action_bar: "&eArchitect's Vision cooling down: {time}s" }
-      exhaustion: { action_bar: "&cToo exhausted to build!" }
+      exhaustion: { action_bar: "&cToo exhausted to dismantle!" }
     mechanics:
       - type: "core:area_harvest"
-        filters: [ { target: "#c:stone_products" } ]
+        filters:
+          - target: "#c:demolition_blocks"
+          - state: "player_placed:true"
         parameters:
-          radius: { milestones: { 75: 1, 85: 2, 95: 3, 100: 4 } }
-          max_blocks: { linear: { base: 16.0, step: 1.0, max: 64.0 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&e✦ Architect's Vision ✦" } }
-  - id: "master_builder"
-    display_name: "Master Builder"
-    unlock_level: 100
+          radius: { milestones: { 15: 1, 40: 2, 70: 3 } }
+          max_blocks: { linear: { base: 8.0, step: 0.4, max: 48.0 } }
+    feedback: { notify: { action_bar: false } }
+  # -- QUALITY-OF-LIFE PASSIVE (L25): sneaking extends placement/interaction
+  # reach for a building session. No cost, no gesture — pure builder comfort.
+  - id: "architects_reach"
+    display_name: "Architect's Reach"
+    unlock_level: 25
+    trigger: "sneak"
+    display:
+      lore: [ "&7Sneaking grants +&a{amount}&7 block placement & interaction reach." ]
+    mechanics:
+      - type: "core:modify_attribute"
+        parameters:
+          attribute: { constant: "minecraft:block_interaction_range" }
+          amount: { milestones: { 25: 1, 50: 2, 75: 3, 100: 4 } }
+          duration: { constant: 300.0 }
+          uuid: { constant: "8d2b5a14-6c31-4e8a-9c2d-1f0a7b3e5c40" }
+    feedback: { notify: { action_bar: false } }
+  # -- MAJOR PASSIVE (L50): the redstone & explosive trades. Crafting these pays
+  # bonus output, giving gunpowder and fireworks a sink that fuels the capstone.
+  - id: "contraption_factory"
+    display_name: "Contraption Factory"
+    unlock_level: 50
     trigger: "craft_item"
     display:
-      lore: [ "&7Decorative block crafts yield &a{multiplier}x&7 output." ]
+      lore: [ "&7Redstone & explosive crafts yield &a{multiplier}x&7 output." ]
     mechanics:
       - type: "core:modify_craft_output"
-        filters:
-          - target: "#minecraft:stone_bricks"
+        filters: [ { target: "#c:redstone_components" } ]
         parameters:
-          multiplier: { linear: { base: 1.5, step: 0.01, max: 2.5 } }
+          multiplier: { linear: { base: 1.2, step: 0.008, max: 2.0 } }
+      - type: "core:modify_craft_output"
+        filters: [ { target: "#c:explosives" } ]
+        parameters:
+          multiplier: { linear: { base: 1.2, step: 0.008, max: 2.0 } }
+    feedback: { notify: { action_bar: false } }
+  # -- SYNERGY PASSIVE (L75): a TNT you sneak-place becomes a demolition charge
+  # that breaks only your placed construction blocks (recovered as drops),
+  # sparing terrain and other players' builds. All other TNT stays 100% vanilla,
+  # so mining/clearing with TNT is untouched.
+  - id: "controlled_demolition"
+    display_name: "Controlled Demolition"
+    unlock_level: 75
+    trigger: "block_place"
+    display:
+      lore:
+        - "&7Sneak-place TNT to detonate only your placed construction blocks."
+        - "&8Requires: Sneaking, placing TNT."
+    mechanics:
+      - type: "core:marked_demolition"
+        filters: [ { target: "minecraft:tnt" } ]
+        parameters:
+          target: { constant: "#c:demolition_blocks" }
+    feedback: { notify: { action_bar: false } }
+  # -- MASTERY CAPSTONE (L100): creative flight while wearing an elytra, the
+  # ultimate builder's reward — controlled points of view build faster than
+  # scaffolding ever could. Requires the existing vanilla elytra, amplifies its
+  # use without replacing it, and stays a constant strong reward.
+  - id: "aerial_architect"
+    display_name: "Aerial Architect"
+    unlock_level: 100
+    trigger: "level_up"
+    display:
+      lore: [ "&7Creative flight while wearing an elytra." ]
+    mechanics:
+      - type: "core:elytra_flight"
     feedback: { notify: { action_bar: false } }

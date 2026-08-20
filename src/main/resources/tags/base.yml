@@ -124,6 +124,54 @@ custom_tags:
     - "minecraft:detector_rail"
     - "minecraft:activator_rail"
 
+  # The building skill's construction set: structural and redstone materials a
+  # builder places, wires, and tears down. Deliberately excludes crafting
+  # stations and valuable-material blocks (gold, diamond, emerald, beacons,
+  # conduits) so the building skill's placement-refund and teardown scalars
+  # never touch scarce or utility-only blocks.
+  construction_blocks:
+    - "#c:redstone_components"
+    - "minecraft:scaffolding"
+    - "minecraft:ladder"
+    - "minecraft:iron_bars"
+    - "minecraft:chain"
+    - "minecraft:glass_pane"
+    - "#minecraft:rails"
+    - "#minecraft:wool"
+    - "#minecraft:carpets"
+    - "#minecraft:concrete"
+    - "#minecraft:concrete_powder"
+
+  # Blocks the building skill's demolition and dismantle abilities may break and
+  # recover: the construction set plus the stone and plank build blocks (until
+  # masonry and carpentry later claim their own craft loops).
+  demolition_blocks:
+    - "#c:construction_blocks"
+    - "#c:stone_products"
+    - "#minecraft:planks"
+
+  # Item-form craft results for the building skill's construction crafting XP
+  # source. Item-form tags are unambiguous when the filter matches a crafted
+  # recipe result.
+  construction_crafts:
+    - "minecraft:scaffolding"
+    - "minecraft:ladder"
+    - "minecraft:chain"
+    - "minecraft:iron_bars"
+    - "minecraft:glass_pane"
+    - "#minecraft:rails"
+    - "#c:redstone_components"
+    - "#c:explosives"
+
+  # Explosive and propulsion materials, for the building skill's explosive craft
+  # output (fuels the elytra-flight capstone's firework rockets).
+  explosives:
+    - "minecraft:gunpowder"
+    - "minecraft:tnt"
+    - "minecraft:firework_rocket"
+    - "minecraft:firework_star"
+    - "minecraft:fire_charge"
+
   herbs:
     - "#minecraft:flowers"
     - "minecraft:sugar_cane"

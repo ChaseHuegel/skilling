@@ -614,6 +614,51 @@ with the tool breaking at max durability).
 
 **Event:** `BlockBreakEvent`
 
+### core:block_refund
+
+Refunds a placed block back into the builder's inventory on a percentage roll,
+so steady building never wastes material. On a successful roll the player nets
+zero material cost for that placement; a full inventory drops the refund on the
+ground so nothing is lost. Which blocks qualify is data-driven through the
+ability's own filter (e.g. a `#c:construction_blocks` tag).
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) of refunding each placement |
+
+**Event:** `BlockPlaceEvent`
+
+### core:marked_demolition
+
+Turns a TNT block the player **sneak-places** into a controlled demolition
+charge. When that marked TNT detonates, only blocks the marking player placed
+and that are in the configured `target` set are broken (and drop normally for
+recovery); every other block in the blast — natural terrain and other players'
+builds — survives. All TNT not sneak-placed by the player detonates 100% vanilla,
+so mining/clearing TNT is untouched. This is the opt-in: sneak-placing a TNT is
+the "mark for demolition" gesture.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `target` | string | none | A material or tag reference (`#c:demolition_blocks`) listing which placed blocks the demolition breaks and recovers |
+
+**Event:** `BlockPlaceEvent` (marking) + engine `EntityExplodeEvent` (pruning)
+
+### core:elytra_flight
+
+Grants creative-mode flight while the player wears an elytra. A persistent,
+re-evaluated unlock (bound to the `level_up` trigger and reconciled on join,
+reload, `setlevel`, and `reset`): the capability is granted only when the chest
+slot holds an elytra and removed when it comes off or the skill de-levels. Uses
+the existing vanilla elytra rather than replacing it. No parameters.
+
+**Event:** `level_up` (join/reload/setlevel/reset reconcile), with engine
+inventory-change re-evaluation for equipment changes
+
 ### core:area_fertilize
 
 When a player uses bonemeal on a block, also grows the matching same-type blocks

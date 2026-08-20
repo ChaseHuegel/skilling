@@ -521,6 +521,11 @@ public final class Skilling extends JavaPlugin {
                         throw new IllegalArgumentException(ctx + ": parameter 'table' must be a namespaced loot table key, got: " + raw);
                     }
                 });
+        mechReg.register("core:block_refund", BlockRefundMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:marked_demolition", MarkedDemolitionMechanic.class, List.of("target"),
+                (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
+        mechReg.register("core:elytra_flight", ElytraFlightMechanic.class, List.of());
     }
 
     /** Registers the built-in triggers into the given registry. */
