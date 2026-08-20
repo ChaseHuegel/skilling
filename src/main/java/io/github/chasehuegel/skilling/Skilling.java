@@ -479,6 +479,23 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:pick_up_mob", PickUpMobMechanic.class, List.of("max_passengers"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "max_passengers"));
         mechReg.register("core:drop_passengers", DropPassengersMechanic.class, List.of());
+        mechReg.register("core:sneak_speed", SneakSpeedMechanic.class, List.of("multiplier", "uuid"));
+        mechReg.register("core:cancel_event", CancelEventMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:drop_loot", DropLootMechanic.class, List.of("table", "chance"),
+                (ctx, p) -> {
+                    MechanicParamValidators.chance(ctx, p, "chance", 100);
+                    Object raw = p.get("table");
+                    boolean validKey;
+                    try {
+                        validKey = raw instanceof String s && NamespacedKey.fromString(s) != null;
+                    } catch (IllegalArgumentException ex) {
+                        validKey = false;
+                    }
+                    if (!validKey) {
+                        throw new IllegalArgumentException(ctx + ": parameter 'table' must be a namespaced loot table key, got: " + raw);
+                    }
+                });
     }
 
     /** Registers the built-in triggers into the given registry. */
@@ -540,6 +557,9 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("jukebox_play", JukeboxPlayTrigger.class);
         trigReg.register("lectern_place", LecternPlaceTrigger.class);
         trigReg.register("right_click", RightClickTrigger.class);
+        trigReg.register("physical_interaction", PhysicalInteractionTrigger.class);
+        trigReg.register("sensed", SensedTrigger.class);
+        trigReg.register("trip_trap", TripTrapTrigger.class);
     }
 
     /** Registers the built-in state filters into the given registry. */
@@ -709,6 +729,17 @@ public final class Skilling extends JavaPlugin {
             if (target == null || v == null || v.isBlank()) return false;
             org.bukkit.potion.PotionEffectType type = resolveEffectType(v);
             return type != null && target.hasPotionEffect(type);
+        });
+
+        // True when the event's damaged/clicked target is a hostile mob that is
+        // not currently targeting the attacking player. Gates a "sneak attack"
+        // against unaware mobs: a calm mob (target null) or one hunting someone
+        // else is a valid backstab target; one already locked onto the player is
+        // not. Fails closed for non-mob victims and event-less requirements.
+        sf.register("target_unaware", (p, e, v) -> {
+            org.bukkit.entity.LivingEntity target = resolveFilteredTargetEntity(e);
+            if (target == null || !(target instanceof org.bukkit.entity.Mob mob)) return false;
+            return !p.equals(mob.getTarget());
         });
 
         sf.register("offhand", (p, e, v) -> {

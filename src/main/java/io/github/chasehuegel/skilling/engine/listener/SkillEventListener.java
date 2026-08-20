@@ -350,6 +350,38 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
+     * Handles {@link PlayerInteractEvent} with a physical action (stepping onto
+     * or into a block) and routes it as the {@code physical_interaction} trigger
+     * and the combined {@code trip_trap} trigger. Covers pressure plates,
+     * weighted plates, and tripwires.
+     *
+     * @param event the player interact event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPhysicalInteraction(PlayerInteractEvent event) {
+        if (event.getAction() != org.bukkit.event.block.Action.PHYSICAL) return;
+        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
+        dispatch(event.getPlayer(), event, "physical_interaction");
+        dispatch(event.getPlayer(), event, "trip_trap");
+    }
+
+    /**
+     * Handles {@link BlockReceiveGameEvent} (a sculpt sensor or shrieker
+     * receiving a vibration) and routes it as the {@code sensed} trigger and the
+     * combined {@code trip_trap} trigger. Only fires when the vibration source
+     * is a player, which is the entity whose sneaking a Silent Steps-style
+     * ability will test.
+     *
+     * @param event the block-receive game event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockReceiveGameEvent(org.bukkit.event.block.BlockReceiveGameEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        dispatch(player, event, "sensed");
+        dispatch(player, event, "trip_trap");
+    }
+
+    /**
      * Handles {@link PlayerInteractEvent} and routes it as a {@code jukebox_play}
      * trigger when a music disc is actually inserted into an empty jukebox.
      *
@@ -486,7 +518,12 @@ public final class SkillEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSneak(org.bukkit.event.player.PlayerToggleSneakEvent event) {
         // Fire only when sneaking starts, not on release.
-        if (!event.isSneaking()) return;
+        if (!event.isSneaking()) {
+            // Release strips any sneak-only speed modifier (core:sneak_speed)
+            // so the bonus never lingers after the player stands up.
+            io.github.chasehuegel.skilling.engine.mechanic.impl.SneakSpeedMechanic.strip(event.getPlayer());
+            return;
+        }
         dispatch(event.getPlayer(), event, "sneak");
     }
 
@@ -1384,7 +1421,15 @@ public final class SkillEventListener implements Listener {
                     && ie.getClickedBlock() != null) {
                 return ie.getClickedBlock().getType();
             }
+            if (action == org.bukkit.event.block.Action.PHYSICAL
+                    && ("physical_interaction".equals(triggerKey) || "trip_trap".equals(triggerKey))
+                    && ie.getClickedBlock() != null) {
+                return ie.getClickedBlock().getType();
+            }
             return null;
+        }
+        if (event instanceof org.bukkit.event.block.BlockReceiveGameEvent bre) {
+            return bre.getBlock().getType();
         }
         if (event instanceof org.bukkit.event.block.BlockFertilizeEvent fe) {
             return fe.getBlock().getType();

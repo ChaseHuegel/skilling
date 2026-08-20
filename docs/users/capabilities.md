@@ -997,7 +997,7 @@ interrupted.
 
 **Event:** `PlayerInteractEntityEvent` (`right_click_entity` trigger)
 
-### core:drop_passengers
+ ### core:drop_passengers
 
 Sets down every carried mob on an empty-hand right-click of air, the companion
 gesture to `core:pick_up_mob`.
@@ -1006,7 +1006,53 @@ gesture to `core:pick_up_mob`.
 
 **Event:** `PlayerInteractEvent` (`right_click_air` trigger)
 
+### core:sneak_speed
+
+Applies a movement-speed bonus that lasts only while the player sneaks. On the
+`sneak` trigger it adds the modifier; the engine strips it when the player stops
+sneaking, so it is never left behind.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Speed multiplier, e.g. `1.25` = 25% faster. Values `<= 1` are a no-op |
+| `uuid` | string | *(random)* | Stable modifier UUID so repeated applications replace instead of stack |
+
+**Event:** `PlayerToggleSneakEvent` (`sneak` trigger)
+
+### core:cancel_event
+
+Cancels the triggering event, optionally gated by a percentage chance. This is
+the generic suppression hammer: bind it to any cancellable event (physical
+interaction, sculpt receive) and scope it with `target` / `state` filters.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | *(always)* | Percentage chance to cancel (0-100). Absent cancels unconditionally |
+
+**Event:** The trigger the ability binds to; the event must be cancellable.
+
+### core:drop_loot
+
+Rolls a referenced loot table and drops the result naturally at the target. The
+target can be a right-clicked entity, a right-clicked or stepped-on block, or a
+damaged entity. Works with vanilla and datapack/plugin loot tables (resolved by
+namespaced key). Players are valid targets and nothing is removed from them.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `table` | string | none | Namespaced loot table key, e.g. `minecraft:chests/simple_dungeon` or `stealth:pickpocket/pocket` |
+| `chance` | double | *(always)* | Percentage chance to actually roll the table (0-100). Absent always rolls |
+
+**Event:** `PlayerInteractEntityEvent`, `PlayerInteractEvent` (right/left click or physical), or `EntityDamageByEntityEvent`
+
 ## Effect & Attribute Parameter Keys
+
 
 Mechanics that accept an `effect` parameter (`core:apply_status`, `core:aoe_effect`,
 `core:crowd_control`, `core:field_aura`, `core:ally_aura`) or an `attribute` parameter
@@ -1110,6 +1156,9 @@ attribute: { constant: "minecraft:movement_speed" }
 | `sign_book` | `PlayerEditBookEvent` | Signing a book-and-quill into a written book (the "Sign and Close" action). Fires only on an actual signing, never on plain editing, so the resource/time cost is real |
 | `jukebox_play` | `PlayerInteractEvent` | Inserting a music disc into an empty jukebox. Precise: right-clicking an occupied jukebox (an ejection) or clicking with no disc never fires, because dispatch checks the jukebox is populated afterwards |
 | `lectern_place` | `PlayerInsertLecternBookEvent` (Paper) | Placing a book onto an empty lectern. Ejecting a book from an occupied lectern never fires |
+| `physical_interaction` | `PlayerInteractEvent` (`Action.PHYSICAL`) | Stepping onto or into a block: pressure plates, weighted plates, and tripwires |
+| `sensed` | `BlockReceiveGameEvent` (Paper) | A sculpt sensor or shrieker receives a vibration. Fires only when a player caused the vibration |
+| `trip_trap` | `PlayerInteractEvent` (`Action.PHYSICAL`) **and** `BlockReceiveGameEvent` (Paper) | Combined silent-travel trigger covering both physical interactions (pressure plates, weighted plates, tripwires) and sculpt vibrations. One trigger for all travel hazards |
 
 ## Built-In State Filters
 
@@ -1142,6 +1191,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `instrument` | `minecraft:<instrument_key>` | Matches the specific goat-horn variant held in the main hand, read from the item's `minecraft:instrument` data component (e.g. `instrument:minecraft:sing_goat_horn`). Fails closed for a non-horn, a horn with no instrument data, or an unknown/blank value. Values are validated at load |
 | `was_sneaking` | *(none)* | The triggering arrow was released while the player was sneaking. Reads the sneak stance stamped on the projectile at shot time (see `shoot_bow`), so it reflects how the shot was released rather than the player's stance when the arrow lands. Fails closed for non-projectile events, so it only matches bow shots |
 | `target_status` | `minecraft:effect_key` | The event's target entity currently has the given potion effect (e.g. `state: "target_status:minecraft:glowing"`). Matches the damaged entity on `entity_damage`, the killed entity on `entity_kill`, and the clicked entity on `right_click_entity`. Fails closed on events without a living target or an unknown effect |
+| `target_unaware` | *(none)* | The event's damaged/clicked target is a hostile `Mob` that is not currently targeting the player (e.g. `state: "target_unaware"` in a requirement). Gates a backstab in `entity_damage`. Fails closed for non-mob victims and event-less requirements |
 
 The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`
 custom tags (in `tags/base.yml`) reproduce the historical armor tiers as data. No

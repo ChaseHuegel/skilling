@@ -385,6 +385,47 @@ custom_tags:
     - "minecraft:nether_wart"
     - "minecraft:glowstone"
 
+  # Blocks the stealth skill's Silent Steps suppresses while sneaking: wooden
+  # and stone pressure plates plus the two weighted plates. Tripwires ride the
+  # same physical-interaction trigger and join via #c:trip_traps.
+  pressure_plates:
+    - "#minecraft:wooden_pressure_plates"
+    - "#minecraft:stone_pressure_plates"
+    - "minecraft:heavy_weighted_pressure_plate"
+    - "minecraft:light_weighted_pressure_plate"
+
+  # Sculpt blocks the stealth skill suppresses: sensors and the shrieker. They
+  # receive vibrations through the cancellable BlockReceiveGameEvent (sensed /
+  # trip_trap triggers).
+  sculk_sensors:
+    - "minecraft:sculk_sensor"
+    - "minecraft:calibrated_sculk_sensor"
+    - "minecraft:sculk_shrieker"
+
+  # The complete silent-travel trap set: every pressure plate, tripwire and
+  # tripwire hook, and sculpt sensor. Used by the single Silent Steps ability
+  # (core:cancel_event on the trip_trap trigger) so one entry covers all of them.
+  trip_traps:
+    - "minecraft:oak_pressure_plate"
+    - "minecraft:spruce_pressure_plate"
+    - "minecraft:birch_pressure_plate"
+    - "minecraft:jungle_pressure_plate"
+    - "minecraft:acacia_pressure_plate"
+    - "minecraft:dark_oak_pressure_plate"
+    - "minecraft:mangrove_pressure_plate"
+    - "minecraft:cherry_pressure_plate"
+    - "minecraft:bamboo_pressure_plate"
+    - "minecraft:crimson_pressure_plate"
+    - "minecraft:warped_pressure_plate"
+    - "minecraft:stone_pressure_plate"
+    - "minecraft:heavy_weighted_pressure_plate"
+    - "minecraft:light_weighted_pressure_plate"
+    - "minecraft:tripwire"
+    - "minecraft:tripwire_hook"
+    - "minecraft:sculk_sensor"
+    - "minecraft:calibrated_sculk_sensor"
+    - "minecraft:sculk_shrieker"
+
 # Entity-type tags, resolved via the `target_type` state filter. Values are
 # entity type names and/or vanilla entity tag cross-references.
 entity_tags:
@@ -420,3 +461,61 @@ entity_tags:
     - "minecraft:bee"
     - "minecraft:axolotl"
     - "minecraft:armadillo"
+
+  # Pickpocket loot groups. The ability (L50 Pickpocket) is gated on the union
+  # #c:humanoid, and each core:drop_loot mechanic filters one disjoint group so
+  # exactly one table rolls per target. Nothing leaves a player's own inventory;
+  # the pocket table is pure flavor.
+  pickpocket_undead:
+    - "minecraft:zombie"
+    - "minecraft:husk"
+    - "minecraft:drowned"
+    - "minecraft:zombie_villager"
+    - "minecraft:skeleton"
+    - "minecraft:stray"
+    - "minecraft:bogged"
+    - "minecraft:wither_skeleton"
+
+  pickpocket_piglin:
+    - "minecraft:piglin"
+    - "minecraft:piglin_brute"
+    - "minecraft:zombified_piglin"
+
+  pickpocket_raid:
+    - "minecraft:pillager"
+    - "minecraft:vindicator"
+    - "minecraft:evoker"
+    - "minecraft:illusioner"
+    - "minecraft:witch"
+
+  pickpocket_ender:
+    - "minecraft:enderman"
+
+  pickpocket_pocket:
+    - "minecraft:villager"
+    - "minecraft:wandering_trader"
+    - "minecraft:player"
+
+  # Union of every pickpocketable biped humanoid. Gates the Pickpocket ability
+  # so the per-group mechanics below it each match exactly one target.
+  humanoid:
+    - "minecraft:zombie"
+    - "minecraft:husk"
+    - "minecraft:drowned"
+    - "minecraft:zombie_villager"
+    - "minecraft:skeleton"
+    - "minecraft:stray"
+    - "minecraft:bogged"
+    - "minecraft:wither_skeleton"
+    - "minecraft:piglin"
+    - "minecraft:piglin_brute"
+    - "minecraft:zombified_piglin"
+    - "minecraft:pillager"
+    - "minecraft:vindicator"
+    - "minecraft:evoker"
+    - "minecraft:illusioner"
+    - "minecraft:witch"
+    - "minecraft:enderman"
+    - "minecraft:villager"
+    - "minecraft:wandering_trader"
+    - "minecraft:player"

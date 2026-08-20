@@ -54,7 +54,8 @@ class BundledTagsAndSkillsConsistencyTest {
             "unarmored", "bows", "instruments", "fishing_rods", "holy_blocks",
             "crops", "raw_crops", "tame_offerings", "foods", "campfire_foods",
             "campfires", "potions", "shields",
-            "wooden_products", "shovels", "suspicious_blocks"
+            "wooden_products", "shovels", "suspicious_blocks",
+            "pressure_plates", "sculk_sensors", "trip_traps"
     );
 
     @TempDir
@@ -93,6 +94,11 @@ class BundledTagsAndSkillsConsistencyTest {
             }
             assertTrue(loader.getEntityKeys().contains("#c:undead"),
                     "bundled entity tag #c:undead did not load from tags/base.yml");
+            for (String key : List.of("humanoid", "pickpocket_piglin", "pickpocket_undead",
+                    "pickpocket_raid", "pickpocket_ender", "pickpocket_pocket")) {
+                assertTrue(loader.getEntityKeys().contains("#c:" + key),
+                        "bundled entity tag #c:" + key + " did not load from tags/base.yml");
+            }
 
             SkillManager manager = io.github.chasehuegel.skilling.TestSkillManager.newWith(reg -> {},
                     new TagResolver(loader));

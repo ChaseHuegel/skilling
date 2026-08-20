@@ -1,0 +1,192 @@
+# ==========================================
+# STEALTH SKILL
+# ==========================================
+# The shadow and subterfuge skill. It earns XP from fighting from the shadows,
+# and turns a crouch into a toolkit: sneaking moves you faster (L1 Sneak Speed),
+# lets you walk silently past plates, tripwires, and sculpt sensors (L15 Silent
+# Steps), strikes unaware enemies hard (L25 Backstab), lifts coins and trinkets
+# from bipeds (L50 Pickpocket), grants dark vision in low light (L75 Night
+# Stalker), and cloaks you in Invisibility (L100 Umbral Mantle).
+#
+# XP loop: deal damage and land kills while sneaking (the grindable drivers),
+# plus stealthily looting containers. Pickpocket is a cadence reward, not a
+# grind source.
+id: "stealth"
+max_level: 100
+display: { name: "Stealth", icon: "minecraft:leather_boots", color: "DARK_GRAY", style: "SEGMENTED_10" }
+progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+xp_sources:
+  # Sneak combat is the primary, damage-scaled driver, mirroring the combat
+  # skills: ~12 per raw damage point while sneaking.
+  - trigger: "entity_damage"
+    filters: [ { state: "is_sneaking" } ]
+    reward: { constant: 12.0 }
+    scaling: damage
+  # Finishing a target while sneaking. Less frequent than a hit, so it pays a
+  # flat bonus on top of the damage already earned for the fight.
+  - trigger: "entity_kill"
+    filters: [ { state: "is_sneaking" } ]
+    reward: { constant: 60.0 }
+  # Stealthily opening containers is a steady auxiliary trickle.
+  - trigger: "loot"
+    filters: [ { state: "is_sneaking" } ]
+    reward: { constant: 45.0 }
+abilities:
+  # -- FOUNDATIONAL (L1): the primary scalar. A speed bonus that only lasts
+  # while sneaking, so the skill reads as "you get better at sneaking" rather
+  # than a global damage or movement buff. The multiplier grows to a cap at 100.
+  - id: "sneak_speed"
+    display_name: "Sneak Speed"
+    unlock_level: 1
+    trigger: "sneak"
+    display: { lore: [ "&7Sneaking moves you &a{multiplier}x&7 faster." ] }
+    mechanics:
+      - type: "core:sneak_speed"
+        parameters:
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          uuid: { constant: "6f3c1d2e-9a4b-4c5d-8e1f-0a2b3c4d5e6f" }
+    feedback: { notify: { action_bar: false } }
+
+  # -- QOL PASSIVE (L15): silent travel. One ability, on the combined trip_trap
+  # trigger, so sneaking suppresses pressure plates, tripwires, and sculpt
+  # sensors. The chance grows from 10% to a 40% cap at level 100.
+  - id: "silent_steps"
+    display_name: "Silent Steps"
+    unlock_level: 15
+    trigger: "trip_trap"
+    display:
+      lore:
+        - "&7Sneaking &a{chance}%&7 of the time, traps (press plates, tripwires, sculpt sensors) stay silent."
+        - "&8Requires: Sneaking."
+    requirements:
+      state: [ "is_sneaking" ]
+    mechanics:
+      - type: "core:cancel_event"
+        filters: [ { target: "#c:trip_traps" } ]
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&7Silent... ✦" }
+      success_only: true
+
+  # -- PRIMARY ABILITY (L25): the backstab. A strong damage multiplier against a
+  # target that is not already hunting you, for melee and projectile hits alike.
+  # Hungry gated (no cooldown): the food cost is the gate, like Leap / Aimed Shot.
+  - id: "backstab"
+    display_name: "Backstab"
+    unlock_level: 25
+    trigger: "entity_damage"
+    display:
+      lore:
+        - "&7Deal &a{multiplier}x&7 damage to targets that are not targeting you."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, unaware target, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking", "target_unaware" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to strike!" }
+    mechanics:
+      - type: "core:modify_damage"
+        filters: [ { state: "target_unaware" } ]
+        parameters:
+          multiplier: { linear: { base: 1.5, step: 0.01, max: 2.2 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&7✦ Backstab! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.crit", volume: 0.5, pitch: 1.3, target: "self" } ]
+      success_only: true
+
+  # -- MAJOR (L50): pickpocket. Sneak + right-click a humanoid for a chance to
+  # roll a themed loot table and drop the result at the target. Players are
+  # valid targets but nothing is taken from their inventory: the pocket table is
+  # pure fun. Each table's mechanic is target_type-filtered so one rolls per click.
+  - id: "pickpocket"
+    display_name: "Pickpocket"
+    unlock_level: 50
+    trigger: "right_click_entity"
+    display:
+      lore:
+        - "&7Sneak + Right-Click a humanoid: &a{chance}%&7 to pick its pocket."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, empty hand, humanoid target, 8s cooldown, 3+ hunger."
+    requirements:
+      cooldown: { linear: { base: 8.0, step: -0.04, min: 4.0 } }
+      state: [ "is_sneaking", "target_type:#c:humanoid", "hand:empty" ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&ePickpocket cooling down: {time}s" }
+      exhaustion: { action_bar: "&cToo hungry to pick a pocket!" }
+    mechanics:
+      - type: "core:drop_loot"
+        filters: [ { state: "target_type:#c:pickpocket_piglin" } ]
+        parameters:
+          table: { constant: "stealth:pickpocket/gold" }
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+      - type: "core:drop_loot"
+        filters: [ { state: "target_type:#c:pickpocket_undead" } ]
+        parameters:
+          table: { constant: "stealth:pickpocket/undead" }
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+      - type: "core:drop_loot"
+        filters: [ { state: "target_type:#c:pickpocket_raid" } ]
+        parameters:
+          table: { constant: "stealth:pickpocket/raid" }
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+      - type: "core:drop_loot"
+        filters: [ { state: "target_type:#c:pickpocket_ender" } ]
+        parameters:
+          table: { constant: "stealth:pickpocket/ender" }
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+      - type: "core:drop_loot"
+        filters: [ { state: "target_type:#c:pickpocket_pocket" } ]
+        parameters:
+          table: { constant: "stealth:pickpocket/pocket" }
+          chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Picked a pocket! ✦" }
+      sounds: [ { type: "minecraft:entity.item.pickup", volume: 0.4, pitch: 1.6, target: "self" } ]
+      success_only: true
+
+  # -- SYNERGY PASSIVE (L75): the darkness is home. Sneaking in low light grants
+  # Night Vision, linking the skill into Minecraft's light system. Duration grows
+  # with level.
+  - id: "night_stalker"
+    display_name: "Night Stalker"
+    unlock_level: 75
+    trigger: "sneak"
+    display: { lore: [ "&7While sneaking in the dark you gain &a{duration}s&7 of Night Vision." ] }
+    mechanics:
+      - type: "core:field_aura"
+        filters: [ { state: "light_level:below:7" } ]
+        parameters:
+          effect: { constant: "minecraft:night_vision" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 15.0, step: 0.5, max: 60.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+
+  # -- MASTERY CAPSTONE (L100): the cloak. Sneaking cloaks you in Invisibility
+  # for a fixed duration, gated by hunger. Kept simple: a set duration per sneak.
+  - id: "umbral_mantle"
+    display_name: "Umbral Mantle"
+    unlock_level: 100
+    trigger: "sneak"
+    display:
+      lore:
+        - "&7Sneaking cloaks you in Invisibility for &a240s&7."
+        - "&7Costs 1 hunger."
+        - "&8Requires: 3+ hunger."
+    requirements:
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to vanish!" }
+    mechanics:
+      - type: "core:field_aura"
+        parameters:
+          effect: { constant: "minecraft:invisibility" }
+          radius: { constant: 0.0 }
+          duration: { constant: 240.0 }
+          amplifier: { constant: 0.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&7✦ Vanished. ✦" }
+      sounds: [ { type: "minecraft:block.sculk.charge", volume: 0.5, pitch: 1.4, target: "self" } ]
