@@ -23,7 +23,7 @@ display: { name: "Bard", icon: "minecraft:jukebox", color: "PURPLE", style: "SEG
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   # Playing a goat horn (vanilla 7s cooldown makes it time-gated).
-  - trigger: "right_click_air"
+  - trigger: "right_click"
     filters: [ { tool: "#c:instruments" } ]
     reward: { constant: 120.0 }
   # Signing a book-and-quill into a written book (resource + time cost).
@@ -53,7 +53,7 @@ abilities:
   - id: "tempo"
     display_name: "Tempo"
     unlock_level: 1
-    trigger: "right_click_air"
+    trigger: "right_click"
     display: { lore: [ "&7Playing music keeps you in step: gain &a{multiplier}x&7 Speed for &a{duration}s&7, growing with level." ] }
     mechanics:
       - type: "core:speed_bonus"
@@ -87,7 +87,7 @@ abilities:
   - id: "anthem"
     display_name: "Anthem"
     unlock_level: 25
-    trigger: "right_click_air"
+    trigger: "right_click"
     display:
       lore:
         - "&7Play an instrument to perform its song."
@@ -243,7 +243,7 @@ abilities:
   - id: "symphony"
     display_name: "Symphony"
     unlock_level: 100
-    trigger: "right_click_air"
+    trigger: "right_click"
     display:
       lore:
         - "&7Your performance swells into a grand anthem: each horn's song is empowered with greater range, longer duration & a stronger effect."

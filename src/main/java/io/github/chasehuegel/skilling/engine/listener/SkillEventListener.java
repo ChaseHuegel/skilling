@@ -319,6 +319,11 @@ public final class SkillEventListener implements Listener {
      * click triggers ({@code right_click_air}, {@code right_click_block},
      * {@code left_click_air}, {@code left_click_block}) based on the click action.
      *
+     * <p>The union {@code right_click} trigger is also fired for every right-click
+     * (air or block) so an ability or XP source bound to "a right-click use" works
+     * regardless of whether the cursor happened to hit a block. Left-clicks never
+     * fire {@code right_click}.
+     *
      * @param event the player interact event
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -334,6 +339,14 @@ public final class SkillEventListener implements Listener {
         if (triggerKey != null) {
             dispatch(event.getPlayer(), event, triggerKey);
         }
+        if (isRightClick(event.getAction())) {
+            dispatch(event.getPlayer(), event, "right_click");
+        }
+    }
+
+    private static boolean isRightClick(org.bukkit.event.block.Action action) {
+        return action == org.bukkit.event.block.Action.RIGHT_CLICK_AIR
+                || action == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK;
     }
 
     /**
@@ -384,7 +397,7 @@ public final class SkillEventListener implements Listener {
 
     /**
      * Handles {@link PlayerInteractEntityEvent} and routes it as a
-     * {@code right_click_entity} trigger.
+     * {@code right_click_entity} and {@code right_click} trigger.
      *
      * @param event the player interact entity event
      */
@@ -392,6 +405,7 @@ public final class SkillEventListener implements Listener {
     public void onRightClickEntity(org.bukkit.event.player.PlayerInteractEntityEvent event) {
         if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
         dispatch(event.getPlayer(), event, "right_click_entity");
+        dispatch(event.getPlayer(), event, "right_click");
     }
 
     /**

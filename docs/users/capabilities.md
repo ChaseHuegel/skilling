@@ -1067,6 +1067,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `right_click_air` | `PlayerInteractEvent` (action `RIGHT_CLICK_AIR`) | Right-clicking air with the main hand only. Never matches a block `target` filter |
 | `right_click_block` | `PlayerInteractEvent` (action `RIGHT_CLICK_BLOCK`) | Right-clicking a block with the main hand only. A `target` filter matches the clicked block |
 | `right_click_entity` | `PlayerInteractEntityEvent` | Right-clicking an entity with the main hand only. The off-hand duplicate of a two-handed interaction is skipped |
+| `right_click` | `PlayerInteractEvent` (action `RIGHT_CLICK_AIR`/`RIGHT_CLICK_BLOCK`) or `PlayerInteractEntityEvent` | The union trigger: fires on any main-hand right-click regardless of surface (air, block, or entity), so a "right-click use" like playing a goat horn works no matter what the cursor happens to hit. Never fires for a left-click |
 | `left_click_air` | `PlayerInteractEvent` (action `LEFT_CLICK_AIR`) | Left-clicking air with the main hand only. Never matches a block `target` filter |
 | `left_click_block` | `PlayerInteractEvent` (action `LEFT_CLICK_BLOCK`) | Left-clicking a block with the main hand only. A `target` filter matches the clicked block |
 | `left_click_entity` | `EntityDamageByEntityEvent` | Attacking an entity directly with a left-click (hand/punch only). Projectile attacks are not left-clicks and stay on the `entity_damage` and `shoot_bow` triggers. Supports `scaling: damage` |

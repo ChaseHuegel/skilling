@@ -41,6 +41,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.RideHorseTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickAirTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickBlockTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickEntityTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.RightClickTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SleepTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SignBookTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.SmithTrigger;
@@ -164,7 +165,8 @@ class SkillTriggerTest {
                     Arguments.of(new PotionSplashTrigger(), "potion_splash", PotionSplashEvent.class),
                     Arguments.of(new SignBookTrigger(), "sign_book", PlayerEditBookEvent.class),
                     Arguments.of(new JukeboxPlayTrigger(), "jukebox_play", PlayerInteractEvent.class),
-                    Arguments.of(new LecternPlaceTrigger(), "lectern_place", PlayerInsertLecternBookEvent.class)
+                    Arguments.of(new LecternPlaceTrigger(), "lectern_place", PlayerInsertLecternBookEvent.class),
+                    Arguments.of(new RightClickTrigger(), "right_click", PlayerInteractEvent.class)
             );
         }
     }

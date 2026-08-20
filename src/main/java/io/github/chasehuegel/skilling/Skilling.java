@@ -539,6 +539,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("sign_book", SignBookTrigger.class);
         trigReg.register("jukebox_play", JukeboxPlayTrigger.class);
         trigReg.register("lectern_place", LecternPlaceTrigger.class);
+        trigReg.register("right_click", RightClickTrigger.class);
     }
 
     /** Registers the built-in state filters into the given registry. */

@@ -58,7 +58,7 @@ class BardSkillYamlTest {
                 "signing a book must be a bard XP source");
         assertTrue(def.xpSources().stream().anyMatch(s -> s.trigger().equals("jukebox_play")),
                 "inserting a disc into a jukebox must be a bard XP source");
-        assertTrue(def.xpSources().stream().anyMatch(s -> s.trigger().equals("right_click_air")),
+        assertTrue(def.xpSources().stream().anyMatch(s -> s.trigger().equals("right_click")),
                 "playing an instrument must be a bard XP source");
     }
 
