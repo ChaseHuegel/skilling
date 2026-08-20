@@ -406,13 +406,53 @@ custom_tags:
   shields:
     - "minecraft:shield"
 
+  # The full woodworker product set: every timber-derived craft. Used by the
+  # carpentry skill's craft/place abilities. Deliberately broad so a single
+  # "all my wooden products" filter reads naturally.
   wooden_products:
     - "#minecraft:planks"
     - "#minecraft:wooden_slabs"
     - "#minecraft:wooden_stairs"
-    - "minecraft:crafting_table"
-    - "minecraft:chest"
+    - "#minecraft:fences"
+    - "#minecraft:fence_gates"
+    - "#minecraft:wooden_doors"
+    - "#minecraft:wooden_trapdoors"
+    - "#minecraft:wooden_buttons"
+    - "#minecraft:wooden_pressure_plates"
+    - "#minecraft:signs"
+    - "#minecraft:boats"
     - "minecraft:ladder"
+    - "minecraft:chest"
+    - "minecraft:barrel"
+    - "minecraft:crafting_table"
+    - "minecraft:cartography_table"
+    - "minecraft:fletching_table"
+    - "minecraft:bookshelf"
+    - "minecraft:composter"
+
+  # The premium woodworker line: every wooden product EXCEPT raw planks. The
+  # carpentry XP sources price planks separately (a cheap, spammable grind gets
+  # a low return) while this tag prices the higher-value joined products, so the
+  # two never double-count the same craft.
+  carpentry_joinery:
+    - "#minecraft:wooden_slabs"
+    - "#minecraft:wooden_stairs"
+    - "#minecraft:fences"
+    - "#minecraft:fence_gates"
+    - "#minecraft:wooden_doors"
+    - "#minecraft:wooden_trapdoors"
+    - "#minecraft:wooden_buttons"
+    - "#minecraft:wooden_pressure_plates"
+    - "#minecraft:signs"
+    - "#minecraft:boats"
+    - "minecraft:ladder"
+    - "minecraft:chest"
+    - "minecraft:barrel"
+    - "minecraft:crafting_table"
+    - "minecraft:cartography_table"
+    - "minecraft:fletching_table"
+    - "minecraft:bookshelf"
+    - "minecraft:composter"
 
   shovels:
     - "#minecraft:shovels"

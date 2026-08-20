@@ -1,93 +1,370 @@
+# ==========================================
+# CARPENTRY SKILL — The Woodworker
+# ==========================================
+# Woodcutting harvests raw logs; Building places blocks. Carpentry transforms
+# timber into joinery products — the craft of the woodworker. Its loop turns
+# planks and logs into furniture and fittings, fletches arrows, feeds the kiln,
+# and finally masters both the stonecutter saw and a mobile workshop.
+#
+# Abilities (6-tier ladder, all sub-scaled except the sanctioned binary unlock):
+#   L1   Joinery         craft output multiplier on wooden products (identity scalar)
+#   L15  Fletcher        craft output multiplier on all arrows
+#   L25  Fine Grain      axes chance to lose no durability
+#   L50  Charcoal Kiln   bonus charcoal from the furnace
+#   L75  Mate Saw        unlock stonecutter wood-cutting recipes (data pack)
+#   L100 Mobile Workbench  open a crafting grid anywhere
+#
+# XP loop: crafting planks (cheap, bulk -> low return), crafting premium wood
+# joinery (real material cost -> higher), and placing joinery. Deliberately no
+# log-breaking source: that is woodcutting's grind, not a carpenter's.
 id: "carpentry"
 max_level: 100
 display: { name: "Carpentry", icon: "minecraft:crafting_table", color: "YELLOW", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Planks are the cheapest, most spammable craft, so this returns low (bulk = minor).
   - trigger: "craft_item"
     filters: [ { target: "#minecraft:planks" } ]
-    reward: { constant: 55.6 }
-  - trigger: "block_break"
-    filters: [ { target: "#minecraft:logs" }, { state: "player_placed:false" } ]
-    reward: { constant: 55.6 }
+    reward: { constant: 15.0 }
+  # Premium joinery costs real materials (chests, barrels, tables, boats), so it pays higher.
   - trigger: "craft_item"
-    filters: [ { target: "#c:wooden_products" } ]
-    reward: { constant: 55.6 }
+    filters: [ { target: "#c:carpentry_joinery" } ]
+    reward: { constant: 40.0 }
+  # Placing joinery is a placement loop distinct from Building's raw-plank placement.
+  - trigger: "block_place"
+    filters: [ { target: "#c:carpentry_joinery" } ]
+    reward: { constant: 30.0 }
 abilities:
-  - id: "efficient_crafting"
-    display_name: "Efficient Crafting"
+  # -- FOUNDATIONAL (L1): the primary scalar. Wood product crafts yield more,
+  # growing from level 1 so the whole climb is felt. Cap raised to 2x at 100.
+  - id: "joinery"
+    display_name: "Joinery"
     unlock_level: 1
     trigger: "craft_item"
-    display: { lore: [ "&7Plank & fence crafts yield &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Wooden product crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
-        filters: [ { target: "#minecraft:planks" } ]
+        filters: [ { target: "#c:wooden_products" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+          multiplier: { linear: { base: 1.05, step: 0.0096, max: 2.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "precise_cut"
-    display_name: "Precise Cut"
+
+  # -- QOL PASSIVE (L15): fletching. All arrows (regular, tipped, spectral)
+  # craft in greater number, easing the ammo economy.
+  - id: "fletcher"
+    display_name: "Fletcher"
     unlock_level: 15
+    trigger: "craft_item"
+    display: { lore: [ "&7Arrow crafts yield &a{multiplier}x&7." ] }
+    mechanics:
+      - type: "core:modify_craft_output"
+        filters: [ { target: "#minecraft:arrows" } ]
+        parameters:
+          multiplier: { linear: { base: 1.1, step: 0.0059, max: 1.6 } }
+    feedback: { notify: { action_bar: false } }
+
+  # -- QOL PASSIVE (L25): fine grain. Careful workmanship keeps axes sharp
+  # longer, so the carpenter's primary tool lasts between workshops.
+  - id: "fine_grain"
+    display_name: "Fine Grain"
+    unlock_level: 25
     trigger: "item_damage"
     display: { lore: [ "&7Axes have &a{chance}%&7 chance to lose no durability." ] }
     mechanics:
       - type: "core:durability_save"
         filters: [ { tool: "#minecraft:axes" } ]
         parameters:
-          chance: { linear: { base: 15.0, step: 0.4, max: 60.0 } }
+          chance: { linear: { base: 15.0, step: 0.4667, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "timber_reclaim"
-    display_name: "Timber Reclaim"
-    unlock_level: 25
-    trigger: "block_break"
+
+  # -- MAJOR PASSIVE (L50): the kiln. Logs char into more charcoal, fuelling the
+  # furnace loop mid-game with a level-scaled economy spike.
+  - id: "charcoal_kiln"
+    display_name: "Charcoal Kiln"
+    unlock_level: 50
+    trigger: "furnace_extract"
+    display: { lore: [ "&7Charcoal output &a{multiplier}x&7." ] }
+    mechanics:
+      - type: "core:modify_furnace_output"
+        filters: [ { target: "minecraft:charcoal" } ]
+        parameters:
+          multiplier: { linear: { base: 1.1, step: 0.018, max: 2.0 } }
+    feedback: { notify: { action_bar: false } }
+
+  # -- SYNERGY PASSIVE (L75): the mate saw. Learning to run the stonecutter as
+  # a wood saw permanently unlocks the bundled wood-cutting recipes (logs and
+  # planks into slabs, stairs, fences, gates, trapdoors, and doors). A binary,
+  # one-time unlock: the sanctioned exception to the no-static-milestones rule.
+  # The data pack lives at plugins/Skilling/datapacks/carpentry.zip and ships
+  # inside the plugin jar.
+  - id: "mate_saw"
+    display_name: "Mate Saw"
+    unlock_level: 75
+    trigger: "level_up"
     display:
       lore:
-        - "&7Shift+fell a tree to double drops &a{yield_chance}%&7."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, axe in hand, 6s cooldown, 3+ hunger."
-    requirements:
-      cooldown: 6.0
-      state: [ "is_sneaking" ]
-      items: [ { action: "possession", tag: "#minecraft:axes", slot: "MAIN_HAND" } ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eTimber Reclaim cooling down: {time}s" } }
+        - "&7Learn to cut wood in the stonecutter:"
+        - "&7logs become planks; planks become boards."
     mechanics:
-      - type: "core:yield_multiplier"
-        filters: [ { target: "#minecraft:logs" } ]
+      - type: "core:unlock_recipe"
         parameters:
-          yield_chance: { linear: { base: 10.0, step: 0.4, max: 50.0 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&6✦ Timber Reclaim! ✦" } }
-  - id: "wood_weave"
-    display_name: "Wood Weave"
-    unlock_level: 50
-    trigger: "craft_item"
-    display: { lore: [ "&7Fence/gate/trapdoor crafts yield &a{multiplier}x&7." ] }
-    mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "#minecraft:fences" } ]
+          recipe: { constant: "carpentry:oak_log_to_planks" }
+      - type: "core:unlock_recipe"
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.01, max: 2.0 } }
+          recipe: { constant: "carpentry:oak_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:oak_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:oak_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:oak_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:oak_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:oak_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:spruce_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:spruce_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:spruce_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:spruce_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:spruce_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:spruce_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:spruce_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:birch_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:birch_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:birch_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:birch_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:birch_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:birch_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:birch_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:jungle_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:jungle_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:jungle_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:jungle_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:jungle_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:jungle_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:jungle_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:acacia_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:acacia_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:acacia_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:acacia_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:acacia_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:acacia_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:acacia_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:dark_oak_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:dark_oak_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:dark_oak_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:dark_oak_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:dark_oak_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:dark_oak_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:dark_oak_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:mangrove_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:mangrove_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:mangrove_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:mangrove_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:mangrove_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:mangrove_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:mangrove_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:cherry_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:cherry_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:cherry_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:cherry_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:cherry_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:cherry_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:cherry_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:pale_oak_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:pale_oak_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:pale_oak_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:pale_oak_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:pale_oak_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:pale_oak_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:pale_oak_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:crimson_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:crimson_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:crimson_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:crimson_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:crimson_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:crimson_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:crimson_planks_to_door" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:warped_log_to_planks" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:warped_planks_to_slab" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:warped_planks_to_stairs" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:warped_planks_to_fence" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:warped_planks_to_fence_gate" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:warped_planks_to_trapdoor" }
+      - type: "core:unlock_recipe"
+        parameters:
+          recipe: { constant: "carpentry:warped_planks_to_door" }
     feedback: { notify: { action_bar: false } }
-  - id: "iron_bark_touch"
-    display_name: "Iron Bark Touch"
-    unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7While holding an axe, gain &a{amount}&7 armor on hit." ] }
-    mechanics:
-      - type: "core:armor_bonus"
-        filters: [ { tool: "#minecraft:axes" } ]
-        parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
-          uuid: { constant: "d03518b3-faa3-5e67-86fc-36710ba4d4ef" }
-          duration: { constant: 8.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "master_joiner"
-    display_name: "Master Joiner"
+
+  # -- MASTERY CAPSTONE (L100): the mobile workshop. Holding a crafted wooden
+  # product and right-clicking air opens a full crafting grid anywhere, so the
+  # master carpenter works wherever the timber is. Gated by an item in hand and
+  # the hunger cost; the item's inventory cooldown (from core:set_cooldown) shows
+  # the wait in the slot UI instead of a chat-based timer.
+  - id: "mobile_workbench"
+    display_name: "Mobile Workbench"
     unlock_level: 100
-    trigger: "craft_item"
-    display: { lore: [ "&7All wood crafts yield &a{multiplier}x&7." ] }
+    trigger: "right_click_air"
+    display:
+      lore:
+        - "&7Right-click with a wooden product to open"
+        - "&7a crafting grid anywhere."
+        - "&7Costs 1 hunger."
+        - "&8Requires: wooden product in hand, 3+ hunger."
+    requirements:
+      items: [ { action: "possession", tag: "#c:wooden_products", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to work!" }
     mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "#minecraft:planks" } ]
+      - type: "core:open_crafting"
+      - type: "core:set_cooldown"
         parameters:
-          multiplier: { linear: { base: 1.8, step: 0.01, max: 2.5 } }
-    feedback: { notify: { action_bar: false } }
+          material: { constant: "minecraft:crafting_table" }
+          ticks: { constant: 100.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&e✦ Mobile Workbench ✦" }
+      sounds: [ { type: "minecraft:block.wood.step", volume: 0.5, pitch: 1.2, target: "self" } ]

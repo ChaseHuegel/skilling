@@ -184,6 +184,10 @@ public final class Skilling extends JavaPlugin {
                 getLogger().info("Generating default datapacks/stealth.zip...");
                 saveResource("datapacks/stealth.zip", false);
             }
+            if (!new File(datapacksDir, "carpentry.zip").exists()) {
+                getLogger().info("Generating default datapacks/carpentry.zip...");
+                saveResource("datapacks/carpentry.zip", false);
+            }
 
             // Mark setup as complete so bundled files are not regenerated on subsequent starts
             config.set("setup.first_run", false);
@@ -526,6 +530,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:marked_demolition", MarkedDemolitionMechanic.class, List.of("target"),
                 (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
         mechReg.register("core:elytra_flight", ElytraFlightMechanic.class, List.of());
+        mechReg.register("core:open_crafting", OpenCraftingMechanic.class, List.of());
     }
 
     /** Registers the built-in triggers into the given registry. */

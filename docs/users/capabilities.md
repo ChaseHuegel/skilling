@@ -1051,6 +1051,24 @@ gesture to `core:pick_up_mob`.
 
 **Event:** `PlayerInteractEvent` (`right_click_air` trigger)
 
+### core:open_crafting
+
+Opens a temporary, full-screen 3x3 crafting window for the player without
+needing a crafting table block, so a "mobile workshop" ability can be used
+anywhere. The window is a standard vanilla workbench GUI ([`Player.openWorkbench`]),
+so it stores nothing and cannot persist anything when the plugin is removed.
+Bind it to a right-click trigger; a left-click is a no-op. Gate it (held item,
+hunger, cooldown) through the ability's `requirements:` block.
+
+```yaml
+mechanics:
+  - type: "core:open_crafting"
+```
+
+**Parameters:** None
+
+**Event:** `PlayerInteractEvent` (`right_click_air` or `right_click_block` trigger)
+
 ### core:sneak_speed
 
 Applies a movement-speed bonus that lasts only while the player sneaks. On the
