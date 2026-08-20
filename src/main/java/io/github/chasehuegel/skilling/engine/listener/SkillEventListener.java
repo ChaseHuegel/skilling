@@ -519,9 +519,11 @@ public final class SkillEventListener implements Listener {
     public void onSneak(org.bukkit.event.player.PlayerToggleSneakEvent event) {
         // Fire only when sneaking starts, not on release.
         if (!event.isSneaking()) {
-            // Release strips any sneak-only speed modifier (core:sneak_speed)
-            // so the bonus never lingers after the player stands up.
+            // Release strips any sneak-only speed modifier (core:sneak_speed) and
+            // sneak-only potion effect (core:sneak_effect) so neither lingers
+            // after the player stands up.
             io.github.chasehuegel.skilling.engine.mechanic.impl.SneakSpeedMechanic.strip(event.getPlayer());
+            io.github.chasehuegel.skilling.engine.mechanic.impl.SneakEffectMechanic.strip(event.getPlayer());
             return;
         }
         dispatch(event.getPlayer(), event, "sneak");

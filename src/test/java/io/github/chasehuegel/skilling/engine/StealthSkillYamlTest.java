@@ -126,10 +126,10 @@ class StealthSkillYamlTest {
     }
 
     @Test
-    void umbralMantleCloaksWithFieldAura() {
+    void umbralMantleCloaksWithSneakEffect() {
         SkillDefinition.Ability mantle = ability("umbral_mantle");
         assertEquals("sneak", mantle.trigger());
         assertEquals(1, mantle.mechanics().stream()
-                .filter(m -> "core:field_aura".equals(m.type())).count());
+                .filter(m -> "core:sneak_effect".equals(m.type())).count());
     }
 }

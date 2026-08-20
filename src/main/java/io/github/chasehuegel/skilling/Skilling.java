@@ -499,6 +499,12 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "max_passengers"));
         mechReg.register("core:drop_passengers", DropPassengersMechanic.class, List.of());
         mechReg.register("core:sneak_speed", SneakSpeedMechanic.class, List.of("multiplier", "uuid"));
+        mechReg.register("core:sneak_effect", SneakEffectMechanic.class, List.of("effect", "amplifier", "duration"),
+                (ctx, p) -> {
+                    MechanicParamValidators.potionEffect(ctx, p, "effect");
+                    MechanicParamValidators.nonNegative(ctx, p, "amplifier");
+                    MechanicParamValidators.nonNegative(ctx, p, "duration");
+                });
         mechReg.register("core:cancel_event", CancelEventMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:drop_loot", DropLootMechanic.class, List.of("table", "chance"),

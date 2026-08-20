@@ -1021,6 +1021,23 @@ sneaking, so it is never left behind.
 
 **Event:** `PlayerToggleSneakEvent` (`sneak` trigger)
 
+### core:sneak_effect
+
+Applies a potion effect that lasts only while the player sneaks. On the `sneak`
+trigger it applies the effect; the engine removes it when the player stops
+sneaking, so it never lingers after the crouch. The potion-effect sibling of
+`core:sneak_speed`, useful for a cloak-style effect.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `effect` | string | none | Namespaced potion effect key, e.g. `minecraft:invisibility` |
+| `amplifier` | int | `0` | Effect amplifier |
+| `duration` | int | `5` | Effect duration in seconds |
+
+**Event:** `PlayerToggleSneakEvent` (`sneak` trigger)
+
 ### core:cancel_event
 
 Cancels the triggering event, optionally gated by a percentage chance. This is

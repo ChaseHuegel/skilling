@@ -166,14 +166,15 @@ abilities:
     feedback: { notify: { action_bar: false } }
 
   # -- MASTERY CAPSTONE (L100): the cloak. Sneaking cloaks you in Invisibility
-  # for a fixed duration, gated by hunger. Kept simple: a set duration per sneak.
+  # for as long as you keep sneaking, gated by hunger. The effect is removed the
+  # moment you stand up (core:sneak_effect), so stealth never outlives the crouch.
   - id: "umbral_mantle"
     display_name: "Umbral Mantle"
     unlock_level: 100
     trigger: "sneak"
     display:
       lore:
-        - "&7Sneaking cloaks you in Invisibility for &a240s&7."
+        - "&7Sneaking cloaks you in Invisibility while you stay sneaking."
         - "&7Costs 1 hunger."
         - "&8Requires: 3+ hunger."
     requirements:
@@ -181,10 +182,9 @@ abilities:
     on_failure:
       exhaustion: { action_bar: "&cToo hungry to vanish!" }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:sneak_effect"
         parameters:
           effect: { constant: "minecraft:invisibility" }
-          radius: { constant: 0.0 }
           duration: { constant: 240.0 }
           amplifier: { constant: 0.0 }
     feedback:
