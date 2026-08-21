@@ -3,45 +3,53 @@ max_level: 100
 display: { name: "Excavation", icon: "minecraft:iron_shovel", color: "GREEN", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Soft-block digging is the main grindable source: dirt, sand, gravel, clay,
+  # soul sand, etc. are plentiful, time-consuming to dig, and unrestricted.
   - trigger: "block_break"
     filters: [ { target: "#c:excavatable" }, { state: "player_placed:false" } ]
     reward: { constant: 34.7 }
-  - trigger: "craft_item"
-    filters: [ { target: "#c:shovels" } ]
-    reward: { constant: 34.7 }
+  # Archaeology is infrequent and opportunity-gated, so brushing pays a premium.
   - trigger: "player_interact"
     filters: [ { tool: "minecraft:brush" }, { target: "#c:suspicious_blocks" } ]
     reward: { constant: 120.0 }
   - trigger: "block_break"
     filters: [ { target: "#c:suspicious_blocks" }, { state: "player_placed:false" } ]
     reward: { constant: 40.0 }
+  # Decorated pots require sherds recovered from brushing, tying the pot craft
+  # into the archaeology loop.
   - trigger: "craft_item"
     filters: [ { target: "minecraft:decorated_pot" } ]
     reward: { constant: 60.0 }
 abilities:
+  # L1 - Foundational passive: the primary scalar. Doubles soft-block yields.
   - id: "dig_double"
     display_name: "Dig Double"
     unlock_level: 1
     trigger: "block_break"
-    display: { lore: [ "&7Dirt/gravel/sand yield +&a{yield_chance}%&7." ] }
+    display: { lore: [ "&7Soft-block breaks yield +&a{yield_chance}%&7." ] }
     mechanics:
       - type: "core:yield_multiplier"
         filters: [ { target: "#c:excavatable" }, { tool: "#minecraft:shovels" } ]
         parameters:
           yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "quick_dig"
-    display_name: "Quick Dig"
+  # L15 - Evolving melee bonus that turns the shovel into a real weapon for an
+  # excavator out in the field, scaling up through the late game.
+  - id: "shovel_strike"
+    display_name: "Shovel Strike"
     unlock_level: 15
-    trigger: "block_break"
-    display: { lore: [ "&7Soft-block breaks grant &a{amplifier}&7 Haste for {duration}s." ] }
+    trigger: "entity_damage"
+    display: { lore: [ "&7Shovel melee damage &a{multiplier}x&7." ] }
     mechanics:
-      - type: "core:haste_effect"
-        filters: [ { tool: "#minecraft:shovels" }, { target: "#c:excavatable" } ]
+      - type: "core:modify_damage"
+        filters: [ { tool: "#minecraft:shovels" } ]
         parameters:
-          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
-          duration: { constant: 20.0 }
+          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.55 } }
     feedback: { notify: { action_bar: false } }
+  # L25 - Primary active: sneak-mine an area of soft blocks. Gated purely by
+  # hunger (no cooldown); the exhaustion cost is level-scaled so the counter
+  # becomes free at the mastery level, where the excavator capstone owns that
+  # payoff.
   - id: "wide_sweep"
     display_name: "Wide Sweep"
     unlock_level: 25
@@ -49,60 +57,62 @@ abilities:
     display:
       lore:
         - "&7Sneak-mine to break a &a{radius}&7-block radius of soft blocks (max {max_blocks})."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, shovel, 10s cooldown, 3+ hunger."
+        - "&7Costs 1 hunger (free at level 100)."
+        - "&8Requires: Sneaking, shovel, 3+ hunger."
     requirements:
-      cooldown: 10.0
       state: [ "is_sneaking" ]
       items: [ { action: "possession", tag: "#minecraft:shovels", slot: "MAIN_HAND" } ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&cWide Sweep cooling down: {time}s" } }
+      exhaustion:
+        amount: { milestones: { 25: 1, 100: 0 } }
+        minimum: { milestones: { 25: 3, 100: 0 } }
     mechanics:
       - type: "core:area_harvest"
         filters: [ { target: "#c:excavatable" } ]
         parameters:
-          radius: { linear: { base: 1.0, step: 0.02, max: 3.0 } }   # continuous growth 25→100
+          radius: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
           max_blocks: { linear: { base: 9.0, step: 0.5, max: 49.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&e✦ Wide Sweep! ✦" }
       sounds: [ { type: "minecraft:entity.zombie.break_wooden_door", volume: 0.5, pitch: 1.5, target: "self" } ]
-  - id: "fossil_hunter"
-    display_name: "Fossil Hunter"
+  # L50 - Major passive: the archaeology identity. Doubles artifact recoveries
+  # from brushing, a separate block set from #c:excavatable so it never overlaps
+  # Dig Double.
+  - id: "relic_hunter"
+    display_name: "Relic Hunter"
     unlock_level: 50
     trigger: "block_break"
-    display: { lore: [ "&7Sand & gravel breaks yield &a{yield_chance}%&7 doubled drops." ] }
+    display: { lore: [ "&7Suspicious-block breaks yield &a{yield_chance}%&7 double artifact drops." ] }
     mechanics:
       - type: "core:yield_multiplier"
-        filters:
-          - target: "#minecraft:sand"            # tag covers sand + red sand
-        parameters:
-          yield_chance: { linear: { base: 2.0, step: 0.05, max: 8.0 } }
-      - type: "core:yield_multiplier"
-        filters: [ { target: "minecraft:gravel" } ]
+        filters: [ { target: "#c:suspicious_blocks" }, { state: "player_placed:false" } ]
         parameters:
           yield_chance: { linear: { base: 2.0, step: 0.05, max: 8.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "swift_digger"
-    display_name: "Swift Digger"
+  # L75 - Synergy passive: while wielding a shovel, gain armor on hit. Matches
+  # the defensive-tool synergy slot used by Mining (Sturdy Miner) and
+  # Woodcutting (Iron Bark).
+  - id: "earthen_guard"
+    display_name: "Earthen Guard"
     unlock_level: 75
-    trigger: "block_break"
-    display: { lore: [ "&7Haste amplifier &a{amplifier}&7 for {duration}s on soft breaks." ] }
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7While holding a shovel, gain &a{amount}&7 armor on hit." ] }
     mechanics:
-      - type: "core:haste_effect"
-        filters: [ { tool: "#minecraft:shovels" }, { target: "#c:excavatable" } ]
+      - type: "core:armor_bonus"
+        filters: [ { tool: "#minecraft:shovels" } ]
         parameters:
-          amplifier: { linear: { base: 2, step: 0.02, max: 4 } }
-          duration: { constant: 30.0 }
+          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          uuid: { constant: "1a4c2d8f-6e1b-4a91-b3c7-5d0f2e8a9c41" }
+          duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
+  # L100 - Mastery capstone: a conveyer ability. Wide Sweep's exhaustion cost is
+  # already level-scaled to free at 100 and its radius/max-blocks are at peak, so
+  # this entry carries the transformation in the UI without a stacking mechanic.
   - id: "excavator"
     display_name: "Excavator"
     unlock_level: 100
     trigger: "block_break"
-    display: { lore: [ "&7Wide Sweep radius grows to &a{radius}&7 (max {max_blocks} blocks) passively." ] }
-    mechanics:
-      - type: "core:area_harvest"
-        filters: [ { target: "#c:excavatable" } ]
-        parameters:
-          radius: { linear: { base: 2.0, step: 0.02, max: 3.0 } }
-          max_blocks: { linear: { base: 25.0, step: 0.5, max: 49.0 } }
+    display:
+      lore:
+        - "&7Wide Sweep now costs no hunger and digs at its maximum radius."
+        - "&8Master of loose ground: dig freely."
     feedback: { notify: { action_bar: false } }

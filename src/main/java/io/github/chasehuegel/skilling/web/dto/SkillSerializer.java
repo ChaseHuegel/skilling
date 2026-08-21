@@ -309,8 +309,8 @@ public final class SkillSerializer {
         }
         if (a.requirements().exhaustion() != null) {
             Map<String, Object> exMap = new LinkedHashMap<>();
-            exMap.put("amount", a.requirements().exhaustion().amount());
-            exMap.put("minimum", a.requirements().exhaustion().minimum());
+            writeEvaluator(exMap, "amount", a.requirements().exhaustion().amount());
+            writeEvaluator(exMap, "minimum", a.requirements().exhaustion().minimum());
             reqMap.put("exhaustion", exMap);
         }
         if (a.requirements().durability() != null) {
@@ -444,11 +444,28 @@ public final class SkillSerializer {
         }).toList();
     }
 
+    /**
+     * Writes a requirement evaluator as a plain scalar when it is constant, or as
+     * a full evaluator block otherwise, matching the YAML author-facing shape.
+     *
+     * @param target the output map
+     * @param key    the destination key
+     * @param ev     the evaluator to write
+     */
+    static void writeEvaluator(Map<String, Object> target, String key, SkillDetailDTO.EvaluatorDTO ev) {
+        if (ev == null) return;
+        if ("constant".equals(ev.type())) {
+            Object value = ev.params().getOrDefault("value", 0);
+            target.put(key, value);
+        } else {
+            target.put(key, evaluatorToMap(ev));
+        }
+    }
+
     static SkillDetailDTO.EvaluatorDTO parseEvaluator(Map<String, Object> raw) {
         if (raw == null || raw.isEmpty()) {
             return new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", 0.0));
         }
-
         if (raw.containsKey("constant")) {
             Object val = raw.get("constant");
             if (val instanceof Number n) {

@@ -38,6 +38,26 @@ mechanic:
 - **Cooldowns persist across a quit/relog.** Logging out does not reset an
   active cooldown. It expires on its own timer. Only time lifts a cooldown.
 
+### Exhaustion cost requirement
+
+An ability's `requirements:` block may declare an `exhaustion` entry that
+consumes hunger points on a successful activation and gates activation on a
+minimum food level. Both `amount` (hunger points to consume) and `minimum` (the
+inclusive food-level floor to activate) accept a plain scalar or a
+level-scaled evaluator block, so a hunger cost can sub-scale or flatten to zero
+between the unlock level and level 100. For example, a "free at capstone" AOE
+holds its cost flat until the mastery level:
+
+```yaml
+requirements:
+  exhaustion:
+    amount: { milestones: { 25: 1, 100: 0 } }
+    minimum: { milestones: { 25: 3, 100: 0 } }
+```
+
+A zero `amount` consumes nothing; a zero `minimum` lifts the hunger gate
+entirely. This pairs with the level-scaled `durability` entry below.
+
 ### Durability cost requirement
 
 An ability's requirements block may also declare a `durability` entry that

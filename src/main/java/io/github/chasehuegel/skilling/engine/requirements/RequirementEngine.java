@@ -165,11 +165,14 @@ public final class RequirementEngine {
         // Check exhaustion (hunger) requirement
         var exhaustion = requirements.exhaustion();
         if (exhaustion != null) {
+            double minimum = exhaustion.minimum().evaluate(skillLevel, unlockLevel);
             // The minimum is inclusive (a food level equal to the minimum passes).
-            if (player.getFoodLevel() < exhaustion.minimum()) {
+            // A zero/negative minimum means no hunger gate, so a level-scaled
+            // cost can flatten to "free" at a high level.
+            if (minimum > 0 && player.getFoodLevel() < minimum) {
                 return RequirementResult.failed(FailureReason.EXHAUSTION, Map.of(
                         "hunger", String.valueOf(player.getFoodLevel()),
-                        "required", String.valueOf((int) Math.ceil(exhaustion.minimum()))
+                        "required", String.valueOf((int) Math.ceil(minimum))
                 ));
             }
         }
@@ -215,9 +218,12 @@ public final class RequirementEngine {
 
         // Consume exhaustion (hunger)
         var exhaustion = requirements.exhaustion();
-        if (exhaustion != null && exhaustion.amount() > 0) {
-            int newFood = Math.max(0, player.getFoodLevel() - (int) Math.ceil(exhaustion.amount()));
-            player.setFoodLevel(newFood);
+        if (exhaustion != null) {
+            double amount = exhaustion.amount().evaluate(skillLevel, unlockLevel);
+            if (amount > 0) {
+                int newFood = Math.max(0, player.getFoodLevel() - (int) Math.ceil(amount));
+                player.setFoodLevel(newFood);
+            }
         }
 
         // Consume durability: damage the slot's item by the flat point cost.

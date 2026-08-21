@@ -208,13 +208,24 @@ public record SkillDefinition(
     /**
      * Exhaustion (hunger) cost requirement for ability activation.
      *
-     * @param amount  hunger points to consume (0-20)
-     * @param minimum minimum food level required to activate (0-20)
+     * <p>Both parameters are level-scalable evaluators, so a cost can grow,
+     * shrink, or flatten to zero as the player levels past the unlock (e.g. a
+     * cooldown-style "free at max level" capstone that holds its hunger cost
+     * flat until level 100).
+     *
+     * @param amount  hunger points to consume (0-20), evaluated against the
+     *                player's level and the ability's unlock level
+     * @param minimum minimum food level required to activate (0-20), evaluated
+     *                against the player's level and the ability's unlock level
      */
     public record Exhaustion(
-            double amount,
-            double minimum
-    ) {}
+            ParameterEvaluator amount,
+            ParameterEvaluator minimum
+    ) {
+        public Exhaustion(double amount, double minimum) {
+            this(new ConstantEvaluator(amount), new ConstantEvaluator(minimum));
+        }
+    }
 
     /**
      * An item requirement for ability activation.

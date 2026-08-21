@@ -82,9 +82,14 @@ public record SkillDetailDTO(
     }
 
     public record ExhaustionDTO(
-        double amount,
-        double minimum
-    ) {}
+        EvaluatorDTO amount,
+        EvaluatorDTO minimum
+    ) {
+        public ExhaustionDTO(double amount, double minimum) {
+            this(new EvaluatorDTO("constant", Map.of("value", amount)),
+                 new EvaluatorDTO("constant", Map.of("value", minimum)));
+        }
+    }
 
     public record DurabilityDTO(
         EvaluatorDTO amount,

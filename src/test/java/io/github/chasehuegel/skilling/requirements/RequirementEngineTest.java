@@ -422,6 +422,50 @@ class RequirementEngineTest {
     }
 
     @Test
+    void exhaustionLevelScaledMinimumFlattensToFreeAtMaxLevel() {
+        // A milestone-scaled minimum (25→3, 100→0) gates low levels on hunger but
+        // drops the gate entirely at level 100, powering "free at capstone" costs.
+        var milestones = new io.github.chasehuegel.skilling.engine.evaluator.impl.MilestoneEvaluator(
+                new java.util.TreeMap<>(java.util.Map.of(25, 3.0, 100, 0.0)));
+        var requirements = new SkillDefinition.Requirements(
+                new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0),
+                List.of(), List.of(),
+                new SkillDefinition.Exhaustion(
+                        new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(1.0),
+                        milestones)
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(player.getFoodLevel()).thenReturn(0);
+
+        assertEquals(FailureReason.EXHAUSTION,
+                engine.check(player, "test_skill", "a", requirements, 25, 25).failureReason());
+        assertTrue(engine.check(player, "test_skill", "a", requirements, 100, 25).success(),
+                "a minimum flattened to 0 must lift the hunger gate at max level");
+    }
+
+    @Test
+    void exhaustionLevelScaledAmountConsumesNothingWhenZero() {
+        // A milestone-scaled amount (25→1, 100→0) consumes hunger until the
+        // capstone, then costs nothing.
+        var milestones = new io.github.chasehuegel.skilling.engine.evaluator.impl.MilestoneEvaluator(
+                new java.util.TreeMap<>(java.util.Map.of(25, 1.0, 100, 0.0)));
+        var requirements = new SkillDefinition.Requirements(
+                new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0),
+                List.of(), List.of(),
+                new SkillDefinition.Exhaustion(milestones,
+                        new io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator(0.0))
+        );
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(player.getFoodLevel()).thenReturn(10);
+
+        engine.consume(player, "test_skill", "a", requirements, 100, 25);
+        verify(player, never()).setFoodLevel(org.mockito.ArgumentMatchers.anyInt());
+    }
+
+
+    @Test
     void missingCostItemFailsCheckWithMissingItem() {
         var requirements = new SkillDefinition.Requirements(
                 0, List.of(),

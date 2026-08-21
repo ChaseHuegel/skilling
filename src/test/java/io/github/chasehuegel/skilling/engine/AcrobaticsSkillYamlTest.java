@@ -41,7 +41,7 @@ class AcrobaticsSkillYamlTest {
         SkillDefinition.Ability leap = ability("leap");
         assertEquals("jump", leap.trigger());
         assertNotNull(leap.requirements().exhaustion(), "leap must be gated by hunger");
-        assertEquals(1.0, leap.requirements().exhaustion().amount());
+        assertEquals(1.0, leap.requirements().exhaustion().amount().evaluate(100, 1), 1e-9);
         assertTrue(leap.requirements().state().contains("is_sneaking"));
     }
 

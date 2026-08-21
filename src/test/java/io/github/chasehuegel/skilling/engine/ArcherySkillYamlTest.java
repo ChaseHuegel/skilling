@@ -49,7 +49,7 @@ class ArcherySkillYamlTest {
         assertTrue(aimed.requirements().state().contains("was_sneaking"),
                 "aimed shot must read the sneak stance captured at release");
         assertNotNull(aimed.requirements().exhaustion(), "aimed shot must be gated by hunger");
-        assertEquals(1.0, aimed.requirements().exhaustion().amount());
+        assertEquals(1.0, aimed.requirements().exhaustion().amount().evaluate(100, 25), 1e-9);
         assertEquals(0.0, aimed.requirements().cooldown().evaluate(100, 25), 1e-9,
                 "aimed shot must not use a cooldown (hunger is the gate)");
         assertTrue(aimed.mechanics().stream()

@@ -134,13 +134,26 @@ abilities:
         - action: "cost"                 # cost = consumed on activation, like a fuel source
           tag: "minecraft:coal"
           amount: 1
-      # Exhaustion (hunger) requirement. Deducted on ability use
+      # Exhaustion (hunger) requirement. Deducted on ability use.
       # amount: hunger points to consume (0-20)
-      # minimum: minimum food level required to activate (inclusive. Food level
+      # minimum: minimum hunger level required to activate (inclusive. Food level
       #           equal to minimum passes) (0-20)
+      # Both amount and minimum accept a plain scalar OR an evaluator block
+      # (constant/linear/milestones), so a hunger cost can sub-scale or flatten
+      # to zero between the unlock level and level 100. This powers a "free at
+      # max level" capstone that holds its cost flat until 100:
       exhaustion:
-        amount: 2.0
-        minimum: 3.0
+        amount:
+          milestones:
+            25: 1
+            100: 0
+        minimum:
+          milestones:
+            25: 3
+            100: 0
+      # exhaustion:
+      #   amount: 2.0
+      #   minimum: 3.0
       # Durability requirement (optional). Damages the item in a slot by a flat
       # point cost, consumed only on a successful activation. "amount" is a
       # level-scaled evaluator (sub-scaled like a cooldown); "slot" defaults to

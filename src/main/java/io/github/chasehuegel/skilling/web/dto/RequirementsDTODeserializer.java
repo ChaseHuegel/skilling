@@ -33,7 +33,7 @@ final class RequirementsDTODeserializer extends JsonDeserializer<RequirementsDTO
 
         List<String> state = parseStringList(node.get("state"));
         List<ItemRequirementDTO> items = parseItems(node.get("items"));
-        ExhaustionDTO exhaustion = parseExhaustion(node.get("exhaustion"));
+        ExhaustionDTO exhaustion = parseExhaustion(p, node.get("exhaustion"));
         DurabilityDTO durability = parseDurability(p, node.get("durability"));
 
         return new RequirementsDTO(cooldown, state, items, exhaustion, durability);
@@ -85,12 +85,17 @@ final class RequirementsDTODeserializer extends JsonDeserializer<RequirementsDTO
         return result;
     }
 
-    private static ExhaustionDTO parseExhaustion(JsonNode node) {
+    private static ExhaustionDTO parseExhaustion(JsonParser p, JsonNode node) throws IOException {
         if (node == null || !node.isObject()) return null;
-        return new ExhaustionDTO(
-                doubleValue(node, "amount", 1.0),
-                doubleValue(node, "minimum", 0.0)
-        );
+        JsonNode amountNode = node.get("amount");
+        JsonNode minNode = node.get("minimum");
+        EvaluatorDTO amount = amountNode == null
+                ? new EvaluatorDTO("constant", Map.of("value", 1.0))
+                : parseCooldown(p, amountNode);
+        EvaluatorDTO minimum = minNode == null
+                ? new EvaluatorDTO("constant", Map.of("value", 0.0))
+                : parseCooldown(p, minNode);
+        return new ExhaustionDTO(amount, minimum);
     }
 
     private static DurabilityDTO parseDurability(JsonParser p, JsonNode node) throws IOException {

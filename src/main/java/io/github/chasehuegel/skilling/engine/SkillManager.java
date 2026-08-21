@@ -471,8 +471,13 @@ public final class SkillManager {
         SkillDefinition.Exhaustion exhaustion = null;
         if (map.containsKey("exhaustion")) {
             Map<String, Object> exMap = castMap(map.get("exhaustion"));
-            double amount = asDouble(exMap, "amount", 1.0, reqContext + " exhaustion");
-            double minimum = asDouble(exMap, "minimum", 0.0, reqContext + " exhaustion");
+            // Both amount and minimum accept a plain scalar or an evaluator block
+            // (constant/linear/milestones), so a hunger cost can sub-scale or
+            // flatten to zero between the unlock level and level 100.
+            ParameterEvaluator amount = exMap.containsKey("amount")
+                    ? parseCooldown(exMap.get("amount")) : new ConstantEvaluator(1.0);
+            ParameterEvaluator minimum = exMap.containsKey("minimum")
+                    ? parseCooldown(exMap.get("minimum")) : new ConstantEvaluator(0.0);
             exhaustion = new SkillDefinition.Exhaustion(amount, minimum);
         }
 
