@@ -780,6 +780,13 @@ public final class Skilling extends JavaPlugin {
 
         sf.register("offhand", (p, e, v) -> {
             var offhand = p.getInventory().getItemInOffHand().getType();
+            if (v != null && v.startsWith("#")) {
+                try {
+                    return tagResolver.resolve(v).contains(offhand);
+                } catch (IllegalArgumentException ex) {
+                    return false;
+                }
+            }
             return switch (v) {
                 case "empty" -> offhand == org.bukkit.Material.AIR;
                 case "weapon" -> offhand.name().contains("SWORD") || offhand.name().contains("AXE")

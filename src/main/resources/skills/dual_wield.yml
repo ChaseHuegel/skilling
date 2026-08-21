@@ -4,41 +4,42 @@ display: { name: "Dual Wield", icon: "minecraft:netherite_sword", color: "RED", 
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
-    filters: [ { state: "offhand:weapon" } ]
-    reward: { constant: 0.9 }       # per raw damage point (7 ≈ weapon hit). Damage-scaled
+    filters: [ { state: "offhand:#c:melee_weapons" }, { tool: "#c:melee_weapons" } ]
+    reward: { constant: 9.7 }       # per raw damage point (7 ≈ sword hit). Damage-scaled
     scaling: damage
   - trigger: "entity_kill"
-    filters: [ { state: "offhand:weapon" } ]
-    reward: { constant: 25.0 }
-  # Two-source by design: no DualWield plugin dependency and no tertiary source
-  # (product decision). Accepted outlier per REPORT_XP-SOURCE-DESIGN §2. R≈81
-  # exceeds the ~60/action ceiling, so effective time stays ~490 h at these
-  # constants. Do not inflate per-action rewards to force the 50 h target.
+    filters: [ { state: "offhand:#c:melee_weapons" }, { tool: "#c:melee_weapons" } ]
+    reward: { constant: 68.0 }
+  # Two-source by design (product decision): damage + kill, both gated on a
+  # melee weapon (sword/axe/mace) in each hand. Rewards track the sword-class
+  # ceiling (REPORT_XP-SOURCE-DESIGN §2). The offhand_strike active feeds both
+  # sources through its synthetic damage event, so it doubles as a hunger-gated
+  # third vein. That double-count is intended: offhand strikes are full
+  # dual-wield attacks for XP and for the entity_damage passives below.
 abilities:
-  - id: "dual_strike"
-    display_name: "Dual Strike"
+  - id: "dual_parry"
+    display_name: "Dual Parry"
     unlock_level: 1
-    trigger: "entity_damage"
-    display: { lore: [ "&7Main-hand damage &a{multiplier}x&7 while offhand holds a weapon." ] }
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7With a melee weapon in each hand: &a{chance}%&7 chance to parry incoming damage." ] }
     mechanics:
-      - type: "core:modify_damage"
-        filters: [ { state: "offhand:weapon" }, { tool: "#minecraft:swords" } ]
+      - type: "core:block_damage"
+        filters: [ { state: "offhand:#c:melee_weapons" }, { tool: "#c:melee_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.003, max: 1.35 } }
+          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "whirlwind"
-    display_name: "Whirlwind"
+  - id: "hasty_hands"
+    display_name: "Hasty Hands"
     unlock_level: 15
     trigger: "entity_damage"
-    display: { lore: [ "&7Main-hand hits weaken nearby foes." ] }
+    display: { lore: [ "&7Dual-wield hits speed up your attacks for &a{duration}s&7." ] }
     mechanics:
-      - type: "core:crowd_control"
-        filters: [ { state: "offhand:weapon" }, { tool: "#minecraft:swords" } ]
+      - type: "core:modify_attack_speed"
+        filters: [ { state: "offhand:#c:melee_weapons" }, { tool: "#c:melee_weapons" } ]
         parameters:
-          effect: { constant: "minecraft:weakness" }     # P2-11
-          radius: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
-          duration: { linear: { base: 3.0, step: 0.04, max: 6.0 } }
-          amplifier: { constant: 0.0 }
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.2 } }
+          uuid: { constant: "5e1f4d0c-3a9b-4c7d-8e2a-9b6f1d3c0a52" }
+          duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
   - id: "offhand_strike"
     display_name: "Offhand Strike"
@@ -46,59 +47,70 @@ abilities:
     trigger: "right_click_entity"
     display:
       lore:
-        - "&7Left-Click with a weapon in offhand to strike for &a{multiplier}x&7 offhand damage."
-        - "&7Applies poison &a{duration}s&7."
+        - "&7Sneak + Right-Click a foe to strike with your offhand weapon."
         - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, weapon in offhand, 3s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, melee weapon in each hand, 3+ hunger. Cooldown shrinks with level."
     requirements:
-      cooldown: 3.0
-      state: [ "offhand:weapon" ]
+      cooldown: { linear: { base: 1.0, step: -0.005, min: 0.625, max: 1.0 } }
+      state: [ "is_sneaking", "offhand:#c:melee_weapons" ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
     on_failure: { cooldown: { action_bar: "&eOffhand Strike cooling down: {time}s" } }
     mechanics:
       - type: "core:offhand_swing"
-      - type: "core:offhand_strike"        # P2-4
+      - type: "core:offhand_strike"
+        filters: [ { tool: "#c:melee_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 0.6, step: 0.01, max: 1.0 } }
+          multiplier: { constant: 1.0 }
           reach: { constant: 4.0 }
-      - type: "core:apply_status"
-        parameters:
-          effect: { constant: "minecraft:poison" }     # P2-11
-          duration: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
-          amplifier: { constant: 0.0 }
-    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Offhand Strike! ✦" } }
-  - id: "rapid_assault"
-    display_name: "Rapid Assault"
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&c✦ Offhand Strike! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.sweep", volume: 0.6, pitch: 1.0, target: "self" } ]
+  - id: "bloodlust"
+    display_name: "Bloodlust"
     unlock_level: 50
     trigger: "entity_damage"
-    display: { lore: [ "&7Dual-wield hits grant &a{multiplier}x&7 speed for {duration}s." ] }
+    display: { lore: [ "&7Heal &a{percentage}%&7 of dual-wield damage dealt." ] }
     mechanics:
-      - type: "core:speed_bonus"
-        filters: [ { state: "offhand:weapon" }, { tool: "#minecraft:swords" } ]
+      - type: "core:lifesteal"
+        filters: [ { state: "offhand:#c:melee_weapons" }, { tool: "#c:melee_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
-          uuid: { constant: "787bd46c-9d06-5efb-8902-d262c0e9ddf3" }
-          duration: { constant: 6.0 }
+          percentage: { linear: { base: 3.0, step: 0.06, max: 10.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "dual_parry"
-    display_name: "Dual Parry"
+  - id: "whirlwind"
+    display_name: "Whirlwind"
     unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7With a weapon in offhand: &a{chance}%&7 block chance." ] }
-    mechanics:
-      - type: "core:block_damage"
-        filters: [ { state: "offhand:weapon" } ]
-        parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "storm_blade"
-    display_name: "Storm Blade"
-    unlock_level: 100
     trigger: "entity_damage"
-    display: { lore: [ "&7Dual-wield main-hand damage &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Two-weapon hits weaken foes for &a{duration}s&7 within &a{radius}&7 blocks." ] }
     mechanics:
-      - type: "core:modify_damage"
-        filters: [ { state: "offhand:weapon" }, { tool: "#minecraft:swords" } ]
+      - type: "core:crowd_control"
+        filters: [ { state: "offhand:#c:melee_weapons" }, { tool: "#c:melee_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 2.0, step: 0.03, max: 2.8 } }
+          effect: { constant: "minecraft:weakness" }
+          radius: { linear: { base: 3.0, step: 0.08, max: 5.0 } }
+          duration: { linear: { base: 4.0, step: 0.08, max: 6.0 } }
+          amplifier: { constant: 0.0 }
     feedback: { notify: { action_bar: false } }
+  - id: "momentum"
+    display_name: "Momentum"
+    unlock_level: 100
+    trigger: "entity_kill"
+    display:
+      lore:
+        - "&7Dual-wield kills grant &a1.4x&7 attack speed and &a1.2x&7 speed for 8s."
+        - "&7Renews on each kill."
+    mechanics:
+      - type: "core:modify_attack_speed"
+        filters: [ { state: "offhand:#c:melee_weapons" }, { tool: "#c:melee_weapons" } ]
+        parameters:
+          multiplier: { constant: 1.4 }
+          uuid: { constant: "4c8b1e3a-2d6f-4a9c-b7e0-8f2d5a1c3e94" }
+          duration: { constant: 8.0 }
+      - type: "core:speed_bonus"
+        filters: [ { state: "offhand:#c:melee_weapons" }, { tool: "#c:melee_weapons" } ]
+        parameters:
+          multiplier: { constant: 1.2 }
+          uuid: { constant: "7a3d9c2b-5e1f-4b8a-9c6d-0e2f4a8b1c57" }
+          duration: { constant: 8.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&c✦ Momentum! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.crit", volume: 0.5, pitch: 1.2, target: "self" } ]

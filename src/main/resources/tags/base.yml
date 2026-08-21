@@ -208,6 +208,13 @@ custom_tags:
     - "minecraft:golden_sword"
     - "minecraft:trident"
 
+  # Any sword, axe, or mace. The dual-wield skill's both-hands weapon set.
+  # Not a misc weapon: tridents are excluded by design.
+  melee_weapons:
+    - "#minecraft:swords"
+    - "#minecraft:axes"
+    - "minecraft:mace"
+
   tools:
     - "#minecraft:pickaxes"
     - "#minecraft:axes"

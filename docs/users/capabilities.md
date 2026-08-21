@@ -1294,7 +1294,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `hunger` | `below:N`, `above:N` | Player food level |
 | `biome` | `minecraft:biome_id` | Player's current biome. Values are validated at load |
 | `target_type` | `minecraft:entity_id` or `<#entity_tag>` | Type of the target entity. Matches the damaged entity on `entity_damage`/`entity_damage_taken`, the killed entity on `entity_kill`, and the clicked entity on `right_click_entity`. A `#...` value (e.g. `#c:undead`, `#minecraft:zombies`) resolves through the `entity_tags` store in `tags/base.yml`. Fails closed on events with no target entity |
-| `offhand` | `empty`, `weapon` | Offhand item state |
+| `offhand` | `empty`, `weapon`, or `<material>` / `<#tag>` | Offhand item state. `empty` = air, `weapon` = sword/axe/trident/mace. A material or `#...` tag value (e.g. `offhand:#c:melee_weapons`) matches the offhand item against that set, resolving through the `TagResolver` |
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
 | `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |
 | `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
