@@ -1069,6 +1069,38 @@ mechanics:
 
 **Event:** `PlayerInteractEvent` (`right_click_air` or `right_click_block` trigger)
 
+### core:ingredient_refund
+
+Refunds one crafting ingredient on a percentage roll, the "no-waste craftsman"
+perk. The refunded ingredient is identified programmatically from the placed
+grid and needs no per-recipe configuration, so it works for any craft (shaped,
+shapeless, vanilla, or data-pack). One random used ingredient is restored by a
+single item, granted to the player's inventory (dropped when full); the result
+slot and the grid are never touched, so the roll cannot interfere with the
+craft's own consumption.
+
+The trigger's own filter scopes which crafts the perk applies to. The optional
+`ingredient` parameter (a material or `#...` tag) narrows which used ingredients
+are refundable; when absent, any used ingredient of the craft is eligible.
+
+```yaml
+mechanics:
+  - type: "core:ingredient_refund"
+    filters: [ { target: "#c:wooden_products" } ]
+    parameters:
+      chance: { linear: { base: 5.0, step: 1.0, max: 30.0 } }
+      # ingredient: { constant: "#minecraft:planks" }  # optional restriction
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) of refunding one ingredient |
+| `ingredient` | string | (none) | Optional material or `#...` tag restricting which used ingredients may be refunded |
+
+**Event:** `CraftItemEvent` (`craft_item` trigger)
+
 ### core:sneak_speed
 
 Applies a movement-speed bonus that lasts only while the player sneaks. On the
