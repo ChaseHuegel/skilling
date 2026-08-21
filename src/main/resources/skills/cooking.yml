@@ -3,95 +3,161 @@ max_level: 100
 display: { name: "Cooking", icon: "minecraft:furnace", color: "YELLOW", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  # furnace_extract is bulk-scaled per extracted item: R is the per-item rate,
-  # so a batch of N cooked foods pays N × R (REPORT_XP-SOURCE-DESIGN §3).
+  # Smelting food is the primary grind: furnace_extract is bulk-scaled per
+  # extracted item, and furnace / smoker / blast furnace all fire it.
   - trigger: "furnace_extract"
-    filters: [ { target: "#c:foods" } ]   # representative cooked-food filter
-    reward: { constant: 128.2 }
+    filters: [ { target: "#c:smelted_foods" } ]
+    reward: { constant: 60.0 }
+  # Crafting baked goods and stews is a second, cheaper grindable source.
+  - trigger: "craft_item"
+    filters: [ { target: "#c:crafted_foods" } ]
+    reward: { constant: 80.0 }
+  # Eating is the passive reward; it is time-gated by hunger, so it stays a
+  # trickle rather than a fast track.
   - trigger: "consume_item"
     filters: [ { target: "#c:foods" } ]
-    reward: { constant: 128.2 }
+    reward: { constant: 40.0 }
 abilities:
+  # L1 identity: well-prepared food fills you more. The linear engine.
   - id: "seasoning"
     display_name: "Seasoning"
     unlock_level: 1
     trigger: "consume_item"
-    display: { lore: [ "&7Cooked food grants +&a{saturation}&7 saturation." ] }
+    display: { lore: [ "&7Eating food grants +&a{saturation}&7 saturation." ] }
     mechanics:
       - type: "core:saturation_inject"
-        filters: [ { target: "minecraft:cooked_beef" } ]
+        filters: [ { target: "#c:foods" } ]
         parameters:
           saturation: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
     feedback: { notify: { action_bar: false } }
+  # L15 QoL: smelted food yields more. Covers furnace, smoker, and blast furnace.
   - id: "heat_control"
     display_name: "Heat Control"
     unlock_level: 15
     trigger: "furnace_extract"
-    display: { lore: [ "&7Cooked-food smelting output &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Smelted-food output &a{multiplier}x&7 (furnace, smoker, blast)." ] }
     mechanics:
       - type: "core:modify_furnace_output"
-        filters: [ { target: "minecraft:cooked_beef" } ]
+        filters: [ { target: "#c:smelted_foods" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+          multiplier: { linear: { base: 1.05, step: 0.0112, max: 2.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "nutritionist"
-    display_name: "Nutritionist"
+  # L25 primary hook: a balanced diet rewards culinary variety. One self-only
+  # aura per food category; durations stay short so food-crafting keeps feeding
+  # the loop and alchemy potions keep the edge in sustained uptime.
+  - id: "balanced_diet"
+    display_name: "Balanced Diet"
     unlock_level: 25
     trigger: "consume_item"
     display:
       lore:
-        - "&7Shift+eat to gain &a{multiplier}x&7 XP from food for {duration}s."
-        - "&7Costs 0.5 hunger."
-        - "&8Requires: Sneaking, 15s cooldown, 3+ hunger."
-    requirements:
-      cooldown: 15.0
-      state: [ "is_sneaking" ]
-      exhaustion: { amount: 0.5, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eNutritionist cooling down: {time}s" } }
+        - "&7A varied diet grants short meal buffs:"
+        - "&7Meats &8-> &7Strength, Fish &8-> &7Water Breathing,"
+        - "&7Baked &8-> &7Haste, Produce &8-> &7Swiftness,"
+        - "&7Stews &8-> &7Resistance."
     mechanics:
-      - type: "core:xp_bonus"
+      - type: "core:field_aura"
+        filters: [ { target: "#c:cooked_meats" } ]
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.01, max: 1.8 } }
-          duration: { constant: 30.0 }
-    feedback: { notify: { action_bar: true, chat: false, message: "&6✦ Nutritionist! ✦" } }
-  - id: "hearty_stew"
-    display_name: "Hearty Stew"
-    unlock_level: 50
-    trigger: "consume_item"
-    display: { lore: [ "&7Cooked food grants +&a{saturation}&7 saturation." ] }
-    mechanics:
-      - type: "core:saturation_inject"
-        filters: [ { target: "minecraft:cooked_beef" } ]
+          effect: { constant: "minecraft:strength" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { target: "#c:cooked_fish" } ]
         parameters:
-          saturation: { linear: { base: 2.0, step: 0.04, max: 6.0 } }
+          effect: { constant: "minecraft:water_breathing" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 10.0, step: 0.1, max: 20.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { target: "#c:baked_goods" } ]
+        parameters:
+          effect: { constant: "minecraft:haste" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { target: "#c:veggies_sweets" } ]
+        parameters:
+          effect: { constant: "minecraft:speed" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 8.0, step: 0.08, max: 16.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { target: "#c:soups" } ]
+        parameters:
+          effect: { constant: "minecraft:resistance" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 8.0, step: 0.08, max: 16.0 } }
+          amplifier: { constant: 0.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "gourmand"
-    display_name: "Gourmand"
+  # L50 major passive: batch-cooking crafted goods yields more in the craft loop,
+  # the crafting counterpart to L15's furnace output.
+  - id: "batch_cooking"
+    display_name: "Batch Cooking"
+    unlock_level: 50
+    trigger: "craft_item"
+    display: { lore: [ "&7Crafted-food output &a{multiplier}x&7." ] }
+    mechanics:
+      - type: "core:modify_craft_output"
+        filters: [ { target: "#c:crafted_foods" } ]
+        parameters:
+          multiplier: { linear: { base: 1.1, step: 0.008, max: 1.5 } }
+    feedback: { notify: { action_bar: false } }
+  # L75 synergy: premium gilded fare (golden carrot, honey) grants a second
+  # serving of health, bringing it toward golden-apple value.
+  - id: "gilded_fare"
+    display_name: "Gilded Fare"
     unlock_level: 75
     trigger: "consume_item"
-    display: { lore: [ "&7Eating grants &a{multiplier}x&7 speed for {duration}s." ] }
+    display: { lore: [ "&7Eating gilded fare grants &a{duration}s&7 of Absorption." ] }
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:field_aura"
+        filters: [ { target: "#c:golden_foods" } ]
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.3 } }
-          uuid: { constant: "ce0129bd-9d56-5a33-8f13-0dfbda132ea7" }
-          duration: { linear: { base: 10.0, step: 0.2, max: 30.0 } }
+          effect: { constant: "minecraft:absorption" }
+          radius: { constant: 0.0 }
+          duration: { linear: { base: 10.0, step: 0.8, max: 30.0 } }
+          amplifier: { linear: { base: 0.0, step: 0.04, max: 1.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "master_chef"
-    display_name: "Master Chef"
+  # L100 capstone: placing a celebration cake is a feast moment that buffs the
+  # placer and every nearby player. No cooldown: a cake is crafted and
+  # non-stackable, so the material cost is its own gate.
+  - id: "celebration_cake"
+    display_name: "Celebration Cake"
     unlock_level: 100
-    trigger: "consume_item"
-    display: { lore: [ "&7Cooked food grants +&a{saturation}&7 saturation & speed burst." ] }
+    trigger: "block_place"
+    display:
+      lore:
+        - "&7Placing a cake celebrates: nearby players gain &a{duration}s&7 of"
+        - "&7Speed, Regeneration & Jump Boost (radius &a{radius}&7)."
     mechanics:
-      - type: "core:saturation_inject"
-        filters: [ { target: "minecraft:cooked_beef" } ]
+      - type: "core:field_aura"
+        filters: [ { target: "minecraft:cake" } ]
         parameters:
-          saturation: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
-      - type: "core:speed_bonus"
+          effect: { constant: "minecraft:speed" }
+          radius: { linear: { base: 6.0, step: 0.24, max: 12.0 } }
+          duration: { linear: { base: 60.0, step: 2.4, max: 120.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { target: "minecraft:cake" } ]
         parameters:
-          multiplier: { linear: { base: 1.2, step: 0.002, max: 1.4 } }
-          uuid: { constant: "1164f6d6-5abc-5da7-9ca1-e30dfd61a532" }
-          duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
+          effect: { constant: "minecraft:regeneration" }
+          radius: { linear: { base: 6.0, step: 0.24, max: 12.0 } }
+          duration: { linear: { base: 60.0, step: 2.4, max: 120.0 } }
+          amplifier: { constant: 0.0 }
+      - type: "core:field_aura"
+        filters: [ { target: "minecraft:cake" } ]
+        parameters:
+          effect: { constant: "minecraft:jump_boost" }
+          radius: { linear: { base: 6.0, step: 0.24, max: 12.0 } }
+          duration: { linear: { base: 60.0, step: 2.4, max: 120.0 } }
+          amplifier: { constant: 0.0 }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&6✦ Master Chef! ✦" }
-      sounds: [ { type: "minecraft:entity.player.levelup", volume: 0.5, pitch: 1.5, target: "self" } ]
+      notify: { action_bar: true, chat: false, message: "&6✦ It's time to celebrate! ✦" }
+      sounds:
+        - type: "minecraft:entity.experience_orb.pickup"
+          volume: 0.6
+          pitch: 1.5
+          target: "self"

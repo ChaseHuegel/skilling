@@ -366,6 +366,8 @@ custom_tags:
     - "minecraft:golden_apple"
     - "minecraft:golden_carrot"
 
+  # The broad edible set. Drives cooking XP (consume_item) and the Seasoning
+  # identity: cooking owns every food in this tree.
   foods:
     - "minecraft:cooked_beef"
     - "minecraft:cooked_chicken"
@@ -375,6 +377,91 @@ custom_tags:
     - "minecraft:cooked_cod"
     - "minecraft:cooked_salmon"
     - "minecraft:baked_potato"
+    - "minecraft:bread"
+    - "minecraft:cookie"
+    - "minecraft:cake"
+    - "minecraft:pumpkin_pie"
+    - "minecraft:mushroom_stew"
+    - "minecraft:rabbit_stew"
+    - "minecraft:beetroot_soup"
+    - "minecraft:dried_kelp"
+    - "minecraft:golden_carrot"
+    - "minecraft:honey_bottle"
+    - "minecraft:apple"
+    - "minecraft:melon_slice"
+    - "minecraft:sweet_berries"
+    - "minecraft:glow_berries"
+    - "minecraft:carrot"
+    - "minecraft:potato"
+    - "minecraft:beetroot"
+
+  # Foods produced by smelting (furnace / smoker / blast furnace). The primary
+  # cooking grind and the Heat Control (L15 furnace output) target.
+  smelted_foods:
+    - "minecraft:cooked_beef"
+    - "minecraft:cooked_chicken"
+    - "minecraft:cooked_porkchop"
+    - "minecraft:cooked_mutton"
+    - "minecraft:cooked_rabbit"
+    - "minecraft:cooked_cod"
+    - "minecraft:cooked_salmon"
+    - "minecraft:baked_potato"
+    - "minecraft:dried_kelp"
+
+  # Foods produced by crafting (not smelting). Batch Cooking (L50 craft output)
+  # and the crafted-food XP source target.
+  crafted_foods:
+    - "minecraft:bread"
+    - "minecraft:cookie"
+    - "minecraft:cake"
+    - "minecraft:pumpkin_pie"
+    - "minecraft:mushroom_stew"
+    - "minecraft:rabbit_stew"
+    - "minecraft:beetroot_soup"
+
+  # The Balanced Diet (L25) variety categories. Kept disjoint so one bite fires
+  # exactly one meal aura and the player never gets two at once.
+  cooked_meats:
+    - "minecraft:cooked_beef"
+    - "minecraft:cooked_chicken"
+    - "minecraft:cooked_porkchop"
+    - "minecraft:cooked_mutton"
+    - "minecraft:cooked_rabbit"
+
+  cooked_fish:
+    - "minecraft:cooked_cod"
+    - "minecraft:cooked_salmon"
+
+  baked_goods:
+    - "minecraft:bread"
+    - "minecraft:cookie"
+    - "minecraft:cake"
+    - "minecraft:pumpkin_pie"
+    - "minecraft:baked_potato"
+
+  veggies_sweets:
+    - "minecraft:apple"
+    - "minecraft:melon_slice"
+    - "minecraft:sweet_berries"
+    - "minecraft:glow_berries"
+    - "minecraft:carrot"
+    - "minecraft:potato"
+    - "minecraft:beetroot"
+
+  soups:
+    - "minecraft:mushroom_stew"
+    - "minecraft:rabbit_stew"
+    - "minecraft:beetroot_soup"
+
+  # Premium gilded fare. Golden apple is excluded: it is already strong and
+  # widely carried, so Gilded Fare (L75) elevates the other premium foods.
+  golden_foods:
+    - "minecraft:golden_carrot"
+    - "minecraft:honey_bottle"
+
+  # The celebration cake, target of the L100 capstone's block_place check.
+  cakes:
+    - "minecraft:cake"
 
   # Raw foods that cook on a campfire (the vanilla campfire recipes). Used by
   # the survival skill's campfire-cooking XP source, which rewards placing the
