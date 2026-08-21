@@ -539,6 +539,32 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.chance(ctx, p, "chance", 100);
                     MechanicParamValidators.materialOrTag(ctx, p, "ingredient");
                 });
+        mechReg.register("core:loot_bonus", LootBonusMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:vault_bonus", VaultBonusMechanic.class, List.of("chance", "table"),
+                (ctx, p) -> {
+                    MechanicParamValidators.chance(ctx, p, "chance", 100);
+                    Object raw = p.get("table");
+                    boolean validKey;
+                    try {
+                        validKey = raw instanceof String s && NamespacedKey.fromString(s) != null;
+                    } catch (IllegalArgumentException ex) {
+                        validKey = false;
+                    }
+                    if (!validKey) {
+                        throw new IllegalArgumentException(ctx + ": parameter 'table' must be a namespaced loot table key, got: " + raw);
+                    }
+                });
+        mechReg.register("core:locate", LocateMechanic.class, List.of("structure"));
+        mechReg.register("core:teleport_lodestone", TeleportLodestoneMechanic.class, List.of("cooldown_ticks"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "cooldown_ticks"));
+        mechReg.register("core:biome_discovery", BiomeDiscoveryMechanic.class,
+                List.of("attribute", "amount", "max_biomes", "uuid"),
+                (ctx, p) -> {
+                    MechanicParamValidators.attribute(ctx, p, "attribute");
+                    MechanicParamValidators.uuid(ctx, p, "uuid");
+                    MechanicParamValidators.nonNegative(ctx, p, "amount");
+                });
     }
 
     /** Registers the built-in triggers into the given registry. */
@@ -582,6 +608,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("cure_villager", CureVillagerTrigger.class);
         trigReg.register("elytra_glide", ElytraGlideTrigger.class);
         trigReg.register("chunk_load", ChunkLoadTrigger.class);
+        trigReg.register("map_explore", MapExploreTrigger.class);
         trigReg.register("sleep", SleepTrigger.class);
         trigReg.register("compost", CompostTrigger.class);
         trigReg.register("fertilize", FertilizeTrigger.class);

@@ -764,7 +764,32 @@ public final class SkillEventListener implements Listener {
             if (last != null && now - last < CHUNK_LOAD_THROTTLE_MS) continue;
             chunkLoadLastDispatch.put(player.getUniqueId(), now);
             dispatch(player, event, "chunk_load");
+            // Cartography loop: carrying a map into uncharted land fills it, so
+            // the same exploration also feeds a map-specific trigger (bound as
+            // "map_explore" XP source and ability trigger by skills).
+            if (holdsMapElement(player)) {
+                dispatch(player, event, "map_explore");
+            }
         }
+    }
+
+    /**
+     * Whether the player holds a map element (an empty {@code minecraft:map} or
+     * a {@code minecraft:filled_map}) in either hand. Gates the {@code map_explore}
+     * dispatch so the reward lands only on genuine map-filling travel.
+     *
+     * @param player the player to inspect
+     * @return true when a map element is held in either hand
+     */
+    private static boolean holdsMapElement(Player player) {
+        var inventory = player.getInventory();
+        // Guard for a null inventory (never in production; present in minimal
+        // mock-based tests that skip inventory stubbing).
+        if (inventory == null) return false;
+        var main = inventory.getItemInMainHand().getType();
+        var off = inventory.getItemInOffHand().getType();
+        return main == org.bukkit.Material.MAP || main == org.bukkit.Material.FILLED_MAP
+                || off == org.bukkit.Material.MAP || off == org.bukkit.Material.FILLED_MAP;
     }
 
     /**

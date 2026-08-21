@@ -12,6 +12,8 @@ ISSUE-301). They are immutable in Java and are not configurable in YAML:
 | `core:auto_replant` | crop list | Which crops the mechanic replants |
 | `core:apply_status` / `core:modify_attribute` | legacy numeric IDs | Deprecated numeric-ID fallback mapping |
 | engine filter matching | `projectileToMaterial` | Maps a projectile type to a material for the `target` filter |
+| `core:locate` | `STRUCTURE_TYPES` | Built-in structure type keys for the compass re-point |
+| `cause` filter | `fly_into_wall` keyword | Maps the elytra collision damage cause |
 
 These are vanilla mirrors, capability boundaries, compatibility shims, or engine
 plumbing, not skills or abilities, so they stay out of YAML. All author-facing
@@ -1258,6 +1260,104 @@ namespaced key). Players are valid targets and nothing is removed from them.
 
 **Event:** `PlayerInteractEntityEvent`, `PlayerInteractEvent` (right/left click or physical), or `EntityDamageByEntityEvent`
 
+### core:loot_bonus
+
+On generated world loot (a chest, trial-vault container, or other loot source),
+a chance to pocket a single bonus copy of one of the generated items. The
+scavenging analogue of `core:yield_multiplier`: it amplifies what looting yields
+rather than replacing the vanilla container. The bonus is a fresh one-count copy
+of a random non-air generated item, placed in the player's inventory (dropped at
+the player if full). Because the `loot` trigger routes to nearby players, every
+player near the loot location rolls independently. Reaching the chance roll
+counts as an activation attempt whether or not it lands.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) of pocketing a bonus item |
+
+**Event:** `loot` (`LootGenerateEvent`)
+
+### core:vault_bonus
+
+On a trial-vault state change (a key unlocking it and dispensing a reward), a
+chance to grant the player a bonus item from a configured vault reward loot
+table. The raider's-pack counterpart to `core:loot_bonus`, scoped to the
+`vault_change` trigger where no generated-loot list is available. The bonus is a
+single natural drop from the referenced table, handed to the player's inventory.
+Reaching the chance roll counts as an activation attempt whether or not it lands.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) of the bonus |
+| `table` | string | none (required) | Namespaced loot table key, e.g. `minecraft:chests/trial_chambers_reward` |
+
+**Event:** `vault_change` (`VaultChangeStateEvent`)
+
+### core:locate
+
+Re-points the held compass to the nearest structure of a configured type,
+persistently: the structure's position is written into the compass's
+`minecraft:lodestone_tracker` data component, so the needle stays locked on it
+(a "Wayfinder's Compass") until the compass is re-located or rebound to a real
+lodestone. Fires only on a main-hand right-click with a `minecraft:compass`; a
+non-compass held item or a structure with no instance within the search radius
+is a no-op. The supported structure types are engine capability data (the list
+below), not author-facing: a value outside the set fails at load.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `structure` | string | none (required) | A built-in structure type key: `buried_treasure`, `desert_pyramid`, `end_city`, `fortress`, `igloo`, `jungle_temple`, `mansion`, `mineshaft`, `monument`, `nether_fossil`, `ocean_ruin`, `ruined_portal`, `shipwreck`, `stronghold`, `swamp_hut` |
+
+**Event:** `right_click_air` / `right_click_block` (main-hand `PlayerInteractEvent` with a compass)
+
+### core:teleport_lodestone
+
+Teleports the player back to the position a held compass is bound to — the
+vanilla `minecraft:lodestone_tracker` the compass carries. The late-game
+counterpart to `core:locate`: even where you planted a genuine lodestone, a
+compass bound to it returns you there. Fires only on a main-hand right-click
+with a `minecraft:compass`; a compass with no tracker bound is a no-op that
+spends nothing. On a successful recall it also applies a vanilla item cooldown
+to the compass's slot UI (`cooldown_ticks`), so the recall cannot be spammed.
+Cross-dimension recall works by teleporting to the bound location directly.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `cooldown_ticks` | double | `0` | Optional vanilla item-cooldown ticks applied to the compass on a successful recall. While this cooldown is active, recent recalls are a no-op, so the slot UI both shows readiness and paces the ability |
+
+**Event:** `right_click_air` / `right_click_block` (main-hand `PlayerInteractEvent` with a compass)
+
+### core:biome_discovery
+
+Grants a scaling movement-speed bonus per distinct biome a player has entered,
+capped at `max_biomes`. Discovering a new biome (on the `map_explore` trigger, so
+it rewards mapping the world) adds it to the player's persisted per-player
+progress store and re-applies the attribute; the bonus grows both as the player
+discovers more land and as the per-biome `amount` levels. Because it implements
+`UnlockMechanic`, the engine re-runs it on join, reload, and level change,
+re-applying the current bonus from the persisted count. The modifier is
+transient and held under a stable UUID that replace-not-stacks, mirroring
+`core:persistent_attribute`.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `attribute` | string | `minecraft:movement_speed` | Attribute to grow |
+| `amount` | double | `0` | Level-scaled additive amount per discovered biome |
+| `max_biomes` | double | `40` | Cap on how many distinct biomes count |
+| `uuid` | string | none (required) | Stable modifier UUID so re-applies replace, never stack |
+
+**Event:** `map_explore` (`ChunkLoadEvent`, new chunk with a map in hand). Join, reload, and `level_up` also reconcile it.
+
 ## Effect & Attribute Parameter Keys
 
 
@@ -1346,6 +1446,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `cure_villager` | `EntityTransformEvent` | A zombie villager finishes converting into a villager (reason `CURED`). Attribution follows the player who initiated the cure (`ZombieVillager.getConversionPlayer()`). A cure that completes after that player logs off grants nothing |
 | `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
 | `chunk_load` | `ChunkLoadEvent` | Exploring freshly generated terrain. Fires only when a chunk is generated for the first time (`isNewChunk()`), dispatched to players within their view distance (new chunks generate at the edge of the view, not at the player's feet). Throttled to once per player per 5 seconds because new terrain generates many chunks at once. Loading a chunk from disk does not fire it |
+| `map_explore` | `ChunkLoadEvent` | Filling a map by carrying it into freshly generated terrain. Same dispatch rules and throttle as `chunk_load`, but fires only when the player holds a map element (an empty `minecraft:map` or a `minecraft:filled_map`) in either hand, so the cartography loop is the rewarded act |
 | `sleep` | `PlayerDeepSleepEvent` | Player sleeps long enough to pass the night or storm. Checking into and back out of a bed does not fire it |
 | `compost` | `CompostItemEvent` | An item is composted into a composter. Routed to nearby players of the composter |
 | `loot` | `LootGenerateEvent` | World loot is generated (e.g., a container or trial-chamber vault fills). Routed to nearby players of the loot location, so group play counts for all present |
@@ -1394,7 +1495,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
 | `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |
 | `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
-| `cause` | `burn`, `fire`, `lava`, `drowning`, `suffocation`, `cactus`, `starvation` | The `EntityDamageEvent` damage cause on the `entity_damage_taken` trigger. `burn` matches fire, fire ticks, and lava. Fails closed on any non-damage event or other cause. Values are validated at load |
+| `cause` | `burn`, `fire`, `lava`, `drowning`, `suffocation`, `cactus`, `starvation`, `fly_into_wall` | The `EntityDamageEvent` damage cause on the `entity_damage_taken` trigger. `burn` matches fire, fire ticks, and lava; `fly_into_wall` matches elytra wall collisions. Fails closed on any non-damage event or other cause. Values are validated at load |
 | `honey_level` | `below:N`, `above:N`, `exactly:N` | The honey level of a beehive clicked on `player_interact`. Fails closed on non-beehive clicks. Values are validated at load |
 | `instrument` | `minecraft:<instrument_key>` | Matches the specific goat-horn variant held in the main hand, read from the item's `minecraft:instrument` data component (e.g. `instrument:minecraft:sing_goat_horn`). Fails closed for a non-horn, a horn with no instrument data, or an unknown/blank value. Values are validated at load |
 | `was_sneaking` | *(none)* | The triggering arrow was released while the player was sneaking. Reads the sneak stance stamped on the projectile at shot time (see `shoot_bow`), so it reflects how the shot was released rather than the player's stance when the arrow lands. Fails closed for non-projectile events, so it only matches bow shots |

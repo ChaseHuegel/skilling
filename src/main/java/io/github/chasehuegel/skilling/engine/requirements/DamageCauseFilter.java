@@ -9,7 +9,8 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 /**
  * Resolves the {@code cause} state-filter keyword ({@code burn}, {@code fire},
  * {@code lava}, {@code drowning}, {@code suffocation}, {@code cactus},
- * {@code starvation}) against the current {@link EntityDamageEvent} cause.
+ * {@code starvation}, {@code fly_into_wall}) against the current
+ * {@link EntityDamageEvent} cause.
  *
  * <p>The filter fails closed: any event that is not an {@link EntityDamageEvent}
  * (or carries another cause) returns {@code false}, so a {@code cause} reference
@@ -27,7 +28,8 @@ public final class DamageCauseFilter {
             "drowning", Set.of(DamageCause.DROWNING),
             "suffocation", Set.of(DamageCause.SUFFOCATION),
             "cactus", Set.of(DamageCause.CONTACT),
-            "starvation", Set.of(DamageCause.STARVATION)
+            "starvation", Set.of(DamageCause.STARVATION),
+            "fly_into_wall", Set.of(DamageCause.FLY_INTO_WALL)
     );
 
     private DamageCauseFilter() {}

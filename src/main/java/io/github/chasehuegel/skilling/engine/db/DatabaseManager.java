@@ -76,6 +76,14 @@ public final class DatabaseManager {
                         preferences TEXT NOT NULL DEFAULT '{}'
                     )
                     """);
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS player_progress (
+                        player_uuid TEXT NOT NULL,
+                        progress_key TEXT NOT NULL,
+                        progress_value TEXT NOT NULL,
+                        PRIMARY KEY (player_uuid, progress_key)
+                    )
+                    """);
         }
     }
 

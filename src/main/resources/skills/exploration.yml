@@ -1,146 +1,159 @@
 # ==========================================
 # EXPLORATION SKILL
 # ==========================================
-# The travel and scavenging skill. It earns XP from filling and working with
-# maps, cartography, looting containers, opening trial vaults, and discovering
-# recipes, and turns travel into a weak, consistent speed buff: exploring new
-# land (L1 Pathfinder) grows into a strong travel surge when a map fills
-# (L100 True North). Mark the Trail (L25) shares the speed with nearby allies.
+# The travel and scavenging skill. It earns XP from filling maps, cartography,
+# looting containers, opening trial vaults, and discovering recipes. Scavenging
+# is the core scalar (L1): looting more as it levels. The compass is the travel
+# signature: re-pointing one at a stronghold (L25 Wayfinder's Compass) and, at
+# the capstone, recalling to the lodestone a bound compass points at (L100
+# Lodestone Recall). Mapping new land feeds biome discovery (L15), looting vaults
+# (L50), and elytra flight shreds collision damage (L75 Skyward).
 #
-# XP loop: fill maps, use the cartography table, open loot containers and trial
-# vaults, and unlock new crafting recipes. chunk_load XP stays with Survival;
-# here chunk_load is an ability trigger only.
+# XP loop: carry a map into uncharted land (map_explore), finish maps
+# (map_fill), use the cartography table, open loot containers and trial vaults,
+# and unlock new recipes.
 id: "exploration"
 max_level: 100
 display: { name: "Exploration", icon: "minecraft:map", color: "BLUE", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Carrying a map into freshly generated terrain fills it. Dispatched once per
+  # player per 5s (throttled with chunk_load), so a long mapping session is a
+  # steady trickle rather than a flood. The endless, time-gated grindable.
+  - trigger: "map_explore"
+    reward: { constant: 18.0 }
+  # Completing a map's first render is a rarer, one-time burst.
   - trigger: "map_fill"
-    reward: { constant: 40.0 }
+    reward: { constant: 60.0 }
+  # Cartography table work is material-costed (paper/glass/compass), so cloning
+  # and expanding maps is a fair grindable source.
   - trigger: "cartography"
-    reward: { constant: 60.0 }
+    reward: { constant: 50.0 }
+  # Looting containers and trial-vault fills. Routed to nearby players.
   - trigger: "loot"
-    reward: { constant: 60.0 }
+    reward: { constant: 50.0 }
+  # Opening a trial vault. Heavily time-gated (per-player vault cooldowns).
   - trigger: "vault_change"
     reward: { constant: 80.0 }
+  # Unlocking new recipes; a one-time-ish, low source.
   - trigger: "recipe_discover"
     reward: { constant: 40.0 }
 abilities:
-  # -- FOUNDATIONAL (L1): the travel scalar. Exploring new land grants a weak
-  # speed buff that becomes a consistent travel aid as its duration scales up.
-  # Unlocks at level 0 (the starting level): exploring grants no exploration XP
-  # (chunk_load XP stays with Survival), so a level-1 gate would lock the
-  # skill's own foundational passive forever.
-  - id: "pathfinder"
-    display_name: "Pathfinder"
-    unlock_level: 0
-    trigger: "chunk_load"
-    display: { lore: [ "&7Exploring new land grants &a{duration}s&7 of Speed (&a{multiplier}x&7)." ] }
+  # -- FOUNDATIONAL (L1): the core scalar. Scavenging looting more as it levels.
+  # Most valuable early and mid game, when container loot is still exciting.
+  - id: "scavenger"
+    display_name: "Scavenger"
+    unlock_level: 1
+    trigger: "loot"
+    display: { lore: [ "&7Looting grants a &a{chance}%&7 chance to pocket a bonus item." ] }
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:loot_bonus"
         parameters:
-          multiplier: { linear: { base: 1.10, step: 0.0015, max: 1.25 } }   # weak but noticeable, sub-scaling
-          uuid: { constant: "8d96db25-38ce-5f64-a2ca-60a4bc6bcb4e" }
-          duration: { linear: { base: 20.0, step: 1.0, max: 120.0 } }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Pathfinder! ✦" }
-      sounds: [ { type: "minecraft:entity.experience_orb.pickup", volume: 0.4, pitch: 1.6, target: "self" } ]
-
-  # -- QOL PASSIVE (L15): cartography work feeds a short XP boost.
-  - id: "cartographers_eye"
-    display_name: "Cartographer's Eye"
-    unlock_level: 15
-    trigger: "cartography"
-    display: { lore: [ "&7Cartography grants &a{multiplier}x&7 XP for {duration}s." ] }
-    mechanics:
-      - type: "core:xp_bonus"
-        parameters:
-          multiplier: { linear: { base: 1.1, step: 0.004, max: 1.5 } }
-          duration: { constant: 30.0 }
+          chance: { linear: { base: 15.0, step: 0.45, max: 60.0 } }
     feedback: { notify: { action_bar: false } }
 
-  # -- PRIMARY ABILITY (L25): the trail marker. Sneak + Right-Click with a
-  # filled map to share a speed and leaping buff with nearby allies.
-  - id: "mark_the_trail"
-    display_name: "Mark the Trail"
+  # -- QOL PASSIVE (L15): biome discovery. Each distinct biome you map grants a
+  # small permanent movement-speed bonus, capped. Growth comes from seeing the
+  # world, which is still mostly undiscovered at this stage (no late backtracking).
+  - id: "diverse_horizon"
+    display_name: "Diverse Horizon"
+    unlock_level: 15
+    trigger: "map_explore"
+    display:
+      lore:
+        - "&7Each distinct biome you map grants a small permanent speed boost"
+        - "&7(max &a{max_biomes}&7 biomes)."
+    mechanics:
+      - type: "core:biome_discovery"
+        parameters:
+          attribute: { constant: "minecraft:movement_speed" }
+          amount: { constant: 0.001 }
+          max_biomes: { constant: 25.0 }
+          uuid: { constant: "3a9c7e14-1b5d-4a6f-8c2e-6d9b0f1a4c87" }
+    feedback: { notify: { action_bar: false } }
+
+  # -- PRIMARY ABILITY (L25): the Wayfinder's Compass. Sneak + Right-Click a
+  # compass to persistently re-point it at the nearest stronghold. No cost or
+  # cooldown: the compass needle itself is the reward and the feedback.
+  - id: "wayfinders_compass"
+    display_name: "Wayfinder's Compass"
     unlock_level: 25
     trigger: "right_click_air"
     display:
       lore:
-        - "&7Sneak + Right-Click with a map: nearby allies gain Speed & Leaping for &a{duration}s&7 (radius &a{radius}&7)."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, map in hand, 30s cooldown, 3+ hunger."
+        - "&7Sneak + Right-Click a compass: it re-points to the nearest Stronghold."
+        - "&8Requires: Sneaking, compass in hand."
     requirements:
-      cooldown: { linear: { base: 30.0, step: -0.2, max: 15.0 } }
       state: [ "is_sneaking" ]
-      items: [ { action: "possession", tag: "minecraft:filled_map", slot: "MAIN_HAND" } ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
+      items: [ { action: "possession", tag: "minecraft:compass", slot: "MAIN_HAND" } ]
     on_failure:
-      cooldown: { action_bar: "&eMark the Trail cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires a filled map in hand!" }
-      exhaustion: { action_bar: "&cToo exhausted to mark the trail!" }
+      missing_item: { action_bar: "&cRequires a compass in hand!" }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:locate"
         parameters:
-          effect: { constant: "minecraft:speed" }
-          radius: { linear: { base: 4.0, step: 0.08, max: 10.0 } }
-          duration: { linear: { base: 10.0, step: 0.1, max: 20.0 } }
-          amplifier: { constant: 0.0 }
-      - type: "core:field_aura"
-        parameters:
-          effect: { constant: "minecraft:jump_boost" }
-          radius: { linear: { base: 4.0, step: 0.08, max: 10.0 } }
-          duration: { linear: { base: 10.0, step: 0.1, max: 20.0 } }
-          amplifier: { constant: 0.0 }
+          structure: { constant: "stronghold" }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Mark the Trail! ✦" }
-      sounds: [ { type: "minecraft:entity.experience_orb.pickup", volume: 0.5, pitch: 1.5, target: "self" } ]
+      notify: { action_bar: true, chat: false, message: "&b✦ Wayfinder: Stronghold locked. ✦" }
+      sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.5, pitch: 1.4, target: "self" } ]
 
-  # -- MAJOR PASSIVE (L50): scavenging feeds a short XP boost.
-  - id: "scavenger"
-    display_name: "Scavenger"
-    unlock_level: 50
-    trigger: "loot"
-    display: { lore: [ "&7Looting containers grants &a{multiplier}x&7 XP for {duration}s." ] }
-    mechanics:
-      - type: "core:xp_bonus"
-        parameters:
-          multiplier: { linear: { base: 1.15, step: 0.005, max: 1.65 } }
-          duration: { constant: 30.0 }
-    feedback: { notify: { action_bar: false } }
-
-  # -- SYNERGY PASSIVE (L75): trial vaults wrap the raider in absorption,
-  # mirroring Survival's Well Rested. Radius 0 keeps it a self-buff.
+  # -- MAJOR PASSIVE (L50): Vault Raider. Opening a trial vault has a chance to
+  # dispense a bonus reward on top of the vanilla payout.
   - id: "vault_raider"
     display_name: "Vault Raider"
-    unlock_level: 75
+    unlock_level: 50
     trigger: "vault_change"
-    display: { lore: [ "&7Opening a trial vault grants &a{duration}s&7 of Absorption." ] }
+    display: { lore: [ "&7Opening a trial vault grants a &a{chance}%&7 chance of a bonus reward." ] }
     mechanics:
-      - type: "core:field_aura"
+      - type: "core:vault_bonus"
         parameters:
-          effect: { constant: "minecraft:absorption" }
-          radius: { constant: 0.0 }
-          duration: { linear: { base: 30.0, step: 0.6, max: 90.0 } }
-          amplifier: { linear: { base: 0.0, step: 0.02, max: 1.0 } }
+          chance: { linear: { base: 30.0, step: 0.9, max: 75.0 } }
+          table: { constant: "minecraft:chests/trial_chambers_reward" }
     feedback: { notify: { action_bar: false } }
 
-  # -- MASTERY CAPSTONE (L100): filling a map surges travel. A strong, long
-  # speed buff plus a short jump boost.
-  - id: "true_north"
-    display_name: "True North"
-    unlock_level: 100
-    trigger: "map_fill"
-    display: { lore: [ "&7Filling a map grants &a{duration}s&7 of strong Speed and a short jump boost." ] }
+  # -- SYNERGY PASSIVE (L75): Skyward. Elytra wall collisions are friction;
+  # shred the damage as mastery grows, reaching full immunity at the cap.
+  - id: "skyward"
+    display_name: "Skyward"
+    unlock_level: 75
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7&a{chance}%&7 chance to shrug off elytra wall-collision damage." ] }
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:cancel_damage"
+        filters: [ { state: "cause:fly_into_wall" } ]
         parameters:
-          multiplier: { linear: { base: 1.2, step: 0.002, max: 1.4 } }
-          uuid: { constant: "7b8a70ad-69d4-5e80-83a2-2a8062a311dd" }
-          duration: { linear: { base: 60.0, step: 1.2, max: 180.0 } }
-      - type: "core:modify_jump"
+          chance: { linear: { base: 40.0, step: 2.4, max: 100.0 } }
+    feedback:
+      notify: { action_bar: false }
+      sounds:
+        - type: "minecraft:entity.phantom.flap"
+          volume: 0.4
+          pitch: 1.6
+          target: "self"
+      success_only: true
+
+  # -- MASTERY CAPSTONE (L100): Lodestone Recall. A compass bound to a lodestone
+  # you planted returns you there — recall to your own camp, on the compass's
+  # vanilla item cooldown so it shows readiness in the slot UI.
+  - id: "lodestone_recall"
+    display_name: "Lodestone Recall"
+    unlock_level: 100
+    trigger: "right_click_air"
+    display:
+      lore:
+        - "&7Sneak + Right-Click a lodestone compass: return to its lodestone."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, lodestone compass, 3+ hunger. Cooldown shown on the compass."
+    requirements:
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "minecraft:compass", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      missing_item: { action_bar: "&cRequires a lodestone compass in hand!" }
+      exhaustion: { action_bar: "&cToo exhausted to recall." }
+    mechanics:
+      - type: "core:teleport_lodestone"
         parameters:
-          multiplier: { constant: 1.3 }
-          uuid: { constant: "139567d4-3915-5d87-81ef-0a3be2232fb6" }
-          duration: { constant: 15.0 }
-    feedback: { notify: { action_bar: false } }
+          cooldown_ticks: { constant: 6000.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Recall! ✦" }
+      sounds: [ { type: "minecraft:entity.ender_pearl.throw", volume: 0.6, pitch: 1.2, target: "self" } ]

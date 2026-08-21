@@ -62,4 +62,11 @@ class DamageCauseFilterTest {
         assertFalse(DamageCauseFilter.isValidValue("explosion"));
         assertFalse(DamageCauseFilter.isValidValue(null));
     }
+
+    @Test
+    void flyIntoWallMatchesElytraCollisionOnly() {
+        assertTrue(DamageCauseFilter.evaluate(event(DamageCause.FLY_INTO_WALL), "fly_into_wall"));
+        assertFalse(DamageCauseFilter.evaluate(event(DamageCause.FALL), "fly_into_wall"));
+        assertTrue(DamageCauseFilter.isValidValue("fly_into_wall"));
+    }
 }

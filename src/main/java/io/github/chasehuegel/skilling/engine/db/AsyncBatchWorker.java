@@ -37,6 +37,15 @@ public final class AsyncBatchWorker implements Runnable {
             ON CONFLICT(player_uuid) DO UPDATE SET preferences = excluded.preferences
             """;
 
+    private static final String PROGRESS_CLEAR = """
+            DELETE FROM player_progress WHERE player_uuid = ?
+            """;
+
+    private static final String PROGRESS_UPSERT = """
+            INSERT INTO player_progress (player_uuid, progress_key, progress_value) VALUES (?, ?, ?)
+            ON CONFLICT(player_uuid, progress_key) DO UPDATE SET progress_value = excluded.progress_value
+            """;
+
     private final Skilling plugin;
     private final DatabaseManager databaseManager;
     private final ProfileManager profileManager;
@@ -132,7 +141,9 @@ public final class AsyncBatchWorker implements Runnable {
 
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement skillsStmt = conn.prepareStatement(PLAYER_SKILLS_UPSERT);
-             PreparedStatement prefsStmt = conn.prepareStatement(PREFERENCES_UPSERT)) {
+             PreparedStatement prefsStmt = conn.prepareStatement(PREFERENCES_UPSERT);
+             PreparedStatement clearStmt = conn.prepareStatement(PROGRESS_CLEAR);
+             PreparedStatement progressStmt = conn.prepareStatement(PROGRESS_UPSERT)) {
 
             // Capture each profile's modCount *before* its XP snapshot so the
             // saved marker never counts mutations the DB write did not include.
@@ -177,6 +188,32 @@ public final class AsyncBatchWorker implements Runnable {
             for (int result : prefResults) {
                 if (result == Statement.EXECUTE_FAILED) {
                     plugin.getLogger().warning("Preference batch entry failed during flush");
+                    return;
+                }
+            }
+
+            // Persist the generic per-player progress store (discovery sets, etc.)
+            // for profiles whose hydration loaded it, mirroring the preferences
+            // guard so an unhydrated empty map cannot overwrite the real rows. A
+            // delete-then-upsert keeps rows removed from the in-memory map pruned.
+            for (var entry : dirty.entrySet()) {
+                PlayerProfile profile = entry.getValue();
+                if (!profile.progressLoaded()) continue;
+                UUID uuid = entry.getKey();
+                clearStmt.setString(1, uuid.toString());
+                clearStmt.addBatch();
+                for (var pr : profile.getProgress().entrySet()) {
+                    progressStmt.setString(1, uuid.toString());
+                    progressStmt.setString(2, pr.getKey());
+                    progressStmt.setString(3, pr.getValue());
+                    progressStmt.addBatch();
+                }
+            }
+            clearStmt.executeBatch();
+            int[] progressResults = progressStmt.executeBatch();
+            for (int result : progressResults) {
+                if (result == Statement.EXECUTE_FAILED) {
+                    plugin.getLogger().warning("Progress batch entry failed during flush");
                     return;
                 }
             }

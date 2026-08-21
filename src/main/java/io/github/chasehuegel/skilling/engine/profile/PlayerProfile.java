@@ -29,8 +29,10 @@ public final class PlayerProfile implements PlayerProfileView {
     private final UUID playerId;
     private volatile boolean initialized;
     private volatile boolean preferencesLoaded;
+    private volatile boolean progressLoaded;
     private final ConcurrentHashMap<String, Long> xpMap;
     private final Set<String> pendingFanfareSkills = ConcurrentHashMap.newKeySet();
+    private final ConcurrentHashMap<String, String> progress;
     private final AtomicLong modCount;
     private volatile long savedModCount;
     private volatile PlayerPreferences preferences;
@@ -44,6 +46,7 @@ public final class PlayerProfile implements PlayerProfileView {
     public PlayerProfile(UUID playerId) {
         this.playerId = playerId;
         this.xpMap = new ConcurrentHashMap<>();
+        this.progress = new ConcurrentHashMap<>();
         this.modCount = new AtomicLong(0);
         this.savedModCount = 0;
         this.preferences = PlayerPreferences.DEFAULTS;
@@ -91,6 +94,52 @@ public final class PlayerProfile implements PlayerProfileView {
      */
     public void markPreferencesLoaded() {
         this.preferencesLoaded = true;
+    }
+
+    /**
+     * Returns the generic per-player progress store. Mechanics persist arbitrary
+     * string-keyed data here (for example a discovery set serialized to JSON),
+     * riding the same write-behind flush as the XP map and preferences.
+     *
+     * <p><b>Thread safety:</b> callers mutate the returned map on the main
+     * thread and then call {@link #markProgressDirty}. Bulk-loading during
+     * profile hydration must use {@link #putAllProgress}.
+     *
+     * @return the modifiable progress map
+     */
+    public Map<String, String> getProgress() {
+        return progress;
+    }
+
+    /**
+     * Loads progress rows into the map during hydration and marks it as loaded,
+     * so the write-behind flush never overwrites the persisted rows with an
+     * unhydrated empty map.
+     *
+     * @param rows the persisted key/value rows
+     */
+    public void putAllProgress(Map<String, String> rows) {
+        progress.putAll(rows);
+        this.progressLoaded = true;
+    }
+
+    /**
+     * Returns whether progress was loaded successfully. A profile whose hydration
+     * progress-read failed keeps this false so the flush never overwrites the
+     * player's real persisted rows.
+     *
+     * @return true when the in-memory progress is safe to persist
+     */
+    public boolean progressLoaded() {
+        return progressLoaded;
+    }
+
+    /**
+     * Marks the progress store dirty so the write-behind worker persists it.
+     * Call after mutating {@link #getProgress()}.
+     */
+    public void markProgressDirty() {
+        modCount.incrementAndGet();
     }
 
     /**

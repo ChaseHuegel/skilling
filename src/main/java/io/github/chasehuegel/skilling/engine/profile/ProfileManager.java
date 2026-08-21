@@ -102,6 +102,7 @@ public final class ProfileManager {
             }
 
             loadPreferences(profile, playerUuid);
+            loadProgress(profile, playerUuid);
             profile.markInitialized();
 
             installHydrated(playerUuid, profile, hydrationGeneration);
@@ -335,6 +336,27 @@ public final class ProfileManager {
             profile.markPreferencesLoaded();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to load preferences for player " + playerUuid, e);
+        }
+    }
+
+    private void loadProgress(PlayerProfile profile, UUID playerUuid) {
+        if (!databaseManager.isInitialized()) {
+            profile.putAllProgress(java.util.Map.of());
+            return;
+        }
+        String sql = "SELECT progress_key, progress_value FROM player_progress WHERE player_uuid = ?";
+        try (Connection conn = databaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, playerUuid.toString());
+            java.util.Map<String, String> rows = new java.util.HashMap<>();
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    rows.put(rs.getString("progress_key"), rs.getString("progress_value"));
+                }
+            }
+            profile.putAllProgress(rows);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to load progress for player " + playerUuid, e);
         }
     }
 }
