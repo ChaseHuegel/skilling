@@ -12,5 +12,6 @@ public enum FailureReason {
     MISSING_STATE,
     INSUFFICIENT_ITEMS,
     EXHAUSTION,
+    DURABILITY,
     UNKNOWN
 }

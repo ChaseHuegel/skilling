@@ -148,7 +148,7 @@ public final class RequirementEngine {
         for (var itemReq : requirements.items()) {
             switch (itemReq.action()) {
                 case "possession", "cost" -> {
-                    if (!hasItems(player, itemReq.tag(), itemReq.amount(), itemReq.slot())) {
+                    if (!hasItems(player, itemReq.tag(), itemReq.amount(), itemReq.slot(), itemReq.enchanted())) {
                         // Map.of rejects null values, and a programmatically built
                         // requirement may carry a null tag; the YAML path rejects
                         // it at load, so report a missing item instead of NPEing.
@@ -171,6 +171,14 @@ public final class RequirementEngine {
                         "hunger", String.valueOf(player.getFoodLevel()),
                         "required", String.valueOf((int) Math.ceil(exhaustion.minimum()))
                 ));
+            }
+        }
+
+        // Check durability requirement: the target slot must hold a damageable item.
+        var durability = requirements.durability();
+        if (durability != null && durability.amount().evaluate(skillLevel, unlockLevel) > 0) {
+            if (asDamageable(slotItem(player, durability.slot())) == null) {
+                return RequirementResult.failed(FailureReason.DURABILITY, Map.of());
             }
         }
 
@@ -211,6 +219,61 @@ public final class RequirementEngine {
             int newFood = Math.max(0, player.getFoodLevel() - (int) Math.ceil(exhaustion.amount()));
             player.setFoodLevel(newFood);
         }
+
+        // Consume durability: damage the slot's item by the flat point cost.
+        // Unlike vanilla tool use this is a guaranteed cost, so it is not routed
+        // through a cancellable PlayerItemDamageEvent (which a durability-save
+        // ability could veto) — a cost must not be dodgeable.
+        var durability = requirements.durability();
+        if (durability != null) {
+            int amount = (int) Math.round(durability.amount().evaluate(skillLevel, unlockLevel));
+            if (amount > 0) {
+                damageItem(player, durability.slot(), amount);
+            }
+        }
+    }
+
+    private void damageItem(Player player, String slot, int amount) {
+        var slotItem = slotItem(player, slot);
+        if (slotItem == null || slotItem.getType() == org.bukkit.Material.AIR) return;
+        org.bukkit.inventory.meta.Damageable damageable = asDamageable(slotItem);
+        if (damageable == null) return;
+        int maxDurability = slotItem.getType().getMaxDurability();
+        int newDamage = damageable.getDamage() + amount;
+        if (maxDurability > 0 && newDamage >= maxDurability) {
+            // Reaching max durability breaks the item like a vanilla break rather
+            // than leaving it in an invalid damage state. A damageable item
+            // always reports a positive max durability in production.
+            slotItem.setAmount(0);
+        } else {
+            damageable.setDamage(newDamage);
+            slotItem.setItemMeta((org.bukkit.inventory.meta.ItemMeta) damageable);
+        }
+        writeBack(player, slotItem, slot);
+    }
+
+    /**
+     * Returns the damageable meta of an item that can lose durability, or null
+     * for air, non-items, or items without a damageable meta. The durability
+     * value itself is not consulted here: any item exposing a {@code Damageable}
+     * meta in production has a positive max durability, and requiring a positive
+     * value here would reject real gear under a registry that reports zero.
+     */
+    private org.bukkit.inventory.meta.Damageable asDamageable(ItemStack item) {
+        if (item == null || item.getType() == org.bukkit.Material.AIR) return null;
+        return item.getItemMeta() instanceof org.bukkit.inventory.meta.Damageable d ? d : null;
+    }
+
+    private ItemStack slotItem(Player player, String slot) {
+        org.bukkit.inventory.EquipmentSlot resolved = resolveSlot(slot);
+        if (resolved == null) return null;
+        return player.getInventory().getItem(resolved);
+    }
+
+    private void writeBack(Player player, ItemStack item, String slot) {
+        org.bukkit.inventory.EquipmentSlot resolved = resolveSlot(slot);
+        if (resolved == null) return;
+        player.getInventory().setItem(resolved, item);
     }
 
     private boolean checkState(Player player, String state, Event event) {
@@ -224,18 +287,27 @@ public final class RequirementEngine {
         return stateFilterRegistry.evaluate(key, player, event, value);
     }
 
-    private boolean hasItems(Player player, String tag, int required, String slot) {
-        return countItems(player, tag, slot) >= required;
+    private boolean hasItems(Player player, String tag, int required, String slot, boolean enchanted) {
+        return countItems(player, tag, slot, enchanted) >= required;
     }
 
-    private int countItems(Player player, String tag, String slot) {
+    private int countItems(Player player, String tag, String slot, boolean enchanted) {
         Set<Material> resolved = resolveMaterialSet(tag);
         int count = 0;
         for (ItemStack item : slotItems(player, slot)) {
             if (item == null) continue;
+            if (enchanted && isEmptyEnchantment(item)) continue;
             if (resolved.contains(item.getType())) count += item.getAmount();
         }
         return count;
+    }
+
+    /**
+     * Whether an item carries no enchantments. An enchanted {@code true} item
+     * requirement demands at least one enchantment on the matched stack.
+     */
+    private static boolean isEmptyEnchantment(ItemStack item) {
+        return item.getItemMeta() == null || item.getItemMeta().getEnchants().isEmpty();
     }
 
     private void removeItems(Player player, String tag, int amount, String slot) {

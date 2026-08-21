@@ -68,10 +68,16 @@ public record SkillDetailDTO(
             EvaluatorDTO cooldown,
             List<String> state,
             List<ItemRequirementDTO> items,
-            ExhaustionDTO exhaustion
+            ExhaustionDTO exhaustion,
+            DurabilityDTO durability
     ) {
         public RequirementsDTO(double cooldown, List<String> state, List<ItemRequirementDTO> items) {
-            this(new EvaluatorDTO("constant", Map.of("value", cooldown)), state, items, null);
+            this(new EvaluatorDTO("constant", Map.of("value", cooldown)), state, items, null, null);
+        }
+
+        public RequirementsDTO(EvaluatorDTO cooldown, List<String> state, List<ItemRequirementDTO> items,
+                               ExhaustionDTO exhaustion) {
+            this(cooldown, state, items, exhaustion, null);
         }
     }
 
@@ -80,13 +86,23 @@ public record SkillDetailDTO(
         double minimum
     ) {}
 
+    public record DurabilityDTO(
+        EvaluatorDTO amount,
+        String slot
+    ) {}
+
     public record ItemRequirementDTO(
         String action,
         String tag,
         String slot,
         int amount,
-        double itemCooldown
-    ) {}
+        double itemCooldown,
+        boolean enchanted
+    ) {
+        public ItemRequirementDTO(String action, String tag, String slot, int amount, double itemCooldown) {
+            this(action, tag, slot, amount, itemCooldown, false);
+        }
+    }
 
     public record MechanicEntryDTO(
         String type,

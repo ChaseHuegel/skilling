@@ -127,16 +127,28 @@ abilities:
         - action: "possession"
           tag: "#minecraft:pickaxes"
           slot: "MAIN_HAND"
-        - action: "cost"
+        - action: "possession"           # Optional "enchanted: true" counts only items
+          tag: "#c:enchantable"          # carrying at least one enchantment. Pairs with an
+          slot: "MAIN_HAND"              # enchantable-gear tag so enchanted books are excluded.
+          enchanted: true
+        - action: "cost"                 # cost = consumed on activation, like a fuel source
           tag: "minecraft:coal"
-          amount: 1                             # Example of consuming an item fuel source
+          amount: 1
       # Exhaustion (hunger) requirement. Deducted on ability use
       # amount: hunger points to consume (0-20)
-      # minimum: minimum hunger level required to activate (inclusive. Food level
+      # minimum: minimum food level required to activate (inclusive. Food level
       #           equal to minimum passes) (0-20)
       exhaustion:
         amount: 2.0
         minimum: 3.0
+      # Durability requirement (optional). Damages the item in a slot by a flat
+      # point cost, consumed only on a successful activation. "amount" is a
+      # level-scaled evaluator (sub-scaled like a cooldown); "slot" defaults to
+      # MAIN_HAND. Requires a damageable item in the slot; the item breaks (like
+      # vanilla) if it reaches max durability.
+      # durability:
+      #   amount: { linear: { base: 30.0, step: -0.2, max: 10.0 } }
+      #   slot: "MAIN_HAND"
 
     # Result Object Pattern feedback overrides
     on_failure:

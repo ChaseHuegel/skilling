@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.chasehuegel.skilling.web.dto.SkillDetailDTO.EvaluatorDTO;
+import io.github.chasehuegel.skilling.web.dto.SkillDetailDTO.DurabilityDTO;
 import io.github.chasehuegel.skilling.web.dto.SkillDetailDTO.ExhaustionDTO;
 import io.github.chasehuegel.skilling.web.dto.SkillDetailDTO.ItemRequirementDTO;
 import io.github.chasehuegel.skilling.web.dto.SkillDetailDTO.RequirementsDTO;
@@ -33,8 +34,9 @@ final class RequirementsDTODeserializer extends JsonDeserializer<RequirementsDTO
         List<String> state = parseStringList(node.get("state"));
         List<ItemRequirementDTO> items = parseItems(node.get("items"));
         ExhaustionDTO exhaustion = parseExhaustion(node.get("exhaustion"));
+        DurabilityDTO durability = parseDurability(p, node.get("durability"));
 
-        return new RequirementsDTO(cooldown, state, items, exhaustion);
+        return new RequirementsDTO(cooldown, state, items, exhaustion, durability);
     }
 
     private static EvaluatorDTO parseCooldown(JsonParser p, JsonNode node) throws IOException {
@@ -70,12 +72,14 @@ final class RequirementsDTODeserializer extends JsonDeserializer<RequirementsDTO
         List<ItemRequirementDTO> result = new ArrayList<>();
         node.forEach(item -> {
             if (!item.isObject()) return;
+            JsonNode enchantedNode = item.get("enchanted");
             result.add(new ItemRequirementDTO(
                     textValue(item, "action", "possession"),
                     textValue(item, "tag", null),
                     textValue(item, "slot", "HAND"),
                     (int) doubleValue(item, "amount", 1),
-                    doubleValue(item, "item_cooldown", 0)
+                    doubleValue(item, "item_cooldown", 0),
+                    enchantedNode != null && enchantedNode.asBoolean(false)
             ));
         });
         return result;
@@ -87,6 +91,12 @@ final class RequirementsDTODeserializer extends JsonDeserializer<RequirementsDTO
                 doubleValue(node, "amount", 1.0),
                 doubleValue(node, "minimum", 0.0)
         );
+    }
+
+    private static DurabilityDTO parseDurability(JsonParser p, JsonNode node) throws IOException {
+        if (node == null || !node.isObject()) return null;
+        EvaluatorDTO amount = parseCooldown(p, node.get("amount"));
+        return new DurabilityDTO(amount, textValue(node, "slot", "MAIN_HAND"));
     }
 
     private static String textValue(JsonNode node, String key, String def) {

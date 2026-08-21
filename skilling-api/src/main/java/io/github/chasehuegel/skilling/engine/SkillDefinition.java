@@ -166,15 +166,42 @@ public record SkillDefinition(
      * @param state      list of required player states
      * @param items      list of item requirements
      * @param exhaustion exhaustion (hunger) requirement, null if not used
+     * @param durability item durability cost, null if not used
      */
     public record Requirements(
             ParameterEvaluator cooldown,
             List<String> state,
             List<ItemRequirement> items,
-            Exhaustion exhaustion
+            Exhaustion exhaustion,
+            Durability durability
     ) {
         public Requirements(double cooldown, List<String> state, List<ItemRequirement> items) {
-            this(new ConstantEvaluator(cooldown), state, items, null);
+            this(new ConstantEvaluator(cooldown), state, items, null, null);
+        }
+
+        public Requirements(ParameterEvaluator cooldown, List<String> state,
+                            List<ItemRequirement> items, Exhaustion exhaustion) {
+            this(cooldown, state, items, exhaustion, null);
+        }
+    }
+
+    /**
+     * Item durability cost requirement for ability activation.
+     *
+     * <p>Consumed only after a successful execution, alongside {@link Exhaustion}
+     * and cost items. The flat point cost is damaged off the item in the given
+     * slot; an item that reaches max durability breaks like a vanilla break.
+     *
+     * @param amount  flat durability points to consume, evaluated against the
+     *                player's level and the ability's unlock level
+     * @param slot    inventory slot holding the item to damage (defaults to MAIN_HAND)
+     */
+    public record Durability(
+            ParameterEvaluator amount,
+            String slot
+    ) {
+        public Durability(ParameterEvaluator amount) {
+            this(amount, "MAIN_HAND");
         }
     }
 
@@ -197,14 +224,20 @@ public record SkillDefinition(
      * @param slot         inventory slot
      * @param amount       required/consumed quantity
      * @param itemCooldown visual cooldown in seconds
+     * @param enchanted    when true, only enchanted items satisfy the requirement
      */
     public record ItemRequirement(
             String action,
             String tag,
             String slot,
             int amount,
-            double itemCooldown
-    ) {}
+            double itemCooldown,
+            boolean enchanted
+    ) {
+        public ItemRequirement(String action, String tag, String slot, int amount, double itemCooldown) {
+            this(action, tag, slot, amount, itemCooldown, false);
+        }
+    }
 
     /**
      * Failure feedback overrides keyed by failure reason.

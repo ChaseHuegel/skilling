@@ -46,7 +46,7 @@ const FALLBACK_MECHANICS = [
   'core:modify_tame_chance', 'core:projectile_return', 'core:modify_enchant_cost',
   'core:field_aura', 'core:ally_aura', 'core:modify_jump', 'core:block_particles',
   'core:modify_brew_output', 'core:modify_potion_amplifier', 'core:potion_self_immunity',
-  'core:transmute',
+  'core:transmute', 'core:bonus_enchant', 'core:enchant_level_up', 'core:extract_enchant', 'core:keep_on_death',
 ]
 
 const MECHANIC_SUGGESTIONS = computed(() =>
@@ -106,6 +106,10 @@ const FALLBACK_PARAM_NAMES: Record<string, string[]> = {
   'core:modify_potion_amplifier': ['amplifier'],
   'core:potion_self_immunity': [],
   'core:transmute': ['source', 'product', 'source_count', 'product_count'],
+  'core:bonus_enchant': ['chance'],
+  'core:enchant_level_up': ['chance'],
+  'core:extract_enchant': [],
+  'core:keep_on_death': ['chance'],
 }
 
 const MECHANIC_PARAM_NAMES = computed(() =>

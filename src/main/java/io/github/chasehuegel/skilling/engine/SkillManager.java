@@ -476,7 +476,19 @@ public final class SkillManager {
             exhaustion = new SkillDefinition.Exhaustion(amount, minimum);
         }
 
-        return new SkillDefinition.Requirements(cooldown, state, items, exhaustion);
+        SkillDefinition.Durability durability = null;
+        if (map.containsKey("durability")) {
+            Map<String, Object> durMap = castMap(map.get("durability"));
+            ParameterEvaluator durAmount = parseInlineEvaluator(castMap(durMap.get("amount")));
+            String durSlot = asString(durMap, "slot", "MAIN_HAND", reqContext + " durability");
+            if (!io.github.chasehuegel.skilling.engine.requirements.RequirementEngine.isKnownSlot(durSlot)) {
+                throw new IllegalArgumentException(reqContext + " durability uses unknown slot: " + durSlot
+                        + " (supported: HAND, MAIN_HAND, OFF_HAND, HEAD/HELMET, CHEST, LEGS, FEET/BOOTS, ANY, ALL)");
+            }
+            durability = new SkillDefinition.Durability(durAmount, durSlot);
+        }
+
+        return new SkillDefinition.Requirements(cooldown, state, items, exhaustion, durability);
     }
 
     /**
@@ -515,7 +527,8 @@ public final class SkillManager {
         }
         int amount = asInt(map, "amount", 1, itemContext);
         double itemCooldown = asDouble(map, "item_cooldown", 0.0, itemContext);
-        return new SkillDefinition.ItemRequirement(action, tag, slot, amount, itemCooldown);
+        boolean enchanted = asBoolean(map, "enchanted", false, itemContext);
+        return new SkillDefinition.ItemRequirement(action, tag, slot, amount, itemCooldown, enchanted);
     }
 
     /**
@@ -921,6 +934,13 @@ public final class SkillManager {
         if (raw == null) return defaultValue;
         if (raw instanceof Number n) return n.intValue();
         throw new IllegalArgumentException(context + " '" + key + "' must be a number, got: " + raw);
+    }
+
+    private static boolean asBoolean(Map<String, Object> map, String key, boolean defaultValue, String context) {
+        Object raw = map.get(key);
+        if (raw == null) return defaultValue;
+        if (raw instanceof Boolean b) return b;
+        throw new IllegalArgumentException(context + " '" + key + "' must be a boolean, got: " + raw);
     }
 
     private static Number asNumber(Object raw, String context) {

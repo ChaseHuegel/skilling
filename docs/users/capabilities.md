@@ -38,6 +38,37 @@ mechanic:
 - **Cooldowns persist across a quit/relog.** Logging out does not reset an
   active cooldown. It expires on its own timer. Only time lifts a cooldown.
 
+### Durability cost requirement
+
+An ability's requirements block may also declare a `durability` entry that
+damages the item in a slot by a flat point cost, consumed on a successful
+activation alongside exhaustion and cost items. The amount is a level-scaled
+evaluator; a damageable item in the slot is required when the amount is positive.
+
+```yaml
+requirements:
+  durability:
+    amount: { linear: { base: 30.0, step: -0.2, max: 10.0 } }
+    slot: "MAIN_HAND"
+```
+
+An item that reaches max durability breaks like a vanilla break. Unlike normal
+tool use, the cost is not routed through a cancellable `PlayerItemDamageEvent`,
+so a durability-save ability elsewhere cannot dodge it.
+
+### Enchanted item predicate
+
+An item requirement may declare `enchanted: true`, which counts only items that
+carry at least one enchantment toward the requirement. This pairs with an
+enchantable-gear tag (e.g. `#c:enchantable` in `tags/base.yml`) so a requirement
+can demand an actually-enchanted piece of gear while still excluding enchanted
+books:
+
+```yaml
+items:
+  - { action: "possession", tag: "#c:enchantable", slot: "MAIN_HAND", enchanted: true }
+```
+
 ## Built-In Mechanics
 
 ### core:yield_multiplier
@@ -778,6 +809,50 @@ Reduces the experience level cost of enchanting at an enchanting table.
 
 **Event:** `EnchantItemEvent`
 
+### core:bonus_enchant
+
+Adds a single random, compatible enchantment to the item being enchanted at the table. The bonus enchant never overwrites a chosen enchant and respects mutually-exclusive rules.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Percentage chance to add the extra enchant (0-100) |
+
+**Event:** `EnchantItemEvent`
+
+### core:enchant_level_up
+
+Raises each chosen enchantment by one level, capped at the enchant's own maximum, with an independent percentage chance per enchant.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Percentage chance for each enchant to gain +1 level (0-100) |
+
+**Event:** `EnchantItemEvent`
+
+### core:extract_enchant
+
+Strips the highest-level enchantment off the held item and writes it into an enchanted book on a sneak + right-click of a grindstone. The vanilla grindstone GUI is suppressed for the sneak-interact so the act reads as an extraction; a normal interact keeps the vanilla GUI. Enchanted books are never valid sources (a single book cannot be duplicated into two). The item keeps its remaining enchantments; the extracted book is added to the inventory (dropped if full).
+
+**No parameters.**
+
+**Event:** `PlayerInteractEvent` (right-click block on a grindstone, set by the mechanic `filters`)
+
+### core:keep_on_death
+
+Gives a percentage chance to keep the entire inventory on death. A single roll is made per death; on success the death keeps the inventory and its drop list is cleared. No-ops harmlessly on servers that already keep inventory.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Percentage chance to keep the whole inventory (0-100) |
+
+**Event:** `PlayerDeathEvent`
+
 ### core:field_aura
 
 Applies a potion effect to the player and nearby living entities within a radius. By default (`targets: allies`) hostile mobs are never affected.
@@ -1243,7 +1318,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `shoot_bow` | `EntityShootBowEvent` | Shooting a bow or crossbow |
 | `item_damage` | `PlayerItemDamageEvent` | Item durability loss |
 | `player_shear` | `PlayerShearEntityEvent` | Shearing a sheep or other shearable entity |
-| `repair` | `PrepareAnvilEvent` | Opening an anvil or changing its inputs |
+| `repair` | `PrepareAnvilEvent` | An anvil produces a valid repair (a result present with a positive level cost). Opening an anvil or shuffling its inputs alone does not fire, so it cannot be farmed |
 | `player_tame` | `EntityTameEvent` | Taming a wild animal |
 | `launch_projectile` | `ProjectileLaunchEvent` | Launching a projectile (trident, snowball, etc.) |
 | `projectile_hit` | `ProjectileHitEvent` | A projectile lands on a block or entity (use for impact-time mechanics like `core:projectile_return`) |
@@ -1271,6 +1346,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `physical_interaction` | `PlayerInteractEvent` (`Action.PHYSICAL`) | Stepping onto or into a block: pressure plates, weighted plates, and tripwires |
 | `sensed` | `BlockReceiveGameEvent` (Paper) | A sculpt sensor or shrieker receives a vibration. Fires only when a player caused the vibration |
 | `trip_trap` | `PlayerInteractEvent` (`Action.PHYSICAL`) **and** `BlockReceiveGameEvent` (Paper) | Combined silent-travel trigger covering both physical interactions (pressure plates, weighted plates, tripwires) and sculpt vibrations. One trigger for all travel hazards |
+| `player_death` | `PlayerDeathEvent` | A player dies (before inventory drops process, so a mechanic can keep items) |
 
 ## Built-In State Filters
 

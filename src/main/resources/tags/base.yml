@@ -236,6 +236,28 @@ custom_tags:
     - "minecraft:leather_leggings"
     - "minecraft:leather_boots"
 
+  # The full enchantable gear set in item form. Used by the enchanting skill's
+  # Enchant Extraction requirement so only an actually-enchanted piece of gear in
+  # the main hand qualifies. Enchanted books are deliberately excluded — they are
+  # never a valid extraction source, which blocks a book-duplication loop.
+  enchantable:
+    - "#minecraft:swords"
+    - "#minecraft:axes"
+    - "#minecraft:pickaxes"
+    - "#minecraft:shovels"
+    - "#minecraft:hoes"
+    - "minecraft:bow"
+    - "minecraft:crossbow"
+    - "minecraft:trident"
+    - "minecraft:mace"
+    - "#minecraft:head_armor"
+    - "#minecraft:chest_armor"
+    - "#minecraft:leg_armor"
+    - "#minecraft:foot_armor"
+    - "minecraft:shield"
+    - "minecraft:fishing_rod"
+    - "minecraft:elytra"
+
   # Armor tier tags drive the equipped_all / equipped_any state filters. They
   # reproduce the historical hard-coded tier sets as data, so armor gating is
   # fully configurable and no tier knowledge lives in Java.

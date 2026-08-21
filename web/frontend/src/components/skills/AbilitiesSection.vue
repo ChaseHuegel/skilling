@@ -28,6 +28,7 @@ const FALLBACK_TRIGGERS = [
   'sprint', 'sneak', 'ride_horse', 'collect_xp', 'level_up', 'enchant_item',
   'shoot_bow', 'item_damage', 'player_shear', 'player_tame', 'launch_projectile',
   'projectile_hit', 'resurrect', 'cure_villager', 'elytra_glide',
+  'player_death',
 ]
 
 const TRIGGER_SUGGESTIONS = computed(() =>
@@ -40,6 +41,7 @@ interface RequirementItem {
   slot: string
   amount: number
   itemCooldown: number
+  enchanted: boolean
 }
 
 interface ParticleConfig {
@@ -63,6 +65,7 @@ interface Ability {
     cooldown: number | CooldownEvaluator
     state: string[]
     items: RequirementItem[]
+    durability?: { amount: number | CooldownEvaluator; slot: string } | null
   }
   mechanics: MechanicEntry[]
   onFailure?: OnFailure
@@ -297,7 +300,7 @@ function addItem(index: number) {
   updateRequirement(index, {
     items: [
       ...ab.requirements.items,
-      { action: 'possession', tag: '', slot: '', amount: 1, itemCooldown: 0 },
+      { action: 'possession', tag: '', slot: '', amount: 1, itemCooldown: 0, enchanted: false },
     ],
   })
 }
@@ -314,6 +317,33 @@ function updateItem(index: number, itemIdx: number, patch: Partial<RequirementIt
   const copy = [...ab.requirements.items]
   copy[itemIdx] = { ...copy[itemIdx], ...patch }
   updateRequirement(index, { items: copy })
+}
+
+type DurabilityRequirement = NonNullable<Ability['requirements']['durability']>
+
+function durabilityAmount(ability: Ability): CooldownEvaluator {
+  const current = ability.requirements.durability?.amount
+  if (typeof current === 'object' && current) return current
+  const numeric = typeof current === 'number' ? current : 0
+  return { type: 'constant', params: { value: numeric } }
+}
+
+function toggleDurability(index: number, on: boolean) {
+  if (on) {
+    updateRequirement(index, {
+      durability: { amount: { type: 'constant', params: { value: 30 } }, slot: 'MAIN_HAND' },
+    })
+  } else {
+    updateRequirement(index, { durability: null })
+  }
+}
+
+function updateDurability(index: number, patch: Partial<DurabilityRequirement>) {
+  const ab = props.modelValue[index]
+  const current: DurabilityRequirement =
+    ab.requirements.durability ??
+    { amount: { type: 'constant', params: { value: 30 } }, slot: 'MAIN_HAND' }
+  updateRequirement(index, { durability: { ...current, ...patch } })
 }
 
 function addParticle(index: number) {
@@ -648,6 +678,16 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
                       @input="updateItem(idx, iIdx, { itemCooldown: Number(($event.target as HTMLInputElement).value) })"
                     />
                   </div>
+                  <div class="item-field item-enchanted">
+                    <label class="toggle-check field-label-sm">
+                      <input
+                        type="checkbox"
+                        :checked="!!item.enchanted"
+                        @change="updateItem(idx, iIdx, { enchanted: ($event.target as HTMLInputElement).checked })"
+                      />
+                      Enchanted
+                    </label>
+                  </div>
                   <button
                     class="btn btn-ghost btn-sm"
                     style="color: var(--p-red-500, #ef4444); align-self: flex-end"
@@ -663,6 +703,40 @@ function updateOnFailure(index: number, patch: Partial<OnFailure>) {
               >
                 + Add Item
               </button>
+            </div>
+
+            <div class="sub-section">
+              <label class="toggle-check sub-label">
+                <input
+                  type="checkbox"
+                  :checked="!!ability.requirements.durability"
+                  @change="toggleDurability(idx, ($event.target as HTMLInputElement).checked)"
+                />
+                Durability Cost
+              </label>
+              <div v-if="ability.requirements.durability" class="durability-editor">
+                <div class="field-row">
+                  <label class="field-label">Durability (flat points)</label>
+                  <EvaluatorParameter
+                    :model-value="durabilityAmount(ability)"
+                    label="Durability"
+                    name="Durability (flat points)"
+                    :types="['constant', 'linear', 'milestones']"
+                    :numeric-constant="true"
+                    @update:model-value="updateDurability(idx, { amount: $event })"
+                  />
+                </div>
+                <div class="field-row">
+                  <label class="field-label">Slot</label>
+                  <AppCombobox
+                    :model-value="ability.requirements.durability.slot"
+                    :suggestions="SLOT_SUGGESTIONS"
+                    placeholder="MAIN_HAND"
+                    :name="'durability-slot-' + idx"
+                    @update:model-value="updateDurability(idx, { slot: $event })"
+                  />
+                </div>
+              </div>
             </div>
           </template>
         </div>

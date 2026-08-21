@@ -302,6 +302,7 @@ public final class SkillSerializer {
                 im.put("slot", item.slot());
                 im.put("amount", item.amount());
                 if (item.itemCooldown() > 0) im.put("item_cooldown", item.itemCooldown());
+                if (item.enchanted()) im.put("enchanted", true);
                 items.add(im);
             }
             reqMap.put("items", items);
@@ -311,6 +312,15 @@ public final class SkillSerializer {
             exMap.put("amount", a.requirements().exhaustion().amount());
             exMap.put("minimum", a.requirements().exhaustion().minimum());
             reqMap.put("exhaustion", exMap);
+        }
+        if (a.requirements().durability() != null) {
+            Map<String, Object> durMap = new LinkedHashMap<>();
+            durMap.put("amount", evaluatorToMap(a.requirements().durability().amount()));
+            if (a.requirements().durability().slot() != null
+                    && !"MAIN_HAND".equals(a.requirements().durability().slot())) {
+                durMap.put("slot", a.requirements().durability().slot());
+            }
+            reqMap.put("durability", durMap);
         }
         if (!reqMap.isEmpty()) m.put("requirements", reqMap);
 
@@ -366,12 +376,14 @@ public final class SkillSerializer {
         List<SkillDetailDTO.ItemRequirementDTO> items = new ArrayList<>();
         if (itemsRaw != null) {
             for (Map<String, Object> im : itemsRaw) {
+                Object enchantedRaw = im.get("enchanted");
                 items.add(new SkillDetailDTO.ItemRequirementDTO(
                     str(im, "action", "possession"),
                     str(im, "tag"),
                     str(im, "slot", "HAND"),
                     intVal(im, "amount", 1),
-                    doubleVal(im, "item_cooldown", 0)
+                    doubleVal(im, "item_cooldown", 0),
+                    Boolean.TRUE.equals(enchantedRaw)
                 ));
             }
         }
@@ -383,7 +395,19 @@ public final class SkillSerializer {
                 doubleVal(exMap, "minimum", 0.0)
             );
         }
-        return new SkillDetailDTO.RequirementsDTO(cooldown, state, items, exhaustion);
+        SkillDetailDTO.DurabilityDTO durability = null;
+        if (raw.containsKey("durability")) {
+            Map<String, Object> durMap = castMap(raw.get("durability"));
+            Object amountRaw = durMap.get("amount");
+            SkillDetailDTO.EvaluatorDTO amount = amountRaw == null
+                    ? new SkillDetailDTO.EvaluatorDTO("constant", Map.of("value", 0.0))
+                    : parseEvaluator(castMap(amountRaw));
+            durability = new SkillDetailDTO.DurabilityDTO(
+                amount,
+                str(durMap, "slot", "MAIN_HAND")
+            );
+        }
+        return new SkillDetailDTO.RequirementsDTO(cooldown, state, items, exhaustion, durability);
     }
 
     /**

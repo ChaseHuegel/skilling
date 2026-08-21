@@ -368,6 +368,7 @@ function apiAbilityToForm(ab: any): any {
                 slot: item.slot || '',
                 amount: item.amount || 1,
                 itemCooldown: item.itemCooldown || 0,
+                enchanted: !!item.enchanted,
             })),
         },
         mechanics: (ab.mechanics || []).map((m: any) => ({

@@ -328,12 +328,18 @@ public final class SkillEventListener implements Listener {
      * Handles {@link PrepareAnvilEvent} and routes it as a {@code repair} trigger,
      * so {@code repair_discount} can adjust the anvil cost.
      *
+     * <p>Dispatch is gated on a materialized repair (a result present with a
+     * positive level cost) so a player cannot farm XP by opening an anvil or
+     * shuffling its inputs; {@code PrepareAnvilEvent} fires on every input change.
+     *
      * @param event the prepare anvil event
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPrepareAnvil(org.bukkit.event.inventory.PrepareAnvilEvent event) {
         if (event.getView().getPlayer() instanceof Player player) {
-            dispatch(player, event, "repair");
+            if (event.getResult() != null && event.getView().getRepairCost() > 0) {
+                dispatch(player, event, "repair");
+            }
         }
     }
 
@@ -612,6 +618,13 @@ public final class SkillEventListener implements Listener {
     public void onEnchantItem(org.bukkit.event.enchantment.EnchantItemEvent event) {
         if (event.getEnchanter() instanceof Player player) {
             dispatch(player, event, "enchant_item");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerDeath(org.bukkit.event.entity.PlayerDeathEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            dispatch(player, event, "player_death");
         }
     }
 
@@ -1468,6 +1481,11 @@ public final class SkillEventListener implements Listener {
         }
         if (event instanceof org.bukkit.event.entity.ProjectileHitEvent phe) {
             return projectileToMaterial(phe.getEntity());
+        }
+        if (event instanceof io.papermc.paper.event.player.PlayerTradeEvent te) {
+            org.bukkit.inventory.MerchantRecipe recipe = te.getTrade();
+            if (recipe == null || recipe.getResult() == null) return null;
+            return recipe.getResult().getType();
         }
         if (event instanceof org.bukkit.event.player.PlayerInteractEvent ie) {
             // Only a block click carries a target block to filter on; air clicks

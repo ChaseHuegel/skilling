@@ -462,6 +462,13 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:projectile_return", ProjectileReturnMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:modify_enchant_cost", ModifyEnchantCostMechanic.class, List.of("discount"));
+        mechReg.register("core:bonus_enchant", BonusEnchantMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:enchant_level_up", EnchantLevelUpMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:extract_enchant", ExtractEnchantMechanic.class, List.of());
+        mechReg.register("core:keep_on_death", KeepOnDeathMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:field_aura", FieldAuraMechanic.class, List.of("effect", "radius", "duration", "amplifier", "targets"),
                 (ctx, p) -> {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");
@@ -596,6 +603,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("physical_interaction", PhysicalInteractionTrigger.class);
         trigReg.register("sensed", SensedTrigger.class);
         trigReg.register("trip_trap", TripTrapTrigger.class);
+        trigReg.register("player_death", PlayerDeathTrigger.class);
     }
 
     /** Registers the built-in state filters into the given registry. */

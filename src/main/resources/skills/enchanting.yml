@@ -3,83 +3,120 @@ max_level: 100
 display: { name: "Enchanting", icon: "minecraft:enchanting_table", color: "PURPLE", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # The core act: each table enchantment pays in levels and lapis, so it is a
+  # genuinely gated, skill-specific source.
   - trigger: "enchant_item"
-    reward: { constant: 26.2 }
-  - trigger: "collect_xp"
-    reward: { constant: 26.2 }
+    reward: { constant: 64.1 }
+  # Mending turns XP orbs into repair, so it feeds the skill while consuming its
+  # own resource (the orbs) — a grindable, real-cost source.
+  - trigger: "mend"
+    reward: { constant: 30.0 }
+  # Anvil repairs cost materials and levels. Gated by the engine to fire only on
+  # a materialized repair (result present with a level cost), never on GUI opens.
   - trigger: "repair"
-    reward: { constant: 26.2 }
+    reward: { constant: 64.1 }
+  # Librarian enchanted books are the vanilla book economy; buying them costs
+  # emeralds. Trade-skill overlaps stay in the trade skill's abilities; this is
+  # only an XP source keyed to enchanted books specifically.
+  - trigger: "trade"
+    filters: [ { target: "minecraft:enchanted_book" } ]
+    reward: { constant: 90.0 }
+  # Fishing is a slow, time-gated grind that also yields enchanted treasure.
+  - trigger: "fishing"
+    reward: { constant: 35.0 }
 abilities:
-  - id: "arcane_knowledge"
-    display_name: "Arcane Knowledge"
+  # L1 identity scalar: the enchanting "yield" — a chance at an extra enchantment,
+  # mirroring alchemy's Overbrew and the other skills' primary scalar.
+  - id: "bonus_enchant"
+    display_name: "Bonus Enchant"
     unlock_level: 1
     trigger: "enchant_item"
-    display: { lore: [ "&7Enchanting XP &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Enchanting grants a &a{chance}%&7 chance of an extra enchantment." ] }
     mechanics:
-      - type: "core:xp_bonus"
+      - type: "core:bonus_enchant"
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
+          chance: { linear: { base: 5.0, step: 0.45, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "durable_enchantments"
-    display_name: "Durable Enchantments"
+  # L15 QoL: the table's own level economy. Distinct from smithing (forge/anvil)
+  # and trade (villager commerce).
+  - id: "efficient_enchanting"
+    display_name: "Efficient Enchanting"
     unlock_level: 15
-    trigger: "item_damage"
-    display: { lore: [ "&7Enchanted gear has &a{chance}%&7 chance to lose no durability." ] }
-    mechanics:
-      - type: "core:durability_save"
-        parameters:
-          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "soul_binding"
-    display_name: "Soul Binding"
-    unlock_level: 25
     trigger: "enchant_item"
-    display:
-      lore:
-        - "&7Shift-enchant to reduce enchant cost by &a{discount}%&7."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, 30s cooldown, 3+ hunger."
-    requirements:
-      cooldown: 30.0
-      state: [ "is_sneaking" ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eSoul Binding cooling down: {time}s" } }
+    display: { lore: [ "&7Enchanting costs &a{discount}%&7 fewer levels." ] }
     mechanics:
       - type: "core:modify_enchant_cost"
         parameters:
-          discount: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&d✦ Soul Binding! ✦" } }
-  - id: "ancient_secrets"
-    display_name: "Ancient Secrets"
-    unlock_level: 50
-    trigger: "craft_item"
-    display: { lore: [ "&7Enchanted-book crafts yield &a{multiplier}x&7." ] }
-    mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "minecraft:enchanted_book" } ]
-        parameters:
-          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
+          discount: { linear: { base: 5.0, step: 0.25, max: 30.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "soulbound_armor"
-    display_name: "Soulbound Armor"
+  # L25 active: grindstone extraction without a cooldown, balanced by cost. The
+  # stripped enchant de-powers the item (forcing a re-enchant), plus hunger, a
+  # book, and flat durability are all consumed. Sneak + interact extracts and
+  # suppresses the vanilla GUI; a normal interact keeps the vanilla grindstone.
+  - id: "enchant_extraction"
+    display_name: "Enchant Extraction"
+    unlock_level: 25
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Sneak + interact a grindstone to strip one enchantment into an enchanted book."
+        - "&7Costs 2 hunger + 1 book + up to &a30&7 durability."
+        - "&8Requires: Sneaking, enchanted item in hand, 4+ hunger."
+    requirements:
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "#c:enchantable", slot: "MAIN_HAND", enchanted: true }
+        - { action: "cost", tag: "minecraft:book", amount: 1 }
+      exhaustion: { amount: 2.0, minimum: 4.0 }
+      durability:
+        amount: { linear: { base: 30.0, step: -0.2, max: 10.0 } }
+        slot: "MAIN_HAND"
+    on_failure:
+      missing_item: { action_bar: "&cRequires an enchanted item + 1 Book." }
+      exhaustion: { action_bar: "&cToo hungry to extract." }
+    mechanics:
+      - type: "core:extract_enchant"
+        filters: [ { target: "minecraft:grindstone" } ]
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Enchantment Extracted! ✦" }
+      particles: [ { type: "minecraft:enchant", count: 12, offset: [0.5,0.5,0.5], speed: 0.5, target: "target" } ]
+      sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.6, pitch: 1.2, target: "self" } ]
+  # L50 Soul Bound: a chance to keep the entire inventory on death. Whole-inventory
+  # roll (one per death), sub-scaled from the unlock level. Event-only, so it is
+  # uninstall-safe, and it no-ops on servers that already keep inventory.
+  - id: "soul_bound"
+    display_name: "Soul Bound"
+    unlock_level: 50
+    trigger: "player_death"
+    display: { lore: [ "&7&a{chance}%&7 chance to keep your entire inventory on death." ] }
+    mechanics:
+      - type: "core:keep_on_death"
+        parameters:
+          chance: { linear: { base: 5.0, step: 0.5, max: 30.0 } }
+    feedback: { notify: { chat: true, message: "&d✦ Soul Bound held your items! ✦" } }
+  # L75 major passive: enchants apply at a chance to hit +1 level, capped at the
+  # vanilla max. Purely enchanting, no smithing/trade overlap, meaningful when
+  # players are min-maxing final-tier enchants.
+  - id: "empowered_enchants"
+    display_name: "Empowered Enchants"
     unlock_level: 75
     trigger: "enchant_item"
-    display: { lore: [ "&7Enchanting grants &a{amount}&7 armor for {duration}s." ] }
+    display: { lore: [ "&7Chosen enchants have a &a{chance}%&7 chance to apply +1 level." ] }
     mechanics:
-      - type: "core:armor_bonus"
+      - type: "core:enchant_level_up"
         parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
-          uuid: { constant: "e7a64516-0361-5b82-a40b-aa266a4e820b" }
-          duration: { constant: 60.0 }
+          chance: { linear: { base: 15.0, step: 0.7, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "master_enchanter"
-    display_name: "Master Enchanter"
+  # L100 capstone: every enchantment is guaranteed an extra random enchantment.
+  # Binary, mirroring alchemy's Masters' Brew; at this level Bonus Enchant's roll
+  # can also land for a possible second extra.
+  - id: "perfect_enchanting"
+    display_name: "Perfect Enchanting"
     unlock_level: 100
-    trigger: "craft_item"
-    display: { lore: [ "&7Enchanted-book crafts yield &a{multiplier}x&7." ] }
+    trigger: "enchant_item"
+    display: { lore: [ "&7Every enchantment gains an extra random enchantment." ] }
     mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "minecraft:enchanted_book" } ]
+      - type: "core:bonus_enchant"
         parameters:
-          multiplier: { linear: { base: 2.0, step: 0.02, max: 3.0 } }
+          chance: { constant: 100.0 }
     feedback: { notify: { action_bar: false } }
