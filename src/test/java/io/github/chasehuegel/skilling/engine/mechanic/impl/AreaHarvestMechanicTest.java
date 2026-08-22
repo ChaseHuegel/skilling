@@ -102,6 +102,51 @@ class AreaHarvestMechanicTest {
     }
 
     @Test
+    void skipsImmatureAgeableCropsButHarvestsMatureOnes() {
+        var world = mock(World.class);
+        var origin = mock(Block.class);
+        when(origin.getType()).thenReturn(Material.WHEAT);
+        when(origin.getLocation()).thenReturn(new Location(world, 0, 0, 0));
+
+        AtomicInteger breakCount = new AtomicInteger();
+        when(origin.getRelative(anyInt(), eq(0), anyInt())).thenAnswer(inv -> {
+            int dx = inv.getArgument(0);
+            int dz = inv.getArgument(2);
+            var block = mock(Block.class);
+            when(block.getType()).thenReturn(Material.WHEAT);
+            when(block.getLocation()).thenReturn(new Location(world, dx, 0, dz));
+            // The origin is at (0,0); mark the (-1,0) neighbor as an immature
+            // crop (age 2 of 7) and every other neighbor as mature (age 7 of 7).
+            var ageable = mock(org.bukkit.block.data.Ageable.class);
+            when(ageable.getMaximumAge()).thenReturn(7);
+            when(ageable.getAge()).thenReturn(dx == -1 && dz == 0 ? 2 : 7);
+            when(block.getBlockData()).thenReturn(ageable);
+            doAnswer(inv2 -> {
+                breakCount.incrementAndGet();
+                return null;
+            }).when(block).breakNaturally(any());
+            return block;
+        });
+
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(origin);
+        var player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        var inventory = mock(org.bukkit.inventory.PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inventory);
+        when(inventory.getItemInMainHand()).thenReturn(mock(ItemStack.class));
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getPluginManager()).thenReturn(mock(PluginManager.class));
+            new AreaHarvestMechanic().execute(player, Map.of("radius", 1), event);
+        }
+
+        // A 3x3 harvest minus the origin = 8 neighbors; the immature (-1,0) crop
+        // is skipped, so only 7 are broken.
+        assertEquals(7, breakCount.get());
+    }
+
+    @Test
     void returnsFalseWithNonPositiveRadius() {
         var player = mock(Player.class);
         assertFalse(new AreaHarvestMechanic().execute(player, Map.of("radius", 0),

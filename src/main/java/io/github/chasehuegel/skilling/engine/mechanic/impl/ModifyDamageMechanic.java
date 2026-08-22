@@ -17,7 +17,10 @@ import java.util.Map;
  * never scale the player's incoming damage.
  *
  * <p><b>YAML key:</b> {@code core:modify_damage}
- * <br>Params: {@code multiplier} (multiplicative factor, must be &gt; 0)
+ * <br>Params: {@code multiplier} (multiplicative factor, must be &gt; 0),
+ * {@code bonus} (additive flat damage in engine half-hearts, default 0). The
+ * bonus is applied on top of the multiplied value, so a held tool whose base is
+ * near zero can still become a real weapon.
  */
 public final class ModifyDamageMechanic implements SkillMechanic {
 
@@ -29,7 +32,8 @@ public final class ModifyDamageMechanic implements SkillMechanic {
         if (!player.equals(EntityDamageResolver.resolveDamagerPlayer(damageEvent))) return false;
         double multiplier = ((Number) params.getOrDefault("multiplier", 1.0)).doubleValue();
         if (multiplier <= 0) return false;
-        damageEvent.setDamage(damageEvent.getDamage() * multiplier);
+        double bonus = ((Number) params.getOrDefault("bonus", 0.0)).doubleValue();
+        damageEvent.setDamage(damageEvent.getDamage() * multiplier + bonus);
         return true;
     }
 }

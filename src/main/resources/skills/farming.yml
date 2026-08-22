@@ -2,62 +2,80 @@ id: "farming"
 max_level: 100
 display: { name: "Farming", icon: "minecraft:iron_hoe", color: "GREEN", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+# All XP sources are costed or time-gated; none can be farmed by place+break.
+# Harvest is gated to mature crops (state: grown) so a freshly planted seed
+# broken at age 0 - which returns its single seed in vanilla - awards nothing.
 xp_sources:
+  # Harvesting a mature crop is the primary grind: planting-to-maturity is time
+  # gated. Breaking an immature crop returns the seed but pays no XP.
   - trigger: "block_break"
-    filters: [ { target: "#c:crops" }, { state: "player_placed:false" } ]
+    filters: [ { target: "#c:crops" }, { state: "grown" } ]
     reward: { constant: 24.5 }
-  - trigger: "craft_item"
-    filters: [ { target: "minecraft:bread" } ]   # wheat is not a craft result. Bread is the wheat product
-    reward: { constant: 24.5 }
+  # Bonemeal is a real resource cost and needs a farm to be useful.
+  - trigger: "fertilize"
+    reward: { constant: 30.0 }
+  # Feeding the composter costs farm produce, so it is a resource-capped loop.
   - trigger: "compost"
     reward: { constant: 25.0 }
-  # crop_grow removed: unbounded free XP source. Replaced by harvest XP only
 abilities:
+  # L1 - Foundational passive (the linear engine): only mature harvests double.
+  # Gated to grown crops so fresh immature plants can never be cycled to
+  # duplicate seeds.
   - id: "green_thumb"
     display_name: "Green Thumb"
     unlock_level: 1
     trigger: "block_break"
-    display: { lore: [ "&7Crop yield +&a{yield_chance}%&7." ] }
+    display: { lore: [ "&7Mature crop yield +&a{yield_chance}%&7." ] }
     mechanics:
       - type: "core:yield_multiplier"
-        filters: [ { target: "#minecraft:crops" }, { tool: "#minecraft:hoes" } ]
+        filters: [ { target: "#c:crops" }, { state: "grown" }, { tool: "#minecraft:hoes" } ]
         parameters:
           yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "seasoned_hand"
-    display_name: "Seasoned Hand"
+  # L15 - Hoe combat option. Hoes swing at 4.0 speed but have a fist-tier base,
+  # so a damage multiplier alone would be negligible; the flat bonus turns a
+  # held hoe into a real weapon. Deliberately slightly overtuned to account for
+  # the inability to apply damage enchantments (Sharpness/Smite/Bane) to a hoe.
+  - id: "hoe_strike"
+    display_name: "Hoe Strike"
     unlock_level: 15
-    trigger: "consume_item"
-    display: { lore: [ "&7Eating raw crops grants +&a{saturation}&7 saturation." ] }
+    trigger: "entity_damage"
+    display: { lore: [ "&7Hoe melee damage +&a{bonus}&7 on hit." ] }
     mechanics:
-      - type: "core:saturation_inject"
-        filters: [ { target: "#c:raw_crops" } ]   # item-form tag: #minecraft:crops is a block tag
+      - type: "core:modify_damage"
+        filters: [ { tool: "#minecraft:hoes" } ]
         parameters:
-          saturation: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          bonus: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
     feedback: { notify: { action_bar: false } }
+  # L25 - Primary active: harvest a whole patch. Purely hunger-gated (no
+  # cooldown), free at max level. The mechanic already skips still-growing
+  # crops, so an immature patch is never cleared.
   - id: "harvest_wave"
     display_name: "Harvest Wave"
     unlock_level: 25
     trigger: "block_break"
     display:
       lore:
-        - "&7Sneak-harvest up to &a{chain_limit}&7 connected crops."
-        - "&7Costs 0.5 hunger."
-        - "&8Requires: Sneaking, hoe, 8s cooldown, 3+ hunger."
+        - "&7Sneak-harvest a &a{radius}&7-block radius of mature crops (max {max_blocks})."
+        - "&7Costs 1 hunger (free at level 100)."
+        - "&8Requires: Sneaking, hoe, 3+ hunger."
     requirements:
-      cooldown: 8.0
       state: [ "is_sneaking" ]
       items: [ { action: "possession", tag: "#minecraft:hoes", slot: "MAIN_HAND" } ]
-      exhaustion: { amount: 0.5, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&cHarvest Wave cooling down: {time}s" } }
+      exhaustion:
+        amount: { milestones: { 25: 1, 100: 0 } }
+        minimum: { milestones: { 25: 3, 100: 0 } }
     mechanics:
-      - type: "core:chain_break"
-        filters: [ { target: "#minecraft:crops" } ]
+      - type: "core:area_harvest"
+        filters: [ { target: "#c:crops" } ]
         parameters:
-          chain_limit: { milestones: { 25: 3, 50: 6, 75: 10, 100: 16 } }
+          radius: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          max_blocks: { linear: { base: 9.0, step: 0.5, max: 49.0 } }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&a✦ Harvest Wave! ✦" }
-      sounds: [ { type: "minecraft:item.crop.plant", volume: 0.5, pitch: 1.2, target: "self" } ]
+      notify: { action_bar: true, chat: false, message: "&e✦ Harvest Wave! ✦" }
+      sounds: [ { type: "minecraft:item.crop.plant", volume: 0.5, pitch: 1.4, target: "self" } ]
+  # L50 - Major passive: one bonemeal grows a whole patch, so fertilizing the
+  # farm spreads to the surrounding grown crops saving bonemeal.
   - id: "compost_bloom"
     display_name: "Compost Bloom"
     unlock_level: 50
@@ -65,32 +83,33 @@ abilities:
     display: { lore: [ "&7Bonemeal grows matching crops in a &a{radius}&7-block radius." ] }
     mechanics:
       - type: "core:area_fertilize"
-        filters: [ { target: "#minecraft:crops" } ]
+        filters: [ { target: "#c:crops" } ]
         parameters:
-          radius: { linear: { base: 1.0, step: 0.02, max: 3.0 } }   # continuous growth 50→100
+          radius: { linear: { base: 1.5, step: 0.03, max: 4.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "hearty_meal"
-    display_name: "Hearty Meal"
+  # L75 - Tool defense, matching the defensive-tool synergy slot used by Mining
+  # (Sturdy Miner), Woodcutting, and Excavation (Earthen Guard).
+  - id: "garden_guard"
+    display_name: "Garden Guard"
     unlock_level: 75
-    trigger: "consume_item"
-    display: { lore: [ "&7Cooked food grants +&a{saturation}&7 saturation." ] }
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7While holding a hoe, gain &a{amount}&7 armor on hit." ] }
     mechanics:
-      - type: "core:saturation_inject"
-        filters: [ { target: "minecraft:cooked_beef" } ]   # representative; extend to cooked-food tag
+      - type: "core:armor_bonus"
+        filters: [ { tool: "#minecraft:hoes" } ]
         parameters:
-          saturation: { linear: { base: 2.0, step: 0.05, max: 6.0 } }
+          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          uuid: { constant: "6e1f8d4a-3b9c-4a2d-b7e0-5c8f9a1d2b4e" }
+          duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
+  # L100 - Mastery capstone: crops replant themselves on a mature harvest, so
+  # the player never re-plants by hand again.
   - id: "living_earth"
     display_name: "Living Earth"
     unlock_level: 100
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Crops auto-replant; bonus seed return &a{yield_chance}%&7."
+    display: { lore: [ "&7Mature crops auto-replant on harvest." ] }
     mechanics:
       - type: "core:auto_replant"
-      - type: "core:yield_multiplier"      # sub-scaling proxy: bonus seed return chance
-        filters: [ { target: "#minecraft:crops" } ]
-        parameters:
-          yield_chance: { linear: { base: 20.0, step: 0.8, max: 100.0 } }
+        filters: [ { state: "grown" } ]
     feedback: { notify: { action_bar: false } }

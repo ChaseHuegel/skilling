@@ -36,6 +36,26 @@ class ModifyDamageMechanicTest {
     }
 
     @Test
+    void addsFlatBonusOnTopOfMultipliedDamage() {
+        var mechanic = new ModifyDamageMechanic();
+        var player = BukkitMock.mockPlayer();
+        var event = BukkitMock.mockDamageEvent(player, 10.0);
+        // (10 * 2.0) + 3.0 = 23.0; the flat bonus is additive on the multiplied value.
+        assertTrue(mechanic.execute(player, Map.of("multiplier", 2.0, "bonus", 3.0), event));
+        verify(event).setDamage(23.0);
+    }
+
+    @Test
+    void appliesFlatBonusWithoutMultiplier() {
+        var mechanic = new ModifyDamageMechanic();
+        var player = BukkitMock.mockPlayer();
+        var event = BukkitMock.mockDamageEvent(player, 4.0);
+        // Default multiplier is 1.0, so only the flat bonus is added.
+        assertTrue(mechanic.execute(player, Map.of("bonus", 5.0), event));
+        verify(event).setDamage(9.0);
+    }
+
+    @Test
     void returnsFalseWhenPlayerIsDamagedNotDamager() {
         var mechanic = new ModifyDamageMechanic();
         var player = BukkitMock.mockPlayer();

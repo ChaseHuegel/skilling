@@ -174,6 +174,7 @@ Multiplies outgoing entity damage.
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `multiplier` | double | `1.0` | Damage multiplier (1.5 = +50%) |
+| `bonus` | double | `0` | Additive flat damage in engine half-hearts, added after multiplication. Use it to turn a held tool with a near-zero base (e.g. a hoe) into a real weapon |
 
 **Event:** `EntityDamageByEntityEvent`
 
@@ -656,7 +657,9 @@ Breaks all matching blocks in a radius around the targeted block. The radius is
 clamped to 32 and the scan stops at `max_blocks` (itself clamped to 128). Each
 harvested block fires a synthetic `BlockBreakEvent`, so region/protection
 plugins can cancel it, and consumes 1 tool durability (respecting Unbreaking,
-with the tool breaking at max durability).
+with the tool breaking at max durability). Ageable crops still growing (not at
+maximum age) are skipped, so a farm harvest never clears immature plants;
+non-ageable targets (stone, sand, logs) are unaffected.
 
 **Parameters:**
 
@@ -1500,6 +1503,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `instrument` | `minecraft:<instrument_key>` | Matches the specific goat-horn variant held in the main hand, read from the item's `minecraft:instrument` data component (e.g. `instrument:minecraft:sing_goat_horn`). Fails closed for a non-horn, a horn with no instrument data, or an unknown/blank value. Values are validated at load |
 | `was_sneaking` | *(none)* | The triggering arrow was released while the player was sneaking. Reads the sneak stance stamped on the projectile at shot time (see `shoot_bow`), so it reflects how the shot was released rather than the player's stance when the arrow lands. Fails closed for non-projectile events, so it only matches bow shots |
 | `target_status` | `minecraft:effect_key` | The event's target entity currently has the given potion effect (e.g. `state: "target_status:minecraft:glowing"`). Matches the damaged entity on `entity_damage`, the killed entity on `entity_kill`, and the clicked entity on `right_click_entity`. Fails closed on events without a living target or an unknown effect |
+| `grown` | *(none)* | The broken block is a harvest-ready crop: an ageable crop (wheat, carrot, potato, beetroot, cocoa) at its maximum age, or a non-ageable crop (melon fruit, pumpkin fruit, sugar cane) which has no progress stage. Fails closed for non-crop blocks and non-block-break events. Gates harvest XP and farming yield so a place+break loop on immature plants can never be farmed |
 | `target_unaware` | *(none)* | The event's damaged/clicked target is a hostile `Mob` that is not currently targeting the player (e.g. `state: "target_unaware"` in a requirement). Gates a backstab in `entity_damage`. Fails closed for non-mob victims and event-less requirements |
 
 The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`

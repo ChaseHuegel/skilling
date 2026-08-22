@@ -18,7 +18,9 @@ import java.util.Set;
  * Only breaks blocks matching the original block's type. The radius expands horizontally
  * (X/Z plane) from the origin and is clamped to a bounded maximum; the scan stops once
  * {@code max_blocks} is reached. Each harvested block goes through a synthetic
- * {@link BlockBreakEvent} so region/protection plugins can cancel it.
+ * {@link BlockBreakEvent} so region/protection plugins can cancel it. Ageable
+ * crops still growing (not at maximum age) are skipped, so a farm harvest never
+ * clears immature plants; non-ageable targets are unaffected.
  *
  * <p><b>YAML key:</b> {@code core:area_harvest}
  * <p><b>Required parameters:</b> {@code radius} (Manhattan radius, 0 = single block, 1 = 3x3, 2 = 5x5; clamped to 32)
@@ -85,6 +87,10 @@ public final class AreaHarvestMechanic implements SkillMechanic {
                     if (dx == 0 && dz == 0) continue;
                     Block neighbor = origin.getRelative(dx, 0, dz);
                     if (neighbor.getType() != targetType) continue;
+                    // Skip crops still growing: harvesting must not clear an
+                    // immature patch. Non-ageable targets (stone, dirt, logs, or
+                    // always-ready fruit blocks) have no growth stage and pass.
+                    if (!CropMaturity.isMature(neighbor)) continue;
                     Location loc = neighbor.getLocation();
                     if (processing.contains(loc)) continue;
                     processing.add(loc);

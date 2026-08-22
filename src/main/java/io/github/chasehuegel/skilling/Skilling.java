@@ -361,7 +361,7 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
         mechReg.register("core:level_break", LevelBreakMechanic.class, List.of("chain_limit", "target"),
                 (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
-        mechReg.register("core:modify_damage", ModifyDamageMechanic.class, List.of("multiplier"));
+        mechReg.register("core:modify_damage", ModifyDamageMechanic.class, List.of("multiplier", "bonus"));
         mechReg.register("core:apply_status", ApplyStatusMechanic.class, List.of("effect", "duration", "amplifier"),
                 (ctx, p) -> {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");
@@ -811,6 +811,21 @@ public final class Skilling extends JavaPlugin {
             org.bukkit.entity.LivingEntity target = resolveFilteredTargetEntity(e);
             if (target == null || !(target instanceof org.bukkit.entity.Mob mob)) return false;
             return !p.equals(mob.getTarget());
+        });
+
+        // True when the broken block is a harvest-ready crop: an ageable crop at its
+        // maximum age, or a non-ageable crop (melon fruit, pumpkin fruit, sugar cane)
+        // which has no progress stage. Fails closed for non-block-break events and for
+        // blocks outside the #c:crops tag, so harvesting can never be farmed by
+        // place+break on immature plants.
+        sf.register("grown", (p, e, v) -> {
+            if (!(e instanceof org.bukkit.event.block.BlockBreakEvent be)) return false;
+            try {
+                if (!tagResolver.resolve("#c:crops").contains(be.getBlock().getType())) return false;
+            } catch (IllegalArgumentException ex) {
+                return false;
+            }
+            return io.github.chasehuegel.skilling.engine.mechanic.impl.CropMaturity.isMature(be.getBlock());
         });
 
         sf.register("offhand", (p, e, v) -> {
