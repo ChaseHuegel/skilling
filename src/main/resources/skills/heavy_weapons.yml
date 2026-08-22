@@ -4,19 +4,22 @@ display: { name: "Heavy Weapons", icon: "minecraft:iron_sword", color: "RED", st
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   - trigger: "entity_damage"
-    filters: [ { tool: "#c:heavy_weapons" } ]       # FIX: was target
-    reward: { constant: 8.4 }       # per raw damage point (7.5 ≈ heavy hit). Damage-scaled
+    filters: [ { tool: "#c:heavy_weapons" } ]
+    reward: { constant: 8.4 }
     scaling: damage
   - trigger: "entity_kill"
     filters: [ { tool: "#c:heavy_weapons" } ]
     reward: { constant: 62.9 }
-  # Sweep-hit filter not implemented (REPORT_XP-SOURCE-DESIGN §4). Substituted
-  # being-hit while wielding a heavy weapon, the same ~6 APM class, so R stays 62.9.
+  # Being-hit while wielding a heavy weapon, the ~6 APM class that substitutes
+  # for the unimplemented sweep-hit filter (REPORT_XP-SOURCE-DESIGN §4).
   - trigger: "entity_damage_taken"
     filters: [ { tool: "#c:heavy_weapons" } ]
-    reward: { constant: 12.6 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
+    reward: { constant: 12.6 }
     scaling: damage
 abilities:
+  # -- FOUNDATIONAL (L1): the primary scalar. The only flat damage line in the
+  # tree; the mastery capstone ramps damage transiently instead of stacking a
+  # second scalar, so the two never multiply into a runaway.
   - id: "heavy_strikes"
     display_name: "Heavy Strikes"
     unlock_level: 1
@@ -26,8 +29,10 @@ abilities:
       - type: "core:modify_damage"
         filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.003, max: 1.35 } }
+          multiplier: { linear: { base: 1.05, step: 0.006, max: 1.65 } }
     feedback: { notify: { action_bar: false } }
+  # -- QOL PASSIVE (L15): the heavy stagger. A brute-force blow roots the foe in
+  # place briefly, the trade for the weapon's slow swing.
   - id: "stun_impact"
     display_name: "Stun Impact"
     unlock_level: 15
@@ -37,70 +42,82 @@ abilities:
       - type: "core:apply_status"
         filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          effect: { constant: "minecraft:slowness" }    # P2-11
+          effect: { constant: "minecraft:slowness" }
           duration: { linear: { base: 2.0, step: 0.02, max: 4.0 } }
           amplifier: { constant: 1.0 }
     feedback: { notify: { action_bar: false } }
+  # -- PRIMARY ABILITY (L25): the cleave. A hunger-expensive shift-swing deals
+  # scaled damage to every foe beside the struck target. No cooldown: the hunger
+  # cost is the gate (archery L25 precedent), which suits a slow, costly heavy
+  # swing and avoids a hidden timer.
   - id: "cleave"
     display_name: "Cleave"
     unlock_level: 25
     trigger: "entity_damage"
     display:
       lore:
-        - "&7Shift-attack to cleave: &a{multiplier}x&7 damage + weakness in &a{radius}&7 radius."
+        - "&7Shift-attack to cleave &a{multiplier}x&7 damage to foes within &a{radius} blocks."
         - "&7Costs 1.5 hunger."
-        - "&8Requires: Sneaking, heavy weapon, 6s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, heavy weapon, 3+ hunger."
     requirements:
-      cooldown: 6.0
       state: [ "is_sneaking" ]
       items: [ { action: "possession", tag: "#c:heavy_weapons", slot: "MAIN_HAND" } ]
       exhaustion: { amount: 1.5, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eCleave cooling down: {time}s" } }
+    on_failure: { exhaustion: { action_bar: "&cToo hungry to cleave!" } }
     mechanics:
-      - type: "core:modify_damage"
+      - type: "core:aoe_damage"
         filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 1.2, step: 0.01, max: 1.5 } }
-      - type: "core:crowd_control"
-        filters: [ { tool: "#c:heavy_weapons" } ]
-        parameters:
-          effect: { constant: "minecraft:weakness" }   # P2-11
           radius: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
-          duration: { linear: { base: 3.0, step: 0.05, max: 6.0 } }
-          amplifier: { constant: 0.0 }
+          multiplier: { linear: { base: 1.2, step: 0.006, max: 1.6 } }
+          targets: { constant: "hostiles" }
     feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Cleave! ✦" } }
-  - id: "berserker"
-    display_name: "Berserker"
-    unlock_level: 50
-    trigger: "entity_damage"
-    display: { lore: [ "&7Heal &a{percentage}%&7 of heavy-weapon damage." ] }
-    mechanics:
-      - type: "core:lifesteal"
-        filters: [ { tool: "#c:heavy_weapons" } ]
-        parameters:
-          percentage: { linear: { base: 2.0, step: 0.05, max: 8.0 } }
-    feedback: { notify: { action_bar: false } }
+  # -- MAJOR PASSIVE (L50): the finisher. The iconic heavy fantasy arrives
+  # mid-game with a real threshold that climbs 8-16% through level 100.
   - id: "execute"
     display_name: "Execute"
-    unlock_level: 75
+    unlock_level: 50
     trigger: "entity_damage"
     display: { lore: [ "&7Heavy hits kill targets below &a{threshold}%&7 HP." ] }
     mechanics:
       - type: "core:execute"
         filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          threshold: { linear: { base: 3.0, step: 0.05, max: 7.0 } }
+          threshold: { linear: { base: 8.0, step: 0.16, max: 16.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&c✦ Execute! ✦" }
       sounds: [ { type: "minecraft:entity.player.attack.crit", volume: 0.5, pitch: 0.8, target: "self" } ]
-  - id: "master_at_arms"
-    display_name: "Master at Arms"
-    unlock_level: 100
+  # -- SYNERGY PASSIVE (L75): the bloodshed sustain. Steady combat keeps the
+  # bruiser healed; the flat-to-strong rate rewards the skills that keep you
+  # swinging in extended fights.
+  - id: "berserker"
+    display_name: "Berserker"
+    unlock_level: 75
     trigger: "entity_damage"
-    display: { lore: [ "&7Heavy-weapon damage &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Heal &a{percentage}%&7 of heavy-weapon damage." ] }
     mechanics:
-      - type: "core:modify_damage"
+      - type: "core:lifesteal"
         filters: [ { tool: "#c:heavy_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 1.8, step: 0.02, max: 2.4 } }
+          percentage: { linear: { base: 4.0, step: 0.32, max: 12.0 } }
+    feedback: { notify: { action_bar: false } }
+  # -- MASTERY CAPSTONE (L100): Berserker's Fury. Each heavy hit stacks a
+  # growing damage multiplier held by a short window, so committed combat
+  # escalates to a peak of +5 stacks (1.5x). A constant spawns the ramp; it is
+  # the sanctioned constant capstone (no levels left to grow).
+  - id: "berserkers_fury"
+    display_name: "Berserker's Fury"
+    unlock_level: 100
+    trigger: "entity_damage"
+    display:
+      lore:
+        - "&7Heavy hits stack up to &a+50%&7 damage, held &a4s&7 while you fight."
+        - "&7The ramp resets when you stop swinging."
+    mechanics:
+      - type: "core:fury"
+        filters: [ { tool: "#c:heavy_weapons" } ]
+        parameters:
+          multiplier_step: { constant: 0.1 }
+          max_stacks: { constant: 5 }
+          window: { constant: 4.0 }
     feedback: { notify: { action_bar: false } }

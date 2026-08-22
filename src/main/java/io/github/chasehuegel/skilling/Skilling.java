@@ -427,6 +427,14 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:dodge", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:lifesteal", LifestealMechanic.class, List.of("percentage"));
+        mechReg.register("core:aoe_damage", AoeDamageMechanic.class, List.of("radius", "multiplier", "targets"),
+                (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
+        mechReg.register("core:fury", FuryMechanic.class, List.of("multiplier_step", "max_stacks", "window"),
+                (ctx, p) -> {
+                    MechanicParamValidators.nonNegative(ctx, p, "multiplier_step");
+                    MechanicParamValidators.nonNegative(ctx, p, "max_stacks");
+                    MechanicParamValidators.nonNegative(ctx, p, "window");
+                });
         mechReg.register("core:armor_bonus", ArmorBonusMechanic.class, List.of("amount", "duration", "uuid"),
                 (ctx, p) -> {
                     MechanicParamValidators.nonNegative(ctx, p, "amount");

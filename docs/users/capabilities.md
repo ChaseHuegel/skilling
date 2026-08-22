@@ -549,6 +549,47 @@ Heals the player for a percentage of damage dealt.
 
 **Event:** `EntityDamageByEntityEvent`
 
+### core:aoe_damage
+
+Deals a scaled share of the triggering melee hit to every living entity in a
+radius around the damaged entity, so a single blow cleaves through a pack. The
+primary target already receives the event's own damage through vanilla (and any
+`core:modify_damage` scalar), so this mechanic strikes only the **other** foes in
+`radius` — never the primary victim, the caster, or players. Each adjacent target
+takes `multiplier` times the event's raw damage through the normal damage
+pipeline (armor/protection still reduce it).
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `radius` | double | `3` | Radius in blocks to scan (clamped to [0, 32]) |
+| `multiplier` | double | `1.0` | Fraction of the event's damage dealt to each adjacent foe |
+| `targets` | string | `hostiles` | Who is hit: `allies`, `hostiles` (default, monsters and angered neutrals), or `all`. Players are always excluded |
+
+**Event:** `EntityDamageByEntityEvent`
+
+### core:fury
+
+Ramps the player's damage by stacking a growing multiplier with each landed hit,
+held for a short window. Each qualifying hit increments the stack (capped at
+`max_stacks`) and multiplies that hit's outgoing damage by
+`1 + stacks * multiplier_step`. Every hit refreshes the window; a hit that lands
+after the window lapsed resets the ramp to zero first, so a player who stops
+fighting must rebuild the bonus. The decay is lazy — no scheduled task runs — so
+a stale ramp never applies to the next hit. The state is kept per player and
+cleared on quit and reload.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier_step` | double | `0.1` | Damage multiplier added per stack (e.g. `0.1` = +10% per stack) |
+| `max_stacks` | double | `5` | Maximum concurrent stacks (e.g. cap 5 = +50% at peak) |
+| `window` | double | `4` | Seconds before the ramp resets when the player stops hitting |
+
+**Event:** `EntityDamageByEntityEvent`
+
 ### core:crowd_control
 
 Applies an AoE status effect to nearby enemies when damaging a target. This is
