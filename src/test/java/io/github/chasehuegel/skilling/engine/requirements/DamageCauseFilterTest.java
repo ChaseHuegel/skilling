@@ -69,4 +69,25 @@ class DamageCauseFilterTest {
         assertFalse(DamageCauseFilter.evaluate(event(DamageCause.FALL), "fly_into_wall"));
         assertTrue(DamageCauseFilter.isValidValue("fly_into_wall"));
     }
+
+    @Test
+    void environmentalMatchesEveryHazardButNotMeleeOrFall() {
+        for (DamageCause cause : new DamageCause[]{
+                DamageCause.FIRE, DamageCause.FIRE_TICK, DamageCause.LAVA,
+                DamageCause.DROWNING, DamageCause.SUFFOCATION, DamageCause.CONTACT,
+                DamageCause.STARVATION, DamageCause.ENTITY_EXPLOSION, DamageCause.BLOCK_EXPLOSION,
+                DamageCause.FLY_INTO_WALL}) {
+            assertTrue(DamageCauseFilter.evaluate(event(cause), "environmental"),
+                    "environmental must match " + cause);
+        }
+        assertFalse(DamageCauseFilter.evaluate(event(DamageCause.FALL), "environmental"));
+        assertFalse(DamageCauseFilter.evaluate(event(DamageCause.ENTITY_ATTACK), "environmental"));
+        assertFalse(DamageCauseFilter.evaluate(event(DamageCause.PROJECTILE), "environmental"));
+    }
+
+    @Test
+    void environmentalIsAValidKeyword() {
+        assertTrue(DamageCauseFilter.isValidValue("environmental"));
+        assertFalse(DamageCauseFilter.evaluate(event(DamageCause.FIRE), "environ"));
+    }
 }

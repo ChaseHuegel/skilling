@@ -78,6 +78,7 @@ public final class PlayerListener implements Listener {
         bossBarPool.removeAll(player);
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clear(player.getUniqueId());
         io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.clear(player.getUniqueId());
+        io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.clear(player.getUniqueId());
         PlayerProfile profile = profileManager.getProfile(player.getUniqueId());
         if (profile != null && profile.isDirty() && !profile.isInitialized()) {
             // The hydration failed at login, so this profile is an in-memory-only

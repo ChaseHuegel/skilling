@@ -9,7 +9,8 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 /**
  * Resolves the {@code cause} state-filter keyword ({@code burn}, {@code fire},
  * {@code lava}, {@code drowning}, {@code suffocation}, {@code cactus},
- * {@code starvation}, {@code fly_into_wall}) against the current
+ * {@code starvation}, {@code fly_into_wall}, or the compound
+ * {@code environmental} hazard set) against the current
  * {@link EntityDamageEvent} cause.
  *
  * <p>The filter fails closed: any event that is not an {@link EntityDamageEvent}
@@ -29,7 +30,14 @@ public final class DamageCauseFilter {
             "suffocation", Set.of(DamageCause.SUFFOCATION),
             "cactus", Set.of(DamageCause.CONTACT),
             "starvation", Set.of(DamageCause.STARVATION),
-            "fly_into_wall", Set.of(DamageCause.FLY_INTO_WALL)
+            "fly_into_wall", Set.of(DamageCause.FLY_INTO_WALL),
+            // The full survivable hazard set: every environment the heavy-armor
+            // skill's L75 "Walking Fortress" blunts. Broad by design so one
+            // filter reads as "walk through anything".
+            "environmental", Set.of(DamageCause.FIRE, DamageCause.FIRE_TICK, DamageCause.LAVA,
+                    DamageCause.DROWNING, DamageCause.SUFFOCATION, DamageCause.CONTACT,
+                    DamageCause.STARVATION, DamageCause.ENTITY_EXPLOSION, DamageCause.BLOCK_EXPLOSION,
+                    DamageCause.FLY_INTO_WALL)
     );
 
     private DamageCauseFilter() {}

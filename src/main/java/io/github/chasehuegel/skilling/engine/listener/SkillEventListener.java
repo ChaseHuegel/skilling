@@ -175,6 +175,7 @@ public final class SkillEventListener implements Listener {
     public void onInventoryClick(org.bukkit.event.inventory.InventoryClickEvent event) {
         if (event.getWhoClicked() instanceof Player player) {
             io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.reevaluate(player);
+            io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.reevaluate(player);
         }
     }
 
@@ -187,6 +188,7 @@ public final class SkillEventListener implements Listener {
     public void onInventoryDrag(org.bukkit.event.inventory.InventoryDragEvent event) {
         if (event.getWhoClicked() instanceof Player player) {
             io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.reevaluate(player);
+            io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.reevaluate(player);
         }
     }
 
@@ -199,6 +201,29 @@ public final class SkillEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemBreak(org.bukkit.event.player.PlayerItemBreakEvent event) {
         io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.reevaluate(event.getPlayer());
+        io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.reevaluate(event.getPlayer());
+    }
+
+    /**
+     * Re-evaluates armor-gated persistent bonuses when a piece of armor is
+     * swapped onto an armor stand, or the stand's armor is taken or replaced.
+     *
+     * @param event the armor stand manipulate event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onArmorStandManipulate(org.bukkit.event.player.PlayerArmorStandManipulateEvent event) {
+        io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.reevaluate(event.getPlayer());
+    }
+
+    /**
+     * Re-evaluates armor-gated persistent bonuses after respawn, when a death
+     * may have stripped the player's worn armor.
+     *
+     * @param event the player respawn event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerRespawn(org.bukkit.event.player.PlayerRespawnEvent event) {
+        io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.reevaluate(event.getPlayer());
     }
 
     /**
@@ -1636,6 +1661,9 @@ public final class SkillEventListener implements Listener {
         // still past the milestone, so a de-level or reset cannot leave stale
         // creative flight on the player.
         io.github.chasehuegel.skilling.engine.mechanic.impl.ElytraFlightMechanic.stripAll();
+        // Drop captured armor-gated bindings before re-running the unlocks, so a
+        // de-level, reset, or removed skill cannot leave a stale bonus.
+        io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.stripAll();
         for (SkillDefinition skill : skillManager.getSkills().values()) {
             int skillLevel = skill.getLevelForXp(profile.getXp(skill.id()));
             for (SkillDefinition.Ability ability : skill.abilities()) {

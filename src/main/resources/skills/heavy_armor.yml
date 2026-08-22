@@ -7,100 +7,99 @@ xp_sources:
     filters: [ { state: "equipped_all:#c:heavy_armor" } ]
     reward: { constant: 20.8 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
     scaling: damage
-  - trigger: "entity_damage_taken"
-    filters: [ { state: "is_blocking" } ]
-    reward: { constant: 20.8 }
-    scaling: damage
+  - trigger: "entity_kill"
+    filters: [ { state: "equipped_all:#c:heavy_armor" } ]
+    reward: { constant: 114.9 }     # grindable combat: kill while armored
   - trigger: "craft_item"
     filters: [ { target: "#c:heavy_armor" } ]
     reward: { constant: 104.2 }
   # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
 abilities:
-  - id: "steel_plating"
-    display_name: "Steel Plating"
+  # -- FOUNDATIONAL (L1): the primary scalar. Always-on armor while armored.
+  # Generic armor points scale across the whole range; the bonus only lives while
+  # the player actually wears a full heavy-armor set (core:equipment_attribute).
+  - id: "vanguard"
+    display_name: "Vanguard"
     unlock_level: 1
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7In heavy armor, gain &a{amount}&7 armor on hit for {duration}s." ] }
+    trigger: "level_up"
+    display: { lore: [ "&7While in heavy armor: +&a{amount}&7 armor." ] }
     mechanics:
-      - type: "core:armor_bonus"
-        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
+      - type: "core:equipment_attribute"
         parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 4.0 } }
+          attribute: { constant: "minecraft:armor" }
+          amount: { linear: { base: 1.0, step: 0.07, max: 8.0 } }
           uuid: { constant: "7b24cdbd-a100-5976-8d7b-a8a39f69e3e7" }
-          duration: { constant: 8.0 }
+          equip_tag: { constant: "#c:heavy_armor" }
     feedback: { notify: { action_bar: false } }
-  - id: "fortified"
-    display_name: "Fortified"
-    unlock_level: 15
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7In heavy armor, gain &a{amount}&7 knockback resistance on hit." ] }
-    mechanics:
-      - type: "core:knockback_resist"
-        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
-        parameters:
-          amount: { linear: { base: 0.1, step: 0.005, max: 0.6 } }
-          uuid: { constant: "aa36168a-9b62-52e7-9032-c81490f6e344" }
-          duration: { constant: 8.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "bulwark"
-    display_name: "Bulwark"
-    unlock_level: 25
-    trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Sneak while hit to reflect &a{damage}&7 to the attacker."
-        - "&8Requires: Sneaking, heavy armor, 6s cooldown."
-    requirements:
-      cooldown: 6.0
-      state: [ "is_sneaking", "equipped_all:#c:heavy_armor" ]
-    on_failure: { cooldown: { action_bar: "&eBulwark cooling down: {time}s" } }
-    mechanics:
-      - type: "core:thorns_damage"
-        parameters:
-          damage: { linear: { base: 2.0, step: 0.04, max: 6.0 } }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Bulwark! ✦" }
-      sounds: [ { type: "minecraft:item.shield.block", volume: 0.5, pitch: 1.0, target: "self" } ]
-  - id: "shield_wall"
-    display_name: "Shield Wall"
-    unlock_level: 50
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 chance to block damage in heavy armor." ] }
-    mechanics:
-      - type: "core:block_damage"
-        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
-        parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "immovable"
-    display_name: "Immovable"
-    unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7In heavy armor, knockback resist +&a{amount}&7 on hit." ] }
-    mechanics:
-      - type: "core:knockback_resist"
-        filters: [ { state: "equipped_all:#c:heavy_armor" } ]
-        parameters:
-          amount: { linear: { base: 0.3, step: 0.005, max: 0.8 } }
-          uuid: { constant: "28eb51b9-9cfe-5e18-b945-5d39a7389a3d" }
-          duration: { constant: 8.0 }
-    feedback: { notify: { action_bar: false } }
+  # -- QoL PASSIVE (L15): armor toughness — the netherite signature stat — made
+  # into the mastery's ever-growing big-hit shredding, while wearing heavy armor.
   - id: "juggernaut"
     display_name: "Juggernaut"
-    unlock_level: 100
+    unlock_level: 15
+    trigger: "level_up"
+    display: { lore: [ "&7While in heavy armor: +&a{amount}&7 armor toughness." ] }
+    mechanics:
+      - type: "core:equipment_attribute"
+        parameters:
+          attribute: { constant: "minecraft:armor_toughness" }
+          amount: { linear: { base: 2.0, step: 0.08, max: 10.0 } }
+          uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
+          equip_tag: { constant: "#c:heavy_armor" }
+    feedback: { notify: { action_bar: false } }
+  # -- PRIMARY HOOK (L25): plant your feet. Sneaking in heavy armor grants full
+  # knockback resistance, so a crowd cannot shove you once the first blow lands.
+  - id: "rooted"
+    display_name: "Rooted"
+    unlock_level: 25
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7In heavy armor: +&a{amount}&7 armor & KB resist on hit." ] }
+    display: { lore: [ "&7Sneak in heavy armor: immune to knockback for &a{duration}s&7 on hit." ] }
     mechanics:
       - type: "core:knockback_resist"
+        filters: [ { state: "is_sneaking" }, { state: "equipped_all:#c:heavy_armor" } ]
+        parameters:
+          amount: { constant: 1.0 }
+          uuid: { constant: "2f8c5d3e-1b4a-4a6f-8e7d-0c9d3e2f1a4b" }
+          duration: { linear: { base: 4.0, step: 0.04, max: 6.0 } }
+    feedback: { notify: { action_bar: false } }
+  # -- MAJOR PASSIVE (L50): short-lived regeneration under pressure. Getting hit
+  # in heavy armor grants a brief regen window, keeping the tank in the fight.
+  - id: "second_wind"
+    display_name: "Second Wind"
+    unlock_level: 50
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7Hit in heavy armor grants Regeneration for &a{duration}s&7." ] }
+    mechanics:
+      - type: "core:apply_status"
         filters: [ { state: "equipped_all:#c:heavy_armor" } ]
         parameters:
-          amount: { linear: { base: 0.5, step: 0.005, max: 0.9 } }
-          uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
-          duration: { constant: 10.0 }
-      - type: "core:armor_bonus"
+          effect: { constant: "minecraft:regeneration" }
+          duration: { linear: { base: 3.0, step: 0.04, max: 6.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+  # -- SYNERGY PASSIVE (L75): walk through anything. In heavy armor, blunt the
+  # full environmental hazard set — fire, lava, drowning, suffocation, cactus,
+  # explosions. The walking-fortress fantasy made real.
+  - id: "walking_fortress"
+    display_name: "Walking Fortress"
+    unlock_level: 75
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7In heavy armor take &a{reduction}%&7 less environmental damage (fire, lava, drowning, suffocation, cactus, explosions)." ] }
+    mechanics:
+      - type: "core:reduce_damage"
+        filters: [ { state: "equipped_all:#c:heavy_armor" }, { state: "cause:environmental" } ]
+        parameters:
+          reduction: { linear: { base: 20.0, step: 0.4, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
+  # -- MASTERY CAPSTONE (L100): armor incarnate. In heavy armor, soften every
+  # incoming blow, melee and projectile alike — the final tier of the tank.
+  - id: "iron_mountain"
+    display_name: "Iron Mountain"
+    unlock_level: 100
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7In heavy armor reduce all incoming damage by &a{reduction}%&7." ] }
+    mechanics:
+      - type: "core:reduce_damage"
         filters: [ { state: "equipped_all:#c:heavy_armor" } ]
         parameters:
-          amount: { linear: { base: 3.0, step: 0.05, max: 6.0 } }
-          uuid: { constant: "603af789-2b86-50e0-ab73-3e3d984c284f" }
-          duration: { constant: 10.0 }
+          reduction: { linear: { base: 10.0, step: 0.18, max: 25.0 } }
     feedback: { notify: { action_bar: false } }

@@ -210,6 +210,22 @@ Chance to completely cancel incoming damage (dodge/evade flavor).
 
 **Event:** `EntityDamageEvent`
 
+### core:reduce_damage
+
+Reduces the activating player's incoming `EntityDamageEvent` damage by a flat
+percentage. Unlike `core:cancel_damage` there is no chance roll: a qualifying hit
+is always blunted, so the mechanic reads as internalized armor rather than an
+occasional dodge. Gate the sources with a `cause` state filter (for example
+`cause:environmental`) or leave it unfiltered to soften every incoming blow.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `reduction` | double | `0` | Percentage (0-100) of incoming damage removed |
+
+**Event:** `EntityDamageEvent`
+
 ### core:modify_attribute
 
 Temporarily modifies a player attribute.
@@ -1072,6 +1088,48 @@ abilities:
 online `setlevel`, and `reset` also reconcile persistent attribute mechanics
 for players already past the milestone.
 
+### core:equipment_attribute
+
+Grants a level-scaled attribute modifier **only while the player wears a named
+armor set**, and strips it as soon as any slot is swapped out. This is the
+armor-gated cousin of `core:persistent_attribute` — the bonus (e.g. a heavy-armor
+skill's always-on armor and armor-toughness mastery) lives only while the player
+is actually armored in `equip_tag`, not as a free unconditional stat.
+
+The modifier is transient (never saved to NBT), uses the same stable-UUID
+replace-not-stack semantics as `core:persistent_attribute`, and is reconciled
+event-driven on join, reload, `setlevel`/`reset`, and armor-changing inventory
+events — never on a per-tick task.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `attribute` | string | none (required) | Namespaced attribute key (e.g., `minecraft:armor`, `minecraft:armor_toughness`) |
+| `amount` | double | `0` | Additive modifier amount (evaluated at the current level). Applied only while armored; stripped otherwise |
+| `uuid` | string | none (required) | Stable modifier UUID constant. Repeated executions with the same UUID refresh, never stack |
+| `equip_tag` | material or `#...` tag | none (required) | Armor set every slot must match (e.g., `#c:heavy_armor`). Empty slots count as `AIR` |
+
+**YAML usage:**
+
+```yaml
+abilities:
+  - id: vanguard
+    display_name: "Vanguard"
+    unlock_level: 1
+    trigger: "level_up"
+    mechanics:
+      - type: "core:equipment_attribute"
+        parameters:
+          attribute: { constant: "minecraft:armor" }
+          amount: { linear: { base: 1.0, step: 0.07, max: 8.0 } }
+          uuid: { constant: "7b24cdbd-a100-5976-8d7b-a8a39f69e3e7" }
+          equip_tag: { constant: "#c:heavy_armor" }
+```
+
+**Event:** `level_up` (the level where the ability unlocks). Join, reload,
+online `setlevel`, `reset`, and armor-slot changes also reconcile the bonus.
+
 ### core:trade_bonus
 
 Gives the player a bonus emerald on a completed villager trade, added directly
@@ -1526,7 +1584,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `hand` | `empty`, `main_empty`, `off_empty` | Hand emptiness check |
 | `equipped_all` | `<material>` or `<#tag>` | Every armor slot holds an item matching the target (e.g., `#c:light_armor`) |
 | `equipped_any` | `<material>` or `<#tag>` | At least one armor slot holds an item matching the target |
-| `cause` | `burn`, `fire`, `lava`, `drowning`, `suffocation`, `cactus`, `starvation`, `fly_into_wall` | The `EntityDamageEvent` damage cause on the `entity_damage_taken` trigger. `burn` matches fire, fire ticks, and lava; `fly_into_wall` matches elytra wall collisions. Fails closed on any non-damage event or other cause. Values are validated at load |
+| `cause` | `burn`, `fire`, `lava`, `drowning`, `suffocation`, `cactus`, `starvation`, `fly_into_wall`, `environmental` | The `EntityDamageEvent` damage cause on the `entity_damage_taken` trigger. `burn` matches fire, fire ticks, and lava; `fly_into_wall` matches elytra wall collisions; `environmental` is the compound survivable hazard set (fire, fire ticks, lava, drowning, suffocation, cactus, starvation, block and entity explosions, elytra wall collisions). Fails closed on any non-damage event or other cause. Values are validated at load |
 | `honey_level` | `below:N`, `above:N`, `exactly:N` | The honey level of a beehive clicked on `player_interact`. Fails closed on non-beehive clicks. Values are validated at load |
 | `instrument` | `minecraft:<instrument_key>` | Matches the specific goat-horn variant held in the main hand, read from the item's `minecraft:instrument` data component (e.g. `instrument:minecraft:sing_goat_horn`). Fails closed for a non-horn, a horn with no instrument data, or an unknown/blank value. Values are validated at load |
 | `was_sneaking` | *(none)* | The triggering arrow was released while the player was sneaking. Reads the sneak stance stamped on the projectile at shot time (see `shoot_bow`), so it reflects how the shot was released rather than the player's stance when the arrow lands. Fails closed for non-projectile events, so it only matches bow shots |

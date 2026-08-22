@@ -218,6 +218,7 @@ public final class Skilling extends JavaPlugin {
         customTagLoader.loadDirectory(new File(getDataFolder(), "tags"));
         this.tagResolver = new TagResolver(customTagLoader);
         this.entityTagResolver = new EntityTagResolver(customTagLoader);
+        EquipmentAttributeMechanic.setTagResolver(this.tagResolver);
         registerBuiltins();
 
         // Requirements engine
@@ -405,6 +406,8 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:teleport", TeleportMechanic.class, List.of("range"));
         mechReg.register("core:block_damage", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:reduce_damage", ReduceDamageMechanic.class, List.of("reduction"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "reduction", 100));
         mechReg.register("core:thorns_damage", ThornsDamageMechanic.class, List.of("damage"));
         mechReg.register("core:knockback", KnockbackMechanic.class, List.of("force", "radius", "vertical", "targets"),
                 (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
@@ -498,6 +501,13 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.attribute(ctx, p, "attribute");
                     MechanicParamValidators.uuid(ctx, p, "uuid");
                     MechanicParamValidators.nonNegative(ctx, p, "amount");
+                });
+        mechReg.register("core:equipment_attribute", EquipmentAttributeMechanic.class,
+                List.of("attribute", "amount", "uuid", "equip_tag"),
+                (ctx, p) -> {
+                    MechanicParamValidators.attribute(ctx, p, "attribute");
+                    MechanicParamValidators.uuid(ctx, p, "uuid");
+                    MechanicParamValidators.materialOrTag(ctx, p, "equip_tag");
                 });
         mechReg.register("core:trade_bonus", TradeBonusMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
@@ -1050,6 +1060,7 @@ public final class Skilling extends JavaPlugin {
         }
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clearAll();
         io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper.clearAll();
+        io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.stripAll();
         if (asyncBatchWorker != null) {
             asyncBatchWorker.stop();
             // Flush remaining dirty profiles on a worker thread and await with a
