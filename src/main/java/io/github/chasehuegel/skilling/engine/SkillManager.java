@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 /**
@@ -29,6 +30,8 @@ import java.util.*;
  * the registries, and building {@link SkillDefinition} records.
  */
 public final class SkillManager {
+
+    private static final Logger LOGGER = Logger.getLogger(SkillManager.class.getName());
 
     /** Upper bound on {@code max_level}: keeps the per-skill threshold-table allocation sane. */
     private static final int MAX_MAX_LEVEL = 10_000;
@@ -578,15 +581,31 @@ public final class SkillManager {
         }
         if ("biome".equals(key)) {
             String value = colonIdx > 0 ? state.substring(colonIdx + 1) : "";
+            // A malformed biome key is always rejected. A syntactically valid key
+            // that the live registry does not (yet) know is tolerated with a
+            // warning: biomes are datapack-extensible, so a key can be valid
+            // before the registry populates it, the same way the recipe validator
+            // warns instead of throwing for a not-yet-registered recipe. The
+            // runtime biome filter fails closed for an unknown key anyway. An
+            // unavailable live registry (unit-test JVM) likewise never rejects.
+            org.bukkit.NamespacedKey biomeKey;
             try {
-                var biomeKey = org.bukkit.NamespacedKey.fromString(value);
-                if (biomeKey == null || org.bukkit.Registry.BIOME.get(biomeKey) == null) {
-                    throw new IllegalArgumentException(context
-                            + " state 'biome' value '" + value + "' is not a known biome");
-                }
+                biomeKey = org.bukkit.NamespacedKey.fromString(value);
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(context
                         + " state 'biome' value '" + value + "' is not a valid namespaced key", e);
+            }
+            if (biomeKey == null) {
+                throw new IllegalArgumentException(context
+                        + " state 'biome' value '" + value + "' is not a valid namespaced key");
+            }
+            try {
+                if (org.bukkit.Registry.BIOME.get(biomeKey) == null) {
+                    LOGGER.warning(context + " state 'biome' value '" + value
+                            + "' is not currently registered; the ability will no-op until a data pack provides it");
+                }
+            } catch (RuntimeException registryUnavailable) {
+                // Live registry not available (e.g. unit-test JVM); accept the key.
             }
         }
         if ("cause".equals(key)) {

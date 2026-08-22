@@ -353,6 +353,29 @@ custom_tags:
   fishing_rods:
     - "minecraft:fishing_rod"
 
+  # Raw, edible fish caught with a fishing rod. The item-form set the Fishing
+  # skill's consume_item XP source and Plump Bait reward target run on.
+  fish:
+    - "minecraft:cod"
+    - "minecraft:salmon"
+    - "minecraft:pufferfish"
+    - "minecraft:tropical_fish"
+
+  # Common bait the Fishing skill's Plump Bait (L25) consumes from the offhand
+  # to shift a catch's quality/type. Cheap, abundant mob drops with low
+  # alternative value, so bait costs something but never hurts the supply loop.
+  bait_common:
+    - "minecraft:spider_eye"
+    - "minecraft:rotten_flesh"
+    - "minecraft:bone"
+
+  # Premium bait reserved for a future line. Rare, thematically aquatic, and not
+  # useful in bulk; intentionally NOT consumed by any bundled ability so the
+  # relaxed capstone never demands a costly habit.
+  bait_rare:
+    - "minecraft:glow_ink_sac"
+    - "minecraft:nautilus_shell"
+
   # XP-source design (REPORT_XP-SOURCE-DESIGN §5) material tags.
   holy_blocks:
     - "minecraft:beacon"

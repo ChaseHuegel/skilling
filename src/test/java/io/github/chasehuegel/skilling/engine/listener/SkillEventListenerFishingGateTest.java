@@ -47,6 +47,28 @@ class SkillEventListenerFishingGateTest {
         }
     }
 
+    /** Counts executions so the new {@code fishing_cast} trigger firing is observable. */
+    public static class CastCountingMechanic implements SkillMechanic {
+        public static final AtomicInteger EXECUTIONS = new AtomicInteger();
+
+        @Override
+        public boolean execute(Player player, Map<String, Object> params, Event event) {
+            EXECUTIONS.incrementAndGet();
+            return true;
+        }
+    }
+
+    /** Counts executions so the {@code fishing_hook} trigger firing is observable. */
+    public static class HookCountingMechanic implements SkillMechanic {
+        public static final AtomicInteger EXECUTIONS = new AtomicInteger();
+
+        @Override
+        public boolean execute(Player player, Map<String, Object> params, Event event) {
+            EXECUTIONS.incrementAndGet();
+            return true;
+        }
+    }
+
     @TempDir
     Path tempDir;
 
@@ -57,9 +79,15 @@ class SkillEventListenerFishingGateTest {
     @BeforeEach
     void setUp() throws IOException {
         CountingMechanic.EXECUTIONS.set(0);
+        CastCountingMechanic.EXECUTIONS.set(0);
+        HookCountingMechanic.EXECUTIONS.set(0);
 
         SkillManager skillManager = io.github.chasehuegel.skilling.TestSkillManager.newWith(
-                reg -> reg.register("test:count", CountingMechanic.class, java.util.List.of()));
+                reg -> {
+                    reg.register("test:count", CountingMechanic.class, java.util.List.of());
+                    reg.register("test:cast_count", CastCountingMechanic.class, java.util.List.of());
+                    reg.register("test:hook_count", HookCountingMechanic.class, java.util.List.of());
+                });
 
         Path skillsDir = tempDir.resolve("skills");
         Files.createDirectories(skillsDir);
@@ -78,8 +106,25 @@ class SkillEventListenerFishingGateTest {
                     mechanics:
                       - { type: "test:count" }
                     feedback: { notify: { action_bar: false } }
+                  - id: cast_ability
+                    display_name: "Cast Ability"
+                    unlock_level: 1
+                    trigger: "fishing_cast"
+                    mechanics:
+                      - { type: "test:cast_count" }
+                    feedback: { notify: { action_bar: false } }
+                  - id: hook_ability
+                    display_name: "Hook Ability"
+                    unlock_level: 1
+                    trigger: "fishing_hook"
+                    mechanics:
+                      - { type: "test:hook_count" }
+                    feedback: { notify: { action_bar: false } }
                 """);
+        var bukkitMock = org.mockito.Mockito.mockStatic(org.bukkit.Bukkit.class);
+        bukkitMock.when(() -> org.bukkit.Bukkit.getLogger()).thenReturn(Logger.getLogger("fishing-gate-load"));
         skillManager.loadSkills(skillsDir.toFile());
+        bukkitMock.close();
 
         DatabaseManager db = mock(DatabaseManager.class);
         when(db.isInitialized()).thenReturn(false);
@@ -93,6 +138,8 @@ class SkillEventListenerFishingGateTest {
 
         MechanicRegistry mechReg = new MechanicRegistry();
         mechReg.register("test:count", CountingMechanic.class, java.util.List.of());
+        mechReg.register("test:cast_count", CastCountingMechanic.class, java.util.List.of());
+        mechReg.register("test:hook_count", HookCountingMechanic.class, java.util.List.of());
 
         Skilling plugin = mock(Skilling.class);
         when(plugin.getGlobalXpModifier()).thenReturn(1.0);
@@ -115,28 +162,62 @@ class SkillEventListenerFishingGateTest {
     }
 
     @Test
-    void nonCatchStatesGrantNoXpAndFireNoAbilities() {
+    void nonCatchStatesGrantNoXpAndFireNoFishAbilities() {
         long before = profile.getXp("test_skill");
         for (PlayerFishEvent.State state : new PlayerFishEvent.State[]{
-                PlayerFishEvent.State.FISHING,
-                PlayerFishEvent.State.CAUGHT_ENTITY,
                 PlayerFishEvent.State.REEL_IN,
                 PlayerFishEvent.State.IN_GROUND,
                 PlayerFishEvent.State.FAILED_ATTEMPT}) {
             fireState(state);
         }
         assertEquals(before, profile.getXp("test_skill"),
-                "casts, bites, reels, and failed attempts must not grant XP");
+                "reels and failed attempts must not grant XP");
         assertEquals(0, CountingMechanic.EXECUTIONS.get(),
-                "non-catch states must not fire fishing abilities");
+                "non-catch states must not fire the CAUGHT_FISH-only fishing ability");
+        assertEquals(0, CastCountingMechanic.EXECUTIONS.get(),
+                "failed/reel states must not fire the cast ability");
+        assertEquals(0, HookCountingMechanic.EXECUTIONS.get(),
+                "failed/reel states must not fire the hook ability");
     }
 
     @Test
-    void caughtFishGrantsExactlyOneXpAndFiresAbilityOnce() {
+    void caughtFishGrantsExactlyOneXpAndFiresOnlyTheFishAbility() {
         fireState(PlayerFishEvent.State.CAUGHT_FISH);
         assertEquals(501, profile.getXp("test_skill"),
                 "a completed catch must grant exactly one XP reward");
         assertEquals(1, CountingMechanic.EXECUTIONS.get(),
-                "a completed catch must fire fishing abilities exactly once");
+                "a completed catch must fire the fishing ability exactly once");
+        assertEquals(0, CastCountingMechanic.EXECUTIONS.get(),
+                "a completed catch must not fire the cast ability");
+        assertEquals(0, HookCountingMechanic.EXECUTIONS.get(),
+                "a completed catch must not fire the hook ability");
+    }
+
+    @Test
+    void castStateFiresOnlyTheCastAbilityAndGrantsNoXp() {
+        long before = profile.getXp("test_skill");
+        fireState(PlayerFishEvent.State.FISHING);
+        assertEquals(before, profile.getXp("test_skill"),
+                "a cast grants no XP (the catch does)");
+        assertEquals(0, CountingMechanic.EXECUTIONS.get(),
+                "a cast must not fire the CAUGHT_FISH-only ability");
+        assertEquals(1, CastCountingMechanic.EXECUTIONS.get(),
+                "a cast must fire the fishing_cast ability exactly once");
+        assertEquals(0, HookCountingMechanic.EXECUTIONS.get(),
+                "a cast must not fire the hook ability");
+    }
+
+    @Test
+    void hookStateFiresOnlyTheHookAbilityAndGrantsNoXp() {
+        long before = profile.getXp("test_skill");
+        fireState(PlayerFishEvent.State.CAUGHT_ENTITY);
+        assertEquals(before, profile.getXp("test_skill"),
+                "hooking a mob grants no XP");
+        assertEquals(0, CountingMechanic.EXECUTIONS.get(),
+                "hooking a mob must not fire the CAUGHT_FISH-only ability");
+        assertEquals(0, CastCountingMechanic.EXECUTIONS.get(),
+                "hooking a mob must not fire the cast ability");
+        assertEquals(1, HookCountingMechanic.EXECUTIONS.get(),
+                "hooking a mob must fire the fishing_hook ability exactly once");
     }
 }

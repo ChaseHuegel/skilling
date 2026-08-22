@@ -5,6 +5,7 @@ import io.github.chasehuegel.skilling.engine.mechanic.impl.ApplyStatusMechanic;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.potion.PotionEffect;
 import org.junit.jupiter.api.Test;
@@ -83,6 +84,18 @@ class ApplyStatusMechanicTest {
         when(player.getTargetEntity(4)).thenReturn(monster);
 
         assertTrue(mechanic.execute(player, Map.of("effect", "minecraft:poison"), BukkitMock.mockInteractEvent(player)));
+        verify(monster).addPotionEffect(any(PotionEffect.class));
+    }
+
+    @Test
+    void appliesEffectToHookedMob() {
+        var player = BukkitMock.mockPlayer();
+        var monster = mock(Monster.class);
+        var event = mock(PlayerFishEvent.class);
+        when(event.getState()).thenReturn(PlayerFishEvent.State.CAUGHT_ENTITY);
+        when(event.getCaught()).thenReturn(monster);
+
+        assertTrue(mechanic.execute(player, Map.of("effect", "minecraft:slowness"), event));
         verify(monster).addPotionEffect(any(PotionEffect.class));
     }
 

@@ -7,6 +7,7 @@ import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
@@ -110,6 +111,31 @@ class DropLootMechanicTest {
                     "a failed roll still counts as an activation attempt");
             assertFalse(mechanic.didProc(), "a missed roll must not report a proc");
             verify(world, never()).dropItemNaturally(any(Location.class), any(ItemStack.class));
+        }
+    }
+
+    @Test
+    void fishCatchDropsLootAtPlayerLocation() {
+        var playerWorld = mock(World.class);
+        var player = mock(Player.class);
+        when(player.getLocation()).thenReturn(new Location(playerWorld, 5, 64, 9));
+        var item = mock(ItemStack.class);
+        when(item.getType()).thenReturn(Material.EMERALD);
+
+        var event = mock(PlayerFishEvent.class);
+
+        DropLootMechanic.setRandomSource(() -> 0.0); // always succeeds
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            var loot = mock(LootTable.class);
+            when(loot.populateLoot(any(), any(LootContext.class))).thenReturn(List.of(item));
+            when(Bukkit.getLootTable(any())).thenReturn(loot);
+
+            var mechanic = new DropLootMechanic();
+            assertTrue(mechanic.execute(player, Map.of("table", "skilling:fishing/treasure"), event));
+            assertTrue(mechanic.didProc(), "a landed fishing-table roll must report a proc");
+            // The drop lands at the fishing player's location (+1 block vertical offset).
+            Location expected = new Location(playerWorld, 5, 65, 9);
+            verify(playerWorld).dropItemNaturally(eq(expected), eq(item));
         }
     }
 }

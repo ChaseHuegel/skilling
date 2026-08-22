@@ -184,6 +184,10 @@ public final class Skilling extends JavaPlugin {
                 getLogger().info("Generating default datapacks/stealth.zip...");
                 saveResource("datapacks/stealth.zip", false);
             }
+            if (!new File(datapacksDir, "fishing.zip").exists()) {
+                getLogger().info("Generating default datapacks/fishing.zip...");
+                saveResource("datapacks/fishing.zip", false);
+            }
 
             // Mark setup as complete so bundled files are not regenerated on subsequent starts
             config.set("setup.first_run", false);
@@ -446,6 +450,8 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:fishing_yield", FishingYieldMechanic.class, List.of("yield_chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "yield_chance", 100));
         mechReg.register("core:fishing_loot", FishingLootMechanic.class, List.of("multiplier"));
+        mechReg.register("core:fishing_speed", FishingSpeedMechanic.class, List.of("reduction"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "reduction", 100));
         mechReg.register("core:area_harvest", AreaHarvestMechanic.class, List.of("radius", "max_blocks"));
         mechReg.register("core:area_fertilize", AreaFertilizeMechanic.class, List.of("radius"),
                 (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
@@ -589,6 +595,8 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("left_click_entity", LeftClickEntityTrigger.class);
         trigReg.register("consume_item", ConsumeItemTrigger.class);
         trigReg.register("fishing", FishingTrigger.class);
+        trigReg.register("fishing_hook", FishingHookTrigger.class);
+        trigReg.register("fishing_cast", FishingCastTrigger.class);
         trigReg.register("crop_grow", CropGrowTrigger.class);
         trigReg.register("breed_animals", BreedAnimalsTrigger.class);
         trigReg.register("sprint", SprintTrigger.class);

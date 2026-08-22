@@ -207,6 +207,9 @@ skill YAMLs):
 | `#c:written_books` | `minecraft:written_book` (signed books) |
 | `#c:lecterns` | `minecraft:lectern` (item-form) |
 | `#c:fishing_rods` | `minecraft:fishing_rod` |
+| `#c:fish` | Raw edible fish: cod, salmon, pufferfish, tropical_fish (fishing consume source) |
+| `#c:bait_common` | `minecraft:spider_eye`, `minecraft:rotten_flesh`, `minecraft:bone` (fishing bait) |
+| `#c:bait_rare` | `minecraft:glow_ink_sac`, `minecraft:nautilus_shell` (reserved premium fishing bait) |
 | `#c:holy_blocks` | Beacon, conduit, lanterns, glowstone, gold block, `#minecraft:candles` (Piety) |
 | `#c:crops` | `#minecraft:crops`, sugar cane, melon, pumpkin, cocoa |
 | `#c:foods` | Cooked meats, baked potato (cooking sources) |

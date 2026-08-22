@@ -12,142 +12,177 @@ progression:
   base_xp: 50
   exponent: 2.5
 
+# Fishing is a relaxed, methodical skill: one neat catch is the reward, never a
+# single game-ending jackpot. Only one ability (Favored Waters) multiplies the
+# quantity of a catch; the rest shorten the wait, shift catch quality, reward
+# dedicated weather, or ease landing a hooked mob. Every source and ability here
+# is a passive — no durability savings, no combat damage, no cooldowns, no
+# item-cost actives (except Plump Bait, which consumes an offhand bait per catch,
+# turning a relaxed supply loop into a gentle material sink).
 xp_sources:
+  # Casting and catching is the primary grind: naturally time-gated, so a
+  # moderate reward (~60/action, within the design ceiling) keeps it honest.
   - trigger: "fishing"
     reward:
-      constant: 138.9
+      constant: 60.0
+  # A fishing rod is a cheap, bulk-craftable material (3 sticks + 2 string), so
+  # its source returns low value per craft.
   - trigger: "craft_item"
     filters:
       - target: "#c:fishing_rods"
     reward:
-      constant: 138.9
-  # Treasure-catch source deferred (the fishing trigger fires once per caught
-  # fish via the CAUGHT_FISH state gate, but treasure is a loot-table subset of
-  # that catch, not a distinct event). Two sources used.
-  # Outlier per REPORT_XP-SOURCE-DESIGN §2: R=139 exceeds the ~60/action ceiling.
+      constant: 15.0
+  # Eating your catch is a non-free, non-bulkable source: you must spend the fish
+  # to gain the XP, tying the skill's grind into the cooking loop.
+  - trigger: "consume_item"
+    filters:
+      - target: "#c:fish"
+    reward:
+      constant: 10.0
 
 abilities:
   - id: "angler"
     display_name: "Angler"
     unlock_level: 1
+    trigger: "fishing_cast"
+    display:
+      lore:
+        - "&7Your line bites &a{reduction}%&7 faster."
+    mechanics:
+      - type: "core:fishing_speed"
+        parameters:
+          reduction:
+            linear:
+              base: 20.0
+              step: 0.4
+              max: 60.0
+    feedback:
+      notify:
+        action_bar: false
+        chat: false
+
+  - id: "favored_waters"
+    display_name: "Favored Waters"
+    unlock_level: 15
     trigger: "fishing"
     display:
       lore:
-        - "&7Increases treasure catch rate by &a{yield_chance}%&7."
+        - "&7In the open ocean, catches yield &a{multiplier}x&7."
     mechanics:
-      - type: "core:fishing_yield"
-        parameters:
-          yield_chance:
-            linear:
-              base: 1.0
-              step: 0.015
-              max: 2.5
-    feedback:
-      notify:
-        action_bar: false
-        chat: false
-
-  - id: "light_line"
-    display_name: "Light Line"
-    unlock_level: 15
-    trigger: "item_damage"
-    display:
-      lore:
-        - "&7Fishing rods have &a{chance}%&7 chance to lose no durability."
-    mechanics:
-      - type: "core:durability_save"
+      - type: "core:fishing_loot"
         filters:
-          - target: "minecraft:fishing_rod"
+          - state: "biome:minecraft:ocean"
         parameters:
-          chance:
+          multiplier:
             linear:
-              base: 20.0
-              step: 0.5
-              max: 75.0
+              base: 1.2
+              step: 0.004
+              max: 1.6
     feedback:
       notify:
         action_bar: false
-        chat: false
 
-  - id: "lucky_catch"
-    display_name: "Lucky Catch"
+  - id: "plump_bait"
+    display_name: "Plump Bait"
     unlock_level: 25
     trigger: "fishing"
     display:
       lore:
-        - "&7Better enchantments and loot from fishing treasure."
+        - "&7Bait in the offhand lures better catches, &a{chance}%&7 of the time."
+        - "&7Costs 1 bait."
+    requirements:
+      items:
+        - action: "possession"
+          tag: "#c:bait_common"
+          slot: "OFF_HAND"
+        - action: "cost"
+          tag: "#c:bait_common"
+          slot: "OFF_HAND"
+          amount: 1
+    mechanics:
+      - type: "core:drop_loot"
+        filters:
+          - state: "offhand:#c:bait_common"
+        parameters:
+          table:
+            constant: "skilling:fishing/bait"
+          chance:
+            linear:
+              base: 20.0
+              step: 0.3
+              max: 50.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "boat_hauler"
+    display_name: "Boat Hauler"
+    unlock_level: 50
+    trigger: "fishing"
+    display:
+      lore:
+        - "&7While riding a boat, &a{yield_chance}%&7 chance for a bonus catch."
     mechanics:
       - type: "core:fishing_yield"
+        filters:
+          - state: "is_riding"
         parameters:
           yield_chance:
             linear:
-              base: 1.0
-              step: 0.02
-              max: 2.0
+              base: 20.0
+              step: 0.3
+              max: 50.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "grappling_hook"
+    display_name: "Grappling Hook"
+    unlock_level: 75
+    trigger: "fishing_hook"
+    display:
+      lore:
+        - "&7Hooking a mob slows it for easy reeling."
+    mechanics:
+      - type: "core:apply_status"
+        parameters:
+          effect:
+            constant: "minecraft:slowness"
+          duration:
+            linear:
+              base: 4.0
+              step: 0.04
+              max: 8.0
+          amplifier:
+            constant: 1.0
+    feedback:
+      notify:
+        action_bar: false
+
+  - id: "master_angler"
+    display_name: "Master Angler"
+    unlock_level: 100
+    trigger: "fishing"
+    display:
+      lore:
+        - "&7A long, patient catch sometimes rolls a rare reward, &a{chance}%&7."
+    mechanics:
+      - type: "core:drop_loot"
+        parameters:
+          table:
+            constant: "skilling:fishing/master"
+          chance:
+            linear:
+              base: 10.0
+              step: 0.3
+              max: 40.0
     feedback:
       notify:
         action_bar: true
         chat: false
-        message: "&b✦ Lucky Catch! ✦"
+        message: "&b✦ A rare catch! ✦"
       sounds:
         - type: "minecraft:entity.player.levelup"
           volume: 0.5
           pitch: 1.5
           target: "self"
-
-  - id: "sea_bounty"
-    display_name: "Sea Bounty"
-    unlock_level: 50
-    trigger: "fishing"
-    display:
-      lore:
-        - "&7Fish catches yield &a{multiplier}x&7."
-    mechanics:
-      - type: "core:fishing_loot"
-        parameters:
-          multiplier:
-            linear:
-              base: 2.0
-              step: 0.01
-              max: 2.5
-    feedback:
-      notify:
-        action_bar: false
-
-  - id: "tidal_resilience"
-    display_name: "Tidal Resilience"
-    unlock_level: 75
-    trigger: "fishing"
-    display:
-      lore:
-        - "&7Gain knockback resistance while fishing."
-    mechanics:
-      - type: "core:knockback_resist"
-        filters:
-          - tool: "#c:fishing_rods"
-        parameters:
-          amount:
-            linear:
-              base: 0.2
-              step: 0.005
-              max: 0.7
-          uuid: { constant: "91b24164-6939-55f0-8afe-4f08f6ca825a" }
-    feedback:
-      notify:
-        action_bar: false
-
-  - id: "leviathan"
-    display_name: "Leviathan"
-    unlock_level: 100
-    trigger: "fishing"
-    display:
-      lore:
-        - "&7Guaranteed max-size catches and rare treasure."
-    mechanics:
-      - type: "core:fishing_loot"
-        parameters:
-          multiplier:
-            constant: 3.0
-    feedback:
-      notify:
-        action_bar: false

@@ -651,6 +651,22 @@ fractional multiplier yields its expected value instead of flooring to nothing.
 
 **Event:** `PlayerFishEvent`
 
+### core:fishing_speed
+
+Shortens the time between a cast and the fish bite. Fires on the cast (the
+`fishing_cast` trigger, the `FISHING` state) and shrinks the single in-flight
+hook's remaining wait time and its re-roll bounds by a percentage. Only the
+current hook's timing is mutated — it never re-casts, never reels, and never
+adds loot, so a cast cannot yield a second fish.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `reduction` | double | `0` | Percentage (0-100) to shorten the cast-to-bite wait. Values at or below 0 are a no-op |
+
+**Event:** `PlayerFishEvent` (`fishing_cast` trigger, `FISHING` state)
+
 ### core:area_harvest
 
 Breaks all matching blocks in a radius around the targeted block. The radius is
@@ -1250,9 +1266,19 @@ interaction, sculpt receive) and scope it with `target` / `state` filters.
 ### core:drop_loot
 
 Rolls a referenced loot table and drops the result naturally at the target. The
-target can be a right-clicked entity, a right-clicked or stepped-on block, or a
-damaged entity. Works with vanilla and datapack/plugin loot tables (resolved by
-namespaced key). Players are valid targets and nothing is removed from them.
+target can be a right-clicked entity, a right-clicked or stepped-on block, a
+damaged entity, or (on a fishing catch) the fishing player. Works with vanilla
+and datapack/plugin loot tables (resolved by namespaced key). Players are valid
+targets and nothing is removed from them.
+
+The plugin ships a bundled datapack, `datapacks/fishing.zip`, seeded into the
+plugin data folder on first run and enabled automatically. It provides the
+Fishing skill's drop-loot tables:
+
+| Table key | Ability | Contents |
+|---|---|---|
+| `skilling:fishing/bait` | Plump Bait (L25) | A baited catch: cod, salmon, pufferfish, bone, string, glow ink sac |
+| `skilling:fishing/master` | Master Angler (L100) | A rare angler's prize: emerald, name tag, enchanted book, saddle, nautilus shell, golden apple, echo shard |
 
 **Parameters:**
 
@@ -1261,7 +1287,7 @@ namespaced key). Players are valid targets and nothing is removed from them.
 | `table` | string | none | Namespaced loot table key, e.g. `minecraft:chests/simple_dungeon` or `stealth:pickpocket/pocket` |
 | `chance` | double | *(always)* | Percentage chance to actually roll the table (0-100). Absent always rolls |
 
-**Event:** `PlayerInteractEntityEvent`, `PlayerInteractEvent` (right/left click or physical), or `EntityDamageByEntityEvent`
+**Event:** `PlayerInteractEntityEvent`, `PlayerInteractEvent` (right/left click or physical), `EntityDamageByEntityEvent`, or `PlayerFishEvent` (drops at the fishing player's location)
 
 ### core:loot_bonus
 
@@ -1429,6 +1455,8 @@ attribute: { constant: "minecraft:movement_speed" }
 | `left_click_entity` | `EntityDamageByEntityEvent` | Attacking an entity directly with a left-click (hand/punch only). Projectile attacks are not left-clicks and stay on the `entity_damage` and `shoot_bow` triggers. Supports `scaling: damage` |
 | `consume_item` | `PlayerItemConsumeEvent` | Eating/drinking |
 | `fishing` | `PlayerFishEvent` | Successfully catching a fish. Only the `CAUGHT_FISH` state dispatches. Casts, bites, reels, and failed attempts do not |
+| `fishing_hook` | `PlayerFishEvent` | The bobber hooks a living mob. Only the `CAUGHT_ENTITY` state dispatches, once per hook |
+| `fishing_cast` | `PlayerFishEvent` | A rod is cast into the water. Only the `FISHING` state dispatches, once per throw |
 | `crop_grow` | `BlockGrowEvent` | Natural crop growth |
 | `breed_animals` | `EntityBreedEvent` | Breeding animals |
 | `sprint` | `PlayerToggleSprintEvent` | Player starts sprinting (release is not a trigger) |

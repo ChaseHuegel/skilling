@@ -10,6 +10,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -32,14 +33,19 @@ import java.util.function.DoubleSupplier;
  * targets (typical use is pickpocketing / looting, not combat), and nothing is
  * removed from the target.
  *
- * <p>The {@code chance} (0-100) is optional: absent means the table always
- * rolls. A rolled attempt counts as an activation, so the ability's cost and
- * cooldown are consumed once per use and a failed roll cannot be retried for
- * free.
- *
- * <p><b>YAML key:</b> {@code core:drop_loot}
- * <br>Params: {@code table} (namespaced loot table key), {@code chance}
- * (optional, 0-100, percentage to actually roll the table)
+* <p>The {@code chance} (0-100) is optional: absent means the table always
+     * rolls. A rolled attempt counts as an activation, so the ability's cost and
+     * cooldown are consumed once per use and a failed roll cannot be retried for
+     * free.
+     *
+     * <p>On a {@link PlayerFishEvent} (typically the {@code fishing} trigger) the
+     * drop lands at the fishing player's location, so a skill can roll a custom
+     * catch-quality table on a completed catch without a dedicated treasure
+     * mechanic.
+     *
+     * <p><b>YAML key:</b> {@code core:drop_loot}
+     * <br>Params: {@code table} (namespaced loot table key), {@code chance}
+     * (optional, 0-100, percentage to actually roll the table)
  */
 public final class DropLootMechanic implements ProcAwareMechanic {
 
@@ -127,6 +133,9 @@ public final class DropLootMechanic implements ProcAwareMechanic {
         if (event instanceof EntityDamageByEntityEvent de
                 && de.getEntity() instanceof LivingEntity victim) {
             return new DropTarget(victim.getLocation(), victim);
+        }
+        if (event instanceof PlayerFishEvent) {
+            return new DropTarget(player.getLocation(), null);
         }
         return null;
     }

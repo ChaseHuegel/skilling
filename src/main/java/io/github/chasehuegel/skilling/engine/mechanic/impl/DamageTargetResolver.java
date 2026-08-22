@@ -6,6 +6,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.Map;
@@ -67,6 +68,10 @@ final class DamageTargetResolver {
                 Entity hit = player.getTargetEntity((int) maxReach);
                 if (hit instanceof LivingEntity living) target = living;
             }
+        } else if (event instanceof PlayerFishEvent fe
+                && fe.getCaught() instanceof LivingEntity hooked
+                && fe.getState() == PlayerFishEvent.State.CAUGHT_ENTITY) {
+            target = hooked;
         }
         if (target == null || target.isDead()) return null;
         // PvP protection: never damage another player or the caster.
