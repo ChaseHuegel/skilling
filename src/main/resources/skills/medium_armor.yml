@@ -1,102 +1,144 @@
+# ==========================================
+# MEDIUM ARMOR SKILL
+# ==========================================
+# The last-stand survivor. Chain and iron are the unglamorous mid-tier gear:
+# they do not soak like heavy armor and they do not out-run like light armor.
+# Instead, they keep you standing. The skill's backbone is armor toughness,
+# which shreds the big hits that would normally finish you. Every "clutch"
+# ability is gated by the health state filter so it pays off exactly when you
+# are actually endangered, and the capstone can negate a lethal blow outright.
+#
+# XP loop: tanking while armored (trickle), dealing damage while armored
+# (grindable driver), and finishing a mob while armored (grindable), with the
+# craft source left to smithing and blocking left to shields.
 id: "medium_armor"
 max_level: 100
 display: { name: "Medium Armor", icon: "minecraft:iron_chestplate", color: "BLUE", style: "SOLID" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Tanking while in medium armor. Damage-scaled; per raw damage point.
   - trigger: "entity_damage_taken"
     filters: [ { state: "equipped_all:#c:medium_armor" } ]
-    reward: { constant: 20.8 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
-    scaling: damage
-  - trigger: "entity_damage_taken"
-    filters: [ { state: "is_blocking" } ]
     reward: { constant: 20.8 }
     scaling: damage
-  - trigger: "craft_item"
-    filters: [ { target: "minecraft:iron_ingot" } ]   # nugget->ingot craft
-    reward: { constant: 104.2 }
+  # The offensively-drives grind: reward dealing damage while armored.
+  - trigger: "entity_damage"
+    filters: [ { state: "equipped_all:#c:medium_armor" } ]
+    reward: { constant: 12.0 }
+    scaling: damage
+  # Finishing a mob while armored is grindable and pays a flat bonus.
+  - trigger: "entity_kill"
+    filters: [ { state: "equipped_all:#c:medium_armor" } ]
+    reward: { constant: 110.0 }
   # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
 abilities:
-  - id: "tempered_guard"
-    display_name: "Tempered Guard"
+  # -- FOUNDATIONAL (L1): the identity scalar. Always-on armor toughness while
+  # wearing medium armor, so the skill reads as "you shrink the big hits that
+  # would end you." Grows toward a cap at level 100.
+  - id: "hardened_grit"
+    display_name: "Hardened Grit"
     unlock_level: 1
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7In medium armor, gain &a{amount}&7 armor on hit for {duration}s." ] }
+    trigger: "level_up"
+    display: { lore: [ "&7While in medium armor: +&a{amount}&7 armor toughness." ] }
     mechanics:
-      - type: "core:armor_bonus"
-        filters: [ { state: "equipped_all:#c:medium_armor" } ]
+      - type: "core:equipment_attribute"
         parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 4.0 } }
-          uuid: { constant: "3e932615-90f0-54ce-a849-172857a13a68" }
-          duration: { constant: 8.0 }
+          attribute: { constant: "minecraft:armor_toughness" }
+          amount: { linear: { base: 0.5, step: 0.09, max: 10.0 } }
+          uuid: { constant: "71c9a5f0-3d2e-4b87-9f4a-6a2b8c1d0e5f" }
+          equip_tag: { constant: "#c:medium_armor" }
     feedback: { notify: { action_bar: false } }
-  - id: "deflect"
-    display_name: "Deflect"
+  # -- QOL PASSIVE (L15): easy movement. The veteran in chain and iron never
+  # gets bogged down; slow terrain cannot hold the one who has been through it.
+  # A distinct attribute from light armor's flat speed — no identity collision.
+  - id: "surefooted"
+    display_name: "Surefooted"
     unlock_level: 15
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 chance to block damage in medium armor." ] }
+    trigger: "level_up"
+    display: { lore: [ "&7While in medium armor: +&a{amount}&7 movement efficiency (soul sand, honey, cobwebs, powder snow)." ] }
     mechanics:
-      - type: "core:block_damage"
-        filters: [ { state: "equipped_all:#c:medium_armor" } ]
+      - type: "core:equipment_attribute"
         parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+          attribute: { constant: "minecraft:movement_efficiency" }
+          amount: { linear: { base: 0.1, step: 0.006, max: 0.7 } }
+          uuid: { constant: "b2d8a6f1-4e3f-4c98-b50a-7c3d9e2f1a6b" }
+          equip_tag: { constant: "#c:medium_armor" }
     feedback: { notify: { action_bar: false } }
-  - id: "riposte"
-    display_name: "Riposte"
+  # -- PRIMARY ABILITY (L25): the active hook. A player-driven survival burst,
+  # gated by exhaustion instead of a cooldown. Dig in for the push by hardening
+  # your gear and brushing off incoming blows for a few seconds.
+  - id: "brace"
+    display_name: "Brace"
     unlock_level: 25
-    trigger: "entity_damage_taken"
+    trigger: "right_click_air"
     display:
       lore:
-        - "&7Sneak while hit to reflect &a{damage}&7 to the attacker."
-        - "&8Requires: Sneaking, medium armor, 5s cooldown."
+        - "&7Right-Click to brace in medium armor: +&a{amount}&7 armor & brief Resistance."
+        - "&7Costs 2 hunger."
+        - "&8Requires: Medium armor, 3+ hunger."
     requirements:
-      cooldown: 5.0
-      state: [ "is_sneaking", "equipped_all:#c:medium_armor" ]
-    on_failure: { cooldown: { action_bar: "&eRiposte cooling down: {time}s" } }
-    mechanics:
-      - type: "core:thorns_damage"
-        parameters:
-          damage: { linear: { base: 2.0, step: 0.05, max: 6.0 } }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Riposte! ✦" }
-      sounds: [ { type: "minecraft:item.shield.block", volume: 0.4, pitch: 1.2, target: "self" } ]
-  - id: "swift_recovery"
-    display_name: "Swift Recovery"
-    unlock_level: 50
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7Hit in medium armor grants &a{multiplier}x&7 speed for {duration}s." ] }
-    mechanics:
-      - type: "core:speed_bonus"
-        filters: [ { state: "equipped_all:#c:medium_armor" } ]
-        parameters:
-          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.2 } }
-          uuid: { constant: "dc53ff77-1f3b-59d2-b45d-df457df8065d" }
-          duration: { constant: 6.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "endurance"
-    display_name: "Endurance"
-    unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 chance to fully negate damage in medium armor." ] }
-    mechanics:
-      - type: "core:cancel_damage"
-        filters: [ { state: "equipped_all:#c:medium_armor" } ]
-        parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 30.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "iron_will"
-    display_name: "Iron Will"
-    unlock_level: 100
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7In medium armor: +&a{amount}&7 armor & &a{chance}%&7 damage negate." ] }
+      state: [ "equipped_all:#c:medium_armor" ]
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to brace!" }
     mechanics:
       - type: "core:armor_bonus"
-        filters: [ { state: "equipped_all:#c:medium_armor" } ]
         parameters:
-          amount: { linear: { base: 2.0, step: 0.05, max: 5.0 } }
-          uuid: { constant: "cf6fefdb-4947-5df6-8750-c46b931d5880" }
-          duration: { constant: 10.0 }
-      - type: "core:cancel_damage"
-        filters: [ { state: "equipped_all:#c:medium_armor" } ]
+          amount: { linear: { base: 2.0, step: 0.02, max: 4.0 } }
+          duration: { linear: { base: 4.0, step: 0.02, max: 6.0 } }
+          uuid: { constant: "c3e9b7a2-5f40-4da9-b61b-8e4f0a3b2c7d" }
+      - type: "core:apply_status"
         parameters:
-          chance: { linear: { base: 10.0, step: 0.3, max: 35.0 } }
+          effect: { constant: "minecraft:resistance" }
+          duration: { constant: 5.0 }
+          amplifier: { constant: 0.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Brace! ✦" }
+      sounds: [ { type: "minecraft:item.armor.equip_iron", volume: 0.5, pitch: 1.1, target: "self" } ]
+  # -- MAJOR PASSIVE (L50): clutch survivability. Where heavy armor reduces all
+  # damage, the survivor reduces it only when bloodied — the deeper the threat,
+  # the harder the grit. Gated by health so it never coats a healthy player.
+  - id: "gritted_teeth"
+    display_name: "Gritted Teeth"
+    unlock_level: 50
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7At/below 60% health in medium armor: take &a{reduction}%&7 less damage." ] }
+    mechanics:
+      - type: "core:reduce_damage"
+        filters: [ { state: "equipped_all:#c:medium_armor" }, { state: "health:below:60" } ]
+        parameters:
+          reduction: { linear: { base: 15.0, step: 0.3, max: 40.0 } }
     feedback: { notify: { action_bar: false } }
+  # -- SYNERGY PASSIVE (L75): cross-vanilla link. The survivor's Totem works
+  # harder: on a real Totem of Undying resurrection, grant a scaling burst of
+  # Absorption. Amplifies the existing item, never replaces it.
+  - id: "cling_to_life"
+    display_name: "Cling to Life"
+    unlock_level: 75
+    trigger: "resurrect"
+    display: { lore: [ "&7When your Totem revives you in medium armor: gain &a{amplifier}&7-level Absorption for 20s." ] }
+    mechanics:
+      - type: "core:apply_status"
+        filters: [ { state: "equipped_all:#c:medium_armor" } ]
+        parameters:
+          effect: { constant: "minecraft:absorption" }
+          duration: { constant: 20.0 }
+          amplifier: { linear: { base: 0.0, step: 0.02, max: 2.0 } }
+    feedback: { notify: { action_bar: false } }
+  # -- MASTERY CAPSTONE (L100): the refusal to fall. A proc-aware chance to
+  # fully negate an incoming hit exact when you are on the brink — negating a
+  # lethal blow leaves you standing. Success-only feedback makes the save felt.
+  - id: "refuse_to_fall"
+    display_name: "Refuse to Fall"
+    unlock_level: 100
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&a{chance}%&7 chance to fully negate a hit while at/below 40% health in medium armor." ] }
+    mechanics:
+      - type: "core:cancel_damage"
+        filters: [ { state: "equipped_all:#c:medium_armor" }, { state: "health:below:40" } ]
+        parameters:
+          chance: { linear: { base: 5.0, step: 0.4, max: 40.0 } }
+    feedback:
+      success_only: true
+      notify: { action_bar: true, chat: false, message: "&b✦ Refuse to Fall! ✦" }
+      sounds: [ { type: "minecraft:item.totem.use", volume: 0.5, pitch: 1.4, target: "self" } ]

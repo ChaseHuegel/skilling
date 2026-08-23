@@ -431,13 +431,13 @@ custom_tags:
     - "minecraft:iron_chestplate"
     - "minecraft:iron_leggings"
     - "minecraft:iron_boots"
+    - "minecraft:turtle_helmet"
+
+  heavy_armor:
     - "minecraft:golden_helmet"
     - "minecraft:golden_chestplate"
     - "minecraft:golden_leggings"
     - "minecraft:golden_boots"
-    - "minecraft:turtle_helmet"
-
-  heavy_armor:
     - "minecraft:diamond_helmet"
     - "minecraft:diamond_chestplate"
     - "minecraft:diamond_leggings"
