@@ -494,6 +494,28 @@ right-click (right-click air or right-click block). A left-click is a no-op.
 
 **Event:** `PlayerInteractEvent` (right-click only)
 
+### core:lunge
+
+Props the player forward in their looking direction on a right-click (air or
+block), the mobility "lunge" that closes distance into a fight. A left-click is
+a no-op. Only the player's own velocity changes and the impulse is clamped, so
+the dash is transient player state: nothing about the world is written and
+uninstalling the plugin returns the player to vanilla physics (safe unplug). The
+optional `knockback_resist` seconds grant full knockback resistance as the dash
+is applied, so a shove cannot cancel the charge mid-lunge. Use it with an
+`exhaustion` cost rather than a cooldown to pace a charge.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `force` | double | `0` | Horizontal impulse strength in the look direction (clamped to [0, 3]). Values at or below 0 are a no-op |
+| `vertical` | double | `0.3` | Upward component added to the impulse (clamped to [0, 1.5]) |
+| `knockback_resist` | double | `0` | Seconds of full knockback resistance granted as the dash is applied; `0` applies none |
+| `uuid` | string | random | Stable modifier UUID for the knockback-resistance window so repeated dashes refresh instead of stacking |
+
+**Event:** `PlayerInteractEvent` (right-click only)
+
 ### core:thorns_damage
 
 Reflects a flat amount of incoming damage back to the attacker.

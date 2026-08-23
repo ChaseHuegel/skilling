@@ -411,6 +411,12 @@ public final class Skilling extends JavaPlugin {
                 });
         mechReg.register("core:projectile", ProjectileMechanic.class, List.of("speed", "damage"));
         mechReg.register("core:teleport", TeleportMechanic.class, List.of("range"));
+        mechReg.register("core:lunge", LungeMechanic.class, List.of("force", "vertical", "knockback_resist", "uuid"),
+                (ctx, p) -> {
+                    MechanicParamValidators.nonNegative(ctx, p, "force");
+                    MechanicParamValidators.nonNegative(ctx, p, "vertical");
+                    MechanicParamValidators.nonNegative(ctx, p, "knockback_resist");
+                });
         mechReg.register("core:block_damage", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:reduce_damage", ReduceDamageMechanic.class, List.of("reduction"),

@@ -1,102 +1,140 @@
+# ==========================================
+# LIGHT ARMOR SKILL
+# ==========================================
+# The scrappy pressure fighter. Light armor is all about staying on top of a
+# target and turning aggression back, rather than dodging away. Its loop is
+# reward dealing damage and finishing foes while lightly armored, plus a
+# tanking trickle for simply being in the fray.
+#
+# XP loop: dealing damage (scrappy driver), finishing a mob (grindable), and
+# tanking while armored (trickle), with a minor craft source for making the
+# gear itself.
 id: "light_armor"
 max_level: 100
 display: { name: "Light Armor", icon: "minecraft:leather_chestplate", color: "BLUE", style: "SOLID" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Tanking while lightly armored. Damage-scaled; per raw damage point.
   - trigger: "entity_damage_taken"
-    filters: [ { state: "equipped_all:#c:light_armor" } ]      # P2-6: light armor only
-    reward: { constant: 23.8 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
+    filters: [ { state: "equipped_all:#c:light_armor" } ]
+    reward: { constant: 20.8 }
     scaling: damage
-  - trigger: "entity_damage_taken"
-    filters: [ { state: "equipped_all:#c:light_armor" } ]      # ×2 source per REPORT §4 (tanking rate)
-    reward: { constant: 23.8 }
+  # The scrappy offensive driver: reward dealing damage while lightly armored.
+  - trigger: "entity_damage"
+    filters: [ { state: "equipped_all:#c:light_armor" } ]
+    reward: { constant: 12.0 }
     scaling: damage
+  # Finishing a mob while lightly armored is grindable and pays a flat bonus.
+  - trigger: "entity_kill"
+    filters: [ { state: "equipped_all:#c:light_armor" } ]
+    reward: { constant: 110.0 }
+  # Minor craft source: making the light armor itself.
   - trigger: "craft_item"
-    filters: [ { target: "#c:leather_armor" } ]
-    reward: { constant: 119.0 }
-  # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
+    filters: [ { target: "#c:light_armor" } ]
+    reward: { constant: 104.0 }
 abilities:
-  - id: "featherweight"
-    display_name: "Featherweight"
+  # -- FOUNDATIONAL (L1): the identity scalar. Always-on attack speed while
+  # wearing light armor, so the skill reads as "you hit a touch faster and
+  # press the aggression." Grows gently to a cap at level 100.
+  - id: "quicksilver"
+    display_name: "Quicksilver"
     unlock_level: 1
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7While in light armor, gain &a{multiplier}x&7 speed for {duration}s on hit." ] }
+    trigger: "level_up"
+    display: { lore: [ "&7While in light armor: +&a{amount}&7 attack speed." ] }
+    mechanics:
+      - type: "core:equipment_attribute"
+        parameters:
+          attribute: { constant: "minecraft:attack_speed" }
+          amount: { linear: { base: 0.02, step: 0.0013, max: 0.15 } }
+          uuid: { constant: "2a4d9c18-6f3a-4b1e-9c7d-0f2b8a1c3e5f" }
+          equip_tag: { constant: "#c:light_armor" }
+    feedback: { notify: { action_bar: false } }
+  # -- QOL PASSIVE (L15): early sustain. Lifesteal lets the glass-cannon gear
+  # of light armor survive the early game by healing as you fight, and scales
+  # all the way to level 100 as the mastery's sustain stays relevant.
+  - id: "recovery"
+    display_name: "Recovery"
+    unlock_level: 15
+    trigger: "entity_damage"
+    display: { lore: [ "&7In light armor, heal &a{percentage}%&7 of melee damage dealt." ] }
+    mechanics:
+      - type: "core:lifesteal"
+        filters: [ { state: "equipped_all:#c:light_armor" } ]
+        parameters:
+          percentage: { linear: { base: 3.0, step: 0.07, max: 10.0 } }
+    feedback: { notify: { action_bar: false } }
+  # -- PRIMARY ABILITY (L25): the active hook. A player-driven forward lunge
+  # that closes distance into a fight, gated by exhaustion instead of a
+  # cooldown. The brief knockback-resist window keeps the charge on its path, so
+  # a shove cannot cancel the dash mid-lunge.
+  - id: "shoulder_charge"
+    display_name: "Shoulder Charge"
+    unlock_level: 25
+    trigger: "right_click_air"
+    display:
+      lore:
+        - "&7Right-Click to lunge forward and close into a fight."
+        - "&7Costs 2 hunger."
+        - "&8Requires: Light armor, 3+ hunger."
+    requirements:
+      state: [ "equipped_all:#c:light_armor" ]
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to charge!" }
+    mechanics:
+      - type: "core:lunge"
+        parameters:
+          force: { linear: { base: 1.2, step: 0.008, max: 2.0 } }
+          vertical: { constant: 0.3 }
+          knockback_resist: { linear: { base: 0.8, step: 0.005, max: 1.6 } }
+          uuid: { constant: "8b2e7a41-5c0f-42a3-b1d6-9e3a0c7f2d14" }
+      - type: "core:offhand_swing"
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Charge! ✦" }
+      sounds: [ { type: "minecraft:item.elytra.flying", volume: 0.4, pitch: 1.4, target: "self" } ]
+  # -- MAJOR PASSIVE (L50): mid-game spike. Landing a kill in light armor grants
+  # a burst of speed so you chain through a crowd and reposition between
+  # targets, keeping the pressure on.
+  - id: "bloodlust"
+    display_name: "Bloodlust"
+    unlock_level: 50
+    trigger: "entity_kill"
+    display: { lore: [ "&7Kill in light armor: &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
         filters: [ { state: "equipped_all:#c:light_armor" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
-          uuid: { constant: "f9f5e036-3266-58f8-ae3c-b5b11334bb0e" }
-          duration: { constant: 8.0 }
+          multiplier: { linear: { base: 1.15, step: 0.002, max: 1.35 } }
+          uuid: { constant: "3c9f51b2-7d4e-4c6a-8f20-1a4b0d6e8c37" }
+          duration: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "dodge_roll"
-    display_name: "Dodge Roll"
-    unlock_level: 15
+  # -- SYNERGY PASSIVE (L75): momentum defense. Getting hit in light armor does
+  # not put you on the back foot; it feeds a quick burst to press right back in,
+  # the heal-less counterpart to a tank's on-hit regeneration.
+  - id: "hustle"
+    display_name: "Hustle"
+    unlock_level: 75
     trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 chance to fully dodge attacks in light armor." ] }
-    mechanics:
-      - type: "core:dodge"
-        filters: [ { state: "equipped_all:#c:light_armor" } ]
-        parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "evasive_roll"
-    display_name: "Evasive Roll"
-    unlock_level: 25
-    trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Sneak+Jump to negate the next hit &a{chance}%&7."
-        - "&8Requires: Sneaking, on ground, light armor, 6s cooldown."
-    requirements:
-      cooldown: 6.0
-      state: [ "is_sneaking", "is_on_ground", "equipped_all:#c:light_armor" ]
-    on_failure: { cooldown: { action_bar: "&eEvasive Roll cooling down: {time}s" } }
-    mechanics:
-      - type: "core:cancel_damage"
-        parameters:
-          chance: { linear: { base: 50.0, step: 0.5, max: 90.0 } }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Evasive Roll! ✦" }
-      sounds: [ { type: "minecraft:item.shield.block", volume: 0.4, pitch: 1.5, target: "self" } ]
-  - id: "spryness"
-    display_name: "Spryness"
-    unlock_level: 50
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7Hit in light armor grants &a{multiplier}x&7 speed for {duration}s." ] }
+    display: { lore: [ "&7Hit in light armor: &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
         filters: [ { state: "equipped_all:#c:light_armor" } ]
         parameters:
           multiplier: { linear: { base: 1.1, step: 0.002, max: 1.3 } }
-          uuid: { constant: "937ec423-6db2-510e-9a4b-b40661d84de7" }
-          duration: { linear: { base: 6.0, step: 0.1, max: 12.0 } }
+          uuid: { constant: "5e0a6c3d-9b1a-47e8-8d54-2c7f3a0b91e6" }
+          duration: { constant: 3.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "evasion_mastery"
-    display_name: "Evasion Mastery"
-    unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 dodge chance in light armor." ] }
-    mechanics:
-      - type: "core:dodge"
-        filters: [ { state: "equipped_all:#c:light_armor" } ]
-        parameters:
-          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "phantom"
-    display_name: "Phantom"
+  # -- MASTERY CAPSTONE (L100): the fragile-set payoff. Light armor wears out
+  # fast, so by level 100 it almost never does: a near-total durability save on
+  # the gear you chose to master, scaling to a near-unbreakable state.
+  - id: "unbreakable"
+    display_name: "Unbreakable"
     unlock_level: 100
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 dodge & &a{multiplier}x&7 speed in light armor." ] }
+    trigger: "item_damage"
+    display: { lore: [ "&7Your light armor nearly never wears: &a{chance}%&7 chance to save durability." ] }
     mechanics:
-      - type: "core:dodge"
+      - type: "core:durability_save"
         filters: [ { state: "equipped_all:#c:light_armor" } ]
         parameters:
-          chance: { linear: { base: 50.0, step: 0.5, max: 70.0 } }
-      - type: "core:speed_bonus"
-        filters: [ { state: "equipped_all:#c:light_armor" } ]
-        parameters:
-          multiplier: { linear: { base: 1.3, step: 0.002, max: 1.4 } }
-          uuid: { constant: "6b0163b9-8bfa-5836-83cf-c4a949c0d43d" }
-          duration: { constant: 8.0 }
+          chance: { linear: { base: 40.0, step: 0.5, max: 90.0 } }
     feedback: { notify: { action_bar: false } }
