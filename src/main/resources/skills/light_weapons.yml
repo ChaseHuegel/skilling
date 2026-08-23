@@ -2,21 +2,29 @@ id: "light_weapons"
 max_level: 100
 display: { name: "Light Weapons", icon: "minecraft:golden_sword", color: "RED", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+# Fast, low-vanilla-damage hitters: all swords + trident (the #c:light_weapons tag).
+# Swords swing at the same 1.6 attack speed as heavier gear but hit softer, so the
+# tree is a volume-and-ductility fighter, not a big-single-hit brute. Rewards are
+# kept at heavy_weapons parity and tuned down from the old cheap-gear over-reward
+# (light now uses the same tier of sword materials).
 xp_sources:
   - trigger: "entity_damage"
-    filters: [ { tool: "#c:light_weapons" } ]      # tool = held item (FIX: was target)
-    reward: { constant: 12.6 }      # per raw damage point (5 ≈ light hit). Damage-scaled
+    filters: [ { tool: "#c:light_weapons" } ]      # tool = held item
+    reward: { constant: 8.4 }      # per raw damage point. Damage-scaled
     scaling: damage
   - trigger: "entity_kill"
     filters: [ { tool: "#c:light_weapons" } ]
     reward: { constant: 62.9 }
-  # Crit-hit filter not implemented (REPORT_XP-SOURCE-DESIGN §4). Substituted
-  # being-hit while wielding a light weapon, the same ~6 APM class, so R stays 62.9.
+  # Being-hit while wielding a light weapon, the ~6 APM class that substitutes
+  # for the unimplemented crit-hit filter (REPORT_XP-SOURCE-DESIGN §4).
   - trigger: "entity_damage_taken"
     filters: [ { tool: "#c:light_weapons" } ]
-    reward: { constant: 12.6 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
+    reward: { constant: 12.6 }      # per raw damage point. Damage-scaled
     scaling: damage
 abilities:
+  # -- FOUNDATIONAL (L1): the primary scalar and the ONLY flat damage line in the
+  # tree. The mastery capstone ramps damage transiently instead of stacking a
+  # second scalar, so the two never multiply into a runaway.
   - id: "quick_strike"
     display_name: "Quick Strike"
     unlock_level: 1
@@ -28,76 +36,105 @@ abilities:
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.004, max: 1.4 } }
     feedback: { notify: { action_bar: false } }
+  # -- QOL PASSIVE (L15): nimble footing. A light-weapon fighter trades at close
+  # range, so resisting knockback keeps a rapid combo uninterrupted instead of
+  # being shoved out of it. Distinct from the movement-speed sources used across
+  # other reworks.
   - id: "nimble"
     display_name: "Nimble"
     unlock_level: 15
-    trigger: "entity_damage"
-    display: { lore: [ "&7Light-weapon hits grant &a{multiplier}x&7 speed for {duration}s." ] }
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7Wielding a light weapon reduces knockback &a{amount}&7." ] }
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:knockback_resist"
         filters: [ { tool: "#c:light_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          amount: { linear: { base: 0.2, step: 0.004, max: 0.6 } }
+          duration: { constant: 8.0 }
           uuid: { constant: "22148c0b-ebf1-5c2e-af30-0d3c15b6d09d" }
-          duration: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "flurry"
-    display_name: "Flurry"
+  # -- PRIMARY ABILITY (L25): the bleed. A hunger-gated shift-attack opens a
+  # festering wound. No cooldown: the hunger cost is the gate (heavy_weapons L25
+  # precedent), which suits a fast, cheap swing and avoids a hidden timer. Wither
+  # is re-applied by the weapon's rapid hits, so the DoT stays up in a flurry.
+  - id: "laceration"
+    display_name: "Laceration"
     unlock_level: 25
     trigger: "entity_damage"
     display:
       lore:
-        - "&7Shift-attack with a light weapon for &a{multiplier}x&7 damage + poison."
+        - "&7Shift-attack with a light weapon to open a bleeding wound: &a{multiplier}x&7 damage + wither."
         - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, light weapon, 5s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, light weapon, 3+ hunger."
     requirements:
-      cooldown: 5.0
       state: [ "is_sneaking" ]
       items: [ { action: "possession", tag: "#c:light_weapons", slot: "MAIN_HAND" } ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eFlurry cooling down: {time}s" } }
+    on_failure: { exhaustion: { action_bar: "&cToo hungry to lacerate!" } }
     mechanics:
       - type: "core:modify_damage"
         filters: [ { tool: "#c:light_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 1.3, step: 0.01, max: 1.6 } }
+          multiplier: { linear: { base: 1.2, step: 0.004, max: 1.4 } }
       - type: "core:apply_status"
         filters: [ { tool: "#c:light_weapons" } ]
         parameters:
-          effect: { constant: "minecraft:poison" }     # P2-11 namespaced
+          effect: { constant: "minecraft:wither" }     # P2-11 namespaced
           duration: { linear: { base: 3.0, step: 0.04, max: 7.0 } }
           amplifier: { constant: 0.0 }
-    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Flurry! ✦" } }
-  - id: "vampiric_strike"
-    display_name: "Vampiric Strike"
+    feedback: { notify: { action_bar: true, chat: false, message: "&7✦ Laceration! ✦" } }
+  # -- MAJOR PASSIVE (L50): the volume spike. A doubling of swing rate turns the
+  # weapon's high hit count into more blows (and more DoT re-applications) per
+  # second, so the tree scales by volume rather than raw per-hit power.
+  - id: "quick_hands"
+    display_name: "Quick Hands"
     unlock_level: 50
     trigger: "entity_damage"
-    display: { lore: [ "&7Heal &a{percentage}%&7 of damage dealt with light weapons." ] }
+    display: { lore: [ "&7Light-weapon hits grant &a{multiplier}x&7 attack speed for {duration}s." ] }
     mechanics:
-      - type: "core:lifesteal"
+      - type: "core:modify_attack_speed"
         filters: [ { tool: "#c:light_weapons" } ]
         parameters:
-          percentage: { linear: { base: 3.0, step: 0.06, max: 10.0 } }
+          multiplier: { linear: { base: 1.03, step: 0.004, max: 1.4 } }
+          duration: { constant: 6.0 }
+          uuid: { constant: "6a3c2d1e-8f54-4b9a-9c2e-0f1b3d5a7c92" }
     feedback: { notify: { action_bar: false } }
-  - id: "evasive"
-    display_name: "Evasive"
+  # -- SYNERGY PASSIVE (L75): the deflect. The agile defensive flagship: a chance
+  # to parry an incoming blow and nullify it entirely. Feedback fires only on a
+  # successful parry (success_only) so a missed roll never spams a cue — the
+  # low-chance-avoid case the framework mandates surfacing to the player.
+  - id: "deflect"
+    display_name: "Deflect"
     unlock_level: 75
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Holding a light weapon: &a{chance}%&7 dodge." ] }
+    display: { lore: [ "&7Wielding a light weapon: &a{chance}%&7 to parry & nullify a blow." ] }
     mechanics:
-      - type: "core:dodge"
+      - type: "core:block_damage"
         filters: [ { tool: "#c:light_weapons" } ]
         parameters:
           chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "blade_dancer"
-    display_name: "Blade Dancer"
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&7✦ Deflected! ✦" }
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.6, pitch: 1.2, target: "self" } ]
+      success_only: true
+  # -- MASTERY CAPSTONE (L100): Blade Rush. Each landed hit stacks a growing
+  # damage multiplier held by a short window, so committed combat escalates to a
+  # peak ramp and resets when you stop swinging. A constant spawns the ramp; it is
+  # the sanctioned constant capstone (no levels left to grow). It does not stack a
+  # second flat scalar onto Quick Strike, so there is no runaway multiplication.
+  - id: "blade_rush"
+    display_name: "Blade Rush"
     unlock_level: 100
     trigger: "entity_damage"
-    display: { lore: [ "&7Light-weapon damage &a{multiplier}x&7." ] }
+    display:
+      lore:
+        - "&7Each light-weapon hit builds a ramp up to &a+60%&7 damage, held &a4s&7 while you fight."
+        - "&7The ramp resets when you stop swinging."
     mechanics:
-      - type: "core:modify_damage"
+      - type: "core:fury"
         filters: [ { tool: "#c:light_weapons" } ]
         parameters:
-          multiplier: { linear: { base: 2.0, step: 0.02, max: 2.8 } }
+          multiplier_step: { constant: 0.1 }
+          max_stacks: { constant: 6 }
+          window: { constant: 4.0 }
     feedback: { notify: { action_bar: false } }

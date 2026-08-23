@@ -193,8 +193,8 @@ skill YAMLs):
 | `#c:stone_products` | Decorative stone blocks, walls, slabs, stairs, glass |
 | `#c:redstone_components` | Redstone dust, torches, repeaters, comparators, pistons, observers, hoppers, dispensers, droppers, redstone lamps, levers, daylight detectors, target blocks, note blocks, crafters, tripwire hooks, and rails (building redstone sources) |
 | `#c:herbs` | `#minecraft:flowers`, `#minecraft:tall_flowers`, sugar cane, cactus, mushrooms, etc. |
-| `#c:heavy_weapons` | Iron/diamond/netherite swords and axes, mace |
-| `#c:light_weapons` | Wooden/stone/golden swords, trident |
+| `#c:heavy_weapons` | Iron/diamond/netherite axes, mace |
+| `#c:light_weapons` | Wooden/stone/golden/iron/diamond/netherite swords, trident |
 | `#c:tools` | `#minecraft:pickaxes/axes/shovels/hoes/swords`, bows, crossbows, trident, mace, armor pieces |
 | `#c:leather_armor` | Leather helmet/chestplate/leggings/boots |
 | `#c:light_armor` | `#c:leather_armor` (armor-gating tier) |

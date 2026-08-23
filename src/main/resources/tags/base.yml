@@ -252,9 +252,6 @@ custom_tags:
     - "minecraft:large_fern"
 
   heavy_weapons:
-    - "minecraft:iron_sword"
-    - "minecraft:diamond_sword"
-    - "minecraft:netherite_sword"
     - "minecraft:iron_axe"
     - "minecraft:diamond_axe"
     - "minecraft:netherite_axe"
@@ -264,6 +261,9 @@ custom_tags:
     - "minecraft:wooden_sword"
     - "minecraft:stone_sword"
     - "minecraft:golden_sword"
+    - "minecraft:iron_sword"
+    - "minecraft:diamond_sword"
+    - "minecraft:netherite_sword"
     - "minecraft:trident"
 
   # Any sword, axe, or mace. The dual-wield skill's both-hands weapon set.
