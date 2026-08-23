@@ -266,7 +266,11 @@ abilities:
   # A "transmute table" is expressed as several core:transmute mechanic entries;
   # the engine runs the one whose source matches the held main-hand item, and
   # the rest are no-ops (spending nothing). Requires right_click_block on a
-  # cauldron, sneaking, and a shared cost/cooldown on the ability.
+  # reaction block, sneaking, and a shared cost/cooldown on the ability. The
+  # optional "block" parameter (material or tag) restricts the reaction block
+  # the swap runs on; the ability's "target" filter already scopes it in most
+  # skills, so "block" is an optional self-contained guard. Cauldrons are the
+  # alchemy reaction vessel; furnaces serve masonry kiln-firing.
   # - id: "transmutation"
   #   display_name: "Transmutation"
   #   unlock_level: 25
@@ -284,6 +288,15 @@ abilities:
   #         product: { constant: "minecraft:gold_ingot" }
   #         source_count: { constant: 4 }
   #         product_count: { constant: 1 }
+  #   # A masonry kiln-firing swap runs on a furnace (self-checked by "block"):
+  #   #     - type: "core:transmute"
+  #   #       filters: [ { target: "#c:furnaces" } ]
+  #   #       parameters:
+  #   #         source: { constant: "minecraft:clay_ball" }
+  #   #         product: { constant: "minecraft:brick" }
+  #   #         source_count: { constant: 1 }
+  #   #         product_count: { constant: 1 }
+  #   #         block: { constant: "#c:furnaces" }
   # core:modify_brew_output adds a chance (0-100) of an extra bottle per brew:
   #   mechanics:
   #     - type: "core:modify_brew_output"
@@ -358,3 +371,29 @@ abilities:
   #   feedback:
   #     notify:
   #       action_bar: false          # Silent passive; no per-level-up spam
+
+  # -- ABILITY 5: Structure Summon (Scaled Entity Capstone) --
+  # core:clay_golem builds a scaled clay golem when a carved pumpkin tops a
+  # four-clay-block golem scaffold (the iron-golem T layout, but clay). The
+  # head + four clay blocks are cleared and a scaled IronGolem is spawned. A
+  # pattern miss is a no-op spending nothing. Presets land below/above vanilla:
+  # scale 0.7 (30% smaller), speed_multiplier 1.5 (50% faster), damage_multiplier
+  # 0.7 (30% weaker). Bind to block_place filtered to carved_pumpkin.
+  # - id: "clay_golem"
+  #   display_name: "Clay Golem"
+  #   unlock_level: 100
+  #   trigger: "block_place"
+  #   display:
+  #     lore:
+  #       - "&7Build a golem from clay blocks and top it"
+  #       - "&7with a carved pumpkin to summon a Clay Golem."
+  #   mechanics:
+  #     - type: "core:clay_golem"
+  #       filters: [ { target: "minecraft:carved_pumpkin" } ]
+  #       parameters:
+  #         scale: { constant: 0.7 }
+  #         speed_multiplier: { constant: 1.5 }
+  #         damage_multiplier: { constant: 0.7 }
+  #         name: { constant: "Clay Golem" }
+  #   feedback:
+  #     notify: { action_bar: true, chat: false, message: "&e✦ Clay Golem ✦" }

@@ -387,15 +387,23 @@ consumed once per batch and cannot be re-rolled for free.
 ### core:transmute
 
 Converts a held stack of one material into another on a right-click of a
-cauldron (the alchemy transmutation topic). Each `core:transmute` mechanic
-defines a single source-&gt;product swap; an ability's "transmute table" is
-expressed as several of these mechanics so it stays within the scalar evaluator
-schema. The mechanic reads the player's main-hand item: when it matches `source`
-with at least `source_count` items, `source_count` are consumed and
-`product_count` of `product` are granted (inventory, dropped if full). The
-vanilla cauldron interaction is cancelled. A mechanic whose `source` does not
-match the held item is a no-op, so the remaining swap-mechanics in the same
-ability spend nothing and one activation performs exactly the held swap.
+reaction block (a cauldron for the alchemy transmutation topic, a furnace for a
+masonry kiln-firing topic). Each `core:transmute` mechanic defines a single
+source-&gt;product swap; an ability's "transmute table" is expressed as several of
+these mechanics so it stays within the scalar evaluator schema. The mechanic
+reads the player's main-hand item: when it matches `source` with at least
+`source_count` items, `source_count` are consumed and `product_count` of
+`product` are granted (inventory, dropped if full). The vanilla reaction-block
+interaction is cancelled. A mechanic whose `source` does not match the held item
+is a no-op, so the remaining swap-mechanics in the same ability spend nothing
+and one activation performs exactly the held swap.
+
+The optional `block` parameter names the reaction block a swap must run on (a
+material or tag). When present it is verified against the clicked block before
+anything is consumed; a mismatched block is a no-op that spends nothing. The
+ability's own `target` filter usually scopes the station already; `block` is a
+self-contained guard so a single entry never fires against the wrong reaction
+vessel.
 
 **Parameters:**
 
@@ -403,6 +411,7 @@ ability spend nothing and one activation performs exactly the held swap.
 |---|---|---|---|
 | `source` | string | required | Material held in the main hand, e.g. `minecraft:iron_ingot` |
 | `product` | string | required | Material to grant, e.g. `minecraft:gold_ingot` |
+| `block` | string | none | Optional material or tag (`#c:furnaces`) restricting the reaction block the swap runs on |
 | `source_count` | double | `1` | Number of source items consumed per activation |
 | `product_count` | double | `1` | Number of product items granted per activation |
 
@@ -1266,6 +1275,36 @@ right-click. The villager is a normal vanilla entity with no Skilling state.
 **Parameters:** None
 
 **Event:** `PlayerInteractEvent` (`right_click_air` or `right_click_block` trigger)
+
+### core:clay_golem
+
+Builds a scaled clay golem when a player completes a carved-pumpkin golem
+scaffold out of clay blocks instead of iron blocks. On a `block_place` of a
+carved pumpkin the mechanic scans the four expected scaffold positions relative
+to the head: the upper body, left arm, right arm, and lower body (mirroring the
+vanilla iron-golem T layout, using clay). When all four are clay the head and
+the four scaffold blocks are cleared and an `IronGolem` is spawned with feet on
+the floor below the structure. A pattern miss is a no-op that spends nothing,
+and a normal carve-pumpkin-golem built from iron is untouched. The clay blocks
+and pumpkin are themselves the ability's material cost.
+
+The golem's stats come from ratio presets: `scale` (0.7 = 30% smaller via
+`minecraft:scale`), `speed_multiplier` (1.5 = 50% faster via
+`minecraft:movement_speed`) and `damage_multiplier` (0.7 = 30% weaker via
+`minecraft:attack_damage`). Modifiers are written as persistent entity NBT, so a
+chunk reload keeps the scales; the result is still a normal vanilla
+`IronGolem`, so uninstalling the plugin leaves safe entity state.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `scale` | double | `0.7` | Size multiplier (`minecraft:scale`) |
+| `speed_multiplier` | double | `1.5` | Movement-speed multiplier |
+| `damage_multiplier` | double | `0.7` | Attack-damage multiplier |
+| `name` | string | none | Optional custom name shown on the golem (e.g. `Clay Golem`) |
+
+**Event:** `block_place` (`BlockPlaceEvent`, filtered to `minecraft:carved_pumpkin`)
 
 ### core:barter_luck
 

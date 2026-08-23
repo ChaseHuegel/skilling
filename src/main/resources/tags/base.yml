@@ -97,6 +97,106 @@ custom_tags:
     - "minecraft:glass"
     - "minecraft:glass_pane"
 
+  # ----------------------------------------
+  # MASONRY SKILL TAGS
+  # ----------------------------------------
+  # Raw earth blocks the masonry skill gathers for clay. Kept to the truly
+  # clay-forming sources so digging mud or clay is a real foraging loop and is
+  # time-gated by travel (clay sits by water, mud in lush/mangrove biomes).
+  clay_sources:
+    - "minecraft:clay"
+    - "minecraft:mud"
+
+  # The kiln's fired products, in item form (the furnace_extract target). The
+  # raw clay/sand/stone feed enters a furnace and comes out here, so this is the
+  # kiln grind that drives the masonry XP loop and the L1 Firing output scalar.
+  fired_products:
+    - "minecraft:stone"
+    - "minecraft:smooth_stone"
+    - "minecraft:terracotta"
+    - "minecraft:glass"
+    - "minecraft:brick"
+    - "minecraft:nether_brick"
+
+  # Reaction vessels for the masonry Kiln Fire (L25), in block form. These let a
+  # right-click transmute fire raw clay/sand instantly rather than running the
+  # furnace. Kept disjoint from alchemy's cauldrons (its own reaction topic).
+  furnaces:
+    - "minecraft:furnace"
+    - "minecraft:blast_furnace"
+    - "minecraft:smoker"
+
+  # The masonry craft-products loop: item-form recipes a mason turns raw fired
+  # and sculpted stone into. Deliberately disjoint from building's
+  # construction_crafts (scaffolding/redstone/explosives) so a single craft
+  # never double-awards two skills. Stone-brick decorative variants live here
+  # because a mason makes them; building's placement sets own where they go down.
+  masonry_craft:
+    - "minecraft:bricks"
+    - "minecraft:mud_bricks"
+    - "minecraft:nether_bricks"
+    - "minecraft:stone_bricks"
+    - "minecraft:chiseled_stone_bricks"
+    - "minecraft:cracked_stone_bricks"
+    - "minecraft:mossy_stone_bricks"
+    - "minecraft:stone_brick_slab"
+    - "minecraft:stone_brick_stairs"
+    - "minecraft:stone_brick_wall"
+    - "minecraft:quartz_block"
+    - "minecraft:smooth_quartz"
+    - "minecraft:quartz_pillar"
+    - "minecraft:chiseled_quartz_block"
+    - "minecraft:quartz_bricks"
+    - "minecraft:blackstone"
+    - "minecraft:polished_blackstone"
+    - "minecraft:polished_blackstone_bricks"
+    - "minecraft:chiseled_polished_blackstone"
+
+  # Cheap-bulk concrete powder recipes, priced as a low-return craft source. Each
+  # of the sixteen colors is a flat mixing craft (sand + gravel + dye), so this
+  # is the spammable low-value grind in the masonry XP loop.
+  concrete_powder:
+    - "minecraft:white_concrete_powder"
+    - "minecraft:orange_concrete_powder"
+    - "minecraft:magenta_concrete_powder"
+    - "minecraft:light_blue_concrete_powder"
+    - "minecraft:yellow_concrete_powder"
+    - "minecraft:lime_concrete_powder"
+    - "minecraft:pink_concrete_powder"
+    - "minecraft:gray_concrete_powder"
+    - "minecraft:light_gray_concrete_powder"
+    - "minecraft:cyan_concrete_powder"
+    - "minecraft:purple_concrete_powder"
+    - "minecraft:blue_concrete_powder"
+    - "minecraft:brown_concrete_powder"
+    - "minecraft:green_concrete_powder"
+    - "minecraft:red_concrete_powder"
+    - "minecraft:black_concrete_powder"
+
+  # The masonry placement loop, kept disjoint from building's sets. Placement
+  # goals exclude concrete (construction_blocks), terracotta and plain glass and
+  # stone-bricks (stone_products) so no single placement double-awards building
+  # and masonry. What is left is the fired and sculpted earth palette building
+  # does not already claim: brick, mud, nether, prismarine, quartz, blackstone.
+  masonry_placed:
+    - "minecraft:bricks"
+    - "minecraft:mud_bricks"
+    - "minecraft:nether_bricks"
+    - "minecraft:prismarine"
+    - "minecraft:prismarine_bricks"
+    - "minecraft:dark_prismarine"
+    - "minecraft:prismarine_slab"
+    - "minecraft:prismarine_stairs"
+    - "minecraft:quartz_block"
+    - "minecraft:smooth_quartz"
+    - "minecraft:quartz_pillar"
+    - "minecraft:chiseled_quartz_block"
+    - "minecraft:quartz_bricks"
+    - "minecraft:blackstone"
+    - "minecraft:polished_blackstone"
+    - "minecraft:polished_blackstone_bricks"
+    - "minecraft:chiseled_polished_blackstone"
+
   # Redstone wiring and mechanism blocks, for the building skill's redstone
   # construction XP sources (craft and place). Powers only the act of building
   # contraptions, never raw BlockRedstoneEvent current (anti-grind, REPORT

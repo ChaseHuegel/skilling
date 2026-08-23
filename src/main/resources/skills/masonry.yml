@@ -1,94 +1,170 @@
+# ==========================================
+# MASONRY SKILL — The Kilnwright
+# ==========================================
+# Gather raw clay and mud, fire them into stone, brick, and glass, craft and set
+# sculpted building products, and finally breathe life into a clay golem. The
+# loop is mine the earth -> fire it in the kiln -> craft and place its products.
+# Cleanly disjoint from Building (which places long-scaffold construction and
+# concrete/terracotta/glass) because masonry's placement set is the fired and
+# sculpted earth palette building does not claim.
+#
+# Abilities (6-tier ladder):
+#   L1   Firing          kiln products (fired clay/stone) yield more (identity scalar)
+#   L15  Clay Yield      gathering clay/mud yields more (QoL, gather loop)
+#   L25  Kiln Fire       sneak + right-click a furnace to fire raw clay instantly
+#   L50  Batch Brickworks crafted masonry products yield more (economy spike)
+#   L75  Frugal Mason    chance to refund an ingredient when crafting masonry
+#   L100 Clay Golem      build a scale-smaller, faster, weaker clay golem
+#
+# XP loop: gathering earth (time-gated, moderate), firing in the kiln (fuel +
+# time gated, the primary grind), crafting masonry (real material -> higher)
+# and concrete powder (cheap bulk -> low), and placing masonry's own set.
 id: "masonry"
 max_level: 100
 display: { name: "Masonry", icon: "minecraft:stone_bricks", color: "YELLOW", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  # furnace_extract is bulk-scaled per extracted item: R is the per-item rate.
+  # Gathering clay/mud is the raw feed. Time-gated by travel to clay by water.
+  - trigger: "block_break"
+    filters: [ { target: "#c:clay_sources" }, { state: "player_placed:false" } ]
+    reward: { constant: 30.9 }
+  # Firing is the kiln grind: per extracted item, gated by fuel and smelting time.
   - trigger: "furnace_extract"
-    filters:
-      - target: "minecraft:terracotta"
-    reward: { constant: 53.8 }
-  - trigger: "furnace_extract"
-    filters:
-      - target: "minecraft:glass"
-    reward: { constant: 53.8 }
+    filters: [ { target: "#c:fired_products" } ]
+    reward: { constant: 45.0 }
+  # Crafting masonry products costs real fired/sculpted material -> pays higher.
+  - trigger: "craft_item"
+    filters: [ { target: "#c:masonry_craft" } ]
+    reward: { constant: 40.0 }
+  # Concrete powder is a cheap, bulk, spammable mixing craft -> low return.
+  - trigger: "craft_item"
+    filters: [ { target: "#c:concrete_powder" } ]
+    reward: { constant: 15.0 }
+  # Placing masonry's own set (brick/mud/nether/prismarine/quartz/blackstone).
+  # Plain stone, terracotta, glass and concrete stay Building's placement loop.
   - trigger: "block_place"
-    filters: [ { target: "#c:stone_products" } ]
-    reward: { constant: 53.8 }
+    filters: [ { target: "#c:masonry_placed" } ]
+    reward: { constant: 30.0 }
 abilities:
-  - id: "stone_folding"
-    display_name: "Stone Folding"
+  # -- FOUNDATIONAL (L1): the primary kiln scalar. Fired products yield more,
+  # growing from level 1 so the whole climb is felt. Starts above 1.0 so the
+  # identity works the instant it unlocks.
+  - id: "firing"
+    display_name: "Firing"
     unlock_level: 1
     trigger: "furnace_extract"
-    display: { lore: [ "&7Smelting stone/clay yields &a{multiplier}x&7 output." ] }
+    display: { lore: [ "&7Kiln products yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_furnace_output"
-        filters: [ { target: "minecraft:smooth_stone" } ]
+        filters: [ { target: "#c:fired_products" } ]
         parameters:
-          multiplier: { linear: { base: 1.0, step: 0.005, max: 1.5 } }
+          multiplier: { linear: { base: 1.05, step: 0.0096, max: 2.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "kiln_master"
-    display_name: "Kiln Master"
+
+  # -- QOL PASSIVE (L15): more clay from every dig, easing the raw feed early.
+  # Mechanic overlaps herbalism's gather scalar but on a disjoint material.
+  - id: "clay_yield"
+    display_name: "Clay Yield"
     unlock_level: 15
-    trigger: "furnace_extract"
-    display: { lore: [ "&7Bonus XP from smelting stone &a{multiplier}x&7." ] }
+    trigger: "block_break"
+    display: { lore: [ "&7Clay & mud yield +&a{yield_chance}%&7." ] }
     mechanics:
-      - type: "core:xp_bonus"
+      - type: "core:yield_multiplier"
+        filters: [ { target: "#c:clay_sources" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
+          yield_chance: { linear: { base: 15.0, step: 0.45, max: 60.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "reinforced_walls"
-    display_name: "Reinforced Walls"
+
+  # -- PRIMARY ACTIVE (L25): the kiln. Sneak + right-click a furnace with raw
+  # clay/sand to fire it instantly, skipping smelting fuel and time. Value by
+  # value the swaps are roughly neutral (1 clay ball -> 1 brick), so this saves
+  # fuel/time rather than multiplying clay. Material + hunger gate, no cooldown.
+  - id: "kiln_fire"
+    display_name: "Kiln Fire"
     unlock_level: 25
-    trigger: "craft_item"
+    trigger: "right_click_block"
     display:
       lore:
-        - "&7Shift+Craft stone bricks to gain &a{multiplier}x&7 output."
+        - "&7Sneak + interact a furnace to fire raw clay instantly."
+        - "&7Clay Ball &8-> &7Brick, Sand &8-> &7Glass"
         - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, 8s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, furnace, raw material in hand, 3+ hunger."
     requirements:
-      cooldown: 8.0
       state: [ "is_sneaking" ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eReinforced Walls cooling down: {time}s" } }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to fire the kiln!" }
     mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "#minecraft:stone_bricks" } ]
+      - type: "core:transmute"
+        filters: [ { target: "#c:furnaces" } ]
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.01, max: 1.75 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&e✦ Reinforced Walls! ✦" } }
-  - id: "geometric_eye"
-    display_name: "Geometric Eye"
+          source: { constant: "minecraft:clay_ball" }
+          product: { constant: "minecraft:brick" }
+          source_count: { constant: 1 }
+          product_count: { constant: 1 }
+          block: { constant: "#c:furnaces" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:furnaces" } ]
+        parameters:
+          source: { constant: "minecraft:sand" }
+          product: { constant: "minecraft:glass" }
+          source_count: { constant: 1 }
+          product_count: { constant: 1 }
+          block: { constant: "#c:furnaces" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&e✦ Kiln Fire ✦" }
+      sounds: [ { type: "minecraft:block.fire.ambient", volume: 0.5, pitch: 1.2, target: "self" } ]
+
+  # -- MAJOR PASSIVE (L50): the masonry craft economy spikes. Crafted masonry
+  # products yield more, the crafting counterpart to L1's kiln scalar.
+  - id: "batch_brickworks"
+    display_name: "Batch Brickworks"
     unlock_level: 50
-    trigger: "block_break"
-    display:
-      lore: [ "&7Breaking stone with a pick grants &a{amplifier}&7 Haste for {duration}s." ]
-    mechanics:
-      - type: "core:haste_effect"
-        filters: [ { tool: "#minecraft:pickaxes" }, { target: "#c:stone" } ]
-        parameters:
-          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
-          duration: { constant: 30.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "glaze_artisan"
-    display_name: "Glaze Artisan"
-    unlock_level: 75
-    trigger: "furnace_extract"
-    display: { lore: [ "&7Terracotta & glass output &a{multiplier}x&7." ] }
-    mechanics:
-      - type: "core:modify_furnace_output"
-        filters: [ { target: "minecraft:terracotta" } ]
-        parameters:
-          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "master_mason"
-    display_name: "Master Mason"
-    unlock_level: 100
     trigger: "craft_item"
-    display: { lore: [ "&7Stone brick crafts yield &a{multiplier}x&7 output." ] }
+    display: { lore: [ "&7Masonry product crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
-        filters: [ { target: "#minecraft:stone_bricks" } ]
+        filters: [ { target: "#c:masonry_craft" } ]
         parameters:
-          multiplier: { linear: { base: 2.0, step: 0.01, max: 3.0 } }
+          multiplier: { linear: { base: 1.1, step: 0.008, max: 2.0 } }
     feedback: { notify: { action_bar: false } }
+
+  # -- SYNERGY PASSIVE (L75): mastery wastes nothing. Each masonry craft has a
+  # chance to refund one ingredient it used. Mechanic overlaps carpentry's Craft
+  # Refund but on a disjoint resource set.
+  - id: "frugal_mason"
+    display_name: "Frugal Mason"
+    unlock_level: 75
+    trigger: "craft_item"
+    display: { lore: [ "&a{chance}%&7 chance to refund an ingredient when crafting masonry." ] }
+    mechanics:
+      - type: "core:ingredient_refund"
+        filters: [ { target: "#c:masonry_craft" } ]
+        parameters:
+          chance: { linear: { base: 5.0, step: 1.0, max: 30.0 } }
+    feedback: { notify: { action_bar: false } }
+
+  # -- MASTERY CAPSTONE (L100): build a clay golem. Completing the golem
+  # scaffold out of clay (not iron) and topping it with a carved pumpkin summons
+  # an iron golem that is 30% smaller, 50% faster, and deals 30% less damage.
+  # The five blocks are the cost: the masonry own loop feeds the clay and the
+  # kiln keeps plenty on hand.
+  - id: "clay_golem"
+    display_name: "Clay Golem"
+    unlock_level: 100
+    trigger: "block_place"
+    display:
+      lore:
+        - "&7Build a golem from clay blocks and top it"
+        - "&7with a carved pumpkin to summon a Clay Golem."
+    mechanics:
+      - type: "core:clay_golem"
+        filters: [ { target: "minecraft:carved_pumpkin" } ]
+        parameters:
+          scale: { constant: 0.7 }
+          speed_multiplier: { constant: 1.5 }
+          damage_multiplier: { constant: 0.7 }
+          name: { constant: "Clay Golem" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&e✦ Clay Golem ✦" }
+      sounds: [ { type: "minecraft:entity.iron_golem.repair", volume: 0.7, pitch: 0.8, target: "self" } ]

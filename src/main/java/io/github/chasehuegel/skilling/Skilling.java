@@ -390,10 +390,11 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:modify_brew_output", ModifyBrewOutputMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:potion_self_immunity", PotionSelfImmunityMechanic.class, List.of());
-        mechReg.register("core:transmute", TransmuteMechanic.class, List.of("source", "product", "source_count", "product_count"),
+        mechReg.register("core:transmute", TransmuteMechanic.class, List.of("source", "product", "block", "source_count", "product_count"),
                 (ctx, p) -> {
                     MechanicParamValidators.material(ctx, p, "source");
                     MechanicParamValidators.material(ctx, p, "product");
+                    MechanicParamValidators.materialOrTag(ctx, p, "block");
                     MechanicParamValidators.positive(ctx, p, "source_count");
                     MechanicParamValidators.positive(ctx, p, "product_count");
                 });
@@ -535,6 +536,12 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:villager_xp", VillagerXpMechanic.class, List.of("amount"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "amount"));
         mechReg.register("core:summon_villager", SummonVillagerMechanic.class, List.of());
+        mechReg.register("core:clay_golem", ClayGolemMechanic.class, List.of("scale", "speed_multiplier", "damage_multiplier", "name"),
+                (ctx, p) -> {
+                    MechanicParamValidators.nonNegative(ctx, p, "scale");
+                    MechanicParamValidators.nonNegative(ctx, p, "speed_multiplier");
+                    MechanicParamValidators.nonNegative(ctx, p, "damage_multiplier");
+                });
         mechReg.register("core:barter_luck", BarterLuckMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:reroll_trades", RerollTradesMechanic.class, List.of());
