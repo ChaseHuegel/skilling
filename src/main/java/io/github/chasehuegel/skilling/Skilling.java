@@ -42,6 +42,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
@@ -535,6 +536,21 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:pick_up_mob", PickUpMobMechanic.class, List.of("max_passengers"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "max_passengers"));
         mechReg.register("core:drop_passengers", DropPassengersMechanic.class, List.of());
+        mechReg.register("core:bred_attribute", BredAttributeMechanic.class, List.of("attribute", "amount", "uuid"),
+                (ctx, p) -> {
+                    MechanicParamValidators.attribute(ctx, p, "attribute");
+                    MechanicParamValidators.uuid(ctx, p, "uuid");
+                });
+        mechReg.register("core:mark_companion", MarkCompanionMechanic.class, List.of());
+        mechReg.register("core:summon_companion", SummonCompanionMechanic.class, List.of("mob_type"));
+        mechReg.register("core:pet_attribute", PetAttributeMechanic.class,
+                List.of("damage", "reduction", "radius", "duration", "uuid"),
+                (ctx, p) -> {
+                    MechanicParamValidators.nonNegative(ctx, p, "damage");
+                    MechanicParamValidators.chance(ctx, p, "reduction", 0.5);
+                    MechanicParamValidators.radius(ctx, p, "radius");
+                    MechanicParamValidators.nonNegative(ctx, p, "duration");
+                });
         mechReg.register("core:sneak_speed", SneakSpeedMechanic.class, List.of("multiplier", "uuid"));
         mechReg.register("core:sneak_effect", SneakEffectMechanic.class, List.of("effect", "amplifier", "duration"),
                 (ctx, p) -> {
@@ -634,6 +650,8 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("item_damage", ItemDamageTrigger.class);
         trigReg.register("player_shear", ShearEntityTrigger.class);
         trigReg.register("player_tame", TameEntityTrigger.class);
+        trigReg.register("milk_animal", MilkAnimalTrigger.class);
+        trigReg.register("feed_animal", FeedAnimalTrigger.class);
         trigReg.register("launch_projectile", LaunchProjectileTrigger.class);
         trigReg.register("projectile_hit", ProjectileHitTrigger.class);
         trigReg.register("resurrect", ResurrectTrigger.class);
@@ -905,6 +923,45 @@ public final class Skilling extends JavaPlugin {
             if (!hand.hasData(io.papermc.paper.datacomponent.DataComponentTypes.INSTRUMENT)) return false;
             var instrument = hand.getData(io.papermc.paper.datacomponent.DataComponentTypes.INSTRUMENT);
             return instrument != null && v.equals(instrument.getKey().asString());
+        });
+
+        // Husbandry companion gates: read the player's persisted tame/bound flags
+        // so the wolf/horse call (L100) can require a prior tame, and so a bound
+        // pet is known to exist without scanning chunks. Values are "wolf"/"horse"
+        // (default "wolf") selecting the species.
+        sf.register("has_tamed", (p, e, v) -> {
+            boolean wolf = "" .equals(v) || "wolf".equalsIgnoreCase(v);
+            return wolf
+                    ? io.github.chasehuegel.skilling.engine.mechanic.impl.PetCompanionStore.hasTamedWolf(p.getUniqueId())
+                    : io.github.chasehuegel.skilling.engine.mechanic.impl.PetCompanionStore.hasTamedHorse(p.getUniqueId());
+        });
+        sf.register("has_bound_pet_alive", (p, e, v) -> {
+            boolean wolf = "" .equals(v) || "wolf".equalsIgnoreCase(v);
+            var species = wolf
+                    ? io.github.chasehuegel.skilling.engine.mechanic.impl.PetCompanionStore.Species.WOLF
+                    : io.github.chasehuegel.skilling.engine.mechanic.impl.PetCompanionStore.Species.HORSE;
+            return io.github.chasehuegel.skilling.engine.mechanic.impl.PetCompanionStore.snapshot(p.getUniqueId(), species) != null;
+        });
+
+        // True when a tamed companion (wolf or horse) of the player is within the
+        // given radius (default 12). Gates companion synergies (L75) so the buff
+        // applies only while the pet is actually by the player's side.
+        sf.register("nearby_companion", (p, e, v) -> {
+            double radius;
+            try {
+                radius = v == null || v.isBlank() ? 12.0 : Double.parseDouble(v);
+            } catch (NumberFormatException ex) {
+                radius = 12.0;
+            }
+            for (org.bukkit.entity.LivingEntity entity : p.getLocation().getNearbyLivingEntities(
+                    Math.max(0, Math.min(radius, 32)))) {
+                if (!(entity instanceof org.bukkit.entity.Tameable tame)) continue;
+                if (!tame.isTamed()) continue;
+                if (tame.getOwner() instanceof Player owner && owner.getUniqueId().equals(p.getUniqueId())) {
+                    return true;
+                }
+            }
+            return false;
         });
     }
 

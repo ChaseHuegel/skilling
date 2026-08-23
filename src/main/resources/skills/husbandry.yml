@@ -1,186 +1,190 @@
-id: husbandry
-display_name: Husbandry
+id: "husbandry"
+display_name: "Husbandry"
 max_level: 100
 display:
-  name: Husbandry
-  icon: minecraft:wheat
-  color: GREEN
-  style: SEGMENTED_10
+  name: "Husbandry"
+  icon: "minecraft:wheat"
+  color: "GREEN"
+  style: "SEGMENTED_10"
 progression:
-  curve: polynomial
+  curve: "polynomial"
   base_xp: 50.0
   exponent: 2.5
+# All XP sources are costed or time-gated: breeding cooldown, wool regrowth, tame
+# scarcity, honey refill, sniffer digs, and the consumed milk/feed interactions.
 xp_sources:
-  - trigger: breed_animals
-    reward:
-      constant:
-        value: 256.4
-  - trigger: player_shear
-    reward:
-      constant:
-        value: 256.4
-  - trigger: player_tame
-    reward:
-      constant:
-        value: 256.4
-  - trigger: player_interact
+  # The primary grind: breeding is gated by the vanilla 5-minute parent cooldown.
+  - trigger: "breed_animals"
+    reward: { constant: 256.4 }
+  # Shear is cheap and repeatable but gated by wool regrowth between shears.
+  - trigger: "player_shear"
+    reward: { constant: 128.0 }
+  - trigger: "player_tame"
+    reward: { constant: 256.4 }
+  # Harvesting honey is gated by the hive's honey level / refill time.
+  - trigger: "player_interact"
     filters:
-      - target: '#minecraft:beehives'
-      - tool: minecraft:glass_bottle
-      - state: honey_level:above:4
-    reward:
-      constant:
-        value: 60
-  - trigger: player_interact
+      - { target: "#minecraft:beehives", tool: "minecraft:glass_bottle", state: "honey_level:above:4" }
+    reward: { constant: 60.0 }
+  - trigger: "player_interact"
     filters:
-      - target: '#minecraft:beehives'
-      - tool: minecraft:shears
-      - state: honey_level:above:4
-    reward:
-      constant:
-        value: 60
-  - trigger: sniffer
-    reward:
-      constant:
-        value: 60
+      - { target: "#minecraft:beehives", tool: "minecraft:shears", state: "honey_level:above:4" }
+    reward: { constant: 60.0 }
+  - trigger: "sniffer"
+    reward: { constant: 60.0 }
+  # Cheap repeatable grind: milking a cow/goat with a bucket has a low value since
+  # the bucket returns as milk and the animal re-registers quickly.
+  - trigger: "milk_animal"
+    reward: { constant: 30.0 }
+  # Cheap repeatable grind: feeding an animal consumes the food, so it is priced
+  # slightly below a free action but still worth doing to raise a herd.
+  - trigger: "feed_animal"
+    reward: { constant: 20.0 }
 abilities:
-  - id: animal_bond
-    display_name: Animal Bond
-    trigger: breed_animals
+  # L1 - Foundational passive / identity: butchering animals doubles their natural
+  # drops (meat, leather, wool) with a scaling chance.
+  - id: "butcher"
+    display_name: "Butcher"
+    unlock_level: 1
+    trigger: "entity_kill"
     display:
       lore:
-        - '&7Breeding & shearing XP &a{multiplier}x&7.'
+        - '&7Slaughtering animals: &a{yield_chance}%&7 chance to double drops.'
     mechanics:
-      - type: core:xp_bonus
+      - type: "core:yield_multiplier"
+        filters: [ { state: "target_type:#c:animals" } ]
         parameters:
-          multiplier:
-            linear:
-              base: 1.05
-              step: 0.01
-              max: 1.6
-  - id: shearing_mastery
-    display_name: Shearing Mastery
+          yield_chance: { linear: { base: 10.0, step: 0.4, max: 50.0 } }
+    feedback: { notify: { action_bar: false } }
+  # L15 - Early efficiency: bred offspring inherit a growing movement-speed bonus
+  # (faster to round up) and the breeding pulses regeneration to the nearby herd.
+  - id: "selective_breeding"
+    display_name: "Selective Breeding"
     unlock_level: 15
-    trigger: player_shear
+    trigger: "breed_animals"
     display:
       lore:
-        - '&7Shearing grants &a{amount}&7 armor for {duration}s (vs animal retaliation).'
+        - '&7Newborn herd +&a{amount}&7 speed.'
+        - '&7Breeding heals nearby animals.'
     mechanics:
-      - type: core:armor_bonus
+      - type: "core:bred_attribute"
         parameters:
-          amount:
-            linear:
-              base: 1
-              step: 0.02
-              max: 3
-          uuid:
-            constant: bbe92a19-add1-5ada-b964-a6c1c1961f1f
-          duration:
-            constant:
-              value: 15
-  - id: mob_porter
-    display_name: Mob Porter
+          attribute: { constant: "minecraft:movement_speed" }
+          amount: { linear: { base: 0.02, step: 0.00095, max: 0.1 } }
+          uuid: { constant: "d1b8e72f-9a4c-4f3f-9a0c-7e66c2a51b23" }
+      - type: "core:aoe_effect"
+        parameters:
+          effect: { constant: "minecraft:regeneration" }
+          radius: { linear: { base: 3.0, step: 0.059, max: 8.0 } }
+          duration: { constant: 5.0 }
+          amplifier: { constant: 1.0 }
+          targets: { constant: "allies" }
+    feedback: { notify: { action_bar: false } }
+  # L25 - Primary active: carry portable mobs on your shoulders. Right-clicking a
+  # carried passenger sets it back down, so pickup and drop share one ability.
+  - id: "mob_porter"
+    display_name: "Mob Porter"
     unlock_level: 25
-    trigger: right_click_entity
+    trigger: "right_click_entity"
     display:
       lore:
         - '&7Sneak + Right-Click a portable mob with an empty hand to carry it on your shoulders.'
         - '&7Carry up to &a{max_passengers}&7 mobs at once.'
         - '&8Requires: Empty hand.'
     requirements:
-      state:
-        - is_sneaking
+      state: [ "is_sneaking" ]
     mechanics:
-      - type: core:pick_up_mob
-        filters:
-          - state: target_type:#c:portable_mobs
+      - type: "core:pick_up_mob"
+        filters: [ { state: "target_type:#c:portable_mobs" } ]
         parameters:
-          max_passengers:
-            linear:
-              base: 1
-              step: 0.04
-              max: 4
-  - id: set_down
-    display_name: Set Down
-    unlock_level: 25
-    trigger: sneak
-    display:
-      lore:
-        - '&7Sneak to set down carried mobs.'
-        - '&8Requires: Empty hand.'
-    mechanics:
-      - type: core:drop_passengers
-        parameters: {
-        }
-  - id: herd_growth
-    display_name: Herd Growth
+          max_passengers: { linear: { base: 1.0, step: 0.04, max: 4.0 } }
+  # L50 - Major passive: a bred herd gets tougher with a scaling max-health
+  # inheritance, so each generation survives more.
+  - id: "heritage"
+    display_name: "Heritage"
     unlock_level: 50
-    trigger: breed_animals
+    trigger: "breed_animals"
     display:
       lore:
-        - '&7Breeding grants &a{amount}&7 knockback resistance for {duration}s.'
+        - '&7Newborn herd +&a{amount}&7 max health.'
     mechanics:
-      - type: core:knockback_resist
+      - type: "core:bred_attribute"
         parameters:
-          amount:
-            linear:
-              base: 0.1
-              step: 0.005
-              max: 0.5
-          uuid:
-            constant: 35acb93d-aa99-5d0c-bcde-c4e4959bca0c
-          duration:
-            constant:
-              value: 20
-  - id: animal_whisperer
-    display_name: Animal Whisperer
+          attribute: { constant: "minecraft:max_health" }
+          amount: { linear: { base: 2.0, step: 0.12, max: 8.0 } }
+          uuid: { constant: "4c0a9e1b-7d5f-4b3a-9c2e-1f8a5b6d7e0f" }
+    feedback: { notify: { action_bar: false } }
+  # L75 - Synergy/companion: while your tamed wolf fights with you, it deals more
+  # damage and takes less. The buff refreshes whenever you take a hit.
+  - id: "bonded_partner"
+    display_name: "Bonded Partner"
     unlock_level: 75
-    trigger: ride_horse
+    trigger: "entity_damage_taken"
     display:
       lore:
-        - '&7Mounting grants &a{multiplier}x&7 speed for {duration}s.'
+        - '&7On hit, your nearby tamed wolf: +&a{damage}&7 damage and &a{reduction}&7 damage reduction.'
     mechanics:
-      - type: core:speed_bonus
+      - type: "core:pet_attribute"
         parameters:
-          multiplier:
-            linear:
-              base: 1.1
-              step: 0.003
-              max: 1.3
-          uuid:
-            constant: 6093ffbe-f598-5af3-801e-8618fa98ec40
-          duration:
-            constant:
-              value: 30
-  - id: master_husbander
-    display_name: Master Husbander
+          damage: { linear: { base: 0.4, step: 0.048, max: 1.6 } }
+          reduction: { linear: { base: 0.1, step: 0.016, max: 0.5 } }
+          radius: { constant: 16.0 }
+          duration: { constant: 10.0 }
+          uuid: { constant: "7c1e5d9a-2b6f-4a3c-9e0d-8b7a6c5d4e3f" }
+    feedback: { notify: { action_bar: false } }
+  # L100 - Mark your bond-pet: sneak + right-click your own tamed wolf (bone) or
+  # horse (apple) with the matching treat to record it for the calls below.
+  - id: "mark_companion"
+    display_name: "Mark Companion"
     unlock_level: 100
-    trigger: right_click_entity
+    trigger: "right_click_entity"
     display:
       lore:
-        - '&7Sneak-right-click to tame any tameable mob: &a{chance}%&7.'
-        - '&7Costs 1 tame food + 1 hunger.'
-        - '&8Requires: Sneaking, holding a tame food, 10s cooldown, 3+ hunger.'
-    requirements:
-      cooldown: 10.0
-      state:
-        - is_sneaking
-      items:
-        - action: cost
-          tag: '#c:tame_offerings'
-          slot: MAIN_HAND
-          amount: 1
-      exhaustion:
-        amount: 1.0
-        minimum: 3.0
+        - '&7Sneak + Right-Click your tamed pet with its treat to bind it.'
+        - '&8Requires: Sneaking, carrying a treat (bone=wolf, apple=horse).'
     mechanics:
-      - type: core:instant_tame
+      - type: "core:mark_companion"
+  # L100 - Capstone: call your bonded wolf to your side from any distance by
+  # right-clicking air with a bone. Costs the bone + 1 hunger.
+  - id: "wolf_call"
+    display_name: "Wolf Call"
+    unlock_level: 100
+    trigger: "right_click_air"
+    display:
+      lore:
+        - '&7Right-Click air with a bone to summon your bonded wolf to your side.'
+        - '&7Costs 1 bone + 1 hunger.'
+        - '&8Requires: A marked wolf, holding a bone, 3+ hunger.'
+    requirements:
+      state: [ "has_tamed:wolf" ]
+      items:
+        - { action: "cost", tag: "minecraft:bone", slot: "MAIN_HAND", amount: 1 }
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    mechanics:
+      - type: "core:summon_companion"
         parameters:
-          chance:
-            constant:
-              value: 100
-    on_failure:
-      cooldown:
-        action_bar: '&eMaster Husbander cooling down: {time}s'
-      missing_item:
-        action_bar: '&cRequires a tame food in hand!'
+          mob_type: { constant: "wolf" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&eWolf Call! &7Your companion has joined you." }
+  # L100 - Capstone: call your bonded horse to your side by right-clicking air
+  # with an apple. Costs the apple + 1 hunger.
+  - id: "horse_call"
+    display_name: "Horse Call"
+    unlock_level: 100
+    trigger: "right_click_air"
+    display:
+      lore:
+        - '&7Right-Click air with an apple to summon your bonded horse to your side.'
+        - '&7Costs 1 apple + 1 hunger.'
+        - '&8Requires: A marked horse, holding an apple, 3+ hunger.'
+    requirements:
+      state: [ "has_tamed:horse" ]
+      items:
+        - { action: "cost", tag: "minecraft:apple", slot: "MAIN_HAND", amount: 1 }
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    mechanics:
+      - type: "core:summon_companion"
+        parameters:
+          mob_type: { constant: "horse" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&eHorse Call! &7Your companion has joined you." }

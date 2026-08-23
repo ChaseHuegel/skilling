@@ -95,10 +95,16 @@ items:
 
 ### core:yield_multiplier
 
-Multiplies block drops by a percentage chance on each break. An optional
-`triple_chance` rolls first: when it succeeds the drops are tripled instead of
-doubled, so a single mechanic expresses "always double, sometimes triple"
-capstones without stacking two mechanics into a quadruple yield.
+Multiplies natural yield by a percentage chance: block drops on a break and mob
+drops on a kill. An optional `triple_chance` rolls first: when it succeeds the
+drops are tripled instead of doubled, so a single mechanic expresses "always
+double, sometimes triple" capstones without stacking two mechanics into a
+quadruple yield.
+
+On a block break the block's own drops are doubled and re-dropped. On an entity
+kill the killed mob's natural drops (meat, leather, wool, etc.) are multiplied in
+place, so a butcher-style ability amplifies whatever the animal carried without
+replacing its drop table.
 
 **Parameters:**
 
@@ -107,7 +113,7 @@ capstones without stacking two mechanics into a quadruple yield.
 | `yield_chance` | double | `0` | Probability (0-100%) of doubling the drops |
 | `triple_chance` | double | `0` | Probability (0-100%) of tripling instead of doubling |
 
-**Event:** `BlockBreakEvent`
+**Events:** `BlockBreakEvent`, `EntityDeathEvent`
 
 ### core:chain_break
 
@@ -1298,6 +1304,77 @@ gesture to `core:pick_up_mob`.
 
 **Event:** `PlayerInteractEvent` (`right_click_air` trigger)
 
+### core:bred_attribute
+
+Grants a level-scaled attribute bonus to a newborn animal on breeding: the
+offspring inherits an additive modifier (e.g. `minecraft:max_health` for a
+tougher herd, or `minecraft:movement_speed` for a faster one). The modifier is
+transient (never written to the animal's NBT), so removing the plugin leaves
+every bred animal at vanilla attributes. Re-breeding at a higher level produces
+stronger offspring because the amount is evaluated at the current skill level.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `attribute` | string | (required) | Namespaced attribute key, e.g. `minecraft:max_health` |
+| `amount` | double | `0` | Level-scaled additive modifier value applied to the offspring |
+| `uuid` | string | (required) | Stable modifier UUID so replace-not-stack works across generations |
+
+**Event:** `EntityBreedEvent` (`breed_animals` trigger)
+
+### core:pet_attribute
+
+Buffs the player's tamed wolf(ves) near them, meant for a combat-companion
+synergy: a scaling additive bonus to `minecraft:attack_damage` (the wolf deals
+more) and a `RESISTANCE` potion effect mapped from a reduction fraction (the wolf
+takes less). Only tamed wolves owned by the casting player within a radius are
+buffed; horses are untouched. Both scalars sub-scale between the unlock level and
+level 100.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `damage` | double | `0` | Additive attack-damage bonus for the wolf |
+| `reduction` | double | `0` | Damage-reduction fraction (0-0.5), mapped to a resistance amplifier |
+| `radius` | double | `16` | Search radius in blocks (clamped to 32) |
+| `duration` | double | `10` | Buff lifetime in seconds |
+| `uuid` | string | (none) | Stable modifier UUID for the attack-damage bonus |
+
+**Event:** any defensive trigger (e.g. `entity_damage_taken`)
+
+### core:mark_companion
+
+Binds a player's own tamed pet as their marked companion so a later
+`core:summon_companion` call can reproduce it from any distance. Sneak + right-click
+a player-owned tamed pet holding its matching treat: a bone marks a wolf, an apple
+marks a horse. The mechanic records a persistent snapshot of the pet's look and
+attributes and marks the species as tamed. A mismatched treat or a non-owned pet
+is a no-op.
+
+**Parameters:** None
+
+**Event:** `PlayerInteractEntityEvent` (`right_click_entity` trigger)
+
+### core:summon_companion
+
+Summons (or recalls) a player's marked tamed companion to their side from any
+distance by right-clicking the air with its treat (a bone for a wolf, an apple
+for a horse). This is the snapshot + respawn recall model: it never needs the
+original pet's chunk, so it works when the pet is in an unloaded chunk or another
+dimension. A live copy is despawned first and a fresh vanilla tamed pet is spawned
+from the snapshot and applied its recorded look and attributes. The species must
+have been tamed and marked first.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `mob_type` | string | (required) | `wolf` or `horse`; must match the held treat |
+
+**Event:** `PlayerInteractEvent` (`right_click_air` trigger)
+
 ### core:open_crafting
 
 Opens a temporary, full-screen 3x3 crafting window for the player without
@@ -1635,6 +1712,8 @@ attribute: { constant: "minecraft:movement_speed" }
 | `sensed` | `BlockReceiveGameEvent` (Paper) | A sculpt sensor or shrieker receives a vibration. Fires only when a player caused the vibration |
 | `trip_trap` | `PlayerInteractEvent` (`Action.PHYSICAL`) **and** `BlockReceiveGameEvent` (Paper) | Combined silent-travel trigger covering both physical interactions (pressure plates, weighted plates, tripwires) and sculpt vibrations. One trigger for all travel hazards |
 | `player_death` | `PlayerDeathEvent` | A player dies (before inventory drops process, so a mechanic can keep items) |
+| `milk_animal` | `PlayerInteractEntityEvent` | Milking a cow or goat with an empty bucket |
+| `feed_animal` | `PlayerInteractEntityEvent` | Feeding a farm animal a seed, crop, or fruit to grow or breed it |
 
 ## Built-In State Filters
 
@@ -1669,6 +1748,9 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `target_status` | `minecraft:effect_key` | The event's target entity currently has the given potion effect (e.g. `state: "target_status:minecraft:glowing"`). Matches the damaged entity on `entity_damage`, the killed entity on `entity_kill`, and the clicked entity on `right_click_entity`. Fails closed on events without a living target or an unknown effect |
 | `grown` | *(none)* | The broken block is a harvest-ready crop: an ageable crop (wheat, carrot, potato, beetroot, cocoa) at its maximum age, or a non-ageable crop (melon fruit, pumpkin fruit, sugar cane) which has no progress stage. Fails closed for non-crop blocks and non-block-break events. Gates harvest XP and farming yield so a place+break loop on immature plants can never be farmed |
 | `target_unaware` | *(none)* | The event's damaged/clicked target is a hostile `Mob` that is not currently targeting the player (e.g. `state: "target_unaware"` in a requirement). Gates a backstab in `entity_damage`. Fails closed for non-mob victims and event-less requirements |
+| `has_tamed` | `wolf`, `horse` | The player has tamed the given companion species, persisted across sessions. Gates a species call so it requires a prior tame. Defaults to `wolf` when blank |
+| `has_bound_pet_alive` | `wolf`, `horse` | The player has a bound (marked) companion snapshot for the given species, so a call knows a pet exists without scanning chunks. Defaults to `wolf` when blank |
+| `nearby_companion` | `<radius>` (default `12`) | A tamed wolf or horse owned by the player is within the radius. Gates companion synergies while the pet is by the player's side |
 
 The `#c:light_armor`, `#c:medium_armor`, `#c:heavy_armor`, and `#c:unarmored`
 custom tags (in `tags/base.yml`) reproduce the historical armor tiers as data. No

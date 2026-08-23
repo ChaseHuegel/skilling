@@ -781,6 +781,36 @@ entity_tags:
     - "minecraft:wandering_trader"
     - "minecraft:player"
 
+  # Farm and common passive animals a player manages. Gates the husbandry
+  # skill's Butcher (L1) so its drop-yield multiplier applies only to slaughtering
+  # animals a rancher raises, never hostile mobs or players.
+  animals:
+    - "minecraft:cow"
+    - "minecraft:mooshroom"
+    - "minecraft:pig"
+    - "minecraft:sheep"
+    - "minecraft:chicken"
+    - "minecraft:rabbit"
+    - "minecraft:goat"
+    - "minecraft:horse"
+    - "minecraft:donkey"
+    - "minecraft:mule"
+    - "minecraft:llama"
+    - "minecraft:turtle"
+    - "minecraft:armadillo"
+    - "minecraft:bee"
+    - "minecraft:fox"
+    - "minecraft:panda"
+    - "minecraft:polar_bear"
+    - "minecraft:cat"
+    - "minecraft:wolf"
+
+  # The summonable companion species for the husbandry L100 calls: a tamed wolf
+  # (bone) and a tamed horse (apple).
+  companion_mobs:
+    - "minecraft:wolf"
+    - "minecraft:horse"
+
   # Union of every pickpocketable biped humanoid. Gates the Pickpocket ability
   # so the per-group mechanics below it each match exactly one target.
   humanoid:

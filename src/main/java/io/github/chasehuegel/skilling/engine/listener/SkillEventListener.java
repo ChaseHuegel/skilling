@@ -7,6 +7,7 @@ import io.github.chasehuegel.skilling.engine.evaluator.ParameterEvaluator;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
 import io.github.chasehuegel.skilling.engine.mechanic.ProcAwareMechanic;
 import io.github.chasehuegel.skilling.engine.mechanic.SkillMechanic;
+import io.github.chasehuegel.skilling.engine.mechanic.impl.PetCompanionStore;
 import io.github.chasehuegel.skilling.engine.profile.PlayerProfile;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
 import io.github.chasehuegel.skilling.engine.registry.MechanicRegistry;
@@ -63,6 +64,19 @@ public final class SkillEventListener implements Listener {
      * refreshes; the window bounds it to a steady trickle.
      */
     static final long CHUNK_LOAD_THROTTLE_MS = 5000;
+
+    /**
+     * Materials that feed a farm animal in vanilla (seeds, crops, fruit, and
+     * veg). Gates the {@code feed_animal} dispatch so the low-value reward lands
+     * only on a genuine feeding interaction, not an arbitrary animal right-click.
+     */
+    private static final java.util.Set<Material> FEED_ANIMAL_ITEMS = java.util.Set.of(
+            Material.WHEAT, Material.WHEAT_SEEDS, Material.CARROT, Material.GOLDEN_CARROT,
+            Material.POTATO, Material.BEETROOT, Material.BEETROOT_SEEDS, Material.MELON_SEEDS,
+            Material.PUMPKIN_SEEDS, Material.APPLE, Material.GOLDEN_APPLE, Material.SUGAR,
+            Material.HAY_BLOCK, Material.DANDELION, Material.SWEET_BERRIES, Material.GLOW_BERRIES,
+            Material.KELP, Material.SEAGRASS, Material.BAMBOO, Material.COOKED_BEEF,
+            Material.COOKED_CHICKEN, Material.COOKED_PORKCHOP);
 
     private final Skilling plugin;
     private final SkillManager skillManager;
@@ -689,6 +703,72 @@ public final class SkillEventListener implements Listener {
     public void onTameEntity(org.bukkit.event.entity.EntityTameEvent event) {
         if (event.getOwner() instanceof Player player) {
             dispatch(player, event, "player_tame");
+        }
+    }
+
+    /**
+     * Routes the {@code milk_animal} trigger when a player milks a cow or goat:
+     * a right-click of the animal holding an empty bucket. Gated so the reward
+     * lands only on a genuine milking interaction, not arbitrary animal clicks.
+     *
+     * @param event the interact-entity event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMilkAnimal(org.bukkit.event.player.PlayerInteractEntityEvent event) {
+        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
+        org.bukkit.entity.Entity target = event.getRightClicked();
+        boolean milking = target instanceof org.bukkit.entity.Cow || target instanceof org.bukkit.entity.Goat;
+        if (!milking) return;
+        if (event.getPlayer().getInventory().getItemInMainHand().getType() != Material.BUCKET) return;
+        dispatch(event.getPlayer(), event, "milk_animal");
+    }
+
+    /**
+     * Routes the {@code feed_animal} trigger when a player feeds a farm animal a
+     * seed or food item to grow or breed it. Gated on the hand holding a feed
+     * item and the target being an ageable animal, so the low-value reward is
+     * only earned for a genuine feeding interaction.
+     *
+     * @param event the interact-entity event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFeedAnimal(org.bukkit.event.player.PlayerInteractEntityEvent event) {
+        if (event.getHand() == org.bukkit.inventory.EquipmentSlot.OFF_HAND) return;
+        if (!(event.getRightClicked() instanceof org.bukkit.entity.Ageable)) return;
+        Material hand = event.getPlayer().getInventory().getItemInMainHand().getType();
+        if (!FEED_ANIMAL_ITEMS.contains(hand)) return;
+        dispatch(event.getPlayer(), event, "feed_animal");
+    }
+
+    /**
+     * Sweeps stray companion copies that resurface after a {@code
+     * core:summon_companion} respawn. When a bound pet is replaced by a fresh
+     * copy, the old copy (left in an unloaded chunk) loads here with a stale
+     * UUID; if the player has a snapshot bound to a different UUID, the stale
+     * entity is removed so the player never ends up with two of the same pet.
+     *
+     * @param event the entities-load event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCompanionSweep(org.bukkit.event.world.EntitiesLoadEvent event) {
+        for (org.bukkit.entity.Entity entity : event.getEntities()) {
+            if (!(entity instanceof org.bukkit.entity.Tameable tame)) continue;
+            if (!tame.isTamed()) continue;
+            if (!(tame.getOwner() instanceof Player owner)) continue;
+            PetCompanionStore.Species species;
+            if (entity instanceof org.bukkit.entity.Wolf) {
+                species = PetCompanionStore.Species.WOLF;
+            } else if (entity instanceof org.bukkit.entity.Horse) {
+                species = PetCompanionStore.Species.HORSE;
+            } else {
+                continue;
+            }
+            // Only sweep when the player actively bound a pet for this species and
+            // this loaded entity is not the canonical bound copy.
+            if (PetCompanionStore.snapshot(owner.getUniqueId(), species) != null
+                    && !PetCompanionStore.isCurrent(owner.getUniqueId(), species, entity.getUniqueId())) {
+                entity.remove();
+            }
         }
     }
 

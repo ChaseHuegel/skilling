@@ -10,9 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Guards the Husbandry mob-carry pair: the bundled skill must bind pickup to
- * {@code right_click_entity} and set-down to {@code right_click_air}, so a
- * player carrying a mob can always drop it with the empty-hand air click.
+ * Guards the Husbandry mob-carry and companion-call abilities: mob pickup is bound
+ * to {@code right_click_entity} (with drop folded into the pickup toggle), and the
+ * L100 companion calls are bound to {@code right_click_air} with {@code
+ * core:summon_companion}.
  */
 class HusbandryMobCarryAbilityTest {
 
@@ -39,16 +40,24 @@ class HusbandryMobCarryAbilityTest {
     }
 
     @Test
-    void setDownBindsDropToSneak() {
-        SkillDefinition.Ability setDown = ability("set_down");
-        assertEquals("sneak", setDown.trigger());
-        assertTrue(setDown.mechanics().stream().anyMatch(m -> "core:drop_passengers".equals(m.type())),
-                "set_down must use core:drop_passengers");
+    void pickupConsolidatesDrop() {
+        // Set-down is folded into the pickup ability (right-clicking a carried
+        // passenger toggles it down); there must be no separate sneak-triggered
+        // set_down ability.
+        SkillDefinition skill = io.github.chasehuegel.skilling.TestSkillManager.newBuiltIn().parseSkill(
+                new java.io.File(Objects.requireNonNull(getClass().getClassLoader().getResource("skills/husbandry.yml")).getFile()));
+        assertTrue(skill.abilities().stream().noneMatch(a -> a.id().equals("set_down")),
+                "consolidated mob_porter should leave no separate 'set_down' ability");
     }
 
     @Test
-    void bothAbilitiesParseFromTheBundledSkill() {
-        assertNotNull(ability("mob_porter"));
-        assertNotNull(ability("set_down"));
+    void companionCallsBindToRightClickAirWithSummonMechanic() {
+        for (String id : new String[]{"wolf_call", "horse_call"}) {
+            SkillDefinition.Ability call = ability(id);
+            assertEquals("right_click_air", call.trigger(), id + " must trigger on right_click_air");
+            assertTrue(call.mechanics().stream().anyMatch(m -> "core:summon_companion".equals(m.type())),
+                    id + " must use core:summon_companion");
+        }
+        assertNotNull(ability("mark_companion"));
     }
 }
