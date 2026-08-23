@@ -1,98 +1,162 @@
+# ==========================================
+# HERBALISM SKILL — The Wild Forager
+# ==========================================
+# Gather and process wild flora: flowers, berries, vines, cane, cactus, fungi
+# and roots. Cleanly disjoint from Farming (cultivated crops), Cooking (eating
+# crafted meals) and Alchemy (nether wart -> potions). All gathering stays on
+# player_placed:false so it is true foraging, never a place+break farm loop.
+#
+# Abilities (6-tier ladder, all sub-scaled):
+#   L1   Green Thumb     yield scalar on wild herbs (identity)
+#   L15  Hidden Bounty    break forage to reveal a common loot table (Hylian Luck)
+#   L25  Earth Charm      sneak + right-click soil with a catalyst to convert it
+#   L50  Flower Press     herb-product crafts yield more (economy spike)
+#   L75  Rare Bloom       break rare herbs to reveal a rare loot table
+#   L100 Master Forager   wild-herb breaks always double, sometimes triple
 id: "herbalism"
 max_level: 100
 display: { name: "Herbalism", icon: "minecraft:sugar_cane", color: "GREEN", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Wild gathering is the primary grind; player_placed excludes farmed loops.
   - trigger: "block_break"
     filters: [ { target: "#c:herbs" }, { state: "player_placed:false" } ]
     reward: { constant: 30.9 }
+  # Scarce wild finds pay a premium over common flowers (plenty-and-value rule).
+  - trigger: "block_break"
+    filters: [ { target: "#c:rare_herbs" }, { state: "player_placed:false" } ]
+    reward: { constant: 55.0 }
+  # Herb products (paper, sugar, cactus green, flower dyes) are cheap & bulk -> low return.
   - trigger: "craft_item"
-    filters: [ { target: "minecraft:paper" } ]   # sugar-cane product. Herbs have no craft-result form
-    reward: { constant: 30.9 }
-  # crop_grow XP removed (unbounded)
+    filters: [ { target: "#c:herb_products" } ]
+    reward: { constant: 18.0 }
+  # Bonemeal on wild herbs is a real resource cost.
+  - trigger: "fertilize"
+    reward: { constant: 30.0 }
+  # Eating wild herbs costs the item.
+  - trigger: "consume_item"
+    filters: [ { target: "#c:edible_herbs" } ]
+    reward: { constant: 20.0 }
 abilities:
+  # L1 - Foundational passive: the primary scalar. Wild herb breaks double.
   - id: "green_thumb"
     display_name: "Green Thumb"
     unlock_level: 1
     trigger: "block_break"
-    display: { lore: [ "&7Herb/flower yield +&a{yield_chance}%&7." ] }
+    display: { lore: [ "&7Wild herb yield +&a{yield_chance}%&7." ] }
     mechanics:
       - type: "core:yield_multiplier"
         filters: [ { target: "#c:herbs" } ]
         parameters:
           yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "rapid_growth"
-    display_name: "Rapid Growth"
+  # L15 - Hidden Bounty (Hylian Luck): breaking forage reveals common treasure.
+  # Low chance that grows with level; a miss still counts as an activation so it
+  # cannot be re-rolled for free (proc-aware core:drop_loot).
+  - id: "hidden_bounty"
+    display_name: "Hidden Bounty"
     unlock_level: 15
     trigger: "block_break"
-    display: { lore: [ "&7Breaking herbs grants &a{amplifier}&7 Haste for {duration}s." ] }
+    display: { lore: [ "&7Breaking forage has a &a{chance}%&7 chance to reveal" ] }
     mechanics:
-      - type: "core:haste_effect"
-        filters: [ { target: "#c:herbs" } ]
+      - type: "core:drop_loot"
+        filters: [ { target: "#c:forage" } ]
         parameters:
-          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
-          duration: { constant: 20.0 }
+          table: { constant: "skilling:forage/common" }
+          chance: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "wild_harvest"
-    display_name: "Wild Harvest"
+  # L25 - Earth Charm: turn spreadable soil into fertile ground. Sneak +
+  # right-click dirt or netherrack with a catalyst; the matching entry consumes
+  # its catalyst and converts the block. Entries whose catalyst is not held are
+  # no-ops that spend nothing.
+  - id: "earth_charm"
+    display_name: "Earth Charm"
     unlock_level: 25
-    trigger: "block_break"
+    trigger: "right_click_block"
     display:
       lore:
-        - "&7Sneak-break to harvest up to &a{chain_limit}&7 connected herbs."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, 6s cooldown, 3+ hunger."
+        - "&7Sneak + interact soil with a catalyst to convert it."
+        - "&7Seeds: &6dirt&8 -> &agrass"
+        - "&7Mushroom: &6dirt&8 -> &7mycelium"
+        - "&7Leaf litter: &6dirt&8 -> &2podzol"
+        - "&7Crimson fungus: &6dirt/netherrack&8 -> &cnylium"
+        - "&7Warped fungus: &6dirt/netherrack&8 -> &3nylium"
+        - "&7Costs 1 catalyst + 1 hunger."
+        - "&8Requires: Sneaking, 8s cooldown, 3+ hunger."
     requirements:
-      cooldown: 6.0
+      cooldown: 8.0
       state: [ "is_sneaking" ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&cWild Harvest cooling down: {time}s" } }
+    on_failure:
+      cooldown: { action_bar: "&aEarth Charm cooling down: {time}s" }
+      exhaustion: { action_bar: "&cToo hungry to charm the earth!" }
     mechanics:
-      - type: "core:chain_break"
-        filters: [ { target: "#c:herbs" } ]
+      - type: "core:block_transform"
+        filters: [ { target: "#c:herbal_soil" } ]
         parameters:
-          chain_limit: { milestones: { 25: 4, 50: 8, 75: 14, 100: 24 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&2✦ Wild Harvest! ✦" } }
-  - id: "natural_remedy"
-    display_name: "Natural Remedy"
+          catalyst: { constant: "minecraft:wheat_seeds" }
+          result: { constant: "minecraft:grass_block" }
+          catalyst_count: { constant: 1 }
+      - type: "core:block_transform"
+        filters: [ { target: "#c:herbal_soil" } ]
+        parameters:
+          catalyst: { constant: "minecraft:brown_mushroom" }
+          result: { constant: "minecraft:mycelium" }
+          catalyst_count: { constant: 1 }
+      - type: "core:block_transform"
+        filters: [ { target: "#c:herbal_soil" } ]
+        parameters:
+          catalyst: { constant: "minecraft:leaf_litter" }
+          result: { constant: "minecraft:podzol" }
+          catalyst_count: { constant: 1 }
+      - type: "core:block_transform"
+        filters: [ { target: "#c:herbal_soil" } ]
+        parameters:
+          catalyst: { constant: "minecraft:crimson_fungus" }
+          result: { constant: "minecraft:crimson_nylium" }
+          catalyst_count: { constant: 1 }
+      - type: "core:block_transform"
+        filters: [ { target: "#c:herbal_soil" } ]
+        parameters:
+          catalyst: { constant: "minecraft:warped_fungus" }
+          result: { constant: "minecraft:warped_nylium" }
+          catalyst_count: { constant: 1 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&2✦ Earth Charm ✦" }
+      sounds: [ { type: "minecraft:block.grass.break", volume: 0.5, pitch: 1.2, target: "self" } ]
+  # L50 - Major passive: the herb-product economy spike. Cheap craft loop yields
+  # more, so the forager's dye/paper/bone-meal loop compounds.
+  - id: "flower_press"
+    display_name: "Flower Press"
     unlock_level: 50
-    trigger: "consume_item"
-    display: { lore: [ "&7Eating herbs grants +&a{saturation}&7 saturation." ] }
+    trigger: "craft_item"
+    display: { lore: [ "&7Herb-product crafts yield &a{multiplier}x&7." ] }
     mechanics:
-      - type: "core:saturation_inject"
-        filters: [ { target: "#c:herbs" } ]
+      - type: "core:modify_craft_output"
+        filters: [ { target: "#c:herb_products" } ]
         parameters:
-          saturation: { linear: { base: 1.0, step: 0.03, max: 4.0 } }
+          multiplier: { linear: { base: 1.05, step: 0.0096, max: 2.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "overgrowth"
-    display_name: "Overgrowth"
+  # L75 - Rare Bloom: breaking rare wild flora reveals a premium loot table.
+  # Lower proc than Hidden Bounty so premium harvests stay genuinely rare.
+  - id: "rare_bloom"
+    display_name: "Rare Bloom"
     unlock_level: 75
     trigger: "block_break"
-    display:
-      lore:
-        - "&7Sneak to harvest all herbs in a &a{radius}&7 radius (max {max_blocks})."
-        - "&7Costs 2 hunger."
-        - "&8Requires: Sneaking, 20s cooldown, 4+ hunger."
-    requirements:
-      cooldown: 20.0
-      state: [ "is_sneaking" ]
-      exhaustion: { amount: 2.0, minimum: 4.0 }
-    on_failure: { cooldown: { action_bar: "&2Overgrowth cooling down: {time}s" } }
+    display: { lore: [ "&7Breaking rare flora has a &a{chance}%&7 chance to reveal" ] }
     mechanics:
-      - type: "core:area_harvest"
-        filters: [ { target: "#c:herbs" } ]
+      - type: "core:drop_loot"
+        filters: [ { target: "#c:rare_herbs" } ]
         parameters:
-          radius: { linear: { base: 2.0, step: 0.06, max: 5.0 } }
-          max_blocks: { linear: { base: 16.0, step: 1.0, max: 48.0 } }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&2✦ Overgrowth! ✦" }
-      sounds: [ { type: "minecraft:block.grass.break", volume: 0.5, pitch: 1.2, target: "self" } ]
-  - id: "master_herbalist"
-    display_name: "Master Herbalist"
+          table: { constant: "skilling:forage/rare" }
+          chance: { linear: { base: 0.75, step: 0.02, max: 2.5 } }
+    feedback: { notify: { action_bar: false } }
+  # L100 - Mastery capstone: wild-herb breaks always double, sometimes triple.
+  - id: "master_forager"
+    display_name: "Master Forager"
     unlock_level: 100
     trigger: "block_break"
-    display: { lore: [ "&7Herb yield always doubles; +&a{triple_chance}%&7 chance to triple." ] }
+    display: { lore: [ "&7Wild herb breaks always double; &a{triple_chance}%&7 chance to triple." ] }
     mechanics:
       - type: "core:yield_multiplier"
         filters: [ { target: "#c:herbs" } ]

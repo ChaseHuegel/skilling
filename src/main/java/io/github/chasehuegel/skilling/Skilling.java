@@ -396,6 +396,12 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.positive(ctx, p, "source_count");
                     MechanicParamValidators.positive(ctx, p, "product_count");
                 });
+        mechReg.register("core:block_transform", BlockTransformMechanic.class, List.of("catalyst", "result", "catalyst_count"),
+                (ctx, p) -> {
+                    MechanicParamValidators.material(ctx, p, "catalyst");
+                    MechanicParamValidators.material(ctx, p, "result");
+                    MechanicParamValidators.positive(ctx, p, "catalyst_count");
+                });
         mechReg.register("core:aoe_effect", AoeEffectMechanic.class, List.of("effect", "radius", "duration", "amplifier", "targets"),
                 (ctx, p) -> {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");

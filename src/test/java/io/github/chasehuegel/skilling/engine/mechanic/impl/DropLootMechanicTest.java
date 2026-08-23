@@ -6,7 +6,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.block.Block;
 import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
@@ -136,6 +138,33 @@ class DropLootMechanicTest {
             // The drop lands at the fishing player's location (+1 block vertical offset).
             Location expected = new Location(playerWorld, 5, 65, 9);
             verify(playerWorld).dropItemNaturally(eq(expected), eq(item));
+        }
+    }
+
+    @Test
+    void blockBreakDropsLootAtBrokenBlock() {
+        var world = mock(World.class);
+        var block = mock(Block.class);
+        when(block.getLocation()).thenReturn(new Location(world, 3, 62, 7));
+        var item = mock(ItemStack.class);
+        when(item.getType()).thenReturn(Material.EMERALD);
+
+        var event = mock(BlockBreakEvent.class);
+        when(event.getBlock()).thenReturn(block);
+
+        DropLootMechanic.setRandomSource(() -> 0.0); // always succeeds
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            var loot = mock(LootTable.class);
+            when(loot.populateLoot(any(), any(LootContext.class))).thenReturn(List.of(item));
+            when(Bukkit.getLootTable(any())).thenReturn(loot);
+
+            var mechanic = new DropLootMechanic();
+            assertTrue(mechanic.execute(mock(Player.class),
+                    Map.of("table", "skilling:forage/common", "chance", 50.0), event));
+            assertTrue(mechanic.didProc(), "a landed block-break roll must report a proc");
+            // The drop lands one block above the broken block.
+            Location expected = new Location(world, 3, 63, 7);
+            verify(world).dropItemNaturally(eq(expected), eq(item));
         }
     }
 }

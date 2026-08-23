@@ -289,6 +289,16 @@ abilities:
   #     - type: "core:modify_brew_output"
   #       parameters:
   #         chance: { linear: { base: 5.0, step: 0.45, max: 50.0 } }
+  # core:block_transform converts a clicked block when a held catalyst matches
+  # (the terrain analogue of core:transmute). A table is several entries scoped
+  # by a soil tag; a catalyst that is not held is a no-op spending nothing:
+  #   mechanics:
+  #     - type: "core:block_transform"
+  #       filters: [ { target: "#c:herbal_soil" } ]
+  #       parameters:
+  #         catalyst: { constant: "minecraft:wheat_seeds" }
+  #         result: { constant: "minecraft:grass_block" }
+  #         catalyst_count: { constant: 1 }
   # core:modify_potion_amplifier raises brewed-potion potency (+N, level-scaled):
   #   mechanics:
   #     - type: "core:modify_potion_amplifier"

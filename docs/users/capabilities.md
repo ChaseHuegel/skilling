@@ -402,6 +402,38 @@ ability spend nothing and one activation performs exactly the held swap.
 
 **Event:** `right_click_block` (`PlayerInteractEvent`, main-hand only)
 
+### core:block_transform
+
+Transforms a clicked block into another block when the player right-clicks it
+while holding a matching catalyst, consuming one catalyst per affected block.
+This is the terrain analogue of `core:transmute`: instead of swapping a held
+item for a product stack, it swaps the clicked *block* for a `result` block
+type. Which blocks may be transformed is scoped by the ability's own `target`
+filter (e.g. a `#c:herbal_soil` tag), and a catalyst that does not match the
+held item is a no-op that spends nothing. The vanilla click is cancelled so the
+terrain interaction does not also run. An ability's "transform table" is
+expressed as several of these mechanics, one per catalyst->result pair.
+
+```yaml
+mechanics:
+  - type: "core:block_transform"
+    filters: [ { target: "#c:herbal_soil" } ]
+    parameters:
+      catalyst: { constant: "minecraft:wheat_seeds" }
+      result: { constant: "minecraft:grass_block" }
+      catalyst_count: { constant: 1 }
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `catalyst` | string | required | Held main-hand material consumed per transform (e.g. `minecraft:wheat_seeds`) |
+| `result` | string | required | Block material the clicked block becomes (e.g. `minecraft:grass_block`) |
+| `catalyst_count` | double | `1` | How many catalysts are consumed per transform |
+
+**Event:** `right_click_block` (`PlayerInteractEvent`, main-hand only)
+
 ### core:potion_self_immunity
 
 Shields the thrower and allied players from the potion they threw. On a
@@ -1387,6 +1419,11 @@ Fishing skill's drop-loot tables:
 | `chance` | double | *(always)* | Percentage chance to actually roll the table (0-100). Absent always rolls |
 
 **Event:** `PlayerInteractEntityEvent`, `PlayerInteractEvent` (right/left click or physical), `EntityDamageByEntityEvent`, or `PlayerFishEvent` (drops at the fishing player's location)
+
+> The target can also come from a `block_break` event: breaking a block drops
+> the rolled loot one block above the broken block. This powers a "forage" loot
+> reveal on any gather-style block set (see the Herbalism skill's Hidden Bounty
+> and Rare Bloom), and lets any digging skill roll its own treasure table.
 
 ### core:loot_bonus
 

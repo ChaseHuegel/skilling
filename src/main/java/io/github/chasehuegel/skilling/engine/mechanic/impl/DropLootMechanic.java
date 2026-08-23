@@ -9,6 +9,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -25,13 +26,13 @@ import java.util.function.DoubleSupplier;
  * Rolls a referenced loot table and drops the result naturally at the target.
  *
  * <p>This is a broad, reusable loot mechanic: the target can be a right-clicked
- * entity, a right-clicked/stepped-on block, or a damaged entity, so any entity-
- * or block-targeting event can drive it. It works with any {@link LootTable}
- * key — vanilla tables ({@code minecraft:chests/simple_dungeon}) and datapack
- * or plugin-driven ones ({@code data/&lt;ns&gt;/loot_table/...}) — resolved via
- * {@link Bukkit#getLootTable}. Unlike the damage mechanics, players are valid
- * targets (typical use is pickpocketing / looting, not combat), and nothing is
- * removed from the target.
+ * entity, a right-clicked/stepped-on block, a broken block, or a damaged entity,
+ * so any entity- or block-targeting event can drive it. It works with any
+ * {@link LootTable} key — vanilla tables ({@code minecraft:chests/simple_dungeon})
+ * and datapack or plugin-driven ones ({@code data/&lt;ns&gt;/loot_table/...}) —
+ * resolved via {@link Bukkit#getLootTable}. Unlike the damage mechanics, players
+ * are valid targets (typical use is pickpocketing / looting, not combat), and
+ * nothing is removed from the target.
  *
 * <p>The {@code chance} (0-100) is optional: absent means the table always
      * rolls. A rolled attempt counts as an activation, so the ability's cost and
@@ -129,6 +130,9 @@ public final class DropLootMechanic implements ProcAwareMechanic {
             if (action == org.bukkit.event.block.Action.PHYSICAL && ie.getClickedBlock() != null) {
                 return new DropTarget(ie.getClickedBlock().getLocation(), null);
             }
+        }
+        if (event instanceof BlockBreakEvent breakEvent) {
+            return new DropTarget(breakEvent.getBlock().getLocation(), null);
         }
         if (event instanceof EntityDamageByEntityEvent de
                 && de.getEntity() instanceof LivingEntity victim) {

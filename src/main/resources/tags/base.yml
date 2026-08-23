@@ -183,7 +183,6 @@ custom_tags:
     - "minecraft:lily_pad"
     - "minecraft:brown_mushroom"
     - "minecraft:red_mushroom"
-    - "minecraft:nether_wart"
     - "minecraft:crimson_fungus"
     - "minecraft:warped_fungus"
     - "minecraft:crimson_roots"
@@ -192,6 +191,65 @@ custom_tags:
     - "minecraft:weeping_vines"
     - "minecraft:glow_berries"
     - "minecraft:sweet_berries"
+
+  # The scarcer, higher-value wild finds. A subset of #c:herbs whose breaks pay a
+  # premium reward (herbalism XP) and roll the rare forage loot table. Nether wart
+  # is deliberately absent — it is Alchemy's potion flora, not a wild herb find.
+  rare_herbs:
+    - "minecraft:brown_mushroom"
+    - "minecraft:red_mushroom"
+    - "minecraft:crimson_fungus"
+    - "minecraft:warped_fungus"
+    - "minecraft:crimson_roots"
+    - "minecraft:warped_roots"
+    - "minecraft:cactus"
+    - "minecraft:sweet_berries"
+    - "minecraft:glow_berries"
+    - "minecraft:lily_pad"
+    - "minecraft:sea_pickle"
+
+  # Item-form herb-derived products for the herbalism craft/place sources. These
+  # are the results a forager turns wild flora into, so the craft loop is a
+  # cheap-bulk grind at low XP return.
+  herb_products:
+    - "minecraft:paper"
+    - "minecraft:sugar"
+    - "minecraft:green_dye"
+    - "minecraft:bone_meal"
+    - "minecraft:red_dye"
+    - "minecraft:yellow_dye"
+    - "minecraft:light_blue_dye"
+    - "minecraft:pink_dye"
+    - "minecraft:orange_dye"
+    - "minecraft:purple_dye"
+    - "minecraft:magenta_dye"
+    - "minecraft:gray_dye"
+    - "minecraft:white_dye"
+
+  # Item-form edible herbs (the block tag #c:herbs never matches an eaten item).
+  # Drives the herbalism consume_item XP source.
+  edible_herbs:
+    - "minecraft:sweet_berries"
+    - "minecraft:glow_berries"
+    - "minecraft:brown_mushroom"
+    - "minecraft:red_mushroom"
+
+  # The blendable soil blocks the herbalism Earth Charm (L25 terrain
+  # transmutation) can transform. Dirt and netherrack are the spreadable
+  # baselines a catalyst (seeds, fungus, mushroom, leaf litter) converts.
+  herbal_soil:
+    - "#minecraft:dirt"
+    - "minecraft:netherrack"
+
+  # The forage set rolled by the L15 Hidden Bounty and flagged for grass/fern
+  # loot-reveal: every herb plus common short/tall grasses and ferns and flowers.
+  forage:
+    - "#c:herbs"
+    - "#minecraft:small_flowers"
+    - "minecraft:short_grass"
+    - "minecraft:tall_grass"
+    - "minecraft:fern"
+    - "minecraft:large_fern"
 
   heavy_weapons:
     - "minecraft:iron_sword"
