@@ -1,97 +1,166 @@
+# ==========================================
+# ONE HANDED SKILL
+# ==========================================
+# The free-offhand duelist. It earns XP from landing melee blows and from
+# finishing foes while wielding a single weapon or tool with an empty offhand,
+# and it turns that empty-hand stance into a precise fighting style: melee
+# damage scales (L1), hits quicken your footwork (L15), a sneaked thrust pierces
+# armor (L25 Riposte), taking a hit while sneaking reflects it back (L50),
+# sneaked hits deal bonus damage (L75 Commanding Thrust), and at master level
+# every kill flames into a renewed burst of speed (L100 Duelist's Flow).
+#
+# XP loop: melee damage (damage-scaled) and melee kills (finishing a target).
+# There is deliberately no craft source (smithing owns crafting) and no
+# damage-taken source (defensive skills own tanking). Skill comes purely from
+# landing and finishing blows.
 id: "one_handed"
 max_level: 100
 display: { name: "One Handed", icon: "minecraft:iron_sword", color: "RED", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Damage-scaled, the grindable driver. Costs combat commitment and doesn't
+  # double-count with the weapon-type skill sharing the same hit: a one-handed
+  # swing earns here and in its light/heavy parent alike, which is the intended
+  # tandem payoff for fighting with an empty offhand.
   - trigger: "entity_damage"
-    filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
+    filters: [ { state: "offhand:empty" }, { tool: "#c:melee" } ]
     reward: { constant: 9.7 }       # per raw damage point (7 ≈ sword hit). Damage-scaled
     scaling: damage
+  # Finishing a target with a melee blow. A kill is less frequent than a hit,
+  # so it pays a flat bonus on top of the damage already earned for the fight.
   - trigger: "entity_kill"
-    filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
-    reward: { constant: 68.0 }
-  - trigger: "craft_item"
-    filters: [ { target: "#minecraft:swords" } ]
+    filters: [ { state: "offhand:empty" }, { tool: "#c:melee" } ]
     reward: { constant: 68.0 }
 abilities:
-  - id: "precise_strikes"
-    display_name: "Precise Strikes"
+  # -- FOUNDATIONAL (L1): the primary scalar and the ONLY unconditional damage
+  # line in the tree. The capstone ramps speed instead of stacking a second flat
+  # multiplier, and the L75 bonus is sneak-conditional, so nothing multiplies
+  # the light/heavy weapon scalar into a runaway while offhand stays empty.
+  - id: "fencers_edge"
+    display_name: "Fencer's Edge"
     unlock_level: 1
     trigger: "entity_damage"
-    display: { lore: [ "&7Sword damage &a{multiplier}x&7 with free offhand." ] }
+    display: { lore: [ "&7Melee damage &a{multiplier}x&7 with a free offhand." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
+        filters: [ { state: "offhand:empty" }, { tool: "#c:melee" } ]
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.003, max: 1.35 } }
     feedback: { notify: { action_bar: false } }
-  - id: "quick_hands"
-    display_name: "Quick Hands"
+
+  # -- QOL PASSIVE (L15): fencing footwork. Striking home sets the duelist into
+  # motion, closing distance to press the next blow. Early-scaling move speed, so
+  # its growth is felt from the start rather than arriving stale late game.
+  - id: "fencing_footwork"
+    display_name: "Fencing Footwork"
     unlock_level: 15
     trigger: "entity_damage"
-    display: { lore: [ "&7Sword hits with free offhand grant &a{multiplier}x&7 speed for {duration}s." ] }
+    display: { lore: [ "&7Melee hits with a free offhand grant &a{multiplier}x&7 speed for {duration}s." ] }
     mechanics:
       - type: "core:speed_bonus"
-        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
+        filters: [ { state: "offhand:empty" }, { tool: "#c:melee" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.2 } }
           uuid: { constant: "1d313b98-bd9d-5fb7-880d-0bab575a6e05" }
           duration: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "parry"
-    display_name: "Parry"
+
+  # -- PRIMARY ABILITY (L25): the riposte. A sneak-strike with a free offhand
+  # drives the blow straight through armor. No cooldown: the hunger cost is the
+  # gate, exactly like the archery/light/heavy L25 precedents. The sneaking
+  # state reads at hit time, so the thrust counts only while the player holds
+  # the stance.
+  - id: "riposte"
+    display_name: "Riposte"
     unlock_level: 25
+    trigger: "entity_damage"
+    display:
+      lore:
+        - "&7Sneak-strike with a free offhand to pierce armor: +&a{damage}&7 bonus damage & +&a{percent}&7 of target max health."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, melee tool, empty offhand, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking", "offhand:empty" ]
+      items: [ { action: "possession", tag: "#c:melee", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure: { exhaustion: { action_bar: "&cToo hungry to thrust!" } }
+    mechanics:
+      - type: "core:true_damage"
+        filters: [ { state: "offhand:empty" }, { tool: "#c:melee" } ]
+        parameters:
+          damage: { linear: { base: 4.0, step: 0.06, max: 7.0 } }
+          percent: { linear: { base: 0.02, step: 0.0008, max: 0.06 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Riposte! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.crit", volume: 0.5, pitch: 1.2, target: "self" } ]
+
+  # -- MAJOR PASSIVE (L50): the parry reflect. Taking a hit while sneaking with
+  # a free offhand sends the blow back at the attacker. The reflect grows from
+  # 1 to 5 damage through level 100; it never negates the incoming hit, leaving
+  # nullification to the shield and empty-handed defensive lines.
+  - id: "parry_reflect"
+    display_name: "Parry Reflect"
+    unlock_level: 50
     trigger: "entity_damage_taken"
     display:
       lore:
-        - "&7Sneak+Left-Click with a sword & free offhand to negate next hit &a{chance}%&7."
-        - "&8Requires: Sneaking, sword, offhand empty, 5s cooldown."
+        - "&7While sneaking with a free offhand, reflect &a{damage}&7 damage back at attackers."
+        - "&8Requires: Sneaking, melee tool, empty offhand."
     requirements:
-      cooldown: 5.0
       state: [ "is_sneaking", "offhand:empty" ]
-      items: [ { action: "possession", tag: "#minecraft:swords", slot: "MAIN_HAND" } ]
-    on_failure: { cooldown: { action_bar: "&eParry cooling down: {time}s" } }
+      items: [ { action: "possession", tag: "#c:melee", slot: "MAIN_HAND" } ]
     mechanics:
-      - type: "core:cancel_damage"
+      - type: "core:thorns_damage"
+        filters: [ { state: "offhand:empty" }, { tool: "#c:melee" } ]
         parameters:
-          chance: { linear: { base: 50.0, step: 0.4, max: 85.0 } }
+          damage: { linear: { base: 1.0, step: 0.05, max: 5.0 } }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Parry! ✦" }
+      notify: { action_bar: true, chat: false, message: "&b✦ Parried! ✦" }
       sounds: [ { type: "minecraft:item.shield.block", volume: 0.4, pitch: 1.5, target: "self" } ]
-  - id: "fencing"
-    display_name: "Fencing"
-    unlock_level: 50
-    trigger: "entity_damage"
-    display: { lore: [ "&7Sword hits slow targets &a{duration}s&7." ] }
-    mechanics:
-      - type: "core:apply_status"
-        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
-        parameters:
-          effect: { constant: "minecraft:slowness" }    # P2-11
-          duration: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
-          amplifier: { constant: 0.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "duelist"
-    display_name: "Duelist"
+      success_only: true
+
+  # -- SYNERGY PASSIVE (L75): commanding thrust. A sneaked melee blow with a
+  # free offhand lands harder. This is a stance-conditional multiplier, not a
+  # second global scalar, so it stacks with Fencer's Edge only while sneaking
+  # and never multiplies a light/heavy parent into a runaway.
+  - id: "commanding_thrust"
+    display_name: "Commanding Thrust"
     unlock_level: 75
     trigger: "entity_damage"
-    display: { lore: [ "&7Sword hits with free offhand grant &a{multiplier}x&7 attack speed for {duration}s." ] }
-    mechanics:
-      - type: "core:modify_attack_speed"     # P2-10 (was lifesteal. Mismatched)
-        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
-        parameters:
-          multiplier: { linear: { base: 1.1, step: 0.003, max: 1.4 } }
-          uuid: { constant: "1a714067-76b2-5384-b70c-345e890e592e" }
-          duration: { constant: 6.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "blade_master"
-    display_name: "Blade Master"
-    unlock_level: 100
-    trigger: "entity_damage"
-    display: { lore: [ "&7Sword damage &a{multiplier}x&7 with free offhand." ] }
+    display: { lore: [ "&7Sneaked melee hits with a free offhand deal &a{multiplier}x&7 damage." ] }
     mechanics:
       - type: "core:modify_damage"
-        filters: [ { state: "offhand:empty" }, { tool: "#minecraft:swords" } ]
+        filters: [ { state: "is_sneaking" }, { state: "offhand:empty" }, { tool: "#c:melee" } ]
         parameters:
-          multiplier: { linear: { base: 1.8, step: 0.02, max: 2.3 } }
+          multiplier: { linear: { base: 1.1, step: 0.01, max: 1.5 } }
     feedback: { notify: { action_bar: false } }
+
+  # -- MASTERY CAPSTONE (L100): Duelist's Flow. Each kill sparks a burst of
+  # attack and move speed, renewing on the next kill, so a committed fencer
+  # flows from foe to foe. A constant spawns the burst; it is the sanctioned
+  # constant capstone (no levels left to grow). It ramps speed, never stacking a
+  # second damage multiplier onto Fencer's Edge.
+  - id: "duelists_flow"
+    display_name: "Duelist's Flow"
+    unlock_level: 100
+    trigger: "entity_kill"
+    display:
+      lore:
+        - "&7Melee kills grant &a1.4x&7 attack speed and &a1.2x&7 speed for 8s."
+        - "&7Renews on each kill."
+    mechanics:
+      - type: "core:modify_attack_speed"
+        filters: [ { state: "offhand:empty" }, { tool: "#c:melee" } ]
+        parameters:
+          multiplier: { constant: 1.4 }
+          uuid: { constant: "1a714067-76b2-5384-b70c-345e890e592e" }
+          duration: { constant: 8.0 }
+      - type: "core:speed_bonus"
+        filters: [ { state: "offhand:empty" }, { tool: "#c:melee" } ]
+        parameters:
+          multiplier: { constant: 1.2 }
+          uuid: { constant: "4c8b1e3a-2d6f-4a9c-b7e0-8f2d5a1c3e94" }
+          duration: { constant: 8.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Duelist's Flow! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.sweep", volume: 0.5, pitch: 1.2, target: "self" } ]

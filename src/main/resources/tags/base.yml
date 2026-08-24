@@ -425,6 +425,21 @@ custom_tags:
     - "#minecraft:axes"
     - "minecraft:mace"
 
+  # Every one-handed wieldable melee tool and weapon. Covers both the light and
+  # heavy weapon lines plus improvised tools (shears, hoes, pickaxes, shovels),
+  # so the one_handed skill's offense flows from whatever combat gear is held.
+  # Broader than #c:melee_weapons because one_handed is a wield-style skill, not
+  # a weapon-type skill; it deliberately stays disjoint from the armor tags.
+  melee:
+    - "#minecraft:swords"
+    - "#minecraft:axes"
+    - "minecraft:mace"
+    - "minecraft:trident"
+    - "#minecraft:shears"
+    - "#minecraft:hoes"
+    - "#minecraft:pickaxes"
+    - "#minecraft:shovels"
+
   tools:
     - "#minecraft:pickaxes"
     - "#minecraft:axes"
