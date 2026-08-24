@@ -10,10 +10,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Verifies the {@code cause} state-filter keyword mapping: burn covers fire,
- * fire ticks, and lava; fire/lava/drowning/suffocation/cactus/starvation match
- * their single causes; anything else — including a non-damage event — fails
- * closed.
+ * Verifies the {@code cause} state-filter keyword mapping: burn covers fire and
+ * fire ticks only (lava is its own tier); fire/lava/drowning/suffocation/freeze/
+ * lightning/cactus/starvation match their single causes; anything else —
+ * including a non-damage event — fails closed.
  */
 class DamageCauseFilterTest {
 
@@ -24,10 +24,10 @@ class DamageCauseFilterTest {
     }
 
     @Test
-    void burnMatchesFireFireTickAndLava() {
+    void burnMatchesFireAndFireTickOnly() {
         assertTrue(DamageCauseFilter.evaluate(event(DamageCause.FIRE), "burn"));
         assertTrue(DamageCauseFilter.evaluate(event(DamageCause.FIRE_TICK), "burn"));
-        assertTrue(DamageCauseFilter.evaluate(event(DamageCause.LAVA), "burn"));
+        assertFalse(DamageCauseFilter.evaluate(event(DamageCause.LAVA), "burn"), "lava is its own tier");
         assertFalse(DamageCauseFilter.evaluate(event(DamageCause.FALL), "burn"));
     }
 
@@ -41,6 +41,16 @@ class DamageCauseFilterTest {
         assertTrue(DamageCauseFilter.evaluate(event(DamageCause.CONTACT), "cactus"));
         assertTrue(DamageCauseFilter.evaluate(event(DamageCause.STARVATION), "starvation"));
         assertFalse(DamageCauseFilter.evaluate(event(DamageCause.FALL), "drowning"));
+    }
+
+    @Test
+    void freezeAndLightningMatchTheirCauses() {
+        assertTrue(DamageCauseFilter.isValidValue("freeze"));
+        assertTrue(DamageCauseFilter.isValidValue("lightning"));
+        assertTrue(DamageCauseFilter.evaluate(event(DamageCause.FREEZE), "freeze"));
+        assertFalse(DamageCauseFilter.evaluate(event(DamageCause.FALL), "freeze"));
+        assertTrue(DamageCauseFilter.evaluate(event(DamageCause.LIGHTNING), "lightning"));
+        assertFalse(DamageCauseFilter.evaluate(event(DamageCause.ENTITY_ATTACK), "lightning"));
     }
 
     @Test

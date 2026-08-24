@@ -830,6 +830,19 @@ public final class Skilling extends JavaPlugin {
             };
         });
 
+        // campfire_unlit: the clicked block is a campfire that is not lit. Gates
+        // the "lighting a campfire" XP source so the reward lands only on a real
+        // unlit-to-lit ignition, never on right-clicking an already-burning fire
+        // (which would be a free, spammable source). Fails closed for any
+        // non-interaction event and any non-campfire click.
+        sf.register("campfire_unlit", (p, e, v) -> {
+            if (!(e instanceof org.bukkit.event.player.PlayerInteractEvent ie)) return false;
+            var block = ie.getClickedBlock();
+            if (block == null) return false;
+            if (!(block.getBlockData() instanceof org.bukkit.block.data.type.Campfire campfire)) return false;
+            return !campfire.isLit();
+        });
+
         sf.register("dimension", (p, e, v) -> {
             var env = p.getWorld().getEnvironment();
             return switch (v) {

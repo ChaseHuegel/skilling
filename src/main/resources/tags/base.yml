@@ -829,6 +829,12 @@ custom_tags:
     - "minecraft:campfire"
     - "minecraft:soul_campfire"
 
+  # Items that light a campfire, for the survival skill's lighting-a-campfire XP
+  # source. Both keep their vanilla role; the tag just scopes the tool filter.
+  fire_lighters:
+    - "minecraft:flint_and_steel"
+    - "minecraft:fire_charge"
+
   potions:
     - "minecraft:potion"
     - "minecraft:splash_potion"

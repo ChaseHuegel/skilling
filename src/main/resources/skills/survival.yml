@@ -8,23 +8,25 @@
 # Absorption (L75) and a Speed/Haste/Resistance aura (L100). Beds complete the
 # camping kit (L50 Well Rested).
 #
-# XP loop: endure fire/drowning/suffocation damage, swim, explore new chunks,
-# cook food on campfires, sleep, and craft campfires.
+# XP loop: endure fire/lava/drowning/suffocation/freeze/lightning damage, swim,
+# explore new chunks, cook food on campfires, light campfires, sleep, and craft
+# campfires.
 id: "survival"
 max_level: 100
 display: { name: "Survival", icon: "minecraft:campfire", color: "ORANGE", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
   # Enduring the wild. Tanking sources are damage-scaled (R per raw half-heart
-  # of damage taken), mirroring the unarmored/armor skills' convention. burn is
-  # doubled because fire ticks are the frequent environmental hazard.
+  # of damage taken), mirroring the unarmored/armor skills' convention.
+  # burn covers the ongoing fire-tick hazard and is the frequent, cheap one.
   - trigger: "entity_damage_taken"
     filters: [ { state: "cause:burn" } ]
-    reward: { constant: 14.0 }
+    reward: { constant: 28.0 }
     scaling: damage
+  # Lava is rarer and hits far heavier, so it prices a distinct hazard tier.
   - trigger: "entity_damage_taken"
-    filters: [ { state: "cause:burn" } ]
-    reward: { constant: 14.0 }
+    filters: [ { state: "cause:lava" } ]
+    reward: { constant: 24.0 }
     scaling: damage
   - trigger: "entity_damage_taken"
     filters: [ { state: "cause:drowning" } ]
@@ -34,12 +36,31 @@ xp_sources:
     filters: [ { state: "cause:suffocation" } ]
     reward: { constant: 18.0 }
     scaling: damage
+  # Powder snow: the cold-weather counterpart to fire tick, costing expeditions.
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "cause:freeze" } ]
+    reward: { constant: 18.0 }
+    scaling: damage
+  # Lightning is rare and catastrophic: the "survived the storm" burst.
+  - trigger: "entity_damage_taken"
+    filters: [ { state: "cause:lightning" } ]
+    reward: { constant: 40.0 }
+    scaling: damage
   # Campfire cooking: placing a raw food on a lit campfire to cook.
   - trigger: "player_interact"
     filters:
       - target: "#minecraft:campfires"
       - tool: "#c:campfire_foods"
     reward: { constant: 60.0 }
+  # Lighting a campfire: the act of kindling an unlit fire. Cheap and repeatable
+  # (flint & steel survives), so it is a low, mostly-quiet grindable; gated on an
+  # unlit campfire so right-clicking a burning fire never pays out.
+  - trigger: "player_interact"
+    filters:
+      - target: "#minecraft:campfires"
+      - tool: "#c:fire_lighters"
+      - state: "campfire_unlit:true"
+    reward: { constant: 30.0 }
   # Swimming: sprint-swimming toggles sprint, so sprinting in water is the swim.
   - trigger: "sprint"
     filters: [ { state: "is_in_water" } ]
@@ -96,7 +117,16 @@ abilities:
         filters: [ { state: "cause:suffocation" } ]
         parameters:
           chance: { linear: { base: 10.0, step: 0.35, max: 40.0 } }
-    feedback: { notify: { action_bar: false } }
+    feedback:
+      notify: { action_bar: false }
+      sounds:
+        # Low-proc passives are easy to doubt; a quiet crackle on each landed
+        # cancel makes the mitigation read as working without chat spam.
+        - type: "minecraft:block.campfire.crackle"
+          volume: 0.4
+          pitch: 1.3
+          target: "self"
+      success_only: true
 
   # -- PRIMARY ABILITY (L25): the stoke. Sneak + Right-Click a lit campfire
   # with coal to spend the fuel and warm nearby allies.
@@ -171,7 +201,8 @@ abilities:
 
   # -- SYNERGY PASSIVE (L75): the stoke grows. Tending the fire now also wraps
   # nearby allies in Absorption. Rides the same Sneak + Right-Click gesture as
-  # Stoke (no extra fuel cost); the shared cooldown keeps the two in sync.
+  # Stoke (no extra fuel cost); both fire on the same click so their matching
+  # cooldowns stay in sync.
   - id: "kindling"
     display_name: "Kindling"
     unlock_level: 75
@@ -197,7 +228,7 @@ abilities:
 
   # -- MASTERY CAPSTONE (L100): the lesser beacon. Tending the fire radiates
   # Speed, Haste, and Resistance to nearby players & pets. Rides the same
-  # gesture as Stoke, with the synced cooldown.
+  # gesture as Stoke, with the matching cooldown.
   - id: "lesser_beacon"
     display_name: "Lesser Beacon"
     unlock_level: 100

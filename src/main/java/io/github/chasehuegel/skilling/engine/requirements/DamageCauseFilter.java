@@ -8,10 +8,10 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 /**
  * Resolves the {@code cause} state-filter keyword ({@code burn}, {@code fire},
- * {@code lava}, {@code drowning}, {@code suffocation}, {@code cactus},
- * {@code starvation}, {@code fly_into_wall}, or the compound
- * {@code environmental} hazard set) against the current
- * {@link EntityDamageEvent} cause.
+ * {@code lava}, {@code drowning}, {@code suffocation}, {@code freeze},
+ * {@code lightning}, {@code cactus}, {@code starvation},
+ * {@code fly_into_wall}, or the compound {@code environmental} hazard set)
+ * against the current {@link EntityDamageEvent} cause.
  *
  * <p>The filter fails closed: any event that is not an {@link EntityDamageEvent}
  * (or carries another cause) returns {@code false}, so a {@code cause} reference
@@ -22,22 +22,27 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 public final class DamageCauseFilter {
 
     /** Keyword to the damage causes it matches. Immutable, not author-facing (design decision, ISSUE-301). */
-    private static final Map<String, Set<DamageCause>> KEYWORDS = Map.of(
-            "fire", Set.of(DamageCause.FIRE),
-            "lava", Set.of(DamageCause.LAVA),
-            "burn", Set.of(DamageCause.FIRE, DamageCause.FIRE_TICK, DamageCause.LAVA),
-            "drowning", Set.of(DamageCause.DROWNING),
-            "suffocation", Set.of(DamageCause.SUFFOCATION),
-            "cactus", Set.of(DamageCause.CONTACT),
-            "starvation", Set.of(DamageCause.STARVATION),
-            "fly_into_wall", Set.of(DamageCause.FLY_INTO_WALL),
+    private static final Map<String, Set<DamageCause>> KEYWORDS = Map.ofEntries(
+            Map.entry("fire", Set.of(DamageCause.FIRE)),
+            Map.entry("lava", Set.of(DamageCause.LAVA)),
+            // burn covers the ongoing fire-tick hazard. Lava is deliberately kept
+            // out of burn and gated behind its own keyword so the rarer, heavier
+            // lava damage can price a distinct hazard tier.
+            Map.entry("burn", Set.of(DamageCause.FIRE, DamageCause.FIRE_TICK)),
+            Map.entry("drowning", Set.of(DamageCause.DROWNING)),
+            Map.entry("suffocation", Set.of(DamageCause.SUFFOCATION)),
+            Map.entry("freeze", Set.of(DamageCause.FREEZE)),
+            Map.entry("lightning", Set.of(DamageCause.LIGHTNING)),
+            Map.entry("cactus", Set.of(DamageCause.CONTACT)),
+            Map.entry("starvation", Set.of(DamageCause.STARVATION)),
+            Map.entry("fly_into_wall", Set.of(DamageCause.FLY_INTO_WALL)),
             // The full survivable hazard set: every environment the heavy-armor
             // skill's L75 "Walking Fortress" blunts. Broad by design so one
             // filter reads as "walk through anything".
-            "environmental", Set.of(DamageCause.FIRE, DamageCause.FIRE_TICK, DamageCause.LAVA,
+            Map.entry("environmental", Set.of(DamageCause.FIRE, DamageCause.FIRE_TICK, DamageCause.LAVA,
                     DamageCause.DROWNING, DamageCause.SUFFOCATION, DamageCause.CONTACT,
                     DamageCause.STARVATION, DamageCause.ENTITY_EXPLOSION, DamageCause.BLOCK_EXPLOSION,
-                    DamageCause.FLY_INTO_WALL)
+                    DamageCause.FLY_INTO_WALL))
     );
 
     private DamageCauseFilter() {}
