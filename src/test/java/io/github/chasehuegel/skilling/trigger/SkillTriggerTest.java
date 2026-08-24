@@ -33,6 +33,8 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickEntityTrigger
 import io.github.chasehuegel.skilling.engine.trigger.impl.LootTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.MapFillTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.MendTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.MountDamageTakenTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.RideDistanceTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.PlayerInteractTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.PotionSplashTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.ProjectileHitTrigger;
@@ -84,6 +86,7 @@ import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import io.papermc.paper.event.block.CompostItemEvent;
@@ -145,6 +148,8 @@ class SkillTriggerTest {
                     Arguments.of(new LeftClickEntityTrigger(), "left_click_entity", EntityDamageByEntityEvent.class),
                     Arguments.of(new ProjectileHitTrigger(), "projectile_hit", ProjectileHitEvent.class),
                     Arguments.of(new RideHorseTrigger(), "ride_horse", VehicleEnterEvent.class),
+                    Arguments.of(new RideDistanceTrigger(), "ride_distance", VehicleMoveEvent.class),
+                    Arguments.of(new MountDamageTakenTrigger(), "mount_damage_taken", EntityDamageEvent.class),
                     Arguments.of(new CureVillagerTrigger(), "cure_villager", EntityTransformEvent.class),
                     Arguments.of(new SneakTrigger(), "sneak", PlayerToggleSneakEvent.class),
                     Arguments.of(new SprintTrigger(), "sprint", PlayerToggleSprintEvent.class),

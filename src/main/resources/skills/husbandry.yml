@@ -132,16 +132,18 @@ abilities:
           duration: { constant: 10.0 }
           uuid: { constant: "7c1e5d9a-2b6f-4a3c-9e0d-8b7a6c5d4e3f" }
     feedback: { notify: { action_bar: false } }
-  # L100 - Mark your bond-pet: sneak + right-click your own tamed wolf (bone) or
-  # horse (apple) with the matching treat to record it for the calls below.
+  # L100 - Mark your bond-pet: sneak + right-click your own tamed wolf (bone)
+  # with the matching treat to record it for the call below. The horse companion
+  # moved to the Riding skill (Horse Bond / Horse Recall); husbandry keeps the
+  # wolf as its bonded companion.
   - id: "mark_companion"
     display_name: "Mark Companion"
     unlock_level: 100
     trigger: "right_click_entity"
     display:
       lore:
-        - '&7Sneak + Right-Click your tamed pet with its treat to bind it.'
-        - '&8Requires: Sneaking, carrying a treat (bone=wolf, apple=horse).'
+        - '&7Sneak + Right-Click your tamed wolf with a bone to bind it.'
+        - '&8Requires: Sneaking, a tamed wolf, a bone in hand.'
     mechanics:
       - type: "core:mark_companion"
   # L100 - Capstone: call your bonded wolf to your side from any distance by
@@ -166,25 +168,3 @@ abilities:
           mob_type: { constant: "wolf" }
     feedback:
       notify: { action_bar: true, chat: false, message: "&eWolf Call! &7Your companion has joined you." }
-  # L100 - Capstone: call your bonded horse to your side by right-clicking air
-  # with an apple. Costs the apple + 1 hunger.
-  - id: "horse_call"
-    display_name: "Horse Call"
-    unlock_level: 100
-    trigger: "right_click_air"
-    display:
-      lore:
-        - '&7Right-Click air with an apple to summon your bonded horse to your side.'
-        - '&7Costs 1 apple + 1 hunger.'
-        - '&8Requires: A marked horse, holding an apple, 3+ hunger.'
-    requirements:
-      state: [ "has_tamed:horse" ]
-      items:
-        - { action: "cost", tag: "minecraft:apple", slot: "MAIN_HAND", amount: 1 }
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    mechanics:
-      - type: "core:summon_companion"
-        parameters:
-          mob_type: { constant: "horse" }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&eHorse Call! &7Your companion has joined you." }

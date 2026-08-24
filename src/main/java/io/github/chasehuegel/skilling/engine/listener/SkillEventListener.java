@@ -66,6 +66,14 @@ public final class SkillEventListener implements Listener {
     static final long CHUNK_LOAD_THROTTLE_MS = 5000;
 
     /**
+     * Minimum milliseconds between {@code ride_distance} dispatches per player.
+     * A moving vehicle crosses a block boundary many times a second; the window
+     * bounds the source to a steady, time-gated trickle instead of a flood, the
+     * same way the {@code chunk_load} throttle bounds exploration.
+     */
+    static final long RIDE_DISTANCE_THROTTLE_MS = 10000;
+
+    /**
      * Materials that feed a farm animal in vanilla (seeds, crops, fruit, and
      * veg). Gates the {@code feed_animal} dispatch so the low-value reward lands
      * only on a genuine feeding interaction, not an arbitrary animal right-click.
@@ -88,6 +96,8 @@ public final class SkillEventListener implements Listener {
     private final BossBarPool bossBarPool;
     private io.github.chasehuegel.skilling.engine.registry.StateFilterRegistry stateFilterRegistry;
     private final java.util.concurrent.ConcurrentMap<UUID, Long> chunkLoadLastDispatch =
+            new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.concurrent.ConcurrentMap<UUID, Long> rideDistanceLastDispatch =
             new java.util.concurrent.ConcurrentHashMap<>();
 
     public SkillEventListener(Skilling plugin, SkillManager skillManager, ProfileManager profileManager,
@@ -657,6 +667,45 @@ public final class SkillEventListener implements Listener {
     public void onRideHorse(org.bukkit.event.vehicle.VehicleEnterEvent event) {
         if (event.getEntered() instanceof Player player) {
             dispatch(player, event, "ride_horse");
+        }
+    }
+
+    /**
+     * Routes the {@code ride_distance} trigger when a player rides a moving
+     * vehicle, throttled per player so a long journey is a steady trickle of XP
+     * rather than a grant per block crossed.
+     *
+     * @param event the vehicle move event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onVehicleMove(org.bukkit.event.vehicle.VehicleMoveEvent event) {
+        long now = System.currentTimeMillis();
+        for (org.bukkit.entity.Entity passenger : event.getVehicle().getPassengers()) {
+            if (!(passenger instanceof Player player)) continue;
+            Long last = rideDistanceLastDispatch.get(player.getUniqueId());
+            if (last != null && now - last < RIDE_DISTANCE_THROTTLE_MS) continue;
+            rideDistanceLastDispatch.put(player.getUniqueId(), now);
+            dispatch(player, event, "ride_distance");
+        }
+    }
+
+    /**
+     * Routes the {@code mount_damage_taken} trigger to a player when the vehicle
+     * they are riding takes damage. Runs at {@code LOWEST} without
+     * {@code ignoreCancelled} so {@code core:mounted_ward} can blunt the damage
+     * before other plugins act on it.
+     *
+     * @param event the entity damage event
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onMountDamageTaken(EntityDamageEvent event) {
+        if (event.isCancelled()) return;
+        org.bukkit.entity.Entity damaged = event.getEntity();
+        if (!(damaged instanceof org.bukkit.entity.Vehicle)) return;
+        for (org.bukkit.entity.Entity passenger : damaged.getPassengers()) {
+            if (passenger instanceof Player player) {
+                dispatch(player, event, "mount_damage_taken");
+            }
         }
     }
 

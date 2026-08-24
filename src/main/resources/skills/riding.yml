@@ -1,19 +1,44 @@
+# ==========================================
+# RIDING SKILL
+# ==========================================
+# Mount and vehicle mastery, with horses as the flagship. It improves riding
+# horses (taming, binding, recall, mounted combat), and also striders, pigs,
+# boats, and minecarts for travel. The identity scalar (L1) is mounted combat
+# damage. The L25 active is Horse Recall, brought forward from husbandry so it
+# is useful early when a horse is first tamed and ridden. Ward Mount (L50)
+# protects the mount itself, Terrain Mastery (L75) makes living mounts faster
+# under the rider, and the capstone (L100) removes mounted fall damage.
+#
+# XP loop: mounted combat (entity_damage while riding), taming horses
+# (player_tame), hopping onto any vehicle (ride_horse, low value), and long
+# mounts (ride_distance, throttled per player).
 id: "riding"
 max_level: 100
 display: { name: "Riding", icon: "minecraft:saddle", color: "WHITE", style: "SOLID" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Mounting is free and repeatable (hop on/off), so it is a low-value trickle,
+  # not a meaningful source. The real grind is riding (below).
   - trigger: "ride_horse"
-    reward: { constant: 69.4 }
+    reward: { constant: 12.0 }
+  # The primary combat grind: attacking while mounted pays per raw damage point.
   - trigger: "entity_damage"
     filters: [ { state: "is_riding" } ]
-    reward: { constant: 9.9 }       # per raw damage point (7 ≈ mounted hit). Damage-scaled
+    reward: { constant: 9.9 }
     scaling: damage
+  # Taming a horse is time/scarcity-gated and a strong, costed source.
   - trigger: "player_tame"
     reward: { constant: 69.4 }
+  # The deep, time-gated grind: riding a vehicle. The listener throttles this to
+  # once per ~10s so a long journey is a steady trickle, mirroring map exploration.
+  - trigger: "ride_distance"
+    reward: { constant: 12.0 }
 abilities:
-  - id: "mounted_combat_training"
-    display_name: "Mounted Combat Training"
+  # L1 - Foundational passive / identity scalar: mounted combat damage grows
+  # linearly across the whole range. This is THE damage line; the capstone no
+  # longer stacks raw mounted damage on top of it.
+  - id: "mounted_combat"
+    display_name: "Mounted Combat"
     unlock_level: 1
     trigger: "entity_damage"
     display: { lore: [ "&7Mounted damage &a{multiplier}x&7." ] }
@@ -23,88 +48,100 @@ abilities:
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.004, max: 1.35 } }
     feedback: { notify: { action_bar: false } }
-  - id: "swift_mount"
-    display_name: "Swift Mount"
+
+  # L15 - Early binding QoL: sneak + right-click your OWN tamed horse with an
+  # apple to bind it. This is the prerequisite for Horse Recall at L25, so a
+  # player can bond early and recall their steed throughout the fighting phase.
+  - id: "horse_bond"
+    display_name: "Horse Bond"
     unlock_level: 15
-    trigger: "ride_horse"
-    display: { lore: [ "&7Mounting grants &a{multiplier}x&7 speed for {duration}s." ] }
-    mechanics:
-      - type: "core:speed_bonus"
-        parameters:
-          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
-          uuid: { constant: "ee09b890-0f2d-51a2-9df8-0cfc6e92bdda" }
-          duration: { constant: 30.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "cavalry_charge"
-    display_name: "Cavalry Charge"
-    unlock_level: 25
-    trigger: "entity_damage"
+    trigger: "right_click_entity"
     display:
       lore:
-        - "&7Sneak-attack while mounted for &a{multiplier}x&7 damage + slow target."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, riding, 6s cooldown, 3+ hunger."
+        - "&7Sneak + Right-Click your tamed horse with an apple to bind it."
+        - "&8Requires: Sneaking, a tamed horse, an apple in hand."
     requirements:
-      cooldown: 6.0
-      state: [ "is_sneaking", "is_riding" ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eCavalry Charge cooling down: {time}s" } }
+      state: [ "is_sneaking" ]
     mechanics:
-      - type: "core:modify_damage"
-        filters: [ { state: "is_riding" } ]
-        parameters:
-          multiplier: { linear: { base: 1.3, step: 0.01, max: 1.6 } }
-      - type: "core:apply_status"
-        filters: [ { state: "is_riding" } ]
-        parameters:
-          effect: { constant: "minecraft:slowness" }     # P2-11
-          duration: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
-          amplifier: { constant: 1.0 }
-    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Cavalry Charge! ✦" } }
-  - id: "mounted_defense"
-    display_name: "Mounted Defense"
-    unlock_level: 50
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7While riding: &a{chance}%&7 dodge." ] }
-    mechanics:
-      - type: "core:dodge"
-        filters: [ { state: "is_riding" } ]
-        parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "horse_mastery"
-    display_name: "Horse Mastery"
-    unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7While riding & hit: +&a{amount}&7 armor for {duration}s." ] }
-    mechanics:
-      - type: "core:armor_bonus"
-        filters: [ { state: "is_riding" } ]
-        parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
-          uuid: { constant: "09fcbbb4-3b78-5aa1-a116-9b0c1bb48230" }
-          duration: { constant: 8.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "legendary_rider"
-    display_name: "Legendary Rider"
-    unlock_level: 100
-    trigger: "entity_damage"
+      - type: "core:mark_companion"
+
+  # L25 - Primary active: recall your bonded horse from any distance by
+  # right-clicking air with an apple. Costs the apple + 1 hunger. No cooldown:
+  # it is a themed, item-costed activation instead of a gated timer.
+  - id: "horse_recall"
+    display_name: "Horse Recall"
+    unlock_level: 25
+    trigger: "right_click_air"
     display:
       lore:
-        - "&7While riding: &a{multiplier}x&7 damage"
-        - "&7and speed on hit for {duration}s."
+        - "&7Right-Click air with an apple to summon your bonded horse."
+        - "&7Costs 1 apple + 1 hunger."
+        - "&8Requires: A bonded horse, holding an apple, 3+ hunger."
+    requirements:
+      state: [ "has_tamed:horse" ]
+      items:
+        - { action: "cost", tag: "minecraft:apple", slot: "MAIN_HAND", amount: 1 }
+      exhaustion: { amount: 1.0, minimum: 3.0 }
     mechanics:
-      # speed_bonus first, modify_damage last: the lore resolver renders the
-      # last mechanic's value for a shared {multiplier} token, so the headline
-      # damage number must win.
-      - type: "core:speed_bonus"
-        filters: [ { state: "is_riding" } ]
+      - type: "core:summon_companion"
         parameters:
-          multiplier: { linear: { base: 1.3, step: 0.002, max: 1.4 } }
-          uuid: { constant: "2a6a3b95-c392-57c8-9aea-a7814517e4d4" }
-          duration: { constant: 60.0 }
-      - type: "core:modify_damage"
-        filters: [ { state: "is_riding" } ]
+          mob_type: { constant: "horse" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&eHorse Recalled! &7Your steed is at your side." }
+
+  # L50 - Major passive: the mount you ride takes reduced damage, scaling from
+  # 25% at L50 to 50% at L100. Guards the horse that absorbs hits during mounted
+  # combat, the surface the L1 scalar depends on.
+  - id: "ward_mount"
+    display_name: "Ward Mount"
+    unlock_level: 50
+    trigger: "mount_damage_taken"
+    display: { lore: [ "&7While riding: mount &a{reduction}%&7 damage reduced." ] }
+    mechanics:
+      - type: "core:mounted_ward"
         parameters:
-          multiplier: { linear: { base: 1.8, step: 0.02, max: 2.3 } }
+          reduction: { linear: { base: 25.0, step: 0.5, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
+
+  # L75 - Synergy passive: boarding a living mount makes it faster in your
+  # hands, scaling 8% at L75 to 30% at L100. Applies to the mount's own speed so
+  # a horse (or strider, camel, pig) genuinely travels faster while ridden.
+  - id: "terrain_mastery"
+    display_name: "Terrain Mastery"
+    unlock_level: 75
+    trigger: "ride_horse"
+    display:
+      lore:
+        - "&7Your mount moves &a{multiplier}x&7 speed for {duration}s."
+    mechanics:
+      - type: "core:mounted_speed"
+        filters: [ { state: "riding_type:living_mount" } ]
+        parameters:
+          multiplier: { linear: { base: 1.08, step: 0.0088, max: 1.3 } }
+          uuid: { constant: "b4f2c9d1-6a3e-4b5c-8d7f-9c1a2e3b4d5f" }
+          duration: { constant: 60.0 }
+    feedback: { notify: { action_bar: false } }
+
+  # L100 - Mastery capstone: while mounted you take no fall damage. A defensive
+  # transformer that frees you to ride recklessly, distinct from the L1 damage
+  # scalar and the L50 mount ward.
+  - id: "master_rider"
+    display_name: "Master Rider"
+    unlock_level: 100
+    trigger: "fall_damage"
+    display:
+      lore:
+        - "&7While riding: no fall damage."
+    mechanics:
+      - type: "core:cancel_damage"
+        filters: [ { state: "is_riding" } ]
+        parameters:
+          chance: { constant: 100.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&7Masterful landing." }
+      sounds:
+        - type: "minecraft:block.amethyst_block.chime"
+          volume: 0.4
+          pitch: 1.6
+          target: "self"
+      success_only: true

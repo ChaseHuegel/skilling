@@ -435,6 +435,10 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:reduce_damage", ReduceDamageMechanic.class, List.of("reduction"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "reduction", 100));
+        mechReg.register("core:mounted_ward", MountedWardMechanic.class, List.of("reduction"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "reduction", 100));
+        mechReg.register("core:mounted_speed", MountedSpeedMechanic.class, List.of("multiplier", "duration", "uuid"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
         mechReg.register("core:thorns_damage", ThornsDamageMechanic.class, List.of("damage"));
         mechReg.register("core:knockback", KnockbackMechanic.class, List.of("force", "radius", "vertical", "targets"),
                 (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
@@ -673,6 +677,8 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("sneak", SneakTrigger.class);
         trigReg.register("jump", JumpTrigger.class);
         trigReg.register("ride_horse", RideHorseTrigger.class);
+        trigReg.register("ride_distance", RideDistanceTrigger.class);
+        trigReg.register("mount_damage_taken", MountDamageTakenTrigger.class);
         trigReg.register("collect_xp", CollectXpTrigger.class);
         trigReg.register("level_up", LevelUpTrigger.class);
         trigReg.register("enchant_item", EnchantItemTrigger.class);
@@ -723,6 +729,7 @@ public final class Skilling extends JavaPlugin {
         sf.register("is_on_ground", (p, e, v) -> p.isOnGround());
         sf.register("is_on_fire", (p, e, v) -> p.getFireTicks() > 0);
         sf.register("is_riding", (p, e, v) -> p.isInsideVehicle());
+        sf.register("riding_type", (p, e, v) -> meetsRidingType(p, v));
         sf.register("is_blocking", (p, e, v) -> p.isBlocking());
 
         sf.register("cause", (p, e, v) ->
@@ -1162,6 +1169,7 @@ public final class Skilling extends JavaPlugin {
         }
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clearAll();
         io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper.clearAll();
+        io.github.chasehuegel.skilling.engine.mechanic.impl.MountedSpeedMechanic.clearAll();
         io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.stripAll();
         io.github.chasehuegel.skilling.engine.mechanic.impl.BlastHarvestMechanic.clearAll();
         if (asyncBatchWorker != null) {
@@ -1439,5 +1447,43 @@ public final class Skilling extends JavaPlugin {
                 pack.setEnabled(true);
             }
         }
+    }
+
+    /**
+     * Evaluates the {@code riding_type} state filter for the given value against
+     * the vehicle the player currently rides. The value selects a mount class
+     * ({@code horse}, {@code donkey}, {@code mule}, {@code skeleton_horse},
+     * {@code zombie_horse}, {@code camel}, {@code llama}, {@code pig},
+     * {@code strider}, {@code boat}, {@code minecart}), an umbrella
+     * ({@code equine} for any {@code AbstractHorse}, {@code living_mount} for any
+     * living mountable), or any single vehicle type. An unknown or unmatched
+     * value fails closed. Fires for every vehicle, matching the {@code ride_horse}
+     * trigger, so a skill can specialize a perk to one kind of mount.
+     *
+     * @param player the player to inspect
+     * @param value  the riding_type value (lowercased)
+     * @return true when the ridden vehicle matches the requested type
+     */
+    private static boolean meetsRidingType(org.bukkit.entity.Player player, String value) {
+        if (value == null || value.isBlank()) return false;
+        Object vehicle = player.getVehicle();
+        if (vehicle == null) return false;
+        String type = value.toLowerCase();
+        return switch (type) {
+            case "living_mount" -> vehicle instanceof org.bukkit.entity.LivingEntity;
+            case "equine" -> vehicle instanceof org.bukkit.entity.AbstractHorse;
+            case "horse" -> vehicle instanceof org.bukkit.entity.Horse;
+            case "donkey" -> vehicle instanceof org.bukkit.entity.Donkey;
+            case "mule" -> vehicle instanceof org.bukkit.entity.Mule;
+            case "skeleton_horse" -> vehicle instanceof org.bukkit.entity.SkeletonHorse;
+            case "zombie_horse" -> vehicle instanceof org.bukkit.entity.ZombieHorse;
+            case "camel" -> vehicle instanceof org.bukkit.entity.Camel;
+            case "llama" -> vehicle instanceof org.bukkit.entity.Llama;
+            case "pig" -> vehicle instanceof org.bukkit.entity.Pig;
+            case "strider" -> vehicle instanceof org.bukkit.entity.Strider;
+            case "boat" -> vehicle instanceof org.bukkit.entity.Boat;
+            case "minecart" -> vehicle instanceof org.bukkit.entity.Minecart;
+            default -> false;
+        };
     }
 }

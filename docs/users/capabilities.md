@@ -249,6 +249,21 @@ occasional dodge. Gate the sources with a `cause` state filter (for example
 
 **Event:** `EntityDamageEvent`
 
+### core:mounted_ward
+
+Reduces the damage dealt to the vehicle the activating player is riding by a flat
+percentage. Guards the mount that absorbs hits during mounted combat, complementing
+`core:reduce_damage`, which guards the rider. The player must be a passenger of
+the damaged vehicle. Bind it to the `mount_damage_taken` trigger.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `reduction` | double | `0` | Percentage (0-100) of mount damage removed |
+
+**Event:** `EntityDamageEvent` (on the rider's vehicle)
+
 ### core:modify_attribute
 
 Temporarily modifies a player attribute.
@@ -299,6 +314,23 @@ Applies a temporary movement speed attribute modifier.
 | `uuid` | string | random | Stable modifier UUID. Repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 **Event:** Fires on the trigger declared by the ability (e.g., `entity_damage_taken`, `consume_item`). Gives the player a temporary movement speed boost for the configured `duration`.
+
+### core:mounted_speed
+
+Temporarily increases the movement speed of the vehicle the player is riding.
+`core:speed_bonus` modifies the rider's own speed, which does not govern a ridden
+mount; this mechanic instead modifies the mount, so a horse (or strider, camel,
+pig) genuinely travels faster. Boats and minecarts have no speed attribute and
+are a no-op. Bind it to the `ride_horse` trigger and gate it with
+`riding_type:living_mount` to keep it to living mounts.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Multiplicative speed multiplier for the mount (1.5 = 50% faster, not a percentage) |
+| `duration` | double | `60` | Duration in seconds |
+| `uuid` | string | random | Stable modifier UUID. Repeated activations with the same UUID replace the previous modifier instead of stacking |
 
 ### core:modify_craft_output
 
@@ -1782,7 +1814,9 @@ attribute: { constant: "minecraft:movement_speed" }
 | `sprint` | `PlayerToggleSprintEvent` | Player starts sprinting (release is not a trigger) |
 | `sneak` | `PlayerToggleSneakEvent` | Player starts sneaking (release is not a trigger) |
 | `jump` | `PlayerJumpEvent` | Player jumps (Packet-level jump detection) |
-| `ride_horse` | `VehicleEnterEvent` | Player mounts a vehicle |
+| `ride_horse` | `VehicleEnterEvent` | Player mounts a vehicle (any mountable vehicle) |
+| `ride_distance` | `VehicleMoveEvent` | A player rides a moving vehicle. The listener throttles this to once per ~10s per player so a long mount is a steady, time-gated trickle rather than a grant per block crossed |
+| `mount_damage_taken` | `EntityDamageEvent` (on the rider's vehicle) | The vehicle the player is riding takes damage. Used for mount-protection abilities |
 | `collect_xp` | `PlayerExpChangeEvent` | Collecting vanilla XP orbs |
 | `level_up` | `SkillingLevelUpEvent` | A Skilling skill levels up |
 | `enchant_item` | `EnchantItemEvent` | Enchanting an item at an enchanting table |
@@ -1835,6 +1869,7 @@ State filters are evaluated per-ability and per-XP source in YAML. The filter sy
 | `is_on_ground` | *(none)* | Player is on the ground |
 | `is_on_fire` | *(none)* | Player is on fire |
 | `is_riding` | *(none)* | Player is riding a vehicle/mount |
+| `riding_type` | `horse`, `donkey`, `mule`, `skeleton_horse`, `zombie_horse`, `camel`, `llama`, `pig`, `strider`, `boat`, `minecart`, `equine`, `living_mount` | The type of vehicle the player is riding. `equine` matches any `AbstractHorse` (horse, donkey, mule, skeleton/zombie horse, camel, llama); `living_mount` matches any living mountable (horses, pigs, striders, camels) but not boats/minecarts. Fails closed when the player rides nothing or the value is unknown. Fires for every mountable vehicle, matching the `ride_horse` trigger |
 | `is_blocking` | *(none)* | Player is blocking with a shield |
 | `player_placed` | `true`, `false` | `false` matches blocks not placed by a player (natural blocks). `true` matches blocks a player placed. Values are validated at load |
 | `dimension` | `overworld`, `nether`, `end` | Player's current dimension |

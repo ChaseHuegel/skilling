@@ -51,13 +51,11 @@ class HusbandryMobCarryAbilityTest {
     }
 
     @Test
-    void companionCallsBindToRightClickAirWithSummonMechanic() {
-        for (String id : new String[]{"wolf_call", "horse_call"}) {
-            SkillDefinition.Ability call = ability(id);
-            assertEquals("right_click_air", call.trigger(), id + " must trigger on right_click_air");
-            assertTrue(call.mechanics().stream().anyMatch(m -> "core:summon_companion".equals(m.type())),
-                    id + " must use core:summon_companion");
-        }
+    void companionCallBindsToRightClickAirWithSummonMechanic() {
+        SkillDefinition.Ability call = ability("wolf_call");
+        assertEquals("right_click_air", call.trigger(), "wolf_call must trigger on right_click_air");
+        assertTrue(call.mechanics().stream().anyMatch(m -> "core:summon_companion".equals(m.type())),
+                "wolf_call must use core:summon_companion");
         assertNotNull(ability("mark_companion"));
     }
 }
