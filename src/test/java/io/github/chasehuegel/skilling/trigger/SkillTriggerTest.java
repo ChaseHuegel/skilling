@@ -25,6 +25,7 @@ import io.github.chasehuegel.skilling.engine.trigger.impl.FishingTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.FurnaceExtractTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LevelUpTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LaunchProjectileTrigger;
+import io.github.chasehuegel.skilling.engine.trigger.impl.AnvilPrepareTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickAirTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.LeftClickBlockTrigger;
 import io.github.chasehuegel.skilling.engine.trigger.impl.JukeboxPlayTrigger;
@@ -74,6 +75,7 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.inventory.SmithItemEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerEditBookEvent;
@@ -162,6 +164,7 @@ class SkillTriggerTest {
                     Arguments.of(new RecipeDiscoverTrigger(), "recipe_discover", PlayerRecipeDiscoverEvent.class),
                     Arguments.of(new SmithTrigger(), "smith", SmithItemEvent.class),
                     Arguments.of(new MendTrigger(), "mend", PlayerItemMendEvent.class),
+                    Arguments.of(new AnvilPrepareTrigger(), "anvil_prepare", PrepareAnvilEvent.class),
                     Arguments.of(new MapFillTrigger(), "map_fill", PlayerMapFilledEvent.class),
                     Arguments.of(new LootTrigger(), "loot", LootGenerateEvent.class),
                     Arguments.of(new CartographyTrigger(), "cartography", CartographyItemEvent.class),

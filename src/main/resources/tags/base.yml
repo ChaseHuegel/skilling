@@ -455,6 +455,74 @@ custom_tags:
     - "#minecraft:head_armor"
     - "#minecraft:leg_armor"
 
+  # Every metal/mineral durability-driven tool, armor, and weapon. The forging
+  # set for the Smithing skill: boosted-durability crafts, sharpen targets, and
+  # salvage sources are all scoped to this tag. Bedrock is iron, gold, diamond,
+  # and netherite gear plus chainmail, copper (brush), trident, shield, mace,
+  # and the durable horse armors. Organic gear (leather, turtle, wolf) is
+  # deliberately excluded - it is not smith-themed.
+  smithing:
+    - "minecraft:iron_sword"
+    - "minecraft:iron_pickaxe"
+    - "minecraft:iron_axe"
+    - "minecraft:iron_shovel"
+    - "minecraft:iron_hoe"
+    - "minecraft:iron_helmet"
+    - "minecraft:iron_chestplate"
+    - "minecraft:iron_leggings"
+    - "minecraft:iron_boots"
+    - "minecraft:shears"
+    - "minecraft:flint_and_steel"
+    - "minecraft:golden_sword"
+    - "minecraft:golden_pickaxe"
+    - "minecraft:golden_axe"
+    - "minecraft:golden_shovel"
+    - "minecraft:golden_hoe"
+    - "minecraft:golden_helmet"
+    - "minecraft:golden_chestplate"
+    - "minecraft:golden_leggings"
+    - "minecraft:golden_boots"
+    - "minecraft:diamond_sword"
+    - "minecraft:diamond_pickaxe"
+    - "minecraft:diamond_axe"
+    - "minecraft:diamond_shovel"
+    - "minecraft:diamond_hoe"
+    - "minecraft:diamond_helmet"
+    - "minecraft:diamond_chestplate"
+    - "minecraft:diamond_leggings"
+    - "minecraft:diamond_boots"
+    - "minecraft:netherite_sword"
+    - "minecraft:netherite_pickaxe"
+    - "minecraft:netherite_axe"
+    - "minecraft:netherite_shovel"
+    - "minecraft:netherite_hoe"
+    - "minecraft:netherite_helmet"
+    - "minecraft:netherite_chestplate"
+    - "minecraft:netherite_leggings"
+    - "minecraft:netherite_boots"
+    - "minecraft:chainmail_helmet"
+    - "minecraft:chainmail_chestplate"
+    - "minecraft:chainmail_leggings"
+    - "minecraft:chainmail_boots"
+    - "minecraft:brush"
+    - "minecraft:shield"
+    - "minecraft:mace"
+    - "minecraft:trident"
+    - "minecraft:iron_horse_armor"
+    - "minecraft:golden_horse_armor"
+    - "minecraft:diamond_horse_armor"
+
+  # Smithing table repair/salvage stations. Also used by the masonry kiln as a
+  # self-contained reaction-guard on transmute entries.
+  anvils:
+    - "minecraft:anvil"
+    - "minecraft:chipped_anvil"
+    - "minecraft:damaged_anvil"
+
+  # The sharpen station for the Smithing skill's edge-honing active.
+  grindstones:
+    - "minecraft:grindstone"
+
   leather_armor:
     - "minecraft:leather_helmet"
     - "minecraft:leather_chestplate"

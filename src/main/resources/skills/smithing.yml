@@ -1,97 +1,551 @@
+# ==========================================
+# SMITHING SKILL - The Forge Master
+# ==========================================
+# Forge raw ore into metal and mineral gear, craft tougher tools, sharpen your
+# edge at the grindstone, salvage worn gear back into its primary material, and
+# master the anvil. The loop is smelt ore -> craft gear -> sharpen it -> use,
+# wear, repair, and finally salvage it back into raw material.
+# Cleanly disjoint from Masonry (the kiln-craft of fired building stone) because
+# smithing owns the metal/mineral durability set, the grindstone, and the anvil.
+#
+# Abilities (6-tier ladder):
+#   L1   Efficient Repair    anvil repair costs scale down (identity scalar)
+#   L15  Durable Craft       crafted metal/mineral gear carries more durability
+#   L25  Sharpen Edge        grindstone hone: permanent mining efficiency on a tool
+#   L50  Salvage             melt worn metal/mineral gear back into its primary material
+#   L75  Master's Anvil      remove the anvil repair level cap and too-expensive wall
+#   L100 Masterwork Craft    crafted gear has a chance to come out enchanted
+#
+# XP loop: smelting ore (fuel + time gated), crafting tools/armor (real material),
+# repairing at the anvil (gear + xp gated), smithing-table work (scarce), and
+# mending trickle (passive, while the gear is used). A coherent six-source loop.
 id: "smithing"
 max_level: 100
 display: { name: "Smithing", icon: "minecraft:anvil", color: "YELLOW", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Crafting tools/armor pays on the real material behind each craft.
   - trigger: "craft_item"
-    filters: [ { target: "#c:tools" } ]   # representative. Tools/armor only
+    filters: [ { target: "#c:tools" } ]
     reward: { constant: 64.1 }
+  # Smelting metal ore is the forge grind, gated by fuel and smelt time.
   - trigger: "furnace_extract"
     filters: [ { target: "#minecraft:iron_ores" } ]
     reward: { constant: 64.1 }
   - trigger: "furnace_extract"
     filters: [ { target: "#minecraft:gold_ores" } ]
     reward: { constant: 64.1 }
+  # Repairing a real repair at the anvil; gated by needing a damaged item.
   - trigger: "repair"
     reward: { constant: 64.1 }
+  # Smithing-table work (netherite upgrades, trims) is scarce and high value.
   - trigger: "smith"
     reward: { constant: 80.0 }
+  # Mending trickle while the player fights-and-wears covered gear.
   - trigger: "mend"
     reward: { constant: 30.0 }
 abilities:
-  - id: "efficient_smith"
-    display_name: "Efficient Smith"
+  # L1 - Foundational passive: the repair-economy identity scalar. Anvil repair
+  # level cost scales down from level 1 so the whole climb is felt.
+  - id: "efficient_repair"
+    display_name: "Efficient Repair"
     unlock_level: 1
-    trigger: "craft_item"
-    display: { lore: [ "&7Tool/armor crafts yield &a{multiplier}x&7." ] }
+    trigger: "repair"
+    display: { lore: [ "&7Anvil repair costs &a{discount}%&7 less." ] }
     mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "#c:tools" } ]
+      - type: "core:repair_discount"
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+          discount: { linear: { base: 2.0, step: 0.4, max: 40.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "tempered_metal"
-    display_name: "Tempered Metal"
+
+  # L15 - QoL passive: crafted metal/mineral gear carries more max durability.
+  # The boost lives on the item, so a smith's gear lasts longer in any hands.
+  - id: "durable_craft"
+    display_name: "Durable Craft"
     unlock_level: 15
-    trigger: "item_damage"
-    display: { lore: [ "&7Smithed gear has &a{chance}%&7 chance to lose no durability." ] }
+    trigger: "craft_item"
+    display: { lore: [ "&7Crafted metal gear has &a+{amount}&7 max durability." ] }
     mechanics:
-      - type: "core:durability_save"
+      - type: "core:craft_durability"
+        filters: [ { target: "#c:smithing" } ]
         parameters:
-          chance: { linear: { base: 10.0, step: 0.4, max: 50.0 } }
+          amount: { linear: { base: 15.0, step: 1.0, max: 100.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "weighted_strike"
-    display_name: "Weighted Strike"
+
+  # L25 - Primary active: the sharpen. Sneak + right-click a grindstone with a
+  # tool held to hone its edge permanently. A stable uuid means re-sharpening
+  # replaces - never stacks - and the bonus is a separate attribute so it stacks
+  # with a Haste potion. Cost is hunger, not a cooldown.
+  - id: "sharpen_edge"
+    display_name: "Sharpen Edge"
     unlock_level: 25
-    trigger: "entity_damage"
+    trigger: "right_click_block"
     display:
       lore:
-        - "&7Shift-attack with a sword for &a{multiplier}x&7 damage on next hit."
+        - "&7Sneak + interact a grindstone to sharpen"
+        - "&7your held tool: +&a{amount}&7 mining efficiency."
         - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, sword, 8s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, tool in hand, 3+ hunger."
     requirements:
-      cooldown: 8.0
       state: [ "is_sneaking" ]
-      items: [ { action: "possession", tag: "#minecraft:swords", slot: "MAIN_HAND" } ]
+      items: [ { action: "possession", tag: "#c:tools", slot: "MAIN_HAND" } ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eWeighted Strike cooling down: {time}s" } }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to forge an edge!" }
     mechanics:
-      - type: "core:modify_damage"
-        filters: [ { tool: "#minecraft:swords" } ]
+      - type: "core:cancel_event"
+        filters: [ { target: "#c:grindstones" } ]
+      - type: "core:sharpen_tool"
+        filters: [ { target: "#c:grindstones" } ]
         parameters:
-          multiplier: { linear: { base: 1.2, step: 0.01, max: 1.6 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Weighted Strike! ✦" } }
-  - id: "reforging"
-    display_name: "Reforging"
+          amount: { linear: { base: 2.0, step: 0.06, max: 8.0 } }
+          uuid: { constant: "8f1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&e✦ Edge Honed! ✦" }
+      sounds: [ { type: "minecraft:block.stone.pressure_plate.click_on", volume: 0.7, pitch: 1.4, target: "self" } ]
+
+  # L50 - Major passive: salvage. Sneak + right-click an anvil with a worn metal
+  # or mineral item to melt it back into its primary material. Value is level-
+  # scaled product_count, the L50 economy spike reached the instant it unlocks.
+  - id: "salvage"
+    display_name: "Salvage"
     unlock_level: 50
-    trigger: "furnace_extract"
-    display: { lore: [ "&7Ore smelting yield &a{multiplier}x&7." ] }
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Sneak + interact an anvil to salvage a held"
+        - "&7metal/mineral item into its primary material."
+        - "&7Costs 1 hunger."
+        - "&8Requires: Sneaking, anvil, salvageable gear, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking" ]
+      items: [ { action: "possession", tag: "#c:smithing", slot: "MAIN_HAND" } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to salvage!" }
     mechanics:
-      - type: "core:modify_furnace_output"
+      # Iron gear returns iron ingots.
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "master_smith"
-    display_name: "Master Smith"
+          source: { constant: "minecraft:iron_sword" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_pickaxe" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_axe" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_shovel" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_hoe" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_helmet" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_chestplate" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_leggings" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_boots" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:shears" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:flint_and_steel" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      # Iron horse armor and the shield also return iron.
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:iron_horse_armor" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:shield" }
+          product: { constant: "minecraft:iron_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      # Gold gear returns gold ingots.
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_sword" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_pickaxe" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_axe" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_shovel" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_hoe" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_helmet" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_chestplate" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_leggings" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_boots" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:golden_horse_armor" }
+          product: { constant: "minecraft:gold_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      # Diamond gear returns diamonds.
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_sword" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_pickaxe" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_axe" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_shovel" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_hoe" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_helmet" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_chestplate" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_leggings" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_boots" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:diamond_horse_armor" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      # Netherite gear returns netherite ingots.
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_sword" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_pickaxe" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_axe" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_shovel" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_hoe" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_helmet" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_chestplate" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_leggings" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:netherite_boots" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      # Chainmail gear returns chain links.
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:chainmail_helmet" }
+          product: { constant: "minecraft:chain" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:chainmail_chestplate" }
+          product: { constant: "minecraft:chain" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:chainmail_leggings" }
+          product: { constant: "minecraft:chain" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:chainmail_boots" }
+          product: { constant: "minecraft:chain" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      # Copper brush returns copper ingots.
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:brush" }
+          product: { constant: "minecraft:copper_ingot" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+      # Mace returns the breeze rod at its heart.
+      - type: "core:transmute"
+        filters: [ { target: "#c:anvils" } ]
+        parameters:
+          source: { constant: "minecraft:mace" }
+          product: { constant: "minecraft:breeze_rod" }
+          source_count: { constant: 1 }
+          product_count: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+          block: { constant: "#c:anvils" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&e✦ Salvaged! ✦" }
+      sounds: [ { type: "minecraft:entity.item.pickup", volume: 0.6, pitch: 1.6, target: "self" } ]
+
+  # L75 - Synergy passive: the anvil mastery. The anvil's maximum repair cost is
+  # raised (no more "Too Expensive" wall) and the enchantment-level restriction
+  # is lifted, so gear stays repairable as long as the player can pay. Binding
+  # to the ungated anvil_prepare trigger lets the cap lift even on null results.
+  - id: "masters_anvil"
+    display_name: "Master's Anvil"
     unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7While holding a sword, gain &a{amount}&7 armor on hit." ] }
+    trigger: "anvil_prepare"
+    display: { lore: [ "&7Anvil repairs never surpass &a{cap}&7 levels." ] }
     mechanics:
-      - type: "core:armor_bonus"
-        filters: [ { tool: "#minecraft:swords" } ]
+      - type: "core:uncap_repair"
         parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
-          uuid: { constant: "2d6d17d5-7e09-5197-8c04-fdf4cf1d52cc" }
-          duration: { constant: 8.0 }
+          cap: { linear: { base: 80.0, step: 2.0, max: 400.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "legendary_artisan"
-    display_name: "Legendary Artisan"
+
+  # L100 - Mastery capstone: masterwork. Crafted metal/mineral gear has a chance
+  # to come out of the forge naturally enchanted, replacing the old copy-cat
+  # craft-output multiplier with a genuinely distinct mastery.
+  - id: "masterwork_craft"
+    display_name: "Masterwork Craft"
     unlock_level: 100
     trigger: "craft_item"
-    display: { lore: [ "&7Tool/armor crafts yield &a{multiplier}x&7." ] }
+    display: { lore: [ "&a{chance}%&7 chance crafted metal gear comes enchanted." ] }
     mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "#c:tools" } ]
+      - type: "core:masterwork_craft"
+        filters: [ { target: "#c:smithing" } ]
         parameters:
-          multiplier: { linear: { base: 1.8, step: 0.01, max: 2.5 } }
+          chance: { linear: { base: 10.0, step: 0.8, max: 60.0 } }
     feedback: { notify: { action_bar: false } }

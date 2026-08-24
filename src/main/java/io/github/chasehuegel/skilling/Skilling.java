@@ -510,6 +510,17 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:haste_effect", HasteMechanic.class, List.of("amplifier", "duration"),
                 (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "duration"));
         mechReg.register("core:repair_discount", RepairDiscountMechanic.class, List.of("discount"));
+        mechReg.register("core:craft_durability", CraftDurabilityMechanic.class, List.of("amount"),
+                (ctx, p) -> MechanicParamValidators.positive(ctx, p, "amount"));
+        mechReg.register("core:sharpen_tool", SharpenToolMechanic.class, List.of("amount", "uuid"),
+                (ctx, p) -> {
+                    MechanicParamValidators.positive(ctx, p, "amount");
+                    MechanicParamValidators.uuid(ctx, p, "uuid");
+                });
+        mechReg.register("core:uncap_repair", UncapRepairMechanic.class, List.of("cap"),
+                (ctx, p) -> MechanicParamValidators.positive(ctx, p, "cap"));
+        mechReg.register("core:masterwork_craft", MasterworkCraftMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:modify_tame_chance", ModifyTameChanceMechanic.class, List.of("multiplier"),
                 (ctx, p) -> MechanicParamValidators.positive(ctx, p, "multiplier"));
         mechReg.register("core:instant_tame", InstantTameMechanic.class, List.of("chance"),
@@ -672,6 +683,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("brew_potion", BrewPotionTrigger.class);
         trigReg.register("brew_start", BrewStartTrigger.class);
         trigReg.register("repair", RepairTrigger.class);
+        trigReg.register("anvil_prepare", AnvilPrepareTrigger.class);
         trigReg.register("player_interact", PlayerInteractTrigger.class);
         trigReg.register("right_click_air", RightClickAirTrigger.class);
         trigReg.register("right_click_block", RightClickBlockTrigger.class);

@@ -996,6 +996,72 @@ Reduces the experience level cost of anvil repairs.
 
 **Event:** `PrepareAnvilEvent`
 
+### core:craft_durability
+
+Increases the max durability of a freshly crafted item by a level-scaled amount.
+Because a freshly crafted damageable item is undamaged, the extra durability is a
+larger total pool rather than a repair. No persistent marker is written, so the
+boost lives on the item and works in any hands; re-crafting produces a fresh item
+whose max durability is re-evaluated at the player's current level. Powers the
+Smithing skill's "gear lasts longer" tier.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `amount` | double | `0` | Durability points added (level-scaled). Values at or below 0 are a no-op |
+
+**Event:** `CraftItemEvent`
+
+### core:sharpen_tool
+
+Applies a permanent mining-efficiency attribute modifier to the tool the player
+holds, modeled as honing its edge at the grindstone. The modifier uses a stable
+`uuid`, so re-sharpening replaces rather than stacks; because it is a separate
+attribute source it stacks with a Haste potion. The amount is evaluated at the
+player's current level, so a higher-level smith hones a stronger edge.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `amount` | double | `0` | Mining efficiency added (level-scaled). Values at or below 0 are a no-op |
+| `uuid` | string | random | Stable modifier UUID for replace-not-stack |
+
+**Event:** Fires on the `right_click_block` trigger declared by the ability. Applies to the held main-hand tool.
+
+### core:uncap_repair
+
+Removes the anvil's "Too Expensive" wall by raising its maximum repair cost and
+lifting the enchantment-level restriction. Repeatedly repaired gear stays
+repairable as long as the player can pay the XP. Binding it to the ungated
+`anvil_prepare` trigger lifts the cap even when the current inputs resolve to a
+null "Too Expensive" result.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `cap` | double | `40` | Raised maximum repair cost (level-scaled). Floored at the vanilla 40 |
+
+**Event:** `PrepareAnvilEvent` (bind to the `anvil_prepare` trigger)
+
+### core:masterwork_craft
+
+Adds a single random, compatible enchantment to a freshly crafted item on a
+level-scaled chance roll. A candidate enchant is chosen from the item's full
+compatible pool, skipping enchants already present and those that conflict; the
+bonus level is a random `1..max`. Reaching the roll counts as an activation
+attempt whether or not it succeeds, matching the chance-mechanic contract.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Percentage (0-100) chance to add a bonus enchant |
+
+**Event:** `CraftItemEvent`
+
 ### core:modify_tame_chance
 
 Scales the chance of successfully taming an animal. The tame event fires only

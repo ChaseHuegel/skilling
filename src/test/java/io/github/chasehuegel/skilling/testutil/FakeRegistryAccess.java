@@ -4,6 +4,7 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.tag.Tag;
 import io.papermc.paper.registry.tag.TagKey;
+import io.papermc.paper.datacomponent.DataComponentType;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -45,6 +46,30 @@ import static org.mockito.Mockito.mock;
 public final class FakeRegistryAccess implements RegistryAccess {
 
     private static final Map<RegistryKey<?>, Class<?>> KEY_TYPES = keyTypes();
+
+    /** A real {@code DataComponentType} that is both {@code Valued} and
+     * {@code NonValued}, so {@code DataComponentTypes}' static initializer
+     * (which {@code instanceof}-checks each registry hit) can complete in a
+     * plain-JUnit JVM. A Mockito mock of {@code DataComponentType} is neither
+     * subtype, so the init would fail-and-cache. */
+    private static final DataComponentType FAKE_COMPONENT = new FakeComponent();
+
+    /** Implements both {@code Valued} and {@code NonValued} so {@code
+     * DataComponentTypes}' static initializer ({@code instanceof}-checks each
+     * registry hit) can complete in a plain-JUnit JVM; a mock is neither
+     * subtype and would fail init. */
+    @SuppressWarnings("rawtypes")
+    private static final class FakeComponent implements DataComponentType.Valued, DataComponentType.NonValued {
+        @Override
+        public boolean isPersistent() {
+            return true;
+        }
+
+        @Override
+        public NamespacedKey getKey() {
+            return NamespacedKey.minecraft("fake_component");
+        }
+    }
 
     @Override
     public <T extends Keyed> Registry<T> getRegistry(Class<T> type) {
@@ -143,6 +168,9 @@ public final class FakeRegistryAccess implements RegistryAccess {
         // JVM; ItemStack.getType()/getBlockType() lookups on a mocked stack
         // would otherwise fail. null is the safe entry for the BLOCK registry.
         if (BlockType.class.equals(type)) return null;
+        // DataComponentType must be a real Valued+NonValued instance so the
+        // DataComponentTypes static initializer's instanceof checks pass.
+        if (DataComponentType.class.equals(type)) return FAKE_COMPONENT;
         return mock(type);
     }
 

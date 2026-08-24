@@ -393,6 +393,9 @@ public final class SkillEventListener implements Listener {
             if (event.getResult() != null && event.getView().getRepairCost() > 0) {
                 dispatch(player, event, "repair");
             }
+            // Ungated dispatch so econ passives can lift the too-expensive cap
+            // even when the current inputs resolve to a null result.
+            dispatch(player, event, "anvil_prepare");
         }
     }
 
