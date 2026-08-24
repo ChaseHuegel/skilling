@@ -4,6 +4,7 @@ import io.github.chasehuegel.skilling.api.Registries;
 import io.github.chasehuegel.skilling.api.SkillingAPI;
 import io.github.chasehuegel.skilling.engine.SkillManager;
 import io.github.chasehuegel.skilling.engine.AbilityManager;
+import io.github.chasehuegel.skilling.engine.combat.BlockHistory;
 import io.github.chasehuegel.skilling.engine.db.AsyncBatchWorker;
 import io.github.chasehuegel.skilling.engine.db.DatabaseManager;
 import io.github.chasehuegel.skilling.engine.evaluator.impl.ConstantEvaluator;
@@ -17,6 +18,7 @@ import io.github.chasehuegel.skilling.engine.feedback.FeedbackDebouncer;
 import io.github.chasehuegel.skilling.engine.command.SkillsCommand;
 import io.github.chasehuegel.skilling.engine.integration.IntegrationManager;
 import io.github.chasehuegel.skilling.engine.listener.PlayerListener;
+import io.github.chasehuegel.skilling.engine.listener.BlockRaiseListener;
 import io.github.chasehuegel.skilling.engine.listener.SkillEventListener;
 import io.github.chasehuegel.skilling.engine.lockdown.LockdownManager;
 import io.github.chasehuegel.skilling.engine.profile.ProfileManager;
@@ -80,6 +82,8 @@ public final class Skilling extends JavaPlugin {
     private static final String CONFIG_BOSSBAR_MAX_ACTIVE = "bossbar.max_active";
     private static final String CONFIG_BOSSBAR_FADE_TICKS = "bossbar.fade_ticks";
     private static final String CONFIG_CROP_GROW_RADIUS = "crop_grow.search_radius";
+    private static final String CONFIG_TIMED_BLOCK_WINDOW_TICKS = "combat.timed_block_window_ticks";
+    static final double DEFAULT_TIMED_BLOCK_WINDOW_TICKS = 6.0;
 
     private Registries registries;
     private StateFilterRegistry stateFilterRegistry;
@@ -290,6 +294,7 @@ public final class Skilling extends JavaPlugin {
 
         // Event listeners
         Bukkit.getPluginManager().registerEvents(new UIProtectionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BlockRaiseListener(), this);
         this.skillEventListener = new SkillEventListener(this, skillManager, profileManager, tagResolver, requirementEngine,
                         registries.getMechanicRegistry(), feedbackDebouncer, bossBarPool, stateFilterRegistry);
         Bukkit.getPluginManager().registerEvents(skillEventListener, this);
@@ -645,6 +650,13 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.uuid(ctx, p, "uuid");
                     MechanicParamValidators.nonNegative(ctx, p, "amount");
                 });
+        mechReg.register("core:block_recovery", BlockRecoveryMechanic.class, List.of("reduction"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "reduction"));
+        mechReg.register("core:reflect_projectile", ReflectProjectileMechanic.class, List.of("chance", "damage"),
+                (ctx, p) -> {
+                    MechanicParamValidators.chance(ctx, p, "chance", 100);
+                    MechanicParamValidators.nonNegative(ctx, p, "damage");
+                });
     }
 
     /** Registers the built-in triggers into the given registry. */
@@ -720,6 +732,34 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("player_death", PlayerDeathTrigger.class);
     }
 
+    /**
+     * Whether a hit landed on a shield raised within the {@code timed_block} window.
+     *
+     * @param blocking whether the player is currently blocking
+     * @param lastRaiseMs epoch-millis time the player last raised a shield
+     * @param nowMs      current epoch-millis time
+     * @param windowMs   timed-block window in milliseconds
+     * @return true if the player is blocking and raised within the window
+     */
+    static boolean isTimedBlock(boolean blocking, long lastRaiseMs, long nowMs, long windowMs) {
+        if (!blocking || lastRaiseMs <= 0L || windowMs <= 0L) return false;
+        return nowMs - lastRaiseMs <= windowMs;
+    }
+
+    /**
+     * The configured {@code combat.timed_block_window_ticks} window in milliseconds.
+     * A live plugin reads config; a plain-JUnit JVM has none, so it defaults.
+     *
+     * @return the timed-block window in milliseconds
+     */
+    static long timedBlockWindowMs() {
+        Skilling instance = Skilling.getInstance();
+        double ticks = instance != null
+                ? instance.getConfig().getDouble(CONFIG_TIMED_BLOCK_WINDOW_TICKS, DEFAULT_TIMED_BLOCK_WINDOW_TICKS)
+                : DEFAULT_TIMED_BLOCK_WINDOW_TICKS;
+        return (long) (ticks * 50.0);
+    }
+
     /** Registers the built-in state filters into the given registry. */
     public static void registerBuiltinStateFilters(StateFilterRegistry sf, TagResolver tagResolver,
             EntityTagResolver entityTagResolver) {
@@ -731,6 +771,13 @@ public final class Skilling extends JavaPlugin {
         sf.register("is_riding", (p, e, v) -> p.isInsideVehicle());
         sf.register("riding_type", (p, e, v) -> meetsRidingType(p, v));
         sf.register("is_blocking", (p, e, v) -> p.isBlocking());
+
+        // Timed block: the player raised a shield and a hit landed within the
+        // combat.timed_block_window_ticks config window of that raise. Guards against
+        // a null plugin in plain JUnit by falling back to the default window.
+        sf.register("timed_block", (p, e, v) ->
+                isTimedBlock(p.isBlocking(), BlockHistory.lastRaise(p.getUniqueId()),
+                        System.currentTimeMillis(), timedBlockWindowMs()));
 
         sf.register("cause", (p, e, v) ->
                 io.github.chasehuegel.skilling.engine.requirements.DamageCauseFilter.evaluate(e, v));

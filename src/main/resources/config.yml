@@ -29,6 +29,12 @@ titles:
   # Duration (ms) for the main level-up title's stay phase before fade-out
   stay_duration: 5000
 
+combat:
+  # Ticks after a shield raise within which a blocked hit counts as a "timed
+  # block" (the timing window behind the `timed_block` state filter used by the
+  # shields skill's timed-block abilities). Vanilla ticks: 1 tick = 1/20s.
+  timed_block_window_ticks: 6
+
 # ============================================================================
 # Branding: every in-game visual element.
 # ============================================================================

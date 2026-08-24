@@ -1,122 +1,204 @@
+# ==========================================
+# SHIELDS SKILL
+# ==========================================
+# The reactive defense and counter skill. It earns XP from taking and completing
+# the defensive loop (blocking hits, enduring shield wear, and finishing foes
+# with a shield raised) and turns blocking into a practiced, rewarding craft:
+# your shield re-arms faster after heavy hits (L1 Bulwark), a timed block spurs
+# your follow-up (L15 Timed Block), a sneaked bash shoves foes and costs shield
+# readiness (L25 Shield Bash), blocked projectiles rebound (L50 Rebound), a
+# timed block punishes the attacker (L75 Reflect), and at master level a timed
+# block negates the blow entirely and repositions you (L100 Perfect Block).
+#
+# Shield pairs with heavy or light weapons (weapon in the main hand, shield in
+# the off hand). Passives read the hand-agnostic is_blocking state, so they
+# work in either stance; the active expects the offhand (tandem) shield.
+#
+# XP loop: blocking damage (damage-scaled, the tanking outlier per
+# REPORT_XP-SOURCE-DESIGN), shield durability wear (the truth of having
+# blocked), killing while blocked, and crafting shields.
 id: "shields"
 max_level: 100
 display: { name: "Shields", icon: "minecraft:shield", color: "BLUE", style: "SOLID" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Primary: blocking an incoming hit. Damage-scaled because letting a strong
+  # blow home while blocking is stickier than cheap swipes. A tanking outlier
+  # exceeding the ~60/action ceiling (REPORT_XP-SOURCE-DESIGN §2); held lower
+  # than the old 23/dmg so it stays a credible outlier instead of dwarfing it.
   - trigger: "entity_damage_taken"
     filters: [ { state: "is_blocking" } ]
-    reward: { constant: 23.0 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
+    reward: { constant: 12.0 }
     scaling: damage
+  # Secondary: the shield taking durability damage. A raised shield wears on
+  # nearly every blocked hit, so this is the direct evidence of a blocking loop;
+  # its cost is repairs and the time combat demands.
+  - trigger: "item_damage"
+    filters: [ { target: "#c:shields" } ]
+    reward: { constant: 68.0 }
+  # Finishing a target while a shield is raised. Less frequent than a hit; pays
+  # a flat bonus on top of the damage already earned for the fight.
   - trigger: "entity_kill"
     filters: [ { state: "is_blocking" } ]
-    reward: { constant: 114.9 }
+    reward: { constant: 68.0 }
+  # Crafting a shield: a real material cost (6 planks + 1 iron), single output.
   - trigger: "craft_item"
     filters: [ { target: "#c:shields" } ]
-    reward: { constant: 114.9 }
-  # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
+    reward: { constant: 70.0 }
+
 abilities:
-  - id: "sturdy_guard"
-    display_name: "Sturdy Guard"
+  # -- FOUNDATIONAL (L1): the primary scalar. Bulwark is shield endurance: a
+  # heavy hit that would throw your shield into its long recovery instead re-
+  # arms it faster, so a tank stays in stance. Sub-scaling on the recovery ticks
+  # shaved off each disabled-shield window.
+  - id: "bulwark"
+    display_name: "Bulwark"
     unlock_level: 1
     trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 chance to block damage while guarding." ] }
+    display:
+      lore:
+        - "&7Heavy hits disable your shield for &a{reduction}&7 fewer ticks."
+        - "&8Requires: blocking."
     mechanics:
-      - type: "core:block_damage"
+      - type: "core:block_recovery"
         filters: [ { state: "is_blocking" } ]
         parameters:
-          chance: { linear: { base: 10.0, step: 0.2, max: 30.0 } }
+          reduction: { linear: { base: 20.0, step: 0.3, max: 60.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "reflect"
-    display_name: "Reflect"
+
+  # -- QOL PASSIVE (L15): the timing seed. This is where blocking stops being a
+  # reflex and becomes a craft; a hit caught right after raising your shield
+  # spurs your next swing. Timing is practiced here and cashed in at L75/L100.
+  - id: "timed_block"
+    display_name: "Timed Block"
     unlock_level: 15
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Attackers take &a{damage}&7 while you block." ] }
+    display:
+      lore:
+        - "&7A timed block (raise your shield at the last instant) grants &a{multiplier}x&7 attack speed for {duration}s."
+        - "&8Requires: raising the shield just before the hit lands."
     mechanics:
-      - type: "core:thorns_damage"
-        filters: [ { state: "is_blocking" } ]
+      - type: "core:modify_attack_speed"
+        filters: [ { state: "timed_block" } ]
         parameters:
-          damage: { linear: { base: 1.0, step: 0.03, max: 5.0 } }
-    feedback: { notify: { action_bar: false } }
+          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.2 } }
+          uuid: { constant: "a4b6f7d2-1e3c-4b9a-8d5f-9c2e7f0a1b63" }
+          duration: { constant: 5.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Timed Block! ✦" }
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.5, pitch: 1.4, target: "self" } ]
+
+  # -- PRIMARY ABILITY (L25): a sneaked bash with the offhand shield. Shoves
+  # nearby hostiles and swings the shield visibly; the shield's own recovery is
+  # the gate (shown in the item slot), and the blow costs hunger.
   - id: "shield_bash"
     display_name: "Shield Bash"
     unlock_level: 25
     trigger: "player_interact"
     display:
       lore:
-        - "&7Sneak+Right-Click shield to knock back nearby foes &a{force}&7"
-        - "&7and disable their shields for {ticks} ticks."
+        - "&7Sneak+Right-Click your raised offhand shield to bash: knock back foes within &a{radius}&7 blocks."
         - "&7Costs 2 hunger."
-        - "&8Requires: Sneaking, shield in hand, 8s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, shield in off hand, 3+ hunger, 6s shield recovery."
     requirements:
-      cooldown: 8.0
+      cooldown: { constant: 6.0 }
       state: [ "is_sneaking" ]
-      items: [ { action: "possession", tag: "minecraft:shield", slot: "MAIN_HAND" } ]
+      items: [ { action: "possession", tag: "minecraft:shield", slot: "OFF_HAND" } ]
       exhaustion: { amount: 2.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eShield Bash cooling down: {time}s" } }
+    on_failure: { cooldown: { action_bar: "&eShield Bash recovering: {time}s" } }
     mechanics:
-      - type: "core:knockback"            # P2-2
+      - type: "core:offhand_swing"
+      - type: "core:knockback"
         parameters:
           force: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
           radius: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
           vertical: { constant: 0.4 }
-      - type: "core:shield_disable"        # P2-3
-        parameters:
-          ticks: { linear: { base: 20.0, step: 0.5, max: 60.0 } }
-      - type: "core:set_cooldown"          # P2-9 self-disable for balance
+      - type: "core:set_cooldown"            # the visible, single recovery gate
         parameters:
           material: { constant: "minecraft:shield" }
-          ticks: { linear: { base: 40.0, step: -0.2, max: 20.0 } }
+          ticks: { constant: 120.0 }
     feedback:
       notify: { action_bar: true, chat: false, message: "&b✦ Shield Bash! ✦" }
-      sounds: [ { type: "minecraft:item.shield.block", volume: 0.6, pitch: 0.8, target: "self" } ]
-  - id: "wall_of_steel"
-    display_name: "Wall of Steel"
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.7, pitch: 0.8, target: "self" } ]
+
+  # -- MAJOR PASSIVE (L50): Rebound. Blocking a hostile projectile sends it back
+  # at its owner. A common, non-redundant counter for ranged foes; sub-scales the
+  # rebound chance and the reflected damage.
+  - id: "rebound"
+    display_name: "Rebound"
     unlock_level: 50
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7While blocking: +&a{amount}&7 knockback resistance for {duration}s on hit." ] }
+    display:
+      lore:
+        - "&7Blocking a projectile has a &a{chance}%&7 chance to rebound it, dealing &a{damage}&7."
+        - "&8Requires: blocking a hostile projectile."
     mechanics:
-      - type: "core:knockback_resist"
+      - type: "core:reflect_projectile"
         filters: [ { state: "is_blocking" } ]
         parameters:
-          amount: { linear: { base: 0.2, step: 0.005, max: 0.6 } }
-          uuid: { constant: "31155246-e021-53c4-86c5-afbb42465bba" }
-          duration: { constant: 6.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "shield_slam"
-    display_name: "Shield Slam"
+          chance: { linear: { base: 25.0, step: 0.4, max: 50.0 } }
+          damage: { linear: { base: 2.0, step: 0.06, max: 6.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Rebound! ✦" }
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.6, pitch: 1.2, target: "self" } ]
+      success_only: true
+
+  # -- SYNERGY PASSIVE (L75): Reflect. A hit caught by a timed block is punished
+  # back at the attacker and disables their shield (the tandem offense payoff of
+  # the timing craft). Rides the timed-block window from L15.
+  - id: "reflect_thrust"
+    display_name: "Reflect"
     unlock_level: 75
     trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 chance to negate damage entirely while blocking +&a{amount}&7 armor." ] }
+    display:
+      lore:
+        - "&7A timed block reflects &a{damage}&7 damage and disables the attacker's shield for {ticks} ticks."
+        - "&8Requires: raising the shield just before the hit lands."
     mechanics:
-      - type: "core:cancel_damage"
-        filters: [ { state: "is_blocking" } ]
+      - type: "core:thorns_damage"
+        filters: [ { state: "timed_block" } ]
         parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-      - type: "core:armor_bonus"
-        filters: [ { state: "is_blocking" } ]
+          damage: { linear: { base: 4.0, step: 0.04, max: 8.0 } }
+      - type: "core:shield_disable"
+        filters: [ { state: "timed_block" } ]
         parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
-          uuid: { constant: "f1640c9d-ec60-5b86-921a-6a045f562417" }
-          duration: { constant: 8.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "indomitable"
-    display_name: "Indomitable"
+          ticks: { linear: { base: 40.0, step: 0.5, max: 60.0 } }
+          target: { constant: "attacker" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Reflected! ✦" }
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.6, pitch: 1.5, target: "self" } ]
+      success_only: true
+
+  # -- MASTERY CAPSTONE (L100): Perfect Block. A timed block now negates the
+  # blow entirely, shoves the attacker away, and roots you against follow-up
+  # knockback. The practiced timing input from L15, transformed; it controls
+  # instead of merely reducing, so no opponent spikes a perfect blocker.
+  - id: "perfect_block"
+    display_name: "Perfect Block"
     unlock_level: 100
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Blocking: &a{chance}%&7 block & &a{damage}&7 reflect, knockback resist +&a{amount}&7." ] }
+    display:
+      lore:
+        - "&7A timed block negates the blow, knocks the attacker back, and grants &a{amount}&7 knockback resistance for {duration}s."
+        - "&8Requires: raising the shield just before the hit lands."
     mechanics:
-      - type: "core:block_damage"
-        filters: [ { state: "is_blocking" } ]
+      - type: "core:cancel_damage"
+        filters: [ { state: "timed_block" } ]
         parameters:
-          chance: { linear: { base: 50.0, step: 0.5, max: 70.0 } }
-      - type: "core:thorns_damage"
-        filters: [ { state: "is_blocking" } ]
+          chance: { constant: 100.0 }
+      - type: "core:knockback"
+        filters: [ { state: "timed_block" } ]
         parameters:
-          damage: { linear: { base: 5.0, step: 0.05, max: 8.0 } }
+          force: { constant: 1.4 }
+          radius: { constant: 0.0 }
+          vertical: { constant: 0.2 }
       - type: "core:knockback_resist"
-        filters: [ { state: "is_blocking" } ]
+        filters: [ { state: "timed_block" } ]
         parameters:
-          amount: { linear: { base: 0.6, step: 0.005, max: 0.9 } }
-          uuid: { constant: "e92c19b1-f732-5ef9-a23d-636a3a604f2e" }
+          amount: { linear: { base: 0.5, step: 0.004, max: 0.9 } }
+          uuid: { constant: "8f3a6c1e-9b0d-4e27-a5c8-1d4f7b2e9a04" }
           duration: { constant: 8.0 }
-    feedback: { notify: { action_bar: false } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ PERFECT BLOCK! ✦" }
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.8, pitch: 1.7, target: "self" } ]
+      success_only: true
