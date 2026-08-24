@@ -528,6 +528,8 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:projectile_return", ProjectileReturnMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
+        mechReg.register("core:throw_haste", ThrowHasteMechanic.class, List.of("reduction"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "reduction", 100));
         mechReg.register("core:modify_enchant_cost", ModifyEnchantCostMechanic.class, List.of("discount"));
         mechReg.register("core:bonus_enchant", BonusEnchantMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));

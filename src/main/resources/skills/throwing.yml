@@ -1,19 +1,57 @@
+# ==========================================
+# THROWING SKILL
+# ==========================================
+# The thrown-arms and ocean-drowned-hunter skill. It earns XP from landing
+# thrown tridents, from finishing foes with them, and from hunting the drowned
+# that drop tridents, with a low-return grind on the free throwable items
+# (snowballs, eggs) as the early on-ramp before a trident is found. It turns the
+# thrown trident into a precision and crowd weapon: trident damage scales (L1),
+# thrown volleys recharge faster (L15), a sneak-throw pierces armor (L25 Skewer),
+# thrown tridents savagely punish aquatic foes (L50 Impaling Mastery), thrown
+# hits cleave the foes beside the target (L75 Ricochet), and a master's string of
+# hits ramps into a storm of damage (L100 Storm Volley).
+#
+# XP loop: damage-scaled trident hits (the driver), trident kills (finishing a
+# target), drowned kills (procuring the trident itself and arming the loop), and
+# a deliberately tiny source on throwing snowballs and eggs (free and spammable,
+# so bulk and low-return). There is deliberately no per-throw trident source:
+# with a Loyalty trident a throw costs nothing, so free spam must not out-earn a
+# hit. Skill comes from landing and finishing thrown shots.
 id: "throwing"
 max_level: 100
 display: { name: "Throwing", icon: "minecraft:trident", color: "RED", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  - trigger: "launch_projectile"
-    filters: [ { target: "minecraft:trident" } ]
-    reward: { constant: 62.9 }
+  # Damage-scaled, the grindable driver. A thrown trident deals ~8 raw damage,
+  # so 7.9 per point is ~63 per landed hit. Hits cost the throw and its return.
   - trigger: "entity_damage"
     filters: [ { target: "minecraft:trident" } ]
-    reward: { constant: 7.9 }       # per raw damage point (8 ≈ thrown trident). Damage-scaled
+    reward: { constant: 7.9 }
     scaling: damage
+  # Finishing a target with a thrown trident. A kill is less frequent than a
+  # hit, so it pays a flat bonus on top of the damage already earned.
   - trigger: "entity_kill"
     filters: [ { target: "minecraft:trident" } ]
     reward: { constant: 62.9 }
+  # Hunting drowned is how the trident is procured in the first place, so these
+  # kills are the early on-ramp: a player levels Throwing by arming themselves.
+  - trigger: "entity_kill"
+    filters: [ { state: "target_type:minecraft:drowned" } ]
+    reward: { constant: 40.0 }
+  # Snowballs and eggs are free and infinitely spammable, so the return is
+  # deliberately tiny (bulk = minor): an accessible pre-trident grind per the
+  # cheap-material low-return rule, never a rival to the trident's hit reward.
+  - trigger: "launch_projectile"
+    filters: [ { target: "minecraft:snowball" } ]
+    reward: { constant: 2.5 }
+  - trigger: "launch_projectile"
+    filters: [ { target: "minecraft:egg" } ]
+    reward: { constant: 2.5 }
 abilities:
+  # -- FOUNDATIONAL (L1): the primary scalar and the ONLY flat trident damage
+  # line in the tree. The mastery capstone ramps damage transiently instead of
+  # stacking a second scalar, so the two never multiply into a runaway. The cap
+  # is held at 1.4x so the fury capstone stays honest.
   - id: "precise_throw"
     display_name: "Precise Throw"
     unlock_level: 1
@@ -25,70 +63,105 @@ abilities:
         parameters:
           multiplier: { linear: { base: 1.05, step: 0.004, max: 1.4 } }
     feedback: { notify: { action_bar: false } }
-  - id: "return_chance"
-    display_name: "Return Chance"
+  # -- QOL PASSIVE (L15): Quick Release. The thrown trident comes back to hand
+  # and is ready for the next volley sooner, so a thrower throws more per minute.
+  # Complements Loyalty (which decides whether a trident returns) rather than
+  # being obsoleted by it, so the throw-and-catch rhythm is always served.
+  - id: "quick_release"
+    display_name: "Quick Release"
     unlock_level: 15
-    trigger: "projectile_hit"
-    display: { lore: [ "&a{chance}%&7 chance to recover thrown tridents." ] }
+    trigger: "launch_projectile"
+    display: { lore: [ "&7Thrown tridents recharge &a{reduction}%&7 faster between volleys." ] }
     mechanics:
-      - type: "core:projectile_return"
+      - type: "core:throw_haste"
+        filters: [ { target: "minecraft:trident" } ]
         parameters:
-          chance: { linear: { base: 20.0, step: 0.5, max: 75.0 } }
+          reduction: { linear: { base: 8.0, step: 0.26, max: 30.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "wind_up"
-    display_name: "Wind Up"
+  # -- PRIMARY ABILITY (L25): Skewer. A hunger-gated sneak-throw drives the
+  # trident straight through armor. No cooldown: the hunger cost is the gate,
+  # exactly like the archery/light/heavy L25 precedents. The was_sneaking state
+  # reads the sneak stance captured at release (the engine stamps it onto the
+  # launched trident), so the throw counts only if the player was sneaking when
+  # it left the hand.
+  - id: "skewer"
+    display_name: "Skewer"
     unlock_level: 25
     trigger: "entity_damage"
     display:
       lore:
-        - "&7Sneak-thrown tridents deal &a{multiplier}x&7 damage."
+        - "&7Sneak-thrown tridents pierce armor: +&a{damage}&7 bonus damage & +&a{percent}&7 of target max health."
         - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, 5s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking while throwing, 3+ hunger."
     requirements:
-      cooldown: 5.0
-      state: [ "is_sneaking" ]
+      state: [ "was_sneaking" ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&eWind Up cooling down: {time}s" } }
+    on_failure: { exhaustion: { action_bar: "&cToo hungry to throw hard!" } }
     mechanics:
-      - type: "core:modify_damage"
+      - type: "core:true_damage"
         filters: [ { target: "minecraft:trident" } ]
         parameters:
-          multiplier: { linear: { base: 1.3, step: 0.01, max: 1.6 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Wind Up! ✦" } }
-  - id: "trick_shot"
-    display_name: "Trick Shot"
+          damage: { linear: { base: 6.0, step: 0.04, max: 9.0 } }
+          percent: { linear: { base: 0.02, step: 0.0008, max: 0.08 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Skewer! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.crit", volume: 0.5, pitch: 1.2, target: "self" } ]
+  # -- MAJOR PASSIVE (L50): Impaling Mastery. The trident's native enchant
+  # becomes a thrown specialty: thrown tridents savagely punish aquatic and
+  # drowned prey. A target-type gate keeps it situational, so it never stacks
+  # the unconditional L1 scalar into a runaway.
+  - id: "impaling_mastery"
+    display_name: "Impaling Mastery"
     unlock_level: 50
     trigger: "entity_damage"
-    display: { lore: [ "&7Trident hits slow targets &a{duration}s&7." ] }
-    mechanics:
-      - type: "core:apply_status"
-        filters: [ { target: "minecraft:trident" } ]
-        parameters:
-          effect: { constant: "minecraft:slowness" }      # P2-11
-          duration: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
-          amplifier: { constant: 0.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "master_thrower"
-    display_name: "Master Thrower"
-    unlock_level: 75
-    trigger: "entity_damage"
-    display: { lore: [ "&7Trident hits grant &a{multiplier}x&7 speed for {duration}s." ] }
-    mechanics:
-      - type: "core:speed_bonus"
-        filters: [ { target: "minecraft:trident" } ]
-        parameters:
-          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
-          uuid: { constant: "3eb09361-e2ca-5de3-8ceb-e0117ea41ed5" }
-          duration: { constant: 6.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "legendary_throw"
-    display_name: "Legendary Throw"
-    unlock_level: 100
-    trigger: "entity_damage"
-    display: { lore: [ "&7Trident damage &a{multiplier}x&7." ] }
+    display:
+      lore:
+        - "&7Thrown tridents deal &a{multiplier}x&7 damage to aquatic foes."
     mechanics:
       - type: "core:modify_damage"
+        filters:
+          - { target: "minecraft:trident" }
+          - { state: "target_type:#c:aquatic" }
+        parameters:
+          multiplier: { linear: { base: 1.1, step: 0.02, max: 1.6 } }
+    feedback: { notify: { action_bar: false } }
+  # -- SYNERGY PASSIVE (L75): Ricochet. A thrown trident buried in one target
+  # splits into a scaled share of damage to every other foe beside it, the
+  # ranged-cleavage power an archer's single-target bow lacks. Targets are
+  # hostiles only, so a thrower never clips allies in a pack.
+  - id: "ricochet"
+    display_name: "Ricochet"
+    unlock_level: 75
+    trigger: "entity_damage"
+    display:
+      lore:
+        - "&7Thrown tridents strike nearby foes for &a{multiplier}x&7 damage within &a{radius} blocks."
+    mechanics:
+      - type: "core:aoe_damage"
         filters: [ { target: "minecraft:trident" } ]
         parameters:
-          multiplier: { linear: { base: 2.5, step: 0.03, max: 3.3 } }
+          radius: { linear: { base: 2.0, step: 0.03, max: 4.0 } }
+          multiplier: { linear: { base: 1.1, step: 0.008, max: 1.4 } }
+          targets: { constant: "hostiles" }
+    feedback: { notify: { action_bar: false } }
+  # -- MASTERY CAPSTONE (L100): Storm Volley. Each thrown hit stacks a growing
+  # damage multiplier held by a short window, so a committed thrower escalates a
+  # barrage to a peak and resets when the trident returns to hand. A constant
+  # spawns the ramp; it is the sanctioned constant capstone (no levels left to
+  # grow). It does not stack a second flat scalar onto Precise Throw.
+  - id: "storm_volley"
+    display_name: "Storm Volley"
+    unlock_level: 100
+    trigger: "entity_damage"
+    display:
+      lore:
+        - "&7Each thrown trident hit builds a ramp up to &a+60%&7 damage, held &a4s&7 while you throw."
+        - "&7The ramp resets when the trident comes back to hand."
+    mechanics:
+      - type: "core:fury"
+        filters: [ { target: "minecraft:trident" } ]
+        parameters:
+          multiplier_step: { constant: 0.1 }
+          max_stacks: { constant: 6 }
+          window: { constant: 4.0 }
     feedback: { notify: { action_bar: false } }

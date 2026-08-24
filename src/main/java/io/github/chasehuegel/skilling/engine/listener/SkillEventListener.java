@@ -831,6 +831,15 @@ public final class SkillEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLaunchProjectile(org.bukkit.event.entity.ProjectileLaunchEvent event) {
         if (event.getEntity().getShooter() instanceof Player player) {
+            // Stamp the projectile with the throwing stance so a "sneak-throw"
+            // ability can be evaluated at impact time via the was_sneaking state
+            // filter, mirroring the arrow stamp in onShootBow. This covers thrown
+            // tridents (and any other launcher) that do not pass through the bow
+            // path, so a trident released while sneaking reads true on impact.
+            if (event.getEntity() != null) {
+                event.getEntity().getPersistentDataContainer().set(
+                        Skilling.SHOT_SNEAK_KEY, org.bukkit.persistence.PersistentDataType.BOOLEAN, player.isSneaking());
+            }
             dispatch(player, event, "launch_projectile");
         }
     }

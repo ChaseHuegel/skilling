@@ -1108,6 +1108,24 @@ Chance to recover thrown projectiles (tridents, snowballs, eggs) after they hit.
 
 **Event:** `ProjectileHitEvent`
 
+### core:throw_haste
+
+Shortens the hotbar cooldown a thrown trident places before it can be thrown
+again, so a thrower Volleys more often. It mutates only transient player state
+(the native item cooldown), so it uses vanilla UI language and is a safe unplug.
+The vanilla throw cooldown is treated as 20 ticks; the reduced value is floored
+so a runaway reduction cannot permit an instant, spam-cancelling rethrow. Bind
+it to the `launch_projectile` trigger and scope it to tridents with a
+`target: minecraft:trident` filter.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `reduction` | double | `0` | Percentage (0-100) to shorten the throw cooldown |
+
+**Event:** `ProjectileLaunchEvent` (`launch_projectile` trigger)
+
 ### core:modify_enchant_cost
 
 Reduces the experience level cost of enchanting at an enchanting table.

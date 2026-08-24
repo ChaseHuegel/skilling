@@ -974,6 +974,24 @@ custom_tags:
 # Entity-type tags, resolved via the `target_type` state filter. Values are
 # entity type names and/or vanilla entity tag cross-references.
 entity_tags:
+  # Aquatic creatures the throwing skill's Impaling Mastery punishes with thrown
+  # tridents. Fish, water-dwelling mobs, and the drowned and guardians that carry
+  # the trident's own Impaling enchantment lore. Kept to creatures that live in
+  # water so the bonus reads as a genuine water-hunter specialty.
+  aquatic:
+    - "minecraft:drowned"
+    - "minecraft:guardian"
+    - "minecraft:elder_guardian"
+    - "minecraft:squid"
+    - "minecraft:glow_squid"
+    - "minecraft:dolphin"
+    - "minecraft:axolotl"
+    - "minecraft:turtle"
+    - "minecraft:cod"
+    - "minecraft:salmon"
+    - "minecraft:pufferfish"
+    - "minecraft:tropical_fish"
+
   undead:
     - "#minecraft:zombies"
     - "#minecraft:skeletons"
