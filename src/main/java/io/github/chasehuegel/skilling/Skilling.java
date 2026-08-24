@@ -373,6 +373,11 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.potionEffect(ctx, p, "effect");
                     MechanicParamValidators.nonNegative(ctx, p, "duration");
                 });
+        mechReg.register("core:self_effect", SelfEffectMechanic.class, List.of("effect", "duration", "amplifier"),
+                (ctx, p) -> {
+                    MechanicParamValidators.potionEffect(ctx, p, "effect");
+                    MechanicParamValidators.nonNegative(ctx, p, "duration");
+                });
         mechReg.register("core:cancel_damage", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:modify_attribute", ModifyAttributeMechanic.class, List.of("attribute", "amount", "duration", "uuid"),
@@ -390,13 +395,21 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:modify_brew_output", ModifyBrewOutputMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:potion_self_immunity", PotionSelfImmunityMechanic.class, List.of());
-        mechReg.register("core:transmute", TransmuteMechanic.class, List.of("source", "product", "block", "source_count", "product_count"),
+        mechReg.register("core:transmute", TransmuteMechanic.class, List.of("source", "product", "block", "source_count", "product_count", "source_potion", "product_potion"),
                 (ctx, p) -> {
+                    boolean hasSourcePotion = p.containsKey("source_potion");
+                    boolean hasProductPotion = p.containsKey("product_potion");
+                    if (hasSourcePotion != hasProductPotion) {
+                        throw new IllegalArgumentException(ctx
+                                + ": source_potion and product_potion must be provided together");
+                    }
                     MechanicParamValidators.material(ctx, p, "source");
                     MechanicParamValidators.material(ctx, p, "product");
                     MechanicParamValidators.materialOrTag(ctx, p, "block");
                     MechanicParamValidators.positive(ctx, p, "source_count");
                     MechanicParamValidators.positive(ctx, p, "product_count");
+                    MechanicParamValidators.potionType(ctx, p, "source_potion");
+                    MechanicParamValidators.potionType(ctx, p, "product_potion");
                 });
         mechReg.register("core:block_transform", BlockTransformMechanic.class, List.of("catalyst", "result", "catalyst_count"),
                 (ctx, p) -> {
@@ -441,6 +454,8 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:dodge", DamageCancelMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:lifesteal", LifestealMechanic.class, List.of("percentage"));
+        mechReg.register("core:heal_amplify", HealAmplifyMechanic.class, List.of("multiplier"),
+                (ctx, p) -> MechanicParamValidators.positive(ctx, p, "multiplier"));
         mechReg.register("core:aoe_damage", AoeDamageMechanic.class, List.of("radius", "multiplier", "targets"),
                 (ctx, p) -> MechanicParamValidators.radius(ctx, p, "radius"));
         mechReg.register("core:fury", FuryMechanic.class, List.of("multiplier_step", "max_stacks", "window"),
@@ -671,6 +686,7 @@ public final class Skilling extends JavaPlugin {
         trigReg.register("projectile_hit", ProjectileHitTrigger.class);
         trigReg.register("resurrect", ResurrectTrigger.class);
         trigReg.register("cure_villager", CureVillagerTrigger.class);
+        trigReg.register("player_heal", PlayerHealTrigger.class);
         trigReg.register("elytra_glide", ElytraGlideTrigger.class);
         trigReg.register("chunk_load", ChunkLoadTrigger.class);
         trigReg.register("map_explore", MapExploreTrigger.class);

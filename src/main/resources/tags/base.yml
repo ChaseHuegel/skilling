@@ -891,6 +891,26 @@ entity_tags:
     - "minecraft:stray"
     - "minecraft:husk"
 
+  # XP-tier split of #c:undead for the piety kill grind, so a scored reward
+  # reflects each undead's effort (R weak ~= 40 vs R strong ~= 90). Kept disjoint
+  # from each other so a single kill is never double-counted. Low-tier undead
+  # come from the vanilla zombie/skeleton families written out explicitly,
+  # because expanding #minecraft:zombies would drag zombified_piglin into both.
+  undead_minor:
+    - "minecraft:zombie"
+    - "minecraft:husk"
+    - "minecraft:drowned"
+    - "minecraft:zombie_villager"
+    - "minecraft:skeleton"
+    - "minecraft:stray"
+    - "minecraft:bogged"
+
+  undead_major:
+    - "minecraft:wither_skeleton"
+    - "minecraft:phantom"
+    - "minecraft:zombified_piglin"
+    - "minecraft:wither"
+
   # Mobs the husbandry skill's Mob Porter can carry on the player's shoulders.
   # A permissive, curated default: villagers, farm animals, and neutral pets.
   # Server owners edit this tag (or add their own target_type filter) to allow

@@ -322,6 +322,34 @@ abilities:
   #   mechanics:
   #     - type: "core:potion_self_immunity"
 
+  # core:transmute also supports a potion-aware mode: give both source_potion
+  # and product_potion (base PotionType keys) to convert the held potion's type
+  # in place on a cauldron (e.g. thick -> healing for the piety "Holy Water"):
+  #   - type: "core:transmute"
+  #     parameters:
+  #       source_potion: { constant: "minecraft:thick" }
+  #       product_potion: { constant: "minecraft:healing" }
+  #       block: { constant: "#c:cauldrons" }
+
+  # core:apply_status targets a victim; for a self-only buff (a solo cleric's
+  # totem burst, a feast absorption) use core:self_effect, applied to the
+  # activating player:
+  #   - type: "core:self_effect"
+  #     parameters:
+  #       effect: { constant: "minecraft:absorption" }
+  #       duration: { constant: 15.0 }
+  #       amplifier: { constant: 1.0 }
+
+  # core:heal_amplify multiplies every event-driven heal the player receives
+  # (food, regen, golden apples) on the player_heal trigger. An always-on scalar:
+  #   - id: "grace"
+  #     unlock_level: 1
+  #     trigger: "player_heal"
+  #     mechanics:
+  #       - type: "core:heal_amplify"
+  #         parameters:
+  #           multiplier: { linear: { base: 1.1, step: 0.0091, max: 2.0 } }
+
   # -- ABILITY 3: Milestone Unlock (One-Time Passive) --
   # core:unlock_recipe permanently unlocks a recipe book recipe by namespaced
   # key (vanilla, data pack, or another plugin). Bind it to the "level_up"

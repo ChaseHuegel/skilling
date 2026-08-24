@@ -7,6 +7,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -156,10 +158,74 @@ class TransmuteMechanicTest {
         verify(event, never()).setCancelled(true);
     }
 
+    private static final Map<String, Object> THICK_TO_HEALING = Map.of(
+            "source_potion", "minecraft:thick",
+            "product_potion", "minecraft:healing"
+    );
+
+    @Test
+    void convertsPotionBaseTypeAndClearsCustomEffects() {
+        var mechanic = new TransmuteMechanic();
+        var player = mock(Player.class);
+        var inv = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inv);
+        var meta = mock(PotionMeta.class);
+        when(meta.hasBasePotionType()).thenReturn(true);
+        when(meta.getBasePotionType()).thenReturn(PotionType.THICK);
+        var held = mockItem(Material.POTION, 1);
+        when(held.getItemMeta()).thenReturn(meta);
+        when(inv.getItemInMainHand()).thenReturn(held);
+        var event = mock(PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(Action.RIGHT_CLICK_BLOCK);
+
+        assertTrue(mechanic.execute(player, THICK_TO_HEALING, event));
+        ArgumentCaptor<PotionType> captor = ArgumentCaptor.forClass(PotionType.class);
+        verify(meta).setBasePotionType(captor.capture());
+        assertEquals("minecraft:healing", captor.getValue().getKey().toString());
+        verify(meta).clearCustomEffects();
+        verify(inv).setItemInMainHand(held);
+        verify(event).setCancelled(true);
+    }
+
+    @Test
+    void rejectsPotionWhoseBaseTypeDoesNotMatchSource() {
+        var mechanic = new TransmuteMechanic();
+        var player = mock(Player.class);
+        var inv = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inv);
+        var meta = mock(PotionMeta.class);
+        when(meta.hasBasePotionType()).thenReturn(true);
+        when(meta.getBasePotionType()).thenReturn(PotionType.AWKWARD);
+        var held = mockItem(Material.POTION, 1);
+        when(held.getItemMeta()).thenReturn(meta);
+        when(inv.getItemInMainHand()).thenReturn(held);
+        var event = mock(PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(Action.RIGHT_CLICK_BLOCK);
+
+        assertFalse(mechanic.execute(player, THICK_TO_HEALING, event));
+        verify(meta, never()).setBasePotionType(any());
+        verify(event, never()).setCancelled(true);
+    }
+
+    @Test
+    void rejectsNonPotionHeldItemInPotionMode() {
+        var mechanic = new TransmuteMechanic();
+        var player = mock(Player.class);
+        var inv = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inv);
+        var held = mockItem(Material.IRON_INGOT, 4);
+        when(inv.getItemInMainHand()).thenReturn(held);
+        var event = mock(PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(Action.RIGHT_CLICK_BLOCK);
+
+        assertFalse(mechanic.execute(player, THICK_TO_HEALING, event));
+        verify(event, never()).setCancelled(true);
+    }
+
     private static ItemStack mockItem(Material type, int amount) {
         var item = mock(ItemStack.class);
-        when(item.getType()).thenReturn(type);
-        when(item.getAmount()).thenReturn(amount);
+        org.mockito.Mockito.doReturn(type).when(item).getType();
+        org.mockito.Mockito.doReturn(amount).when(item).getAmount();
         return item;
     }
 }

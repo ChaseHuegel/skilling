@@ -134,6 +134,27 @@ public final class MechanicParamValidators {
     }
 
     /**
+     * Validates a potion-type parameter (e.g. {@code minecraft:thick},
+     * {@code minecraft:healing}), skipping it when absent or blank. No Bukkit
+     * registry is consulted; {@link TransmuteMechanic#resolvePotionType} matches
+     * the enum, so the check works in a plain-JUnit JVM.
+     *
+     * @param context the load context (skill/ability) for error messages
+     * @param params  the constant-valued mechanic parameters
+     * @param key     the parameter key holding the potion type
+     * @throws IllegalArgumentException if the potion type is present but unknown
+     */
+    public static void potionType(String context, Map<String, Object> params, String key) {
+        if (!params.containsKey(key)) return;
+        Object raw = params.get(key);
+        String value = raw == null ? "" : String.valueOf(raw);
+        if (value.isBlank()) return;
+        if (TransmuteMechanic.resolvePotionType(raw) == null) {
+            throw new IllegalArgumentException(context + ": unknown potion type '" + value + "'");
+        }
+    }
+
+    /**
      * Validates a material-or-tag reference parameter, skipping it when absent
      * or blank. Accepts a single material ({@code minecraft:stone}) or a tag
      * reference ({@code #minecraft:logs}, {@code #c:ores}), checked against the

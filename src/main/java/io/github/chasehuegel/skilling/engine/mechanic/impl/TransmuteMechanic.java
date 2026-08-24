@@ -10,6 +10,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionType;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -41,11 +43,24 @@ import java.util.function.BiFunction;
  * whose {@code source} the player is holding, and consumes the shared
  * requirements (catalyst, hunger, cooldown) once.
  *
+ * <p>A second, potion-aware mode is enabled when {@code source_potion} and
+ * {@code product_potion} are both present. In this mode the swap matches the
+ * held potion's base {@link PotionType} instead of its material (Thick and
+ * Healing potions share the {@code minecraft:potion} material and differ only
+ * in potion type), so the clicked reaction block converts the held potion's
+ * effect without consuming a source batch. The held potion keeps its item form
+ * (drinkable, splash, or lingering) and any custom effects are cleared, leaving
+ * a plain potion of the product type. This is the skill-crafted route of the
+ * piety "Holy Water" ability: turning a hard-to-farm Thick potion (glowstone
+ * dust) into a basic Healing potion.
+ *
  * <p><b>YAML key:</b> {@code core:transmute}
  * <br>Params: {@code source} (required material), {@code product} (required
  * material), {@code block} (optional material or tag restricting the reaction
  * block), {@code source_count} (default 1, consumed per activation),
- * {@code product_count} (default 1, granted per activation)
+ * {@code product_count} (default 1, granted per activation),
+ * {@code source_potion} (optional, must pair with {@code product_potion}),
+ * {@code product_potion} (optional {@code PotionType} the swap converts to)
  */
 public final class TransmuteMechanic implements SkillMechanic {
 
@@ -68,6 +83,16 @@ public final class TransmuteMechanic implements SkillMechanic {
         if (!(event instanceof PlayerInteractEvent interact)) return false;
         if (interact.getAction() != Action.RIGHT_CLICK_BLOCK) return false;
 
+        if (!matchesStation(interact.getClickedBlock(), params.get("block"))) return false;
+
+        ItemStack held = player.getInventory().getItemInMainHand();
+        if (held == null) return false;
+
+        // Potion-aware mode: both potion params present.
+        if (params.containsKey("source_potion") || params.containsKey("product_potion")) {
+            return swapPotion(held, player, interact, resolvePotionType(params.get("source_potion")), resolvePotionType(params.get("product_potion")));
+        }
+
         Material source = Material.matchMaterial(String.valueOf(params.getOrDefault("source", "")));
         if (source == null) return false;
         Material product = Material.matchMaterial(String.valueOf(params.getOrDefault("product", "")));
@@ -77,11 +102,7 @@ public final class TransmuteMechanic implements SkillMechanic {
         int productCount = count(params.get("product_count"), 1);
         if (sourceCount < 1 || productCount < 1) return false;
 
-        if (!matchesStation(interact.getClickedBlock(), params.get("block"))) return false;
-
-        ItemStack held = player.getInventory().getItemInMainHand();
-        if (held == null || held.getType() != source) return false;
-        if (held.getAmount() < sourceCount) return false;
+        if (held.getType() != source) return false;
 
         // Consume the source batch and cancel the vanilla reaction-block interaction.
         held.setAmount(held.getAmount() - sourceCount);
@@ -99,6 +120,73 @@ public final class TransmuteMechanic implements SkillMechanic {
     private static int count(Object raw, int fallback) {
         if (raw instanceof Number n) return n.intValue();
         return fallback;
+    }
+
+    /**
+     * Resolves a {@link PotionType} from its namespaced key (e.g.
+     * {@code minecraft:thick}, {@code minecraft:healing}), matching a raw enum
+     * name as a fallback. Enumerates the enum rather than consulting the live
+     * {@code Registry} so a plain-JUnit JVM (which cannot initialize Bukkit
+     * registries) can still parse a skill file.
+     *
+     * @param raw the {@code source_potion}/{@code product_potion} parameter value
+     * @return the resolved potion type, or null when absent or unknown
+     */
+    static PotionType resolvePotionType(Object raw) {
+        if (raw == null) return null;
+        String reference = String.valueOf(raw);
+        if (reference.isBlank()) return null;
+        for (PotionType type : PotionType.values()) {
+            if (type.getKey() == null) continue;
+            if (type.getKey().toString().equals(reference)
+                    || type.getKey().getKey().equals(reference)
+                    || type.name().equals(reference)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether the material is a potion item (drinkable, splash, or lingering)
+     * carrying a {@link PotionMeta}.
+     *
+     * @param material the held material
+     * @return true for any potion item form
+     */
+    private static boolean isPotionMaterial(Material material) {
+        return material == Material.POTION
+                || material == Material.SPLASH_POTION
+                || material == Material.LINGERING_POTION;
+    }
+
+    /**
+     * Swaps the held potion's base type from {@code sourceType} to
+     * {@code productType} in place, clearing custom effects so the result is a
+     * plain potion of the product type. The whole held stack is converted (never
+     * a single bottle), the vanilla reaction-block interaction is cancelled, and
+     * no source batch is consumed.
+     *
+     * @param held        the held item
+     * @param player      the activating player
+     * @param interact    the triggering interaction event
+     * @param sourceType  the required base potion type to match
+     * @param productType the base potion type to convert to
+     * @return true when a potion was actually converted
+     */
+    private static boolean swapPotion(ItemStack held, Player player, PlayerInteractEvent interact,
+                                      PotionType sourceType, PotionType productType) {
+        if (sourceType == null || productType == null) return false;
+        if (!isPotionMaterial(held.getType())) return false;
+        if (held.getItemMeta() == null || !(held.getItemMeta() instanceof PotionMeta meta)) return false;
+        if (!meta.hasBasePotionType() || meta.getBasePotionType() != sourceType) return false;
+
+        meta.setBasePotionType(productType);
+        meta.clearCustomEffects();
+        held.setItemMeta(meta);
+        player.getInventory().setItemInMainHand(held);
+        interact.setCancelled(true);
+        return true;
     }
 
     /**

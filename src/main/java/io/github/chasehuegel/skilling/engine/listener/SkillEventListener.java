@@ -813,6 +813,23 @@ public final class SkillEventListener implements Listener {
     }
 
     /**
+     * Handles {@link EntityRegainHealthEvent} and routes it as a {@code player_heal}
+     * trigger when a player regains health from any source (food, regeneration,
+     * instant-health potions, and event-driven healing from other plugins). Runs
+     * at {@link EventPriority#LOWEST} like {@code entity_damage_taken} so an
+     * amplifying mechanic can rewrite the regained amount before the healer
+     * applies it.
+     *
+     * @param event the entity regain health event
+     */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerHeal(org.bukkit.event.entity.EntityRegainHealthEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            dispatch(player, event, "player_heal");
+        }
+    }
+
+    /**
      * Handles {@link EntityTransformEvent} and routes it as a {@code cure_villager}
      * trigger when a zombie villager is cured (reason {@code CURED}).
      *

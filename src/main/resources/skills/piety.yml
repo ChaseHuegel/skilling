@@ -2,120 +2,185 @@ id: "piety"
 max_level: 100
 display: { name: "Piety", icon: "minecraft:golden_apple", color: "PURPLE", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+# Piety is a devout cleric resolved to self-only effects: faith amplifies the
+# healing you receive, sanctifies strikes against the undead, and rewards acts
+# of devotion (prayer with a Totem, holy transmutation, curing the afflicted).
+# No ability grants direct damage or group buffs; everything protects or mends
+# the single devout player.
 xp_sources:
-  # Bury bones: right-click dirt/grass/coarse dirt (vanilla #minecraft:dirt tag)
-  # while holding a bone grants piety XP. The bury_bones ability consumes the bone.
+  # Primary grind, scaled by undead tier. Weak undead (rows of the vanilla
+  # zombie/skeleton families) pay the baseline; the strong and rare (wither
+  # skeletons, phantoms, zombified piglin, the Wither) pay far more.
+  - trigger: "entity_kill"
+    filters: [ { state: "target_type:#c:undead_minor" } ]
+    reward: { constant: 40.0 }
+  - trigger: "entity_kill"
+    filters: [ { state: "target_type:#c:undead_major" } ]
+    reward: { constant: 90.0 }
+  # Devotion: laying a sacred block consecrates the spot. Cheap, spammable parts
+  # of #c:holy_blocks pay a modest reward; the costly items (beacon, gold) still
+  # never reward more than a real undead kill.
+  - trigger: "block_place"
+    filters: [ { target: "#c:holy_blocks" } ]
+    reward: { constant: 15.0 }
+  # The bury-bones grind. Consuming a bone (see the 7th-slot bury_bones ability)
+  # is a low-cost, repeatable act of faith, so it returns less than a kill.
   - trigger: "player_interact"
     filters:
       - target: "#minecraft:dirt"
       - tool: "minecraft:bone"
+    reward: { constant: 25.0 }
+  # Rare, near-death: a Totem resurrection. Splash but scarce.
+  - trigger: "resurrect"
     reward: { constant: 60.0 }
-  - trigger: "entity_kill"
-    filters: [ { state: "target_type:#c:undead" } ]
-    reward: { constant: 60.0 }
-  - trigger: "block_place"
-    filters: [ { target: "#c:holy_blocks" } ]
-    reward: { constant: 60.0 }
-  - trigger: "resurrect"            # totem activation
-    reward: { constant: 60.0 }
-  - trigger: "cure_villager"        # villager cure (dedicated trigger)
-    reward: { constant: 60.0 }
-  # Uniform R=60 from REPORT_XP-SOURCE-DESIGN §6 (Σ APM 27.8 -> 1,667 XP/min).
-  # entity_damage_taken XP removed. Too broad. Replaced by totem synergy.
+  # The most generous devotion: curing a zombie villager takes minutes of real
+  # time, so it rewards as much as a stack of kills. It is not grindable.
+  - trigger: "cure_villager"
+    reward: { constant: 120.0 }
+
 abilities:
-  - id: "holy_light"
-    display_name: "Holy Light"
+  # -- L1 FOUNDATIONAL SCALAR: the identity. Always-on, self-only, continuous.
+  # Faith does not strike; it magnifies the strength the devout receive, a
+  # linear multiplier on every event-driven heal (food, regen, golden apples).
+  - id: "grace"
+    display_name: "Grace"
     unlock_level: 1
-    trigger: "resurrect"
-    display: { lore: [ "&7Totem activation grants allies nearby Regeneration for {duration}s." ] }
+    trigger: "player_heal"
+    display:
+      lore: [ "&7Faith amplifies the healing you receive by &a{multiplier}x&7." ]
     mechanics:
-      - type: "core:ally_aura"          # P2-5 (players only. Was field_aura buffing mobs)
+      - type: "core:heal_amplify"
         parameters:
-          effect: { constant: "minecraft:regeneration" }   # P2-11
-          radius: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
-          duration: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
-          amplifier: { constant: 0.0 }
+          # +10% at L1 (immediately felt) climbing to exactly 2.0x at L100.
+          multiplier: { linear: { base: 1.1, step: 0.0091, max: 2.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "bless"
-    display_name: "Bless"
+
+  # -- L15 QoL PASSIVE: debuff the undead you strike. Self-driven, not group.
+  # Sanctifying a melee hit saps the undead's strength so the grind is safer.
+  - id: "sanctify"
+    display_name: "Sanctify"
     unlock_level: 15
     trigger: "entity_damage"
-    display: { lore: [ "&7Melee hits weaken targets &a{duration}s&7." ] }
+    display:
+      lore: [ "&7Melee hits on undead weaken them for &a{duration}s&7." ]
     mechanics:
       - type: "core:apply_status"
+        filters: [ { state: "target_type:#c:undead" } ]
         parameters:
-          effect: { constant: "minecraft:weakness" }     # P2-11
+          effect: { constant: "minecraft:weakness" }
           duration: { linear: { base: 2.0, step: 0.02, max: 4.0 } }
           amplifier: { constant: 0.0 }
     feedback: { notify: { action_bar: false } }
+
+  # -- L25 PRIMARY ACTIVE: the devotional catalyst. Sneak + right-click while
+  # bearing a Totem of Undying in your off hand to coat yourself with holy
+  # armor. Paced by hunger; the Totem shows its slot-UI cooldown animation, so
+  # readiness is vanilla-visible rather than a hidden timer.
   - id: "prayer"
     display_name: "Prayer"
     unlock_level: 25
-    trigger: "player_interact"
+    trigger: "right_click"
     display:
       lore:
-        - "&7Sneak+Right-Click (with a Totem in inventory) to gain &a{amount}&7 armor &a{duration}s&7."
+        - "&7Sneak + Right-Click with a Totem of Undying in your off hand to"
+        - "&7gain &a{amount}&7 armor for &a{duration}s&7."
         - "&7Costs 2 hunger."
-        - "&8Requires: Sneaking, totem of undying in inventory, 20s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, totem of undying in off hand, 3+ hunger."
     requirements:
-      cooldown: 20.0
       state: [ "is_sneaking" ]
       items: [ { action: "possession", tag: "minecraft:totem_of_undying", slot: "OFF_HAND" } ]
       exhaustion: { amount: 2.0, minimum: 3.0 }
     on_failure:
-      cooldown: { action_bar: "&ePrayer cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires a Totem of Undying!" }
+      missing_item: { action_bar: "&cRequires a Totem of Undying in your off hand!" }
+      exhaustion: { action_bar: "&cToo weary to pray!" }
     mechanics:
       - type: "core:armor_bonus"
         parameters:
           amount: { linear: { base: 2.0, step: 0.03, max: 4.0 } }
           uuid: { constant: "e4b58c1d-b272-5a76-826f-44745d8f32a2" }
           duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
+      - type: "core:set_cooldown"
+        parameters: { material: { constant: "minecraft:totem_of_undying" }, ticks: { constant: 400.0 } }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&6✦ Prayer! ✦" }
+      notify: { action_bar: true, chat: false, message: "&6Holy Armor" }
       sounds: [ { type: "minecraft:block.beacon.activate", volume: 0.5, pitch: 1.2, target: "self" } ]
-  - id: "consecrate"
-    display_name: "Consecrate"
+
+  # -- L50 MAJOR PASSIVE: holy transmutation. Right-click a cauldron with a
+  # Thick Potion to bless it into a basic Healing Potion. Thick potions need
+  # non-renewable glowstone dust, so this is an alternate resource route, never
+  # cheaper than brewing: it costs hunger, not a cooldown.
+  - id: "holy_water"
+    display_name: "Holy Water"
     unlock_level: 50
-    trigger: "resurrect"
-    display: { lore: [ "&7Totem activation grants allies Strength &a{duration}s&7." ] }
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Right-click a cauldron holding a Thick Potion to bless it."
+        - "&7Converts it into a basic Healing Potion. Costs 1 hunger."
+        - "&8Requires: Thick Potion in main hand, cauldron, 2+ hunger."
+    requirements:
+      exhaustion: { amount: 1.0, minimum: 2.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo weary to bless! &c(2+ hunger required)&r" }
     mechanics:
-      - type: "core:ally_aura"
+      - type: "core:transmute"
+        filters: [ { target: "#c:cauldrons" } ]
         parameters:
-          effect: { constant: "minecraft:strength" }     # P2-11
-          radius: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
-          duration: { linear: { base: 5.0, step: 0.05, max: 10.0 } }
-          amplifier: { constant: 0.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "holy_protection"
-    display_name: "Holy Protection"
+          source_potion: { constant: "minecraft:thick" }
+          product_potion: { constant: "minecraft:healing" }
+          block: { constant: "#c:cauldrons" }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&aHoly Water blessed" }
+      sounds: [ { type: "minecraft:block.note_block.pling", volume: 1.0, pitch: 1.6, target: "self" } ]
+
+  # -- L75 SYNERGY (Totem link): the totem works harder for the devout. On a
+  # real resurrection, a self-only burst of Absorption and Regeneration — a
+  # saved life that keeps on saving. Solo, never an ally aura.
+  - id: "last_crusade"
+    display_name: "Last Crusade"
     unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 chance to negate incoming damage." ] }
-    mechanics:
-      - type: "core:cancel_damage"
-        parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "divine_intervention"
-    display_name: "Divine Intervention"
-    unlock_level: 100
     trigger: "resurrect"
-    display: { lore: [ "&7Totem activation: allies gain Regeneration II & Resistance for &a{duration}s&7 in &a{radius}&7." ] }
+    display:
+      lore: [ "&7When a Totem raises you, gain &a{amplifier}&7 Absorption and Regeneration for &a{duration}s&7." ]
     mechanics:
-      - type: "core:ally_aura"
+      - type: "core:self_effect"
         parameters:
-          effect: { constant: "minecraft:regeneration" }  # P2-11
-          radius: { linear: { base: 10.0, step: 0.1, max: 14.0 } }
-          duration: { linear: { base: 10.0, step: 0.1, max: 15.0 } }
-          amplifier: { constant: 1.0 }
-      - type: "core:ally_aura"
+          effect: { constant: "minecraft:absorption" }
+          duration: { constant: 15.0 }
+          amplifier: { linear: { base: 1.0, step: 0.02, max: 2.0 } }
+      - type: "core:self_effect"
         parameters:
-          effect: { constant: "minecraft:resistance" }   # P2-11
-          radius: { linear: { base: 10.0, step: 0.1, max: 14.0 } }
-          duration: { linear: { base: 10.0, step: 0.1, max: 15.0 } }
+          effect: { constant: "minecraft:regeneration" }
+          duration: { constant: 15.0 }
           amplifier: { constant: 0.0 }
+    feedback:
+      success_only: true
+      notify: { action_bar: true, chat: false, message: "&bLast Crusade" }
+      sounds: [ { type: "minecraft:item.totem.use", volume: 0.5, pitch: 1.1, target: "self" } ]
+
+  # -- L100 MASTERY CAPSTONE: free devotion. Every real meal is an act of
+  # faith, granting self Absorption on eating. Gated only by eating itself —
+  # no cooldown, no extra hunger — so a devout player carries a holy shield
+  # through constant, visible (golden-heart) devotion.
+  - id: "sacred_feast"
+    display_name: "Sacred Feast"
+    unlock_level: 100
+    trigger: "consume_item"
+    display:
+      lore: [ "&7Eating a meal grants &a{amplifier}&7 Absorption for &a{duration}s&7." ]
+    mechanics:
+      - type: "core:self_effect"
+        filters: [ { target: "#c:foods" } ]
+        parameters:
+          effect: { constant: "minecraft:absorption" }
+          duration: { constant: 30.0 }
+          amplifier: { constant: 1.0 }
     feedback: { notify: { action_bar: false } }
+
+  # -- 7TH SLOT (SPECIAL CASE): the grind loop. Right-click dirt, grass, or
+  # coarse dirt with a bone to bury it, consuming the bone and blessing the
+  # earth. This is the devout's repeatable, low-cost act of faith that feeds the
+  # bury-bones XP source; it must not be removed.
   - id: "bury_bones"
     display_name: "Bury Bones"
     unlock_level: 1
@@ -125,7 +190,6 @@ abilities:
         - "&7Right-click dirt, grass or coarse dirt with a &abone&7 to bury it."
         - "&7Consumes 1 bone and blesses the earth."
     requirements:
-      cooldown: 0
       items:
         - { action: "cost", tag: "minecraft:bone", amount: 1 }
     mechanics:
@@ -138,6 +202,5 @@ abilities:
           count: { constant: 8 }
           speed: { constant: 0.1 }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&6✦ You buried a bone. ✦" }
       sounds:
         - { type: "minecraft:item.bone_meal.use", volume: 1.0, pitch: 1.0, target: "target" }

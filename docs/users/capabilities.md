@@ -198,6 +198,23 @@ Applies a potion effect to the damaged entity on hit.
 
 **Event:** `EntityDamageByEntityEvent`
 
+### core:self_effect
+
+Applies a potion effect to the activating player only. The self-only counterpart
+of `core:apply_status` (which targets a victim) and the auras (which target
+nearby allies), for solo-buffing skills such as the cleric's totem-resurrection
+burst or a feast-time absorption. It never touches allies or hostile mobs.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `effect` | string | none | Namespaced potion effect key (e.g., `minecraft:absorption`). See [Effect & Attribute Parameter Keys](#effect--attribute-parameter-keys) below |
+| `duration` | double | `3` | Duration in seconds |
+| `amplifier` | double | `0` | Effect amplifier |
+
+**Event:** Fires on the trigger declared by the ability, applied to the activating player.
+
 ### core:cancel_damage
 
 Chance to completely cancel incoming damage (dodge/evade flavor).
@@ -405,6 +422,15 @@ ability's own `target` filter usually scopes the station already; `block` is a
 self-contained guard so a single entry never fires against the wrong reaction
 vessel.
 
+A second, potion-aware mode is enabled when `source_potion` and `product_potion`
+are both present. It matches the held potion's base `PotionType` (Thick and
+Healing potions share the `minecraft:potion` material and differ only in potion
+type), so the reaction block converts the held potion into a plain potion of the
+product type, clearing custom effects and keeping its item form (drinkable,
+splash, or lingering). No source batch is consumed; the held stack is converted
+in place. This turns a hard-to-farm Thick potion (glowstone dust) into a Healing
+potion as an alternate resource route.
+
 **Parameters:**
 
 | Parameter | Type | Default | Description |
@@ -414,6 +440,8 @@ vessel.
 | `block` | string | none | Optional material or tag (`#c:furnaces`) restricting the reaction block the swap runs on |
 | `source_count` | double | `1` | Number of source items consumed per activation |
 | `product_count` | double | `1` | Number of product items granted per activation |
+| `source_potion` | string | none | Optional, must pair with `product_potion`: base potion type to match, e.g. `minecraft:thick` |
+| `product_potion` | string | none | Optional: base potion type to convert to, e.g. `minecraft:healing` |
 
 **Event:** `right_click_block` (`PlayerInteractEvent`, main-hand only)
 
@@ -617,6 +645,24 @@ Heals the player for a percentage of damage dealt.
 | `percentage` | double | `0.1` | Heal percentage of damage dealt |
 
 **Event:** `EntityDamageByEntityEvent`
+
+### core:heal_amplify
+
+Multiplies the health a player regains from any source (food, the regeneration
+effect, instant-health potions/golden apples, and healing from other plugins) on
+`EntityRegainHealthEvent`. A continuous always-on scalar: the activating player
+level evaluates the `multiplier` afresh on every recovery, so the same percentage
+climb applies for the life of the skill. Flat `setHealth` healing (for example the
+engine's own `core:lifesteal`) does not fire a regain-health event and is not
+amplified.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `multiplier` | double | `1.0` | Recovery multiplier (1.5 = 50% more. Values at or below 1.0 are a no-op) |
+
+**Event:** `player_heal` (`EntityRegainHealthEvent`)
 
 ### core:aoe_damage
 
@@ -1664,7 +1710,7 @@ transient and held under a stable UUID that replace-not-stacks, mirroring
 ## Effect & Attribute Parameter Keys
 
 
-Mechanics that accept an `effect` parameter (`core:apply_status`, `core:aoe_effect`,
+Mechanics that accept an `effect` parameter (`core:apply_status`, `core:self_effect`, `core:aoe_effect`,
 `core:crowd_control`, `core:field_aura`, `core:ally_aura`) or an `attribute` parameter
 (`core:modify_attribute`) now accept **namespaced keys**:
 
@@ -1748,6 +1794,7 @@ attribute: { constant: "minecraft:movement_speed" }
 | `launch_projectile` | `ProjectileLaunchEvent` | Launching a projectile (trident, snowball, etc.) |
 | `projectile_hit` | `ProjectileHitEvent` | A projectile lands on a block or entity (use for impact-time mechanics like `core:projectile_return`) |
 | `resurrect` | `EntityResurrectEvent` | Totem of Undying activation |
+| `player_heal` | `EntityRegainHealthEvent` | Player regains health from any source (food, the regeneration effect, instant-health potions/golden apples, and healing from other plugins) |
 | `cure_villager` | `EntityTransformEvent` | A zombie villager finishes converting into a villager (reason `CURED`). Attribution follows the player who initiated the cure (`ZombieVillager.getConversionPlayer()`). A cure that completes after that player logs off grants nothing |
 | `elytra_glide` | `EntityToggleGlideEvent` | Player starts gliding with an elytra |
 | `chunk_load` | `ChunkLoadEvent` | Exploring freshly generated terrain. Fires only when a chunk is generated for the first time (`isNewChunk()`), dispatched to players within their view distance (new chunks generate at the edge of the view, not at the player's feet). Throttled to once per player per 5 seconds because new terrain generates many chunks at once. Loading a chunk from disk does not fire it |
