@@ -529,6 +529,25 @@ custom_tags:
     - "minecraft:leather_leggings"
     - "minecraft:leather_boots"
 
+  # Organic textile/leather gear the Tailoring skill's craft-output scalar
+  # (L1) and no-waste refund (L75) apply to: crafted leather armor, the leather
+  # horse armor, and the block-form cloth a tailor produces. Block materials
+  # (wool, carpets, banners) are valid here because a crafting result matches a
+  # Material set at O(1).
+  tailoring_products:
+    - "#c:leather_armor"
+    - "minecraft:leather_horse_armor"
+    - "#minecraft:wool"
+    - "#minecraft:carpets"
+    - "#minecraft:banners"
+
+  # The durability-bearing leather gear set. Used by the Tailoring skill's Stout
+  # Stitch (L15) so crafted leather armor and the leather horse armor carry more
+  # max durability. Kept to items with a real durability pool.
+  tailoring_gear:
+    - "#c:leather_armor"
+    - "minecraft:leather_horse_armor"
+
   # The full enchantable gear set in item form. Used by the enchanting skill's
   # Enchant Extraction requirement so only an actually-enchanted piece of gear in
   # the main hand qualifies. Enchanted books are deliberately excluded — they are

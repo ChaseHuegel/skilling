@@ -392,6 +392,7 @@ public final class Skilling extends JavaPlugin {
                 });
         mechReg.register("core:modify_craft_output", ModifyCraftOutputMechanic.class, List.of("multiplier"));
         mechReg.register("core:modify_furnace_output", ModifyFurnaceOutputMechanic.class, List.of("multiplier"));
+        mechReg.register("core:modify_shear_output", ModifyShearOutputMechanic.class, List.of("multiplier"));
         mechReg.register("core:saturation_inject", SaturationInjectMechanic.class, List.of("saturation"));
         mechReg.register("core:modify_brew_time", ModifyBrewTimeMechanic.class, List.of("multiplier"));
         mechReg.register("core:modify_potion_duration", ModifyPotionDurationMechanic.class, List.of("multiplier"));

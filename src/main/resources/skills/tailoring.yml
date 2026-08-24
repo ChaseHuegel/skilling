@@ -1,90 +1,139 @@
+# ==========================================
+# TAILORING SKILL — The Clothier
+# ==========================================
+# Gather raw fleece and hide, cut them into leather armor, the leather horse
+# armor, wool, and banners, and never waste a scrap. The loop is shear sheep ->
+# tan/craft leather -> wear and use it -> keep it restitched and well-padded.
+# Tailoring owns the leather/wool/banner craft economy and the leather
+# durability line, cleanly disjoint from Smithing (the forge economy on metal)
+# and from Carpentry (wooden joinery and building).
+#
+# Abilities (6-tier ladder):
+#   L1   Spinner          textile/leather crafts yield more (identity scalar)
+#   L15  Stout Stitch     crafted leather armor + leather horse armor carry +durability
+#   L25  Padded Linings   pad your clothing with leather for temporary armor
+#   L50  Bountiful Fleece shearing yields extra wool (economy spike)
+#   L75  Frugal Cutting   chance to refund one ingredient when crafting cloth
+#   L100 Master's Weave   your leather armor never loses durability
+#
+# XP loop: cheap-bulk wool crafts (minor return), costed leather crafts, banner
+# crafts, and the naturally time-gated grind of shearing sheep.
 id: "tailoring"
 max_level: 100
 display: { name: "Tailoring", icon: "minecraft:leather_chestplate", color: "YELLOW", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Wool is cheap, farm-spammable fleece, so this bulk craft returns minor.
   - trigger: "craft_item"
-    filters: [ { target: "#minecraft:wool" } ]     # representative fabric crafts
-    reward: { constant: 87.7 }
+    filters: [ { target: "#minecraft:wool" } ]
+    reward: { constant: 15.0 }
+  # Leather armor and the leather horse armor are material-costed crafts.
   - trigger: "craft_item"
-    filters: [ { target: "#c:leather_armor" } ]
-    reward: { constant: 87.7 }
-  - trigger: "item_damage"
-    filters: [ { target: "#c:leather_armor" } ]   # leather armor only
-    reward: { constant: 87.7 }
+    filters: [ { target: "#c:tailoring_gear" } ]
+    reward: { constant: 60.0 }
+  # Banner crafts carry a real dye/pattern cost and a moderate return.
+  - trigger: "craft_item"
+    filters: [ { target: "#minecraft:banners" } ]
+    reward: { constant: 35.0 }
+  # The anchor grind: shearing sheep is naturally time-gated (wool regrowth).
+  - trigger: "player_shear"
+    reward: { constant: 40.0 }
 abilities:
+  # L1 - Foundational passive / identity scalar: the single cloth/leather craft
+  # multiplier, growing across the whole range. One broad scalar replaces the
+  # old three overlapping craft-output multipliers.
   - id: "spinner"
     display_name: "Spinner"
     unlock_level: 1
     trigger: "craft_item"
-    display: { lore: [ "&7Wool/carpet crafts yield &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Cloth & leather crafts yield &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_craft_output"
-        filters: [ { target: "#minecraft:wool" } ]
+        filters: [ { target: "#c:tailoring_products" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+          multiplier: { linear: { base: 1.05, step: 0.0096, max: 2.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "reinforced_stitch"
-    display_name: "Reinforced Stitch"
+
+  # L15 - QoL passive: crafted leather gear carries more max durability. The
+  # boost lives on the item, so a tailor's leather lasts longer in any hands.
+  - id: "stout_stitch"
+    display_name: "Stout Stitch"
     unlock_level: 15
-    trigger: "item_damage"
-    display: { lore: [ "&7Leather armor has &a{chance}%&7 chance to lose no durability." ] }
+    trigger: "craft_item"
+    display: { lore: [ "&7Crafted leather gear has &a+{amount}&7 max durability." ] }
     mechanics:
-      - type: "core:durability_save"
-        filters: [ { target: "#c:leather_armor" } ]
+      - type: "core:craft_durability"
+        filters: [ { target: "#c:tailoring_gear" } ]
         parameters:
-          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+          amount: { linear: { base: 15.0, step: 1.0, max: 100.0 } }
     feedback: { notify: { action_bar: false } }
+
+  # L25 - Primary active: pad up. Sneak + right-click air holding a leather to
+  # line your clothing with a temporary armor layer. Cost is the leather + 1
+  # hunger, not a cooldown, so the activation is a deliberate trade of an item.
   - id: "padded_linings"
     display_name: "Padded Linings"
     unlock_level: 25
-    trigger: "entity_damage_taken"
+    trigger: "right_click_air"
     display:
       lore:
-        - "&7Shift-craft leather armor to embed &a{amount}&7 armor for {duration}s on wear."
-        - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, 15s cooldown, 3+ hunger."
+        - "&7Sneak + right-click air with a leather to"
+        - "&7pad your clothing: +&a{amount}&7 armor for {duration}s."
+        - "&7Costs 1 leather + 1 hunger."
+        - "&8Requires: Sneaking, a leather in hand, 3+ hunger."
     requirements:
-      cooldown: 15.0
       state: [ "is_sneaking" ]
+      items: [ { action: "cost", tag: "minecraft:leather", slot: "MAIN_HAND", amount: 1 } ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&ePadded Linings cooling down: {time}s" } }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to pad up!" }
     mechanics:
       - type: "core:armor_bonus"
         parameters:
           amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
           uuid: { constant: "c465b01d-3b77-5439-b471-4cd9b1ba7550" }
-          duration: { constant: 30.0 }
-    feedback: { notify: { action_bar: true, chat: false, message: "&6✦ Padded Linings! ✦" } }
-  - id: "dye_master"
-    display_name: "Dye Master"
+          duration: { constant: 40.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&6✦ Padded Up! ✦" }
+
+  # L50 - Major passive: the fleece economy spike. Shearing yields extra wool,
+  # feeding the whole craft loop with a level-scaled boost.
+  - id: "bountiful_fleece"
+    display_name: "Bountiful Fleece"
     unlock_level: 50
-    trigger: "craft_item"
-    display: { lore: [ "&7Banner & dye crafts yield &a{multiplier}x&7." ] }
+    trigger: "player_shear"
+    display: { lore: [ "&7Shearing yields &a{multiplier}x&7 fleece." ] }
     mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "#minecraft:banners" } ]
+      - type: "core:modify_shear_output"
         parameters:
-          multiplier: { linear: { base: 1.1, step: 0.01, max: 2.0 } }
+          multiplier: { linear: { base: 1.1, step: 0.018, max: 2.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "nimble_fingers"
-    display_name: "Nimble Fingers"
+
+  # L75 - Synergy passive: the no-waste clothier refunds one used ingredient on
+  # a roll. Leather and dye are costly, so not wasting a scrap genuinely pays.
+  - id: "frugal_cutting"
+    display_name: "Frugal Cutting"
     unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&a{chance}%&7 chance to dodge incoming damage." ] }
-    mechanics:
-      - type: "core:dodge"
-        filters: [ { target: "#c:leather_armor", state: "equipped_all:#c:light_armor" } ]
-        parameters:
-          chance: { linear: { base: 5.0, step: 0.3, max: 35.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "legendary_tailor"
-    display_name: "Legendary Tailor"
-    unlock_level: 100
     trigger: "craft_item"
-    display: { lore: [ "&7All fabric/armor crafts yield &a{multiplier}x&7." ] }
+    display: { lore: [ "&a{chance}%&7 chance to refund one ingredient when crafting cloth." ] }
     mechanics:
-      - type: "core:modify_craft_output"
+      - type: "core:ingredient_refund"
+        filters: [ { target: "#c:tailoring_products" } ]
         parameters:
-          multiplier: { linear: { base: 1.8, step: 0.01, max: 2.5 } }
+          chance: { linear: { base: 5.0, step: 1.0, max: 30.0 } }
+    feedback: { notify: { action_bar: false } }
+
+  # L100 - Mastery capstone: your leather armor never loses durability. The
+  # payoff of the durability arc opened at L15, making a leather set a durable,
+  # self-sustaining option instead of expendable mid-game gear.
+  - id: "masters_weave"
+    display_name: "Master's Weave"
+    unlock_level: 100
+    trigger: "item_damage"
+    display: { lore: [ "&7Your leather armor never loses durability." ] }
+    mechanics:
+      - type: "core:durability_save"
+        filters: [ { target: "#c:leather_armor" } ]
+        parameters:
+          chance: { constant: 100.0 }
     feedback: { notify: { action_bar: false } }
