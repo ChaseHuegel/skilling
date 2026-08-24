@@ -135,6 +135,7 @@ public final class SkillEventListener implements Listener {
                     io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.OWNER_META_KEY, plugin);
         }
         io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.clearMark(event.getBlock());
+        io.github.chasehuegel.skilling.engine.mechanic.impl.BlastHarvestMechanic.clearMark(event.getBlock());
         // Chained/harvested blocks broken by ChainBreakMechanic or
         // AreaHarvestMechanic are handled by the origin event; do not grant XP or
         // fire abilities again per block.
@@ -175,6 +176,7 @@ public final class SkillEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityExplode(org.bukkit.event.entity.EntityExplodeEvent event) {
         io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.handleExplosion(event);
+        io.github.chasehuegel.skilling.engine.mechanic.impl.BlastHarvestMechanic.handleExplosion(event);
     }
 
     /**
@@ -294,6 +296,8 @@ public final class SkillEventListener implements Listener {
                 && firework.getPersistentDataContainer().has(Skilling.FIREWORK_KEY, PersistentDataType.BOOLEAN)) {
             return;
         }
+        // Shield item entities caught in a harvest blast so TNT mining keeps loot.
+        io.github.chasehuegel.skilling.engine.mechanic.impl.BlastHarvestMechanic.handleItemDamage(event);
         if (event.getEntity() instanceof Player player) {
             dispatch(player, event, "entity_damage_taken");
             // A dodge/block/cancel ability may have negated the fall while the

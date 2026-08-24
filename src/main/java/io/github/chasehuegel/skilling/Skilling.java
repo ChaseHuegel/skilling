@@ -591,6 +591,8 @@ public final class Skilling extends JavaPlugin {
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:marked_demolition", MarkedDemolitionMechanic.class, List.of("target"),
                 (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
+        mechReg.register("core:blast_harvest", BlastHarvestMechanic.class, List.of("target"),
+                (ctx, p) -> MechanicParamValidators.materialOrTag(ctx, p, "target"));
         mechReg.register("core:elytra_flight", ElytraFlightMechanic.class, List.of());
         mechReg.register("core:open_crafting", OpenCraftingMechanic.class, List.of());
         mechReg.register("core:ingredient_refund", IngredientRefundMechanic.class, List.of("chance", "ingredient"),
@@ -1145,6 +1147,7 @@ public final class Skilling extends JavaPlugin {
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clearAll();
         io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper.clearAll();
         io.github.chasehuegel.skilling.engine.mechanic.impl.EquipmentAttributeMechanic.stripAll();
+        io.github.chasehuegel.skilling.engine.mechanic.impl.BlastHarvestMechanic.clearAll();
         if (asyncBatchWorker != null) {
             asyncBatchWorker.stop();
             // Flush remaining dirty profiles on a worker thread and await with a

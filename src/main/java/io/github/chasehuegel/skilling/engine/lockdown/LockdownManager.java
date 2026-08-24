@@ -208,6 +208,7 @@ public final class LockdownManager {
         io.github.chasehuegel.skilling.engine.mechanic.impl.XpBonusMechanic.clearAll();
         io.github.chasehuegel.skilling.engine.mechanic.impl.AttributeModifierHelper.clearAll();
         io.github.chasehuegel.skilling.engine.mechanic.impl.MarkedDemolitionMechanic.clearAll();
+        io.github.chasehuegel.skilling.engine.mechanic.impl.BlastHarvestMechanic.clearAll();
         plugin.getSkillMenuBuilder().setGuiLayoutConfig(GuiLayoutConfig.load());
         for (PlayerProfile profile : profileManager.getAllProfiles().values()) {
             // The Phase 3 flush already persisted everything up to its snapshot

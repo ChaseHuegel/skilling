@@ -47,10 +47,61 @@ custom_tags:
     - "minecraft:emerald"
     - "minecraft:amethyst_shard"
 
+  # The mining skill's common tier: plentiful, cheap-to-break overworld rock.
+  # Deliberately listed explicitly (not via #minecraft:base_stone_overworld) so
+  # the tier stays disjoint from the deeper/precious tiers below and each block
+  # awards exactly one XP source.
   stone:
-    - "#minecraft:stone_crafting_materials"
-    - "#minecraft:base_stone_overworld"
-    - "#minecraft:base_stone_nether"
+    - "minecraft:stone"
+    - "minecraft:cobblestone"
+    - "minecraft:granite"
+    - "minecraft:diorite"
+    - "minecraft:andesite"
+    - "minecraft:sandstone"
+    - "minecraft:red_sandstone"
+    - "minecraft:smooth_sandstone"
+    - "minecraft:smooth_red_sandstone"
+    - "minecraft:cut_sandstone"
+    - "minecraft:cut_red_sandstone"
+    - "minecraft:chiseled_sandstone"
+    - "minecraft:chiseled_red_sandstone"
+
+  # The mining skill's mid tier: deeper or nether-floor rock that digs slower
+  # than common stone, so it pays a moderate premium.
+  deep_mine:
+    - "minecraft:deepslate"
+    - "minecraft:cobbled_deepslate"
+    - "minecraft:tuff"
+    - "minecraft:netherrack"
+    - "minecraft:basalt"
+    - "minecraft:polished_basalt"
+    - "minecraft:blackstone"
+    - "minecraft:gilded_blackstone"
+    - "minecraft:calcite"
+    - "minecraft:dripstone_block"
+    - "minecraft:end_stone"
+    - "minecraft:magma_block"
+
+  # The mining skill's precious tier: hard, scarce, or high-value blocks
+  # (obsidian, amethyst) that mine slowly and pay the highest stone premium.
+  precious_mine:
+    - "minecraft:obsidian"
+    - "minecraft:crying_obsidian"
+    - "minecraft:amethyst_block"
+    - "minecraft:budding_amethyst"
+    - "minecraft:amethyst_cluster"
+    - "minecraft:small_amethyst_bud"
+    - "minecraft:medium_amethyst_bud"
+    - "minecraft:large_amethyst_bud"
+
+  # The union of every block the mining skill's Blast Harvest (L50) rescues the
+  # raw drops of. Covering all four tiers lets an explosives miner harvest any
+  # natural rock or ore with TNT.
+  mineables:
+    - "#c:stone"
+    - "#c:deep_mine"
+    - "#c:precious_mine"
+    - "#c:ores"
 
   excavatable:
     - "minecraft:dirt"
@@ -76,6 +127,7 @@ custom_tags:
 
   veinminer:
     - "#c:stone"
+    - "#c:deep_mine"
     - "#c:ores"
 
   stone_products:

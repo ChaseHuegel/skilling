@@ -2,14 +2,30 @@ id: "mining"
 max_level: 100
 display: { name: "Mining", icon: "minecraft:iron_pickaxe", color: "GREEN", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
+# XP is purely block-breaking: Mining covers every pick-minable rock and ore,
+# priced by plenty and effort. Common stone is the bread-and-butter grind,
+# deeper/nether rock pays a mid premium, and precious rock (obsidian, amethyst)
+# and ores pay the highest. Every source is player_placed:false so a place+break
+# loop can never be cycled for free.
 xp_sources:
+  # Common overworld rock is plentiful and cheap, so it is the base grind.
   - trigger: "block_break"
     filters: [ { target: "#c:stone" }, { state: "player_placed:false" } ]
-    reward: { constant: 40.5 }
+    reward: { constant: 34.0 }
+  # Deep/nether-floor rock digs slower than common stone, so it pays a mid premium.
+  - trigger: "block_break"
+    filters: [ { target: "#c:deep_mine" }, { state: "player_placed:false" } ]
+    reward: { constant: 48.0 }
+  # Precious rock is hard and scarce; obsidian and amethyst mine slowly.
+  - trigger: "block_break"
+    filters: [ { target: "#c:precious_mine" }, { state: "player_placed:false" } ]
+    reward: { constant: 62.0 }
+  # Ores are the scarcest and most valuable find, so they pay the highest.
   - trigger: "block_break"
     filters: [ { target: "#c:ores" }, { state: "player_placed:false" } ]
-    reward: { constant: 40.5 }
+    reward: { constant: 66.0 }
 abilities:
+  # L1 - Foundational passive: the primary scalar. Ore breaks double.
   - id: "geologist"
     display_name: "Geologist"
     unlock_level: 1
@@ -21,33 +37,48 @@ abilities:
         parameters:
           yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "prospector"
-    display_name: "Prospector"
+  # L15 - Pickaxe combat option, mirroring the other gathering skills' melee
+  # bonus (Hoe Strike, Shovel Strike). Pickaxes swing at 4.0 like hoes, so a
+  # damage multiplier keeps the scaling honest.
+  - id: "pickaxe_strike"
+    display_name: "Pickaxe Strike"
     unlock_level: 15
-    trigger: "block_break"
-    display: { lore: [ "&7Bonus ore XP &a{multiplier}x&7." ] }
+    trigger: "entity_damage"
+    display: { lore: [ "&7Pickaxe melee damage &a{multiplier}x&7." ] }
     mechanics:
-      - type: "core:xp_bonus"
-        filters: [ { target: "#c:ores" } ]
+      - type: "core:modify_damage"
+        filters: [ { tool: "#minecraft:pickaxes" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
+          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.55 } }
     feedback: { notify: { action_bar: false } }
   # Reusable ability: the full definition lives in abilities/vein_miner.yml.
   # Referencing the id with unlock_level demonstrates per-skill override; the
   # skill's unlock_level overwrites the ability file's value.
   - id: "vein_miner"
     unlock_level: 25
-  - id: "magma_forge"
-    display_name: "Magma Forge"
+  # L50 - Major passive: the explosives-miner identity. Any TNT the player
+  # places becomes a harvesting charge: destroyed natural rock and ore keep
+  # their raw drops and items in the blast survive, so blast mining pays instead
+  # of merely clearing space. Drops are base only (no Fortune/Silk Touch), so the
+  # TNT's sand and gunpowder cost stays a real tradeoff.
+  - id: "blast_harvest"
+    display_name: "Blast Harvest"
     unlock_level: 50
-    trigger: "block_break"
-    display: { lore: [ "&7Ores have &a{chance}%&7 chance to auto-smelt." ] }
+    trigger: "block_place"
+    display:
+      lore:
+        - "&7TNT you place preserves mined drops."
+        - "&7Destroyed rock and ores keep their raw drops."
+        - "&7Items in the blast are not destroyed."
+        - "&8Natural blocks only; player-placed blocks are never harvested."
     mechanics:
-      - type: "core:auto_smelt"
-        filters: [ { target: "#c:ores" } ]
+      - type: "core:blast_harvest"
+        filters: [ { target: "minecraft:tnt" } ]
         parameters:
-          chance: { linear: { base: 25.0, step: 0.5, max: 75.0 } }
+          target: { constant: "#c:mineables" }
     feedback: { notify: { action_bar: false } }
+  # L75 - Tool defense, matching the defensive-tool synergy slot used by
+  # Excavation, Woodcutting, and the other gathering skills.
   - id: "sturdy_miner"
     display_name: "Sturdy Miner"
     unlock_level: 75
@@ -61,6 +92,9 @@ abilities:
           uuid: { constant: "7b3f4df6-bd3c-5ec5-9212-9ab28c617ae4" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
+  # L100 - Mastery capstone: ores always double, sometimes triple. The guaranteed
+  # double rides on top of Geologist's scaling 50%, yielding the intended implicit
+  # triple at max without a second stacked drop mechanic.
   - id: "perfect_yield"
     display_name: "Perfect Yield"
     unlock_level: 100
@@ -70,6 +104,6 @@ abilities:
       - type: "core:yield_multiplier"
         filters: [ { target: "#c:ores" } ]
         parameters:
-          yield_chance: { constant: 100.0 }   # guaranteed double (binary = justified capstone identity)
-          triple_chance: { linear: { base: 10.0, step: 0.9, max: 80.0 } }  # sub-scaling triple chance
+          yield_chance: { constant: 100.0 }
+          triple_chance: { linear: { base: 10.0, step: 0.9, max: 80.0 } }
     feedback: { notify: { action_bar: false } }
