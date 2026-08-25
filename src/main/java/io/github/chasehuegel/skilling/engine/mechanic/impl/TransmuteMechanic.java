@@ -14,6 +14,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 
 /**
@@ -59,8 +60,10 @@ import java.util.function.BiFunction;
  * material), {@code block} (optional material or tag restricting the reaction
  * block), {@code source_count} (default 1, consumed per activation),
  * {@code product_count} (default 1, granted per activation),
- * {@code source_potion} (optional, must pair with {@code product_potion}),
- * {@code product_potion} (optional {@code PotionType} the swap converts to)
+ * {@code bonus_product_chance} (default 0-100, chance of one extra unit of
+ * {@code product} on a successful swap), {@code source_potion} (optional, must
+ * pair with {@code product_potion}), {@code product_potion} (optional
+ * {@code PotionType} the swap converts to)
  */
 public final class TransmuteMechanic implements SkillMechanic {
 
@@ -108,6 +111,14 @@ public final class TransmuteMechanic implements SkillMechanic {
         held.setAmount(held.getAmount() - sourceCount);
         player.getInventory().setItemInMainHand(held);
         interact.setCancelled(true);
+
+        // A bonus-product roll may grant one extra unit of the product, so a
+        // high-level transmuter (Prismatic Rituals) occasionally out-yields the
+        // configured ratio without ever costing more source material.
+        double bonusChance = ((Number) params.getOrDefault("bonus_product_chance", 0)).doubleValue();
+        if (bonusChance > 0 && ThreadLocalRandom.current().nextDouble(100) <= bonusChance) {
+            productCount += 1;
+        }
 
         ItemStack productStack = stackFactory.apply(product, productCount);
         Map<Integer, ItemStack> leftover = player.getInventory().addItem(productStack);

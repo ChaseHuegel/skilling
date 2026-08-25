@@ -93,6 +93,36 @@ class TransmuteMechanicTest {
         verify(event).setCancelled(true);
     }
 
+    @Test
+    void bonusProductChanceAddsExtraUnit() {
+        var mechanic = new TransmuteMechanic();
+        var player = mock(Player.class);
+        var inv = mock(PlayerInventory.class);
+        when(player.getInventory()).thenReturn(inv);
+        var held = mockItem(Material.IRON_INGOT, 8);
+        when(inv.getItemInMainHand()).thenReturn(held);
+        var event = mock(PlayerInteractEvent.class);
+        when(event.getAction()).thenReturn(Action.RIGHT_CLICK_BLOCK);
+
+        var product = mock(ItemStack.class);
+        when(product.getType()).thenReturn(Material.GOLD_INGOT);
+        when(product.getAmount()).thenReturn(1);
+        // Report the configured stack size so the extra bonus unit is observable
+        // through the grant path.
+        TransmuteMechanic.setStackFactory((m, n) -> {
+            when(product.getAmount()).thenReturn(n);
+            return product;
+        });
+
+        var params = new java.util.HashMap<>(IRON_TO_GOLD);
+        params.put("bonus_product_chance", 100.0);
+
+        assertTrue(mechanic.execute(player, params, event));
+        ArgumentCaptor<ItemStack> captor = ArgumentCaptor.forClass(ItemStack.class);
+        verify(inv).addItem(captor.capture());
+        assertEquals(2, captor.getValue().getAmount());
+    }
+
     private static Map<String, Object> onBlock(Map<String, Object> base, String block) {
         Map<String, Object> params = new java.util.HashMap<>(base);
         params.put("block", block);

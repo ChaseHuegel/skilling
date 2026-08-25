@@ -401,7 +401,7 @@ public final class Skilling extends JavaPlugin {
         mechReg.register("core:modify_brew_output", ModifyBrewOutputMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:potion_self_immunity", PotionSelfImmunityMechanic.class, List.of());
-        mechReg.register("core:transmute", TransmuteMechanic.class, List.of("source", "product", "block", "source_count", "product_count", "source_potion", "product_potion"),
+        mechReg.register("core:transmute", TransmuteMechanic.class, List.of("source", "product", "block", "source_count", "product_count", "bonus_product_chance", "source_potion", "product_potion"),
                 (ctx, p) -> {
                     boolean hasSourcePotion = p.containsKey("source_potion");
                     boolean hasProductPotion = p.containsKey("product_potion");
@@ -409,6 +409,7 @@ public final class Skilling extends JavaPlugin {
                         throw new IllegalArgumentException(ctx
                                 + ": source_potion and product_potion must be provided together");
                     }
+                    MechanicParamValidators.chance(ctx, p, "bonus_product_chance", 100);
                     MechanicParamValidators.material(ctx, p, "source");
                     MechanicParamValidators.material(ctx, p, "product");
                     MechanicParamValidators.materialOrTag(ctx, p, "block");
@@ -580,6 +581,14 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.nonNegative(ctx, p, "speed_multiplier");
                     MechanicParamValidators.nonNegative(ctx, p, "damage_multiplier");
                 });
+        mechReg.register("core:summon_guardian", SummonGuardianMechanic.class, List.of("scale", "speed", "damage", "name"),
+                (ctx, p) -> {
+                    MechanicParamValidators.nonNegative(ctx, p, "scale");
+                    MechanicParamValidators.nonNegative(ctx, p, "speed");
+                    MechanicParamValidators.nonNegative(ctx, p, "damage");
+                });
+        mechReg.register("core:preserve_cost", PreserveCostMechanic.class, List.of("chance"),
+                (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:barter_luck", BarterLuckMechanic.class, List.of("chance"),
                 (ctx, p) -> MechanicParamValidators.chance(ctx, p, "chance", 100));
         mechReg.register("core:reroll_trades", RerollTradesMechanic.class, List.of());

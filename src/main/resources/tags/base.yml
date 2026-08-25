@@ -661,6 +661,15 @@ custom_tags:
   lecterns:
     - "minecraft:lectern"
 
+  # The wizard's spell tomes: an empty book held in the off hand. Crafting books
+  # drives the wizardry XP grind and the L1 craft-refund scalar. A plain book is
+  # deliberately the tome: it opens no vanilla UI, so it can be held and cast
+  # with. Book & quill is deliberately excluded (that is the bard's signing
+  # territory) and keeps the tag free of a material whose registry lookup is
+  # fragile under a plain-JUnit JVM.
+  tomes:
+    - "minecraft:book"
+
 
   fishing_rods:
     - "minecraft:fishing_rod"
@@ -1108,6 +1117,23 @@ entity_tags:
   companion_mobs:
     - "minecraft:wolf"
     - "minecraft:horse"
+
+  # Arcane beasts the wizardry skill hunts for XP, split into a weaker, common
+  # tier and a scarcer, stronger tier. Kept disjoint from alchemy's witch and
+  # piety's undead so a single kill never double-counts another skill's source.
+  # The minor tier: common overworld/nether/end magic creatures.
+  arcane_minor:
+    - "minecraft:enderman"
+    - "minecraft:endermite"
+    - "minecraft:guardian"
+    - "minecraft:blaze"
+    - "minecraft:shulker"
+    - "minecraft:ghast"
+  # The major tier: rare, caster-class arcane foes.
+  arcane_major:
+    - "minecraft:evoker"
+    - "minecraft:vex"
+    - "minecraft:elder_guardian"
 
   # Union of every pickpocketable biped humanoid. Gates the Pickpocket ability
   # so the per-group mechanics below it each match exactly one target.

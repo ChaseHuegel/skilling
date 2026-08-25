@@ -203,16 +203,41 @@ public final class RequirementEngine {
     public void consume(Player player, String skillId, String abilityId,
                         SkillDefinition.Requirements requirements,
                         int skillLevel, int unlockLevel) {
+        consume(player, skillId, abilityId, requirements, skillLevel, unlockLevel, false);
+    }
+
+    /**
+     * Deducts the ability's costs and applies its cooldown once after a checked,
+     * executed activation. When {@code preserveItems} is {@code true}, the
+     * material {@code cost} items are skipped (the catalyst is kept) while the
+     * cooldown, exhaustion (hunger), and durability costs are still applied. This
+     * backs the {@code core:preserve_cost} rider mechanic, which a successful
+     * roll saturates before this call; it only affects the same ability's cost
+     * items, never possession requirements.
+     *
+     * @param player        the activating player
+     * @param skillId       the owning skill id
+     * @param abilityId     the ability id
+     * @param requirements  the ability's requirement definition
+     * @param skillLevel    the player's current level in the skill
+     * @param unlockLevel   the ability's unlock level
+     * @param preserveItems whether to skip the material cost-item deduction
+     */
+    public void consume(Player player, String skillId, String abilityId,
+                        SkillDefinition.Requirements requirements,
+                        int skillLevel, int unlockLevel, boolean preserveItems) {
         // Apply cooldown
         double cdSec = requirements.cooldown().evaluate(skillLevel, unlockLevel);
         if (cdSec > 0) {
             applyCooldown(player, skillId, abilityId, (long) (clampCooldownSeconds(cdSec) * 1000));
         }
 
-        // Consume items
-        for (var itemReq : requirements.items()) {
-            if ("cost".equals(itemReq.action())) {
-                removeItems(player, itemReq.tag(), itemReq.amount(), itemReq.slot());
+        // Consume items (skipped when a preserve-cost roll kept the catalyst)
+        if (!preserveItems) {
+            for (var itemReq : requirements.items()) {
+                if ("cost".equals(itemReq.action())) {
+                    removeItems(player, itemReq.tag(), itemReq.amount(), itemReq.slot());
+                }
             }
         }
 

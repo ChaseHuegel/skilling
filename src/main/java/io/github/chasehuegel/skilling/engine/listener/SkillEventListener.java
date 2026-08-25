@@ -1333,6 +1333,7 @@ public final class SkillEventListener implements Listener {
             boolean anyExecuted = false;
             boolean procAwareRan = false;
             boolean procSucceeded = false;
+            boolean preserveItems = false;
             for (SkillDefinition.MechanicEntry entry : ability.mechanics()) {
                 debug("    mechanic=" + entry.type() + " skill=" + skill.id());
                 try {
@@ -1360,6 +1361,12 @@ public final class SkillEventListener implements Listener {
                                 procSucceeded = true;
                             }
                         }
+                        // A successful preserve-cost roll keeps this ability's
+                        // catalyst; carry it into the consume step.
+                        if (mechanic instanceof io.github.chasehuegel.skilling.engine.mechanic.impl.PreserveCostMechanic pcm
+                                && pcm.didProc()) {
+                            preserveItems = true;
+                        }
                     } else {
                         debug("    -> mechanic returned false (no-op), skipping");
                     }
@@ -1386,7 +1393,7 @@ public final class SkillEventListener implements Listener {
                 continue;
             }
             requirementEngine.consume(player, skill.id(), ability.id(), ability.requirements(),
-                    skillLevel, ability.unlockLevel());
+                    skillLevel, ability.unlockLevel(), preserveItems);
 
             // Success-gated feedback: when feedback.success_only is set and a
             // proc-aware mechanic ran, the cues fire only when the roll actually

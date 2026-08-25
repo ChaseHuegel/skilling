@@ -472,6 +472,7 @@ potion as an alternate resource route.
 | `block` | string | none | Optional material or tag (`#c:furnaces`) restricting the reaction block the swap runs on |
 | `source_count` | double | `1` | Number of source items consumed per activation |
 | `product_count` | double | `1` | Number of product items granted per activation |
+| `bonus_product_chance` | double | `0` | Chance (0-100%) of granting one extra unit of `product` on a successful swap |
 | `source_potion` | string | none | Optional, must pair with `product_potion`: base potion type to match, e.g. `minecraft:thick` |
 | `product_potion` | string | none | Optional: base potion type to convert to, e.g. `minecraft:healing` |
 
@@ -1467,6 +1468,55 @@ chunk reload keeps the scales; the result is still a normal vanilla
 | `name` | string | none | Optional custom name shown on the golem (e.g. `Clay Golem`) |
 
 **Event:** `block_place` (`BlockPlaceEvent`, filtered to `minecraft:carved_pumpkin`)
+
+### core:preserve_cost
+
+Rolls a percentage chance to preserve (not consume) the triggering ability's
+catalyst cost items on a successful activation. This is a *rider* mechanic: list
+it alongside the ability's real action mechanic (a cast, a ritual transmute), and
+on a successful roll the ability keeps the material `cost` items it would
+otherwise spend. Cooldown, exhaustion (hunger), and durability costs are still
+consumed normally; only the material catalyst is preserved. A thrifty
+arcanist's "catalysts last longer" identity scalar.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `chance` | double | `0` | Probability (0-100%) of keeping the catalyst |
+
+**Event:** any. Runs as part of the ability whose cost it guards.
+
+### core:summon_guardian
+
+Summons a scaled, friendly vanilla IronGolem ("arcane guardian") beside the
+player on a right-click catalyst cast. Its stats come from ratio presets that
+land at or below vanilla: `scale` (0.7 = 30% smaller), `speed` (multiplier), and
+`damage` (multiplier). The result is a normal vanilla IronGolem, so it is
+uninstall-safe. This is the catalyst-summoned counterpart to the block-built
+`core:clay_golem`: instead of reading a clay scaffold it reads the cast
+interaction, so a wizard summons a guardian with the same tome-and-catalyst
+gesture as their other magic.
+
+```yaml
+- type: "core:summon_guardian"
+  parameters:
+    scale: { constant: 0.7 }
+    speed: { constant: 1.5 }
+    damage: { constant: 1.0 }
+    name: { constant: "Arcane Guardian" }
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `scale` | double | `0.7` | Size multiplier (`minecraft:scale`) |
+| `speed` | double | `1.5` | Movement-speed multiplier |
+| `damage` | double | `1.0` | Attack-damage multiplier |
+| `name` | string | none | Optional custom name (e.g. `Arcane Guardian`) |
+
+**Event:** `right_click` (`PlayerInteractEvent`, air or block). A left-click is a no-op.
 
 ### core:barter_luck
 

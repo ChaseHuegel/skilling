@@ -281,13 +281,16 @@ abilities:
   #     items: [ { action: "cost", tag: "minecraft:blaze_powder", amount: 1 } ]
   #     exhaustion: { amount: 2.0, minimum: 3.0 }
   #   mechanics:
-  #     - type: "core:transmute"
-  #       filters: [ { target: "#c:cauldrons" } ]
-  #       parameters:
-  #         source: { constant: "minecraft:iron_ingot" }
-  #         product: { constant: "minecraft:gold_ingot" }
-  #         source_count: { constant: 4 }
-  #         product_count: { constant: 1 }
+#     - type: "core:transmute"
+    #       filters: [ { target: "#c:cauldrons" } ]
+    #       parameters:
+    #         source: { constant: "minecraft:iron_ingot" }
+    #         product: { constant: "minecraft:gold_ingot" }
+    #         source_count: { constant: 4 }
+    #         product_count: { constant: 1 }
+    #         # Optional: a chance an extra unit of `product` is granted on a
+    #         # successful swap (a transmuter's "extra yield" scalar).
+    #         bonus_product_chance: { linear: { base: 0.0, step: 0.4, max: 40.0 } }
   #   # A masonry kiln-firing swap runs on a furnace (self-checked by "block"):
   #   #     - type: "core:transmute"
   #   #       filters: [ { target: "#c:furnaces" } ]
@@ -302,6 +305,26 @@ abilities:
   #     - type: "core:modify_brew_output"
   #       parameters:
   #         chance: { linear: { base: 5.0, step: 0.45, max: 50.0 } }
+  # core:preserve_cost is a rider mechanic: list it alongside a costing active
+  # (a cast, a rite) with a level-scaled chance. On a successful roll the ability
+  # keeps the material catalyst it would otherwise consume (the cooldown and
+  # hunger costs still apply). The engine reads its didProc() result and skips
+  # the cost-item deduction, so a thrifty caster preserves catalysts.
+  #   - type: "core:preserve_cost"
+  #     parameters:
+  #       chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+  #
+  # core:summon_guardian is the catalyst-summoned counterpart to core:clay_golem
+  # (which reads a clay scaffold). Summon a scaled, friendly vanilla IronGolem
+  # beside the player on a right-click; the stats are ratio presets, the result
+  # is a normal vanilla mob (safe unplug).
+  #   - type: "core:summon_guardian"
+  #     parameters:
+  #       scale: { constant: 0.7 }
+  #       speed: { constant: 1.5 }
+  #       damage: { constant: 1.0 }
+  #       name: { constant: "Arcane Guardian" }
+
   # core:block_transform converts a clicked block when a held catalyst matches
   # (the terrain analogue of core:transmute). A table is several entries scoped
   # by a soil tag; a catalyst that is not held is a no-op spending nothing:

@@ -1,156 +1,320 @@
+# ==========================================
+# WIZARDRY SKILL — The Arcanist
+# ==========================================
+# A catalyst scholar-caster. Hold a spell tome (a plain book) in your OFF hand
+# and an arcane catalyst in your MAIN hand, then sneak + right-click to cast:
+# the main-hand catalyst selects the spell (redstone = Bolt, amethyst = Repulse,
+# ender pearl = Blink, glowstone = Guardian). Rites performed at an enchanting
+# table transmute materials through an arcane altar.
+#
+# Identity: the thrifty arcanist. Residual Focus (L1) never wastes a tome's
+# ingredients; every cast/rite carries core:preserve_cost, a chance to keep the
+# catalyst it would otherwise spend. Distinct from enchanting (no item
+# enchanting), bard (no signing or lecterns), alchemy (no cauldron or potions),
+# and piety (no holy healing).
+#
+# Anti-grind notes (XP sources):
+#   - Scribing a tome costs paper/leather/ink; cheap paper -> low return.
+#   - Killing arcane beasts is a timed combat grind, tiered by strength.
+#   - Throwing an ender pearl spends the pearl itself.
+#   - Altar rites (right-click the enchanting table holding a transmutable
+#     material) are time-gated by the transmute cooldown.
 id: "wizardry"
 max_level: 100
-display: { name: "Wizardry", icon: "minecraft:ender_pearl", color: "PURPLE", style: "SEGMENTED_10" }
+display: { name: "Wizardry", icon: "minecraft:book", color: "PURPLE", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
-  - trigger: "collect_xp"
-    reward: { constant: 25.8 }
+  # The scholar's grind: crafting spell tomes (book & book & quill).
+  - trigger: "craft_item"
+    filters: [ { target: "#c:tomes" } ]
+    reward: { constant: 35.0 }
+  # The combat grind, tiered by the arcane beast's strength.
+  - trigger: "entity_kill"
+    filters: [ { state: "target_type:#c:arcane_minor" } ]
+    reward: { constant: 40.0 }
+  - trigger: "entity_kill"
+    filters: [ { state: "target_type:#c:arcane_major" } ]
+    reward: { constant: 90.0 }
+  # Throwing an ender pearl spends the pearl itself.
   - trigger: "launch_projectile"
     filters: [ { target: "minecraft:ender_pearl" } ]
-    reward: { constant: 25.8 }
-  - trigger: "enchant_item"
-    reward: { constant: 25.8 }
-  # player_interact XP removed. Was XP for existing
+    reward: { constant: 30.0 }
+  # An altar rite: interacting the table while holding a transmutable material.
+  - trigger: "right_click_block"
+    filters:
+      - target: "minecraft:enchanting_table"
+      - tool: "minecraft:quartz"
+    reward: { constant: 55.0 }
+  - trigger: "right_click_block"
+    filters:
+      - target: "minecraft:enchanting_table"
+      - tool: "minecraft:glowstone_dust"
+    reward: { constant: 55.0 }
 abilities:
-  - id: "arcane_missile"
-    display_name: "Arcane Missile"
+  # -- L1 FOUNDATIONAL SCALAR: the identity. Scribing spell tomes never wastes
+  # an ingredient, so the scholar's economy is the skill's largest steady gain.
+  - id: "residual_focus"
+    display_name: "Residual Focus"
     unlock_level: 1
-    trigger: "player_interact"
+    trigger: "craft_item"
+    display: { lore: [ "&7Scribing a spell tome has a &a{chance}%&7 chance to refund an ingredient." ] }
+    mechanics:
+      - type: "core:ingredient_refund"
+        filters: [ { target: "#c:tomes" } ]
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.25, max: 35.0 } }
+    feedback: { notify: { action_bar: false } }
+
+  # -- L10 ACTIVE: the first cast. Tome off hand + Redstone main hand.
+  - id: "arcane_bolt"
+    display_name: "Arcane Bolt"
+    unlock_level: 10
+    trigger: "right_click"
     display:
       lore:
-        - "&7Sneak+Right-Click to launch an arcane missile dealing &a{damage}&7."
-        - "&7Costs 1 hunger + 1 redstone."
-        - "&8Requires: Sneaking, 4s cooldown, 3+ hunger."
+        - "&7Sneak + Right-Click firing an arcane bolt for &a{damage}&7 damage."
+        - "&7Costs 1 redstone + 1 hunger."
+        - "&8Requires: Sneaking, book in off hand, Redstone in hand, 3+ hunger."
     requirements:
-      cooldown: 4.0
       state: [ "is_sneaking" ]
-      items: [ { action: "cost", tag: "minecraft:redstone", amount: 1 } ]
+      items:
+        - { action: "possession", tag: "minecraft:redstone", slot: "MAIN_HAND" }
+        - { action: "possession", tag: "minecraft:book", slot: "OFF_HAND" }
+        - { action: "cost", tag: "minecraft:redstone", slot: "MAIN_HAND", amount: 1 }
       exhaustion: { amount: 1.0, minimum: 3.0 }
     on_failure:
-      cooldown: { action_bar: "&eArcane Missile cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires 1x Redstone!" }
+      missing_item: { action_bar: "&cCast requires Redstone in hand & a Book in your off hand." }
+      exhaustion: { action_bar: "&cToo hungry to cast!" }
     mechanics:
+      - type: "core:cancel_event"
       - type: "core:projectile"
         parameters:
           speed: { constant: 2.0 }
-          damage: { linear: { base: 2.0, step: 0.02, max: 5.0 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&d✦ Arcane Missile! ✦" } }
-  - id: "blink"
-    display_name: "Blink"
+          damage: { linear: { base: 4.0, step: 0.04, max: 8.0 } }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Arcane Bolt ✦" }
+      particles: [ { type: "minecraft:end_rod", count: 10, offset: [0.5,0.5,0.5], speed: 0.1, target: "self" } ]
+      sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.6, pitch: 1.4, target: "self" } ]
+
+  # -- L15 QOL PASSIVE: the arcane hunt. Weak arcane beasts drop extra, easing
+  # the early combat grind.
+  - id: "arcane_hunter"
+    display_name: "Arcane Hunter"
     unlock_level: 15
-    trigger: "player_interact"
-    display:
-      lore:
-        - "&7Sneak+Right-Click to blink &a{range}&7 blocks (no ender-pearl damage)."
-        - "&7Costs 1 hunger + 1 ender pearl."
-        - "&8Requires: Sneaking, 10s cooldown, 3+ hunger."
-    requirements:
-      cooldown: 10.0
-      state: [ "is_sneaking" ]
-      items: [ { action: "cost", tag: "minecraft:ender_pearl", amount: 1 } ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure:
-      cooldown: { action_bar: "&eBlink cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires 1x Ender Pearl!" }
+    trigger: "entity_kill"
+    display: { lore: [ "&7Kills of minor arcane beasts have a &a{yield_chance}%&7 chance to drop extra." ] }
     mechanics:
-      - type: "core:teleport"
+      - type: "core:yield_multiplier"
+        filters: [ { state: "target_type:#c:arcane_minor" } ]
         parameters:
-          range: { linear: { base: 5.0, step: 0.05, max: 12.0 } }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&d✦ Blink! ✦" }
-      particles: [ { type: "minecraft:portal", count: 15, offset: [0.5,0.5,0.5], speed: 0.5, target: "self" } ]
-      sounds: [ { type: "minecraft:entity.enderman.teleport", volume: 0.5, pitch: 1.5, target: "self" } ]
-  - id: "arcane_ward"
-    display_name: "Arcane Ward"
-    unlock_level: 25
-    trigger: "player_interact"
-    display:
-      lore:
-        - "&7Sneak+Right-Click with a (consumed) Amethyst Shard for &a{amount}&7 armor &a{duration}s&7."
-        - "&7Costs 1 hunger + 1 amethyst shard."
-        - "&8Requires: Sneaking, 15s cooldown, 3+ hunger."
-    requirements:
-      cooldown: 15.0
-      state: [ "is_sneaking" ]
-      items: [ { action: "cost", tag: "minecraft:amethyst_shard", amount: 1 } ]
-      exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure:
-      cooldown: { action_bar: "&eArcane Ward cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires 1x Amethyst Shard!" }
-    mechanics:
-      - type: "core:armor_bonus"
-        parameters:
-          amount: { linear: { base: 2.0, step: 0.04, max: 5.0 } }
-          uuid: { constant: "03a8ca81-2f30-5f96-94e5-aa861e36f5f6" }
-          duration: { linear: { base: 15.0, step: 0.2, max: 30.0 } }
-    feedback:
-      notify: { action_bar: true, chat: false, message: "&d✦ Arcane Ward! ✦" }
-      sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.6, pitch: 1.2, target: "self" } ]
-  - id: "arcane_expertise"
-    display_name: "Arcane Expertise"
-    unlock_level: 50
-    trigger: "collect_xp"
-    display: { lore: [ "&7XP gains &a{multiplier}x&7 (arcane attunement)." ] }
-    mechanics:
-      - type: "core:xp_bonus"
-        parameters:
-          multiplier: { linear: { base: 1.05, step: 0.01, max: 1.6 } }
+          yield_chance: { linear: { base: 5.0, step: 0.28, max: 30.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "frost_nova"
-    display_name: "Frost Nova"
-    unlock_level: 75
-    trigger: "entity_damage"
+
+  # -- L25 PRIMARY ACTIVE: Transmutation, the arcane altar. Interact an
+  # enchanting table holding a transmutable material. The altar is the wizard's
+  # workbench; the vanilla enchanting GUI is suppressed on a real rite.
+  - id: "transmutation"
+    display_name: "Transmutation"
+    unlock_level: 25
+    trigger: "right_click_block"
     display:
       lore:
-        - "&7Sneak-hit to freeze nearby foes &a{radius}&7 for &a{duration}s&7."
-        - "&7Costs 1.5 hunger + 1 blue ice."
-        - "&8Requires: Sneaking, 12s cooldown, 3+ hunger."
+        - "&7Interact an Enchanting Table to transmute materials."
+        - "&78 Quartz &8-> &61 Redstone   |   4 Glowstone Dust &8-> &61 Amethyst Shard"
+        - "&7Costs 1 Lapis Lazuli + 1 hunger."
+        - "&8Requires: a transmutable material in hand, 30s cooldown."
     requirements:
-      cooldown: 12.0
-      state: [ "is_sneaking" ]
-      items: [ { action: "cost", tag: "minecraft:blue_ice", amount: 1 } ]
-      exhaustion: { amount: 1.5, minimum: 3.0 }
+      cooldown: { linear: { base: 30.0, step: -0.2, max: 15.0 } }
+      items: [ { action: "cost", tag: "minecraft:lapis_lazuli", amount: 1 } ]
+      exhaustion: { amount: 1.0, minimum: 3.0 }
     on_failure:
-      cooldown: { action_bar: "&eFrost Nova cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires 1x Blue Ice!" }
+      cooldown: { action_bar: "&eTransmutation cooling down: {time}s" }
+      exhaustion: { action_bar: "&cToo hungry to transmute." }
     mechanics:
-      - type: "core:crowd_control"
+      - type: "core:transmute"
         parameters:
-          effect: { constant: "minecraft:slowness" }      # P2-11
-          radius: { linear: { base: 3.0, step: 0.04, max: 6.0 } }
-          duration: { linear: { base: 4.0, step: 0.05, max: 8.0 } }
-          amplifier: { constant: 1.0 }
+          source: { constant: "minecraft:quartz" }
+          product: { constant: "minecraft:redstone" }
+          source_count: { constant: 8.0 }
+          product_count: { constant: 1.0 }
+          bonus_product_chance: { linear: { base: 0.0, step: 0.4, max: 40.0 } }
+          block: { constant: "minecraft:enchanting_table" }
+      - type: "core:transmute"
+        parameters:
+          source: { constant: "minecraft:glowstone_dust" }
+          product: { constant: "minecraft:amethyst_shard" }
+          source_count: { constant: 4.0 }
+          product_count: { constant: 1.0 }
+          bonus_product_chance: { linear: { base: 0.0, step: 0.4, max: 40.0 } }
+          block: { constant: "minecraft:enchanting_table" }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Frost Nova! ✦" }
-      particles: [ { type: "minecraft:item_snowball", count: 20, offset: [1.0,0.5,1.0], speed: 0.5, target: "target" } ]
-      sounds: [ { type: "minecraft:entity.snow_golem.shoot", volume: 0.5, pitch: 0.8, target: "self" } ]
-  - id: "archmage"
-    display_name: "Archmage"
-    unlock_level: 100
-    trigger: "player_interact"
+      notify: { action_bar: true, chat: false, message: "&d✦ Transmuted ✦" }
+      particles: [ { type: "minecraft:enchant", count: 12, offset: [0.5,0.5,0.5], speed: 0.5, target: "target" } ]
+      sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.6, pitch: 1.0, target: "self" } ]
+
+  # -- L35 ACTIVE: an arcane repulse. Tome off hand + Amethyst main hand blasts
+  # every nearby hostile away, creating space around a solo caster.
+  - id: "arcane_repulse"
+    display_name: "Arcane Repulse"
+    unlock_level: 35
+    trigger: "right_click"
     display:
       lore:
-        - "&7Sneak+Right-Click for an enhanced missile (&a{damage}&7) + arcane armor (&a{amount}&7)."
-        - "&7Costs 2 hunger + 1 redstone + 1 amethyst shard."
-        - "&8Requires: Sneaking, 8s cooldown, 3+ hunger."
+        - "&7Sneak + Right-Click to blast nearby foes back (&a{radius}&7 blocks)."
+        - "&7Costs 1 amethyst + 2 hunger."
+        - "&8Requires: Sneaking, book in off hand, Amethyst in hand, 3+ hunger."
     requirements:
-      cooldown: 8.0
       state: [ "is_sneaking" ]
       items:
-        - { action: "cost", tag: "minecraft:redstone", amount: 1 }
-        - { action: "cost", tag: "minecraft:amethyst_shard", amount: 1 }
+        - { action: "possession", tag: "minecraft:amethyst_shard", slot: "MAIN_HAND" }
+        - { action: "possession", tag: "minecraft:book", slot: "OFF_HAND" }
+        - { action: "cost", tag: "minecraft:amethyst_shard", slot: "MAIN_HAND", amount: 1 }
       exhaustion: { amount: 2.0, minimum: 3.0 }
     on_failure:
-      cooldown: { action_bar: "&eArchmage cooling down: {time}s" }
-      missing_item: { action_bar: "&cRequires Redstone + Amethyst!" }
+      missing_item: { action_bar: "&cRepulse requires Amethyst in hand & a Book in your off hand." }
+      exhaustion: { action_bar: "&cToo hungry to cast!" }
     mechanics:
-      - type: "core:projectile"
+      - type: "core:cancel_event"
+      - type: "core:knockback"
         parameters:
-          speed: { constant: 3.0 }
-          damage: { linear: { base: 8.0, step: 0.05, max: 12.0 } }
-      - type: "core:armor_bonus"
+          force: { linear: { base: 0.9, step: 0.007, max: 1.6 } }
+          radius: { linear: { base: 6.0, step: 0.06, max: 12.0 } }
+          targets: { constant: "hostiles" }
+      - type: "core:preserve_cost"
         parameters:
-          amount: { linear: { base: 3.0, step: 0.1, max: 6.0 } }
-          uuid: { constant: "9ff15768-d47d-5ec8-8e17-a4e0c711021d" }
-          duration: { constant: 10.0 }
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Arcane Repulse ✦" }
+      particles: [ { type: "minecraft:poof", count: 20, offset: [1.0,0.5,1.0], speed: 0.4, target: "self" } ]
+      sounds: [ { type: "minecraft:block.glass.break", volume: 0.4, pitch: 0.7, target: "self" } ]
+
+  # -- L50 MAJOR PASSIVE: the prized arcane hunt. Strong arcane beasts
+  # occasionally drop triple, capping the grind with rare fortune.
+  - id: "prismatic_rituals"
+    display_name: "Prismatic Rituals"
+    unlock_level: 50
+    trigger: "entity_kill"
+    display:
+      lore: [ "&7Kills of major arcane beasts grant extra drops (up to &a{triple_chance}%&7 triple)." ]
+    mechanics:
+      - type: "core:yield_multiplier"
+        filters: [ { state: "target_type:#c:arcane_major" } ]
+        parameters:
+          yield_chance: { linear: { base: 25.0, step: 0.3, max: 50.0 } }
+          triple_chance: { linear: { base: 0.0, step: 0.15, max: 15.0 } }
     feedback: { notify: { action_bar: false } }
+
+  # -- L65 ACTIVE: Blink. Ender Pearl main hand gives a precise, damage-free hop
+  # in the look direction — an emergency reposition competitive with throwing a
+  # pearl (instant, no fall damage, loops a short distance).
+  - id: "blink"
+    display_name: "Blink"
+    unlock_level: 65
+    trigger: "right_click"
+    display:
+      lore:
+        - "&7Sneak + Right-Click to blink &a{range}&7 blocks (no ender-pearl damage)."
+        - "&7Costs 1 ender pearl + 1 hunger."
+        - "&8Requires: Sneaking, book in off hand, Ender Pearl in hand, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "minecraft:ender_pearl", slot: "MAIN_HAND" }
+        - { action: "possession", tag: "minecraft:book", slot: "OFF_HAND" }
+        - { action: "cost", tag: "minecraft:ender_pearl", slot: "MAIN_HAND", amount: 1 }
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      missing_item: { action_bar: "&cBlink requires an Ender Pearl in hand & a Book in your off hand." }
+      exhaustion: { action_bar: "&cToo hungry to cast!" }
+    mechanics:
+      - type: "core:cancel_event"
+      - type: "core:teleport"
+        parameters:
+          range: { linear: { base: 6.0, step: 0.08, max: 14.0 } }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Blink ✦" }
+      particles: [ { type: "minecraft:portal", count: 15, offset: [0.5,0.5,0.5], speed: 0.5, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.enderman.teleport", volume: 0.5, pitch: 1.5, target: "self" } ]
+
+  # -- L75 SYNERGY: Animate Guardian. Glowstone main hand summons a scaled,
+  # friendly iron guardian that fights beside the caster.
+  - id: "animate_guardian"
+    display_name: "Animate Guardian"
+    unlock_level: 75
+    trigger: "right_click"
+    display:
+      lore:
+        - "&7Sneak + Right-Click to summon a friendly Arcane Guardian."
+        - "&7Costs 2 glowstone + 2 hunger."
+        - "&8Requires: Sneaking, book in off hand, Glowstone in hand, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "minecraft:glowstone_dust", slot: "MAIN_HAND" }
+        - { action: "possession", tag: "minecraft:book", slot: "OFF_HAND" }
+        - { action: "cost", tag: "minecraft:glowstone_dust", slot: "MAIN_HAND", amount: 2 }
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      missing_item: { action_bar: "&cSummon requires Glowstone in hand & a Book in your off hand." }
+      exhaustion: { action_bar: "&cToo hungry to summon!" }
+    mechanics:
+      - type: "core:cancel_event"
+      - type: "core:summon_guardian"
+        parameters:
+          scale: { constant: 0.7 }
+          speed: { constant: 1.5 }
+          damage: { constant: 1.0 }
+          name: { constant: "Arcane Guardian" }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Arcane Guardian ✦" }
+      particles: [ { type: "minecraft:end_rod", count: 24, offset: [1.0,1.0,1.0], speed: 0.2, target: "self" } ]
+      sounds: [ { type: "minecraft:block.beacon.activate", volume: 0.5, pitch: 1.2, target: "self" } ]
+
+  # -- L100 MASTERY CAPSTONE: True Transmutation. The prized altar rite turns
+  # Diamonds into Netherite, bypassing the ancient-debris grind. Scarce but fair:
+  # no boss drops, only a rare-material cost.
+  - id: "true_transmutation"
+    display_name: "True Transmutation"
+    unlock_level: 100
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Interact an Enchanting Table to forge a Netherite Ingot."
+        - "&74 Diamond &8-> &61 Netherite Ingot"
+        - "&7Costs 1 Lapis Lazuli + 2 hunger."
+        - "&8Requires: Diamonds in hand, 45s cooldown."
+    requirements:
+      cooldown: { linear: { base: 60.0, step: -0.2, max: 20.0 } }
+      items: [ { action: "cost", tag: "minecraft:lapis_lazuli", amount: 1 } ]
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eTrue Transmutation cooling down: {time}s" }
+      exhaustion: { action_bar: "&cToo hungry to transmute." }
+    mechanics:
+      - type: "core:transmute"
+        parameters:
+          source: { constant: "minecraft:diamond" }
+          product: { constant: "minecraft:netherite_ingot" }
+          source_count: { constant: 4.0 }
+          product_count: { constant: 1.0 }
+          bonus_product_chance: { linear: { base: 0.0, step: 0.4, max: 40.0 } }
+          block: { constant: "minecraft:enchanting_table" }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Netherite Forged ✦" }
+      particles: [ { type: "minecraft:enchant", count: 24, offset: [0.5,1.0,0.5], speed: 0.7, target: "target" } ]
+      sounds: [ { type: "minecraft:block.beacon.activate", volume: 0.6, pitch: 0.8, target: "self" } ]
