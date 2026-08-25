@@ -100,7 +100,7 @@ abilities:
       - type: "core:armor_bonus"
         filters: [ { tool: "#minecraft:shovels" } ]
         parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          amount: { linear: { base: 1.0, step: 0.08, max: 3.0 } }
           uuid: { constant: "1a4c2d8f-6e1b-4a91-b3c7-5d0f2e8a9c41" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }

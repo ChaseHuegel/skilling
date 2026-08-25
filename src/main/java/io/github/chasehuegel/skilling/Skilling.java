@@ -193,6 +193,14 @@ public final class Skilling extends JavaPlugin {
                 getLogger().info("Generating default datapacks/fishing.zip...");
                 saveResource("datapacks/fishing.zip", false);
             }
+            if (!new File(datapacksDir, "herbalism.zip").exists()) {
+                getLogger().info("Generating default datapacks/herbalism.zip...");
+                saveResource("datapacks/herbalism.zip", false);
+            }
+            if (!new File(datapacksDir, "woodcutting.zip").exists()) {
+                getLogger().info("Generating default datapacks/woodcutting.zip...");
+                saveResource("datapacks/woodcutting.zip", false);
+            }
 
             // Mark setup as complete so bundled files are not regenerated on subsequent starts
             config.set("setup.first_run", false);

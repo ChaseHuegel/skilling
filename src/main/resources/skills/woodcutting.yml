@@ -1,18 +1,42 @@
+# ==========================================
+# WOODCUTTING SKILL — The Timber Harvester
+# ==========================================
+# Harvest raw timber: chop logs, clear leaves, replant saplings, and coax
+# young trees with bonemeal. Cleanly disjoint from Carpentry (wood PRODUCT
+# crafting): woodcutting owns the raw-log harvest and the forest loop, so a
+# single craft never double-awards two skills.
+#
+# Abilities (6-tier ladder, all sub-scaled):
+#   L1   Lumberjack      log yield scalar (identity)
+#   L15  Efficient Swing Haste while chopping (I -> II -> III)
+#   L25  Timber Feller   sneak-mine to fell a trunk (no cooldown, hunger-gated)
+#   L50  Forest's Trophy   leaf breaks reveal a woodland bounty loot table
+#   L75  Iron Bark       armor while wielding an axe on hit
+#   L100 Master Feller   Timber Feller free and at full reach (conveyer)
 id: "woodcutting"
 max_level: 100
 display: { name: "Woodcutting", icon: "minecraft:iron_axe", color: "GREEN", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Chopping natural logs is the primary grind: time and travel between
+  # forests, so it pays the most. Chained (felled) logs are never re-awarded.
   - trigger: "block_break"
     filters: [ { target: "#minecraft:logs" }, { state: "player_placed:false" } ]
-    reward: { constant: 36.2 }
+    reward: { constant: 40.0 }
+  # Leaves break near-instantly and are everywhere, so they pay little.
   - trigger: "block_break"
     filters: [ { target: "#minecraft:leaves" }, { state: "player_placed:false" } ]
-    reward: { constant: 36.2 }
-  - trigger: "craft_item"
-    filters: [ { target: "#minecraft:planks" } ]
-    reward: { constant: 36.2 }
+    reward: { constant: 10.0 }
+  # Replanting a sapling is a cheap loop, so it returns low.
+  - trigger: "block_place"
+    filters: [ { target: "#minecraft:saplings" } ]
+    reward: { constant: 12.0 }
+  # Bonemealing a sapling is a real resource cost.
+  - trigger: "fertilize"
+    filters: [ { target: "#minecraft:saplings" } ]
+    reward: { constant: 25.0 }
 abilities:
+  # L1 - Foundational passive: the linear engine. Log yields double.
   - id: "lumberjack"
     display_name: "Lumberjack"
     unlock_level: 1
@@ -24,6 +48,8 @@ abilities:
         parameters:
           yield_chance: { linear: { base: 0.5, step: 0.5, max: 50.0 } }
     feedback: { notify: { action_bar: false } }
+  # L15 - QoL passive: chopping finds its rhythm. Haste tier grows at real
+  # thresholds (I at 15, II at 50, III at 100) instead of a dead linear ramp.
   - id: "efficient_swing"
     display_name: "Efficient Swing"
     unlock_level: 15
@@ -33,45 +59,55 @@ abilities:
       - type: "core:haste_effect"
         filters: [ { target: "#minecraft:logs" }, { tool: "#minecraft:axes" } ]
         parameters:
-          amplifier: { linear: { base: 0, step: 0.01, max: 2 } }
+          amplifier: { milestones: { 15: 0, 50: 1, 100: 2 } }
           duration: { constant: 20.0 }
     feedback: { notify: { action_bar: false } }
+  # L25 - Primary active: fell a tree trunk. Hunger-gated only (no cooldown),
+  # free at max level, matching Harvest Wave / Wide Sweep. Chained logs award
+  # no extra XP, so mass felling is never an XP exploit.
   - id: "timber_feller"
     display_name: "Timber Feller"
     unlock_level: 25
     trigger: "block_break"
     display:
       lore:
-        - "&7Shift+mine to fell up to &a{chain_limit}&7 connected logs."
-        - "&7Costs 2 hunger."
-        - "&8Requires: Sneaking, axe, 10s cooldown, 3+ hunger."
+        - "&7Shift-mine to fell up to &a{chain_limit}&7 connected logs."
+        - "&7Costs 1 hunger (free at level 100)."
+        - "&8Requires: Sneaking, axe, 3+ hunger."
     requirements:
-      cooldown: 10.0
       state: [ "is_sneaking" ]
       items: [ { action: "possession", tag: "#minecraft:axes", slot: "MAIN_HAND" } ]
-      exhaustion: { amount: 2.0, minimum: 3.0 }
+      exhaustion:
+        amount: { milestones: { 25: 1, 100: 0 } }
+        minimum: { milestones: { 25: 3, 100: 0 } }
     on_failure:
-      cooldown: { action_bar: "&cTimber Feller cooling down: {time}s" }
       exhaustion: { action_bar: "&cToo exhausted!" }
     mechanics:
       - type: "core:chain_break"
         filters: [ { target: "#minecraft:logs" } ]
         parameters:
-          chain_limit: { milestones: { 25: 3, 50: 8, 75: 16, 100: 32 } }
+          chain_limit: { milestones: { 25: 8, 50: 16, 75: 24, 100: 32 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&2✦ Timber Feller! ✦" }
       sounds: [ { type: "minecraft:entity.zombie.break_wooden_door", volume: 0.5, pitch: 1.2, target: "self" } ]
-  - id: "forest_bounty"
-    display_name: "Forest Bounty"
+  # L50 - Major passive: the forest gives back. Natural leaf breaks sometimes
+  # reveal a woodland bounty table (skilling:woodcutting/trophy). Chance grows
+  # with level; scoped to player-placed:false so a place+break leaf farm can
+  # never roll it.
+  - id: "forests_trophy"
+    display_name: "Forest's Trophy"
     unlock_level: 50
     trigger: "block_break"
-    display: { lore: [ "&7Leaf breaks yield +&a{yield_chance}%&7 sapling drops." ] }
+    display: { lore: [ "&7Breaking leaves has a &a{chance}%&7 chance to reveal." ] }
     mechanics:
-      - type: "core:yield_multiplier"
+      - type: "core:drop_loot"
         filters: [ { target: "#minecraft:leaves" }, { state: "player_placed:false" } ]
         parameters:
-          yield_chance: { linear: { base: 2.0, step: 0.05, max: 8.0 } }
+          table: { constant: "skilling:woodcutting/trophy" }
+          chance: { linear: { base: 5.0, step: 0.2, max: 15.0 } }
     feedback: { notify: { action_bar: false } }
+  # L75 - Synergy passive: while wielding an axe, gain armor on hit. Amount
+  # sub-scales to its full 3.0 at level 100 (step tuned to reach the max).
   - id: "iron_bark"
     display_name: "Iron Bark"
     unlock_level: 75
@@ -81,18 +117,20 @@ abilities:
       - type: "core:armor_bonus"
         filters: [ { tool: "#minecraft:axes" } ]
         parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 3.0 } }
+          amount: { linear: { base: 1.0, step: 0.08, max: 3.0 } }
           uuid: { constant: "8f6932cd-2574-5f6c-9ef5-a4187114f895" }
           duration: { constant: 8.0 }
     feedback: { notify: { action_bar: false } }
-  - id: "ancient_timber"
-    display_name: "Ancient Timber"
+  # L100 - Mastery capstone (conveyer): Timber Feller has fully evolved. Its
+  # hunger cost is already zeroed and its chain at maximum reach by this level,
+  # so this entry carries the payoff in the UI like Excavator.
+  - id: "master_feller"
+    display_name: "Master Feller"
     unlock_level: 100
-    trigger: "craft_item"
-    display: { lore: [ "&7Plank crafts yield &a{multiplier}x&7." ] }
-    mechanics:
-      - type: "core:modify_craft_output"
-        filters: [ { target: "#minecraft:planks" } ]
-        parameters:
-          multiplier: { linear: { base: 1.8, step: 0.01, max: 2.5 } }
+    trigger: "block_break"
+    display:
+      lore:
+        - "&7Timber Feller now costs no hunger and"
+        - "&7fells at its maximum reach."
+        - "&8Master of the woods: fell freely."
     feedback: { notify: { action_bar: false } }
