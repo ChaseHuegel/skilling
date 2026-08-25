@@ -551,6 +551,55 @@ Launches a custom projectile from the player. Fires only on a right-click
 
 **Event:** `PlayerInteractEvent` (right-click only)
 
+### core:fireball
+
+Launches a non-griefing fireball (a `SmallFireball`) from the player on a
+right-click cast. The fireball is deliberately non-destructive: `setYield(0)`
+removes its block-destruction radius and `setIsIncendiary(false)` stops it
+setting fires, so it never corrupts terrain (safe unplug). Its configured
+`damage` is applied flat to the struck entity through the shared projectile
+damage path, and the tiny non-griefing explosion supplies a mild knockback
+splash.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `speed` | double | `2.0` | Projectile velocity multiplier |
+| `damage` | double | `6.0` | Damage dealt on hit |
+
+**Event:** `PlayerInteractEvent` (right-click only)
+
+### core:strike_lightning
+
+Strikes the entity the player is aiming at with a vanilla lightning *visual* and
+a configured amount of damage on a right-click cast. Uses
+`strikeLightningEffect` (the real lightning flash and crack, no block fires), so
+it reads as thunder without corrupting terrain. Players and the caster are never
+strikable targets; aiming at no acceptable target is a no-op that spends nothing.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `damage` | double | `6.0` | Damage dealt to the aimed target |
+
+**Event:** `PlayerInteractEvent` (right-click only)
+
+### core:set_fire
+
+Sets the entity the player is aiming at on fire for a configured number of
+native fire ticks on a right-click cast (20 ticks = 1 second). Players and the
+caster are never ignitable targets; aiming at no acceptable target is a no-op.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ticks` | double | `100` | Native fire ticks the target burns for |
+
+**Event:** `PlayerInteractEvent` (right-click only)
+
 ### core:teleport
 
 Short-range teleport in the player's looking direction. Fires only on a

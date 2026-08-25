@@ -335,6 +335,24 @@ abilities:
   #         catalyst: { constant: "minecraft:wheat_seeds" }
   #         result: { constant: "minecraft:grass_block" }
   #         catalyst_count: { constant: 1 }
+  #
+  # core:fireball launches a non-griefing fireball (no terrain damage, no fire)
+  # whose damage is applied flat to the struck entity on a right-click cast:
+  #   - type: "core:fireball"
+  #     parameters:
+  #       speed: { constant: 2.0 }
+  #       damage: { linear: { base: 6.0, step: 0.08, max: 14.0 } }
+  #
+  # core:strike_lightning plays a vanilla lightning visual and deals its damage to
+  # the aimed entity on a right-click cast (no terrain fire):
+  #   - type: "core:strike_lightning"
+  #     parameters:
+  #       damage: { linear: { base: 7.0, step: 0.05, max: 12.0 } }
+  #
+  # core:set_fire sets the aimed entity ablaze for native fire ticks (20/s):
+  #   - type: "core:set_fire"
+  #     parameters:
+  #       ticks: { linear: { base: 60.0, step: 1.4, max: 200.0 } }
   # core:modify_potion_amplifier raises brewed-potion potency (+N, level-scaled):
   #   mechanics:
   #     - type: "core:modify_potion_amplifier"

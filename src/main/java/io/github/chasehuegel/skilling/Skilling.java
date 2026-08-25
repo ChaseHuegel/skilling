@@ -201,6 +201,10 @@ public final class Skilling extends JavaPlugin {
                 getLogger().info("Generating default datapacks/woodcutting.zip...");
                 saveResource("datapacks/woodcutting.zip", false);
             }
+            if (!new File(datapacksDir, "wizardry.zip").exists()) {
+                getLogger().info("Generating default datapacks/wizardry.zip...");
+                saveResource("datapacks/wizardry.zip", false);
+            }
 
             // Mark setup as complete so bundled files are not regenerated on subsequent starts
             config.set("setup.first_run", false);
@@ -439,6 +443,12 @@ public final class Skilling extends JavaPlugin {
                     MechanicParamValidators.nonNegative(ctx, p, "duration");
                 });
         mechReg.register("core:projectile", ProjectileMechanic.class, List.of("speed", "damage"));
+        mechReg.register("core:fireball", FireballMechanic.class, List.of("speed", "damage"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "damage"));
+        mechReg.register("core:strike_lightning", StrikeLightningMechanic.class, List.of("damage"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "damage"));
+        mechReg.register("core:set_fire", SetFireMechanic.class, List.of("ticks"),
+                (ctx, p) -> MechanicParamValidators.nonNegative(ctx, p, "ticks"));
         mechReg.register("core:teleport", TeleportMechanic.class, List.of("range"));
         mechReg.register("core:lunge", LungeMechanic.class, List.of("force", "vertical", "knockback_resist", "uuid"),
                 (ctx, p) -> {

@@ -3,9 +3,13 @@
 # ==========================================
 # A catalyst scholar-caster. Hold a spell tome (a plain book) in your OFF hand
 # and an arcane catalyst in your MAIN hand, then sneak + right-click to cast:
-# the main-hand catalyst selects the spell (redstone = Bolt, amethyst = Repulse,
-# ender pearl = Blink, glowstone = Guardian). Rites performed at an enchanting
-# table transmute materials through an arcane altar.
+# the main-hand catalyst selects the spell (redstone = Bolt, lapis = Conjure,
+# lightning rod = Thunder, fire charge = Fireball, coal = Ignite, amethyst =
+# Repulse, ender pearl = Blink, glowstone = Guardian). Some effects ride the
+# strike itself: bearing a reagent (spider eye, ice, wither rose) turns your
+# blows into Venom, Frostbite, or Wither, while Reveal marks every hit.
+# Rites performed at an enchanting table transmute materials through an arcane
+# altar (Transmutation L25, Distillation L60, True Transmutation L100).
 #
 # Identity: the thrifty arcanist. Residual Focus (L1) never wastes a tome's
 # ingredients; every cast/rite carries core:preserve_cost, a chance to keep the
@@ -113,6 +117,40 @@ abilities:
           yield_chance: { linear: { base: 5.0, step: 0.28, max: 30.0 } }
     feedback: { notify: { action_bar: false } }
 
+  # -- L20 ACTIVE: Prestidigitation. Conjure minor arcane reagents where you aim,
+  # feeding the catalyst demand of every later cast and rite.
+  - id: "prestidigitation"
+    display_name: "Prestidigitation"
+    unlock_level: 20
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Aim at a surface & Sneak + Right-Click to conjure minor reagents."
+        - "&7Costs 1 lapis lazuli + 1 hunger."
+        - "&8Requires: Sneaking, book in off hand, Lapis in hand, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "minecraft:lapis_lazuli", slot: "MAIN_HAND" }
+        - { action: "possession", tag: "minecraft:book", slot: "OFF_HAND" }
+        - { action: "cost", tag: "minecraft:lapis_lazuli", slot: "MAIN_HAND", amount: 1 }
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      missing_item: { action_bar: "&cConjure requires Lapis in hand & a Book in your off hand." }
+      exhaustion: { action_bar: "&cToo hungry to conjure!" }
+    mechanics:
+      - type: "core:cancel_event"
+      - type: "core:drop_loot"
+        parameters:
+          table: { constant: "skilling:wizardry/conjure" }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Conjured ✦" }
+      particles: [ { type: "minecraft:enchant", count: 12, offset: [0.5,0.5,0.5], speed: 0.3, target: "self" } ]
+      sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.5, pitch: 1.2, target: "self" } ]
+
   # -- L25 PRIMARY ACTIVE: Transmutation, the arcane altar. Interact an
   # enchanting table holding a transmutable material. The altar is the wizard's
   # workbench; the vanilla enchanting GUI is suppressed on a real rite.
@@ -158,6 +196,40 @@ abilities:
       particles: [ { type: "minecraft:enchant", count: 12, offset: [0.5,0.5,0.5], speed: 0.5, target: "target" } ]
       sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.6, pitch: 1.0, target: "self" } ]
 
+  # -- L30 HEX PASSIVE: Venom. Bearing a Spider Eye poison the creature you strike.
+  - id: "venom"
+    display_name: "Venom"
+    unlock_level: 30
+    trigger: "entity_damage"
+    display:
+      lore: [ "&7Hits while bearing a Spider Eye poison the target for &a{duration}s&7." ]
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - tool: "minecraft:spider_eye"
+          - state: "offhand:minecraft:book"
+        parameters:
+          effect: { constant: "minecraft:poison" }
+          duration: { linear: { base: 3.0, step: 0.03, max: 6.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+
+  # -- L30 RECON PASSIVE: Reveal. Every strike marks its target, shining it
+  # through walls so the arcanist tracks hidden quarry.
+  - id: "reveal"
+    display_name: "Reveal"
+    unlock_level: 30
+    trigger: "entity_damage"
+    display:
+      lore: [ "&7Hits mark the target with Glowing for &a{duration}s&7, revealing it through walls." ]
+    mechanics:
+      - type: "core:apply_status"
+        parameters:
+          effect: { constant: "minecraft:glowing" }
+          duration: { linear: { base: 3.0, step: 0.05, max: 8.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+
   # -- L35 ACTIVE: an arcane repulse. Tome off hand + Amethyst main hand blasts
   # every nearby hostile away, creating space around a solo caster.
   - id: "arcane_repulse"
@@ -194,6 +266,55 @@ abilities:
       particles: [ { type: "minecraft:poof", count: 20, offset: [1.0,0.5,1.0], speed: 0.4, target: "self" } ]
       sounds: [ { type: "minecraft:block.glass.break", volume: 0.4, pitch: 0.7, target: "self" } ]
 
+  # -- L40 HEX PASSIVE: Frostbite. Bearing Ice freezes the creature you strike.
+  - id: "frostbite"
+    display_name: "Frostbite"
+    unlock_level: 40
+    trigger: "entity_damage"
+    display:
+      lore: [ "&7Hits while bearing Ice freeze the target for &a{duration}s&7." ]
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - tool: "minecraft:ice"
+          - state: "offhand:minecraft:book"
+        parameters:
+          effect: { constant: "minecraft:slowness" }
+          duration: { linear: { base: 2.0, step: 0.03, max: 5.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+
+  # -- L45 ACTIVE: Thunder. A lightning-rod catalyst calls a strike on the aimed
+  # creature; a copper fuel powers it. Native lightning, no terrain fire.
+  - id: "thunder"
+    display_name: "Thunder"
+    unlock_level: 45
+    trigger: "right_click"
+    display:
+      lore:
+        - "&7Sneak + Right-Click to strike your target with lightning for &a{damage}&7 damage."
+        - "&7Costs 1 copper ingot + 2 hunger."
+        - "&8Requires: Sneaking, book in off hand, Lightning Rod in hand, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "minecraft:lightning_rod", slot: "MAIN_HAND" }
+        - { action: "possession", tag: "minecraft:book", slot: "OFF_HAND" }
+        - { action: "cost", tag: "minecraft:copper_ingot", amount: 1 }
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      missing_item: { action_bar: "&cThunder requires a Lightning Rod in hand & a Book in your off hand." }
+      exhaustion: { action_bar: "&cToo hungry to cast!" }
+    mechanics:
+      - type: "core:cancel_event"
+      - type: "core:strike_lightning"
+        parameters:
+          damage: { linear: { base: 7.0, step: 0.05, max: 12.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Thunder ✦" }
+      particles: [ { type: "minecraft:flash", count: 1, offset: [0.0,0.0,0.0], speed: 0.0, target: "target" } ]
+      sounds: [ { type: "minecraft:entity.lightning_bolt.thunder", volume: 1.0, pitch: 1.0, target: "self" } ]
+
   # -- L50 MAJOR PASSIVE: the prized arcane hunt. Strong arcane beasts
   # occasionally drop triple, capping the grind with rare fortune.
   - id: "prismatic_rituals"
@@ -209,6 +330,145 @@ abilities:
           yield_chance: { linear: { base: 25.0, step: 0.3, max: 50.0 } }
           triple_chance: { linear: { base: 0.0, step: 0.15, max: 15.0 } }
     feedback: { notify: { action_bar: false } }
+
+  # -- L50 HEX PASSIVE: Wither. Bearing a Wither Rose withers the creature you strike.
+  - id: "wither"
+    display_name: "Wither"
+    unlock_level: 50
+    trigger: "entity_damage"
+    display:
+      lore: [ "&7Hits while bearing a Wither Rose wither the target for &a{duration}s&7." ]
+    mechanics:
+      - type: "core:apply_status"
+        filters:
+          - tool: "minecraft:wither_rose"
+          - state: "offhand:minecraft:book"
+        parameters:
+          effect: { constant: "minecraft:wither" }
+          duration: { linear: { base: 3.0, step: 0.05, max: 8.0 } }
+          amplifier: { constant: 0.0 }
+    feedback: { notify: { action_bar: false } }
+
+  # -- L55 ACTIVE: Fireball. Hurl a non-griefing fireball; it blasts the struck
+  # creature without corrupting terrain.
+  - id: "fireball"
+    display_name: "Fireball"
+    unlock_level: 55
+    trigger: "right_click"
+    display:
+      lore:
+        - "&7Sneak + Right-Click to hurl a fireball for &a{damage}&7 damage."
+        - "&7Costs 1 fire charge + 2 hunger."
+        - "&8Requires: Sneaking, book in off hand, Fire Charge in hand, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "minecraft:fire_charge", slot: "MAIN_HAND" }
+        - { action: "possession", tag: "minecraft:book", slot: "OFF_HAND" }
+        - { action: "cost", tag: "minecraft:fire_charge", slot: "MAIN_HAND", amount: 1 }
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      missing_item: { action_bar: "&cFireball requires a Fire Charge in hand & a Book in your off hand." }
+      exhaustion: { action_bar: "&cToo hungry to cast!" }
+    mechanics:
+      - type: "core:cancel_event"
+      - type: "core:fireball"
+        parameters:
+          speed: { constant: 2.0 }
+          damage: { linear: { base: 6.0, step: 0.08, max: 14.0 } }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Fireball ✦" }
+      particles: [ { type: "minecraft:flame", count: 12, offset: [0.5,0.5,0.5], speed: 0.1, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.blaze.shoot", volume: 0.6, pitch: 1.0, target: "self" } ]
+
+  # -- L60 ACTIVE: Ignite. Set the aimed creature ablaze with native fire.
+  - id: "ignite"
+    display_name: "Ignite"
+    unlock_level: 60
+    trigger: "right_click"
+    display:
+      lore:
+        - "&7Sneak + Right-Click to set your target ablaze for &a{ticks}&7 ticks."
+        - "&7Costs 1 coal + 1 hunger."
+        - "&8Requires: Sneaking, book in off hand, Coal in hand, 3+ hunger."
+    requirements:
+      state: [ "is_sneaking" ]
+      items:
+        - { action: "possession", tag: "minecraft:coal", slot: "MAIN_HAND" }
+        - { action: "possession", tag: "minecraft:book", slot: "OFF_HAND" }
+        - { action: "cost", tag: "minecraft:coal", slot: "MAIN_HAND", amount: 1 }
+      exhaustion: { amount: 1.0, minimum: 3.0 }
+    on_failure:
+      missing_item: { action_bar: "&cIgnite requires Coal in hand & a Book in your off hand." }
+      exhaustion: { action_bar: "&cToo hungry to cast!" }
+    mechanics:
+      - type: "core:cancel_event"
+      - type: "core:set_fire"
+        parameters:
+          ticks: { linear: { base: 60.0, step: 1.4, max: 200.0 } }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Ignite ✦" }
+      particles: [ { type: "minecraft:flame", count: 8, offset: [0.5,0.5,0.5], speed: 0.1, target: "self" } ]
+      sounds: [ { type: "minecraft:item.firecharge.use", volume: 0.6, pitch: 1.0, target: "self" } ]
+
+  # -- L60 MID-TIER ALTAR: Distillation. A second round of prized transmutations
+  # for the scholar's wealth and rare materials.
+  - id: "distillation"
+    display_name: "Distillation"
+    unlock_level: 60
+    trigger: "right_click_block"
+    display:
+      lore:
+        - "&7Interact an Enchanting Table to distill rare materials."
+        - "&78 Ender Pearl &8-> &61 Diamond   |   16 Redstone &8-> &61 Emerald"
+        - "&78 Glowstone Dust &8-> &61 Echo Shard"
+        - "&7Costs 1 Lapis Lazuli + 2 hunger."
+        - "&8Requires: a distillable material in hand, 45s cooldown."
+    requirements:
+      cooldown: { linear: { base: 45.0, step: -0.25, max: 20.0 } }
+      items: [ { action: "cost", tag: "minecraft:lapis_lazuli", amount: 1 } ]
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      cooldown: { action_bar: "&eDistillation cooling down: {time}s" }
+      exhaustion: { action_bar: "&cToo hungry to distill." }
+    mechanics:
+      - type: "core:transmute"
+        parameters:
+          source: { constant: "minecraft:ender_pearl" }
+          product: { constant: "minecraft:diamond" }
+          source_count: { constant: 8.0 }
+          product_count: { constant: 1.0 }
+          bonus_product_chance: { linear: { base: 0.0, step: 0.8, max: 30.0 } }
+          block: { constant: "minecraft:enchanting_table" }
+      - type: "core:transmute"
+        parameters:
+          source: { constant: "minecraft:redstone" }
+          product: { constant: "minecraft:emerald" }
+          source_count: { constant: 16.0 }
+          product_count: { constant: 1.0 }
+          bonus_product_chance: { linear: { base: 0.0, step: 0.8, max: 30.0 } }
+          block: { constant: "minecraft:enchanting_table" }
+      - type: "core:transmute"
+        parameters:
+          source: { constant: "minecraft:glowstone_dust" }
+          product: { constant: "minecraft:echo_shard" }
+          source_count: { constant: 8.0 }
+          product_count: { constant: 1.0 }
+          bonus_product_chance: { linear: { base: 0.0, step: 0.8, max: 30.0 } }
+          block: { constant: "minecraft:enchanting_table" }
+      - type: "core:preserve_cost"
+        parameters:
+          chance: { linear: { base: 10.0, step: 0.3, max: 40.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&d✦ Distilled ✦" }
+      particles: [ { type: "minecraft:enchant", count: 12, offset: [0.5,1.0,0.5], speed: 0.5, target: "target" } ]
+      sounds: [ { type: "minecraft:block.amethyst_block.chime", volume: 0.6, pitch: 1.0, target: "self" } ]
 
   # -- L65 ACTIVE: Blink. Ender Pearl main hand gives a precise, damage-free hop
   # in the look direction — an emergency reposition competitive with throwing a
