@@ -1,103 +1,141 @@
+# ==========================================
+# UNARMORED SKILL
+# ==========================================
+# The bare-fighter / silk-glove. You forsake armor's protection and fight from
+# freedom: the skill replaces the armor you gave up with raw hide toughness,
+# evasion, counter-strike, and vitality. Every ability is gated on #c:unarmored
+# (empty slots, the elytra, or headwear), so the mastery stays alive through
+# the late game on elytra builds instead of fading the moment armor appears.
+#
+# Identity: the L1 scalar grants the armor points you surrendered (so armorless
+# is never a straight stat loss), and the single chance-to-fully-negate lives
+# only on the L15 dodge — no ability aliases another into a cancel stack.
+#
+# XP loop: tank while unarmored (tanking trickle, damage-scaled per
+# REPORT_XP-SOURCE-DESIGN), deal damage while unarmored (the grindable driver),
+# and finish a mob while unarmored (grindable finisher). Any weapon works while
+# armorless; bare-hand offense belongs to the unarmed skill.
 id: "unarmored"
 max_level: 100
 display: { name: "Unarmored", icon: "minecraft:leather", color: "BLUE", style: "SOLID" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Tanking while unarmored. The sanctioned tanking outlier; each raw damage
+  # point (5 ~= a 2.5-heart hit) pays its share.
   - trigger: "entity_damage_taken"
     filters: [ { state: "equipped_all:#c:unarmored" } ]
-    reward: { constant: 18.5 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
+    reward: { constant: 20.0 }
     scaling: damage
-  - trigger: "entity_damage_taken"
-    filters: [ { state: "equipped_all:#c:unarmored" } ]      # ×2 source per REPORT §4 (tanking rate)
-    reward: { constant: 18.5 }
-    scaling: damage
+  # The grindable driver: chose to fight armorless and it pays per damage point.
   - trigger: "entity_damage"
-    filters: [ { state: "hand:empty" } ]
-    reward: { constant: 46.3 }      # per raw damage point (2 ≈ unarmed punch). Damage-scaled
+    filters: [ { state: "equipped_all:#c:unarmored" } ]
+    reward: { constant: 12.0 }
     scaling: damage
-  # Outlier per REPORT_XP-SOURCE-DESIGN §2: tanking skills exceed the ~60/action ceiling.
+  # Finishing a target while unarmored is grindable and pays a flat bonus.
+  - trigger: "entity_kill"
+    filters: [ { state: "equipped_all:#c:unarmored" } ]
+    reward: { constant: 110.0 }
 abilities:
-  - id: "nimble_defense"
-    display_name: "Nimble Defense"
+  # -- FOUNDATIONAL (L1): the identity scalar. Thick Skin grants the armor
+  # points you gave up while unarmored, so going bare is never a straight stat
+  # loss. Scales to a low chainmail set's worth by level 100, enough to make
+  # armorless viable without out-classing real plate (amplify, never replace).
+  - id: "thick_skin"
+    display_name: "Thick Skin"
     unlock_level: 1
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7Unarmored: &a{chance}%&7 dodge." ] }
+    trigger: "level_up"
+    display: { lore: [ "&7While unarmored: +&a{amount}&7 armor." ] }
     mechanics:
-      - type: "core:dodge"
-        filters: [ { state: "equipped_all:#c:unarmored" } ]
+      - type: "core:equipment_attribute"
         parameters:
-          chance: { linear: { base: 5.0, step: 0.3, max: 35.0 } }
+          attribute: { constant: "minecraft:armor" }
+          amount: { linear: { base: 1.0, step: 0.09, max: 10.0 } }
+          uuid: { constant: "e9e3d4c1-a846-5b0a-b719-5a7ad2b6b1c5" }
+          equip_tag: { constant: "#c:unarmored" }
     feedback: { notify: { action_bar: false } }
-  - id: "bare_necessities"
-    display_name: "Bare Necessities"
+  # -- QOL PASSIVE (L15): dodge mastery, the single damage-cancel in the tree.
+  # Starts mid-game and grows to a strong peak. Success-only feedback makes the
+  # save felt so a chance dodge never reads as "is this helping me?"
+  - id: "ghost_step"
+    display_name: "Ghost Step"
     unlock_level: 15
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Unarmored & hit: &a{multiplier}x&7 speed for {duration}s." ] }
-    mechanics:
-      - type: "core:speed_bonus"
-        filters: [ { state: "equipped_all:#c:unarmored" } ]
-        parameters:
-          multiplier: { linear: { base: 1.05, step: 0.003, max: 1.3 } }
-          uuid: { constant: "e9e3d4c1-a846-5b0a-b719-5a7ad2b6b1c5" }
-          duration: { constant: 8.0 }
-    feedback: { notify: { action_bar: false } }
-  - id: "wind_step"
-    display_name: "Wind Step"
-    unlock_level: 25
-    trigger: "entity_damage_taken"
-    display:
-      lore:
-        - "&7Sneak+Jump unarmored to negate next hit &a{chance}%&7."
-        - "&8Requires: Sneaking, on ground, unarmored, 6s cooldown."
-    requirements:
-      cooldown: 6.0
-      state: [ "is_sneaking", "is_on_ground", "equipped_all:#c:unarmored" ]
-    on_failure: { cooldown: { action_bar: "&eWind Step cooling down: {time}s" } }
+    display: { lore: [ "&7Unarmored: &a{chance}%&7 chance to fully dodge a hit." ] }
     mechanics:
       - type: "core:cancel_damage"
+        filters: [ { state: "equipped_all:#c:unarmored" } ]
         parameters:
-          chance: { linear: { base: 50.0, step: 0.5, max: 90.0 } }
+          chance: { linear: { base: 15.0, step: 0.45, max: 55.0 } }
     feedback:
-      notify: { action_bar: true, chat: false, message: "&b✦ Wind Step! ✦" }
-      sounds: [ { type: "minecraft:item.shield.block", volume: 0.4, pitch: 1.5, target: "self" } ]
-  - id: "hardened_body"
-    display_name: "Hardened Body"
+      success_only: true
+      notify: { action_bar: true, chat: false, message: "&b✦ Dodged! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.sweep", volume: 0.4, pitch: 1.5, target: "self" } ]
+  # -- PRIMARY ABILITY (L25): the active hook. A player-driven parry stance that
+  # hardens you for a few seconds, gated by exhaustion instead of a cooldown.
+  # The shield-block sound and offhand swing make the parry visible.
+  - id: "parry"
+    display_name: "Parry"
+    unlock_level: 25
+    trigger: "right_click_air"
+    display:
+      lore:
+        - "&7Right-Click unarmored to parry: Resistance II for &a{duration}s&7."
+        - "&7Costs 2 hunger."
+        - "&8Requires: Unarmored, 3+ hunger."
+    requirements:
+      state: [ "equipped_all:#c:unarmored" ]
+      exhaustion: { amount: 2.0, minimum: 3.0 }
+    on_failure:
+      exhaustion: { action_bar: "&cToo hungry to parry!" }
+    mechanics:
+      - type: "core:self_effect"
+        parameters:
+          effect: { constant: "minecraft:resistance" }
+          amplifier: { constant: 1.0 }
+          duration: { linear: { base: 3.0, step: 0.02, max: 5.0 } }
+      - type: "core:offhand_swing"
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&b✦ Parry! ✦" }
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.5, pitch: 1.4, target: "self" } ]
+  # -- MAJOR PASSIVE (L50): clutch survival. Where the L15 dodge negates
+  # outright, Iron Nerves answers only when bloodied, softening hits (a distinct
+  # mechanic: soften, never negate).
+  - id: "iron_nerves"
+    display_name: "Iron Nerves"
     unlock_level: 50
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Unarmored & hit: +&a{amount}&7 natural armor for {duration}s." ] }
+    display: { lore: [ "&7At/below 60% health unarmored: take &a{reduction}%&7 less damage." ] }
     mechanics:
-      - type: "core:armor_bonus"
-        filters: [ { state: "equipped_all:#c:unarmored" } ]
+      - type: "core:reduce_damage"
+        filters: [ { state: "equipped_all:#c:unarmored" }, { state: "health:below:60" } ]
         parameters:
-          amount: { linear: { base: 1.0, step: 0.02, max: 4.0 } }
-          uuid: { constant: "00ac8b79-4280-51b3-a819-8ce3a0ac4cc9" }
-          duration: { constant: 8.0 }
+          reduction: { linear: { base: 15.0, step: 0.25, max: 40.0 } }
     feedback: { notify: { action_bar: false } }
-  - id: "deflection"
-    display_name: "Deflection"
+  # -- SYNERGY PASSIVE (L75): cross-vanilla link. With no armor to absorb harm,
+  # the body leans on food, regeneration, and potions: they restore you faster
+  # while unarmored — the bare-fighter's vitality.
+  - id: "unburdened"
+    display_name: "Unburdened"
     unlock_level: 75
-    trigger: "entity_damage_taken"
-    display: { lore: [ "&7Unarmored: &a{chance}%&7 block chance." ] }
+    trigger: "player_heal"
+    display: { lore: [ "&7While unarmored, restore &a{multiplier}x&7 health from food, regeneration, and potions." ] }
     mechanics:
-      - type: "core:block_damage"
+      - type: "core:heal_amplify"
         filters: [ { state: "equipped_all:#c:unarmored" } ]
         parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
+          multiplier: { linear: { base: 1.05, step: 0.0025, max: 1.3 } }
     feedback: { notify: { action_bar: false } }
-  - id: "enlightened_evasion"
-    display_name: "Enlightened Evasion"
+  # -- MASTERY CAPSTONE (L100): the counter payoff. Bare Back turns every
+  # armorless hit that does land back at the attacker, so the no-armor stance
+  # bleeds attackers even in the fights it cannot dodge away from.
+  - id: "bare_back"
+    display_name: "Bare Back"
     unlock_level: 100
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Unarmored: &a{chance}%&7 dodge & &a{multiplier}x&7 speed on hit." ] }
+    display: { lore: [ "&7Unarmored & hit: reflect &a{damage}&7 damage back." ] }
     mechanics:
-      - type: "core:dodge"
+      - type: "core:thorns_damage"
         filters: [ { state: "equipped_all:#c:unarmored" } ]
         parameters:
-          chance: { linear: { base: 50.0, step: 0.4, max: 70.0 } }
-      - type: "core:speed_bonus"
-        filters: [ { state: "equipped_all:#c:unarmored" } ]
-        parameters:
-          multiplier: { linear: { base: 1.3, step: 0.002, max: 1.4 } }
-          uuid: { constant: "b55c9e5f-f114-5bcc-aec1-00b3043b75a0" }
-          duration: { constant: 8.0 }
+          damage: { constant: 6.0 }
     feedback: { notify: { action_bar: false } }
