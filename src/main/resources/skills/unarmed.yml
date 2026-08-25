@@ -1,100 +1,189 @@
+# ==========================================
+# UNARMED SKILL
+# ==========================================
+# The barehanded monk-bruiser. It earns XP from landing punches, finishing
+# foes, getting hit while fighting empty-handed (the off-tank grind), and from
+# breaking blocks with bare fists (a slow, cost-gated grind tiered by hardness).
+# It turns empty hands into a self-sufficient weapon and a dodgetank: punches
+# gain flat power and small scaling (L1 Iron Fist), bare hands turn aside blows
+# early (L15 Deflect), a sneak-strike weakens and pierces armor (L25 Pressure
+# Points), fists stop getting shoved around in the scrum (L50 Brickhouse
+# Footing), empty hands shed incoming blows (L75 Effortless Evasion), and a
+# master's sustained flurry ramps into a peak of damage (L100 Flurry Stance).
+#
+# XP loop: bare-fist damage (the driver), bare-fist kills, being-hit while
+# empty-handed (rewarding the tank playstyle), and block breaks by fist tiered
+# so cheap fast blocks pay little while hard slow blocks pay well. There is
+# deliberately no armor-based source: the Unarmored skill owns tanking without
+# armor; this skill owns empty-hand offense and an empty-hand dodgetank. Skill
+# comes from fighting with nothing in your hands.
 id: "unarmed"
 max_level: 100
 display: { name: "Unarmed", icon: "minecraft:player_head", color: "RED", style: "SEGMENTED_10" }
 progression: { curve: "polynomial", base_xp: 50, exponent: 2.5 }
 xp_sources:
+  # Bare-fist damage, the grindable driver. Bare fists start at 1 raw damage and
+  # gain flat power through L1 Iron Fist, so each hit earns more as the climb
+  # goes on. Hits cost combat commitment and the presence of a target.
   - trigger: "entity_damage"
     filters: [ { state: "hand:empty" } ]
-    reward: { constant: 34.0 }      # per raw damage point (2 ≈ unarmed punch). Damage-scaled
+    reward: { constant: 34.0 }
     scaling: damage
+  # Finishing a target with bare hands. Less frequent than a hit; pays a flat
+  # bonus on top of the damage already earned for the fight.
   - trigger: "entity_kill"
     filters: [ { state: "hand:empty" } ]
     reward: { constant: 68.0 }
+  # Getting hit while fighting empty-handed. Rewards the off-tank playstyle the
+  # dodge/deflect layers serve. Gated on empty hands only (never on armor), so
+  # it stays the empty-hand brawler's source and not the Unarmored tank's.
   - trigger: "entity_damage_taken"
-    filters: [ { state: "equipped_all:#c:unarmored" } ]   # armor:empty (no armor worn)
-    reward: { constant: 13.6 }      # per raw damage point (5 ≈ 2.5-heart hit). Damage-scaled
+    filters: [ { state: "hand:empty" } ]
+    reward: { constant: 13.6 }
     scaling: damage
+  # Breaking blocks with a bare fist is a slow, cost-gated grind. Tiered by
+  # hardness and plentifulness: soft cheap blocks pay little, hard slow blocks
+  # pay well, obsidian pays most because breaking it by hand is extremely slow.
+  - trigger: "block_break"
+    filters: [ { state: "hand:main_empty" }, { state: "player_placed:false" }, { target: "minecraft:dirt" } ]
+    reward: { constant: 1.5 }
+  - trigger: "block_break"
+    filters: [ { state: "hand:main_empty" }, { state: "player_placed:false" }, { target: "minecraft:sand" } ]
+    reward: { constant: 1.5 }
+  - trigger: "block_break"
+    filters: [ { state: "hand:main_empty" }, { state: "player_placed:false" }, { target: "minecraft:gravel" } ]
+    reward: { constant: 1.5 }
+  - trigger: "block_break"
+    filters: [ { state: "hand:main_empty" }, { state: "player_placed:false" }, { target: "#minecraft:logs" } ]
+    reward: { constant: 5.0 }
+  - trigger: "block_break"
+    filters: [ { state: "hand:main_empty" }, { state: "player_placed:false" }, { target: "minecraft:stone" } ]
+    reward: { constant: 8.0 }
+  - trigger: "block_break"
+    filters: [ { state: "hand:main_empty" }, { state: "player_placed:false" }, { target: "minecraft:cobblestone" } ]
+    reward: { constant: 8.0 }
+  - trigger: "block_break"
+    filters: [ { state: "hand:main_empty" }, { state: "player_placed:false" }, { target: "minecraft:obsidian" } ]
+    reward: { constant: 22.0 }
 abilities:
+  # -- FOUNDATIONAL (L1): the primary scalar and the ONLY flat damage line. Bare
+  # fists deal 1 raw damage, so a pure percent multiplier would be near-dead;
+  # this adds flat power up to ~4 so fists become a real weapon without any gear,
+  # with a small percent so armor and crits still scale. The capstone ramps
+  # damage transiently instead of stacking a second scalar.
   - id: "iron_fist"
     display_name: "Iron Fist"
     unlock_level: 1
     trigger: "entity_damage"
-    display: { lore: [ "&7Unarmed damage &a{multiplier}x&7." ] }
+    display: { lore: [ "&7Unarmed damage +&a{bonus}&7, times &a{multiplier}x&7." ] }
     mechanics:
       - type: "core:modify_damage"
         filters: [ { state: "hand:empty" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.005, max: 1.5 } }
+          bonus: { linear: { base: 0.5, step: 0.04, max: 4.0 } }
+          multiplier: { linear: { base: 1.0, step: 0.002, max: 1.15 } }
     feedback: { notify: { action_bar: false } }
-  - id: "lightning_reflexes"
-    display_name: "Lightning Reflexes"
+  # -- QOL PASSIVE (L15): Deflect. A bare hand turns aside an incoming blow early
+  # on, the first layer of the empty-hand dodgetank. The low early chance is easy
+  # to miss, so it surfaces a cue only on a successful parry (success_only). Its
+  # chance sub-scales all the way to level 100.
+  - id: "deflect"
+    display_name: "Deflect"
     unlock_level: 15
     trigger: "entity_damage_taken"
-    display: { lore: [ "&7Unarmored & empty-handed: &a{chance}%&7 dodge." ] }
+    display: { lore: [ "&7Barehanded: &a{chance}%&7 to deflect & nullify a blow." ] }
     mechanics:
-      - type: "core:dodge"
+      - type: "core:block_damage"
         filters: [ { state: "hand:empty" } ]
         parameters:
-          chance: { linear: { base: 5.0, step: 0.2, max: 25.0 } }
-    feedback: { notify: { action_bar: false } }
+          chance: { linear: { base: 10.0, step: 0.2, max: 30.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&7✦ Deflected! ✦" }
+      sounds: [ { type: "minecraft:item.shield.block", volume: 0.6, pitch: 1.2, target: "self" } ]
+      success_only: true
+  # -- PRIMARY ABILITY (L25): Pressure Points. A sneak-strike weakens the target
+  # (cutting its outgoing melee damage) and pierces armor outright. No cooldown:
+  # the hunger cost is the gate, exactly like the archery/light-weapon L25s.
   - id: "pressure_points"
     display_name: "Pressure Points"
     unlock_level: 25
     trigger: "entity_damage"
     display:
       lore:
-        - "&7Sneak-strike unarmed to weaken targets &a{duration}s&7 & bonus damage."
+        - "&7Sneak-strike to weaken a target for &a{duration}s&7 and pierce armor: +&a{damage}&7."
         - "&7Costs 1 hunger."
-        - "&8Requires: Sneaking, empty hands, 5s cooldown, 3+ hunger."
+        - "&8Requires: Sneaking, empty hands, 3+ hunger."
     requirements:
-      cooldown: 5.0
       state: [ "is_sneaking", "hand:empty" ]
       exhaustion: { amount: 1.0, minimum: 3.0 }
-    on_failure: { cooldown: { action_bar: "&ePressure Points cooling down: {time}s" } }
+    on_failure: { exhaustion: { action_bar: "&cToo hungry to strike!" } }
     mechanics:
       - type: "core:apply_status"
         filters: [ { state: "hand:empty" } ]
         parameters:
-          effect: { constant: "minecraft:weakness" }      # P2-11
+          effect: { constant: "minecraft:weakness" }
           duration: { linear: { base: 3.0, step: 0.03, max: 6.0 } }
           amplifier: { constant: 1.0 }
-      - type: "core:modify_damage"
+      - type: "core:true_damage"
         filters: [ { state: "hand:empty" } ]
         parameters:
-          multiplier: { linear: { base: 1.2, step: 0.01, max: 1.5 } }
-    feedback: { notify: { action_bar: true, chat: false, message: "&c✦ Pressure Points! ✦" } }
-  - id: "chi_flow"
-    display_name: "Chi Flow"
+          damage: { linear: { base: 2.0, step: 0.04, max: 6.0 } }
+          percent: { constant: 0.0 }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&7✦ Pressure Points! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.crit", volume: 0.5, pitch: 1.2, target: "self" } ]
+  # -- MAJOR PASSIVE (L50): Brickhouse Footing. A barehanded bruiser trades at
+  # close range, so staying put keeps a flurry uninterrupted instead of being
+  # shoved out of it. Its resistance sub-scales from 50 up. Distinct from the
+  # movement-speed sources used elsewhere.
+  - id: "brickhouse_footing"
+    display_name: "Brickhouse Footing"
     unlock_level: 50
-    trigger: "entity_damage"
-    display: { lore: [ "&7Unarmed hits grant &a{multiplier}x&7 speed for {duration}s." ] }
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7Fighting barehanded reduces knockback &a{amount}&7 for {duration}s." ] }
     mechanics:
-      - type: "core:speed_bonus"
+      - type: "core:knockback_resist"
         filters: [ { state: "hand:empty" } ]
         parameters:
-          multiplier: { linear: { base: 1.05, step: 0.002, max: 1.25 } }
-          uuid: { constant: "e325e8dd-2e41-5492-87e5-c301e0c795f7" }
-          duration: { constant: 6.0 }
+          amount: { linear: { base: 0.2, step: 0.004, max: 0.6 } }
+          duration: { constant: 8.0 }
+          uuid: { constant: "e8a2c4d1-6b7f-4a3d-9c2e-0f1b5d7a9c21" }
     feedback: { notify: { action_bar: false } }
-  - id: "counter_strike"
-    display_name: "Counter Strike"
+  # -- SYNERGY PASSIVE (L75): Effortless Evasion. A bare hand reads the incoming
+  # blow and dodges it entirely on top of Deflect, the second layer of the
+  # empty-hand dodgetank. Also surfaced only on a successful dodge.
+  - id: "effortless_evasion"
+    display_name: "Effortless Evasion"
     unlock_level: 75
-    trigger: "entity_damage"
-    display: { lore: [ "&7Heal &a{percentage}%&7 of unarmed damage dealt." ] }
+    trigger: "entity_damage_taken"
+    display: { lore: [ "&7Barehanded: &a{chance}%&7 to dodge the blow entirely." ] }
     mechanics:
-      - type: "core:lifesteal"
+      - type: "core:dodge"
         filters: [ { state: "hand:empty" } ]
         parameters:
-          percentage: { linear: { base: 3.0, step: 0.05, max: 10.0 } }
-    feedback: { notify: { action_bar: false } }
-  - id: "master_martial_artist"
-    display_name: "Master Martial Artist"
+          chance: { linear: { base: 15.0, step: 0.3, max: 45.0 } }
+    feedback:
+      notify: { action_bar: true, chat: false, message: "&7✦ Dodged! ✦" }
+      sounds: [ { type: "minecraft:entity.player.attack.woosh", volume: 0.5, pitch: 1.4, target: "self" } ]
+      success_only: true
+  # -- MASTERY CAPSTONE (L100): Flurry Stance. Each landed punch stacks a growing
+  # damage ramp held by a short window, so a committed monk escalates a flurry to
+  # a peak and resets when they stop swinging. A constant spawns the ramp; it is
+  # the sanctioned constant capstone (no levels left to grow). It does not stack
+  # a second flat scalar onto Iron Fist, so there is no runaway multiplication.
+  - id: "flurry_stance"
+    display_name: "Flurry Stance"
     unlock_level: 100
     trigger: "entity_damage"
-    display: { lore: [ "&7Unarmed damage &a{multiplier}x&7." ] }
+    display:
+      lore:
+        - "&7Each landed punch builds a ramp up to &a+60%&7 damage, held &a4s&7 while you fight."
+        - "&7The ramp resets when you stop swinging."
     mechanics:
-      - type: "core:modify_damage"
+      - type: "core:fury"
         filters: [ { state: "hand:empty" } ]
         parameters:
-          multiplier: { linear: { base: 2.0, step: 0.03, max: 2.8 } }
+          multiplier_step: { constant: 0.1 }
+          max_stacks: { constant: 6 }
+          window: { constant: 4.0 }
     feedback: { notify: { action_bar: false } }
