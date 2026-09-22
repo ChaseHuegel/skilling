@@ -450,7 +450,7 @@ custom_tags:
     - "#minecraft:axes"
     - "minecraft:mace"
     - "minecraft:trident"
-    - "#minecraft:shears"
+    - "minecraft:shears"
     - "#minecraft:hoes"
     - "#minecraft:pickaxes"
     - "#minecraft:shovels"

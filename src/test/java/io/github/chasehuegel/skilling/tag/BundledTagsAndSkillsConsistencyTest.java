@@ -49,7 +49,7 @@ class BundledTagsAndSkillsConsistencyTest {
     /** Every {@code custom_tags} key shipped in {@code tags/base.yml}. */
     private static final Set<String> BUNDLED_TAGS = Set.of(
             "ores", "logs", "gems", "stone", "excavatable", "veinminer",
-            "stone_products", "redstone_components", "herbs", "heavy_weapons", "light_weapons", "tools",
+            "stone_products", "redstone_components", "herbs", "heavy_weapons", "light_weapons", "tools", "melee", "melee_weapons",
             "leather_armor", "light_armor", "medium_armor", "heavy_armor",
             "unarmored", "bows", "instruments", "fishing_rods", "holy_blocks",
             "crops", "raw_crops", "tame_offerings", "foods", "campfire_foods",

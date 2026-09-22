@@ -164,7 +164,7 @@ abilities:
           chance: { linear: { base: 15.0, step: 0.3, max: 45.0 } }
     feedback:
       notify: { action_bar: true, chat: false, message: "&7✦ Dodged! ✦" }
-      sounds: [ { type: "minecraft:entity.player.attack.woosh", volume: 0.5, pitch: 1.4, target: "self" } ]
+      sounds: [ { type: "minecraft:entity.player.attack.weak", volume: 0.5, pitch: 1.4, target: "self" } ]
       success_only: true
   # -- MASTERY CAPSTONE (L100): Flurry Stance. Each landed punch stacks a growing
   # damage ramp held by a short window, so a committed monk escalates a flurry to
