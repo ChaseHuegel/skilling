@@ -69,7 +69,7 @@ public final class CustomTagLoader {
         Map<String, List<String>> rawEntries = new HashMap<>();
         Map<String, List<String>> rawEntityEntries = new HashMap<>();
         try {
-            gather(file, rawEntries, rawEntityEntries);
+            gather(file, rawEntries, rawEntityEntries, false);
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to read tags file: " + file, e);
         }
@@ -99,7 +99,7 @@ public final class CustomTagLoader {
         Map<String, List<String>> rawEntityEntries = new HashMap<>();
         for (File file : collectYamlFiles(tagsDir)) {
             try {
-                gather(file, rawEntries, rawEntityEntries);
+                gather(file, rawEntries, rawEntityEntries, true);
             } catch (IOException | IllegalArgumentException e) {
                 Bukkit.getLogger().warning(
                         "Skipping malformed tags file " + file.getName() + ": " + e.getMessage());
@@ -123,17 +123,23 @@ public final class CustomTagLoader {
     /**
      * Parses a single tags file into the shared raw-entry maps, validating each
      * entry so an unresolvable definition (unknown material, entity, or vanilla
-     * tag) is attributed to this file. A {@code #c:} reference is deferred to the
+     * tag) is attributed to it. A {@code #c:} reference is deferred to the
      * global resolve pass because its target may live in another file.
+     *
+     * <p>In tolerant mode a malformed tag skips just that tag (with a warning)
+     * so a single bad entry cannot discard the rest of the file; structural
+     * problems (non-map YAML, unreadable file, unparseable content) still fail
+     * the whole file.
      *
      * @param file             the tags file to parse
      * @param rawEntries       the accumulated {@code custom_tags} entries (additively merged)
      * @param rawEntityEntries the accumulated {@code entity_tags} entries (additively merged)
+     * @param tolerant         whether to skip a malformed tag and continue, or fail the whole file
      * @throws IOException              if the file cannot be read
-     * @throws IllegalArgumentException if the file is not a tags map or holds an invalid entry
+     * @throws IllegalArgumentException if the file is not structurally a tags map
      */
     private void gather(File file, Map<String, List<String>> rawEntries,
-            Map<String, List<String>> rawEntityEntries) throws IOException {
+            Map<String, List<String>> rawEntityEntries, boolean tolerant) throws IOException {
         String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         YamlConfiguration config;
         try {
@@ -147,18 +153,26 @@ public final class CustomTagLoader {
             throw new IllegalArgumentException("Failed to parse tags file: " + file, e);
         }
         gatherSection(config.getConfigurationSection("custom_tags"), rawEntries,
-                CustomTagLoader::validateMaterialEntry);
+                CustomTagLoader::validateMaterialEntry, tolerant);
         gatherSection(config.getConfigurationSection("entity_tags"), rawEntityEntries,
-                CustomTagLoader::validateEntityEntry);
+                CustomTagLoader::validateEntityEntry, tolerant);
     }
 
     private static void gatherSection(ConfigurationSection section,
-            Map<String, List<String>> rawEntries, java.util.function.Consumer<String> validator) {
+            Map<String, List<String>> rawEntries, java.util.function.Consumer<String> validator,
+            boolean tolerant) {
         if (section == null) return;
         for (String key : section.getKeys(false)) {
-            List<String> entries = requireList(section, key);
-            for (String entry : entries) {
-                validator.accept(entry);
+            List<String> entries;
+            try {
+                entries = requireList(section, key);
+                for (String entry : entries) {
+                    validator.accept(entry);
+                }
+            } catch (IllegalArgumentException e) {
+                if (!tolerant) throw e;
+                Bukkit.getLogger().warning("Skipping custom tag '#c:" + key + "': " + e.getMessage());
+                continue;
             }
             rawEntries.merge(key, entries, CustomTagLoader::append);
         }

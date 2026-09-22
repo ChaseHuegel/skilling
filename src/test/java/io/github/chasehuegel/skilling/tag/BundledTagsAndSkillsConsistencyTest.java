@@ -55,7 +55,8 @@ class BundledTagsAndSkillsConsistencyTest {
             "crops", "raw_crops", "tame_offerings", "foods", "campfire_foods",
             "campfires", "potions", "shields",
             "wooden_products", "carpentry_joinery", "shovels", "suspicious_blocks",
-            "pressure_plates", "sculk_sensors", "trip_traps"
+            "pressure_plates", "sculk_sensors", "trip_traps",
+            "construction_blocks", "tailoring_products"
     );
 
     @TempDir

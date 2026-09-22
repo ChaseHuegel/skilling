@@ -291,6 +291,34 @@ class CustomTagLoaderTest {
     }
 
     @Test
+    void loadDirectorySkipsOnlyBadTagNotFile() throws IOException {
+        Path tagsDir = tempDir.resolve("tags");
+        Files.createDirectories(tagsDir);
+        Files.writeString(tagsDir.resolve("base.yml"), """
+                custom_tags:
+                  good:
+                    - "minecraft:coal_ore"
+                  bad:
+                    - "#minecraft:does_not_exist"
+                  also_good:
+                    - "minecraft:iron_ore"
+                """);
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            when(Bukkit.getLogger()).thenReturn(Logger.getAnonymousLogger());
+            var loader = new CustomTagLoader();
+            loader.loadDirectory(tagsDir.toFile());
+
+            assertTrue(loader.resolve("#c:good").contains(Material.COAL_ORE),
+                    "a good tag before the bad one must still load");
+            assertTrue(loader.resolve("#c:also_good").contains(Material.IRON_ORE),
+                    "a good tag after the bad one must still load (per-tag skip, not whole-file skip)");
+            assertFalse(loader.getKeys().contains("#c:bad"),
+                    "the malformed tag must be skipped");
+        }
+    }
+
+    @Test
     void loadDirectoryMissingDirectoryIsEmptyLoadedStore() {
         var loader = new CustomTagLoader();
         loader.loadDirectory(tempDir.resolve("does-not-exist").toFile());
