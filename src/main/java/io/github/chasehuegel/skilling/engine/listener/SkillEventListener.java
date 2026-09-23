@@ -1313,7 +1313,14 @@ public final class SkillEventListener implements Listener {
                         + ability.id() + " in skill " + skill.id(), ex);
                 continue;
             }
-            debug("    requirement check=" + (check.success() ? "PASS" : "FAIL"));
+            if (!check.success()) {
+                debug("[" + skill.id() + "::" + ability.id() + "] requirement "
+                        + check.failureReason().name().toLowerCase()
+                        + " failed for " + player.getName() + " at level " + skillLevel
+                        + " (unlock " + ability.unlockLevel() + "), placeholders=" + check.placeholders());
+            } else {
+                debug("    requirement check=PASS");
+            }
             if (!check.success()) {
                 if (feedbackDebouncer.tryDebounce(player, skill.id(), ability.id())) {
                     var failure = ability.onFailure().reasons().get(check.failureReason().name().toLowerCase());

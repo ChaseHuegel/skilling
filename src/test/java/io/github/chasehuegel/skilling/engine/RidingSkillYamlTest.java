@@ -46,7 +46,7 @@ class RidingSkillYamlTest {
 
         SkillDefinition.Ability recall = ability("horse_recall");
         assertEquals(25, recall.unlockLevel());
-        assertEquals("right_click_air", recall.trigger());
+        assertEquals("right_click", recall.trigger());
         assertTrue(recall.mechanics().stream()
                 .anyMatch(m -> "core:summon_companion".equals(m.type())));
         assertTrue(recall.requirements().state().contains("has_tamed:horse"));

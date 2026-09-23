@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Guards the Husbandry mob-carry and companion-call abilities: mob pickup is bound
  * to {@code right_click_entity} (with drop folded into the pickup toggle), and the
- * L100 companion calls are bound to {@code right_click_air} with {@code
+ * L100 companion calls are bound to the {@code right_click} union with {@code
  * core:summon_companion}.
  */
 class HusbandryMobCarryAbilityTest {
@@ -53,7 +53,7 @@ class HusbandryMobCarryAbilityTest {
     @Test
     void companionCallBindsToRightClickAirWithSummonMechanic() {
         SkillDefinition.Ability call = ability("wolf_call");
-        assertEquals("right_click_air", call.trigger(), "wolf_call must trigger on right_click_air");
+        assertEquals("right_click", call.trigger(), "wolf_call must trigger on the right_click union");
         assertTrue(call.mechanics().stream().anyMatch(m -> "core:summon_companion".equals(m.type())),
                 "wolf_call must use core:summon_companion");
         assertNotNull(ability("mark_companion"));

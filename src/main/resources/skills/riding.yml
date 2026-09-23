@@ -66,12 +66,15 @@ abilities:
       - type: "core:mark_companion"
 
   # L25 - Primary active: recall your bonded horse from any distance by
-  # right-clicking air with an apple. Costs the apple + 1 hunger. No cooldown:
-  # it is a themed, item-costed activation instead of a gated timer.
+  # right-clicking with an apple. Costs the apple + 1 hunger. No cooldown:
+  # it is a themed, item-costed activation instead of a gated timer. Bound to
+  # the right_click union (air or block) so a recall still fires when the
+  # crosshair grazes a block; the mechanic cancels the interact only when it
+  # actually summons, so feeding/mounting the pet itself is never blocked.
   - id: "horse_recall"
     display_name: "Horse Recall"
     unlock_level: 25
-    trigger: "right_click_air"
+    trigger: "right_click"
     display:
       lore:
         - "&7Right-Click air with an apple to summon your bonded horse."

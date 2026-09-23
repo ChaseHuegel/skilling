@@ -32,11 +32,25 @@ public final class MarkCompanionMechanic implements SkillMechanic {
 
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof PlayerInteractEntityEvent interact)) return false;
-        if (!player.isSneaking()) return false;
-        if (!(interact.getRightClicked() instanceof Tameable tame)) return false;
-        if (!tame.isTamed()) return false;
+        if (!(event instanceof PlayerInteractEntityEvent interact)) {
+            debug(player, "bind skipped: expected PlayerInteractEntityEvent, got "
+                    + (event == null ? "null" : event.getClass().getSimpleName()));
+            return false;
+        }
+        if (!player.isSneaking()) {
+            debug(player, "bind skipped: player is not sneaking");
+            return false;
+        }
+        if (!(interact.getRightClicked() instanceof Tameable tame)) {
+            debug(player, "bind skipped: target " + interact.getRightClicked() + " is not tameable");
+            return false;
+        }
+        if (!tame.isTamed()) {
+            debug(player, "bind skipped: target " + interact.getRightClicked() + " is not tamed");
+            return false;
+        }
         if (!(tame.getOwner() instanceof Player owner) || !owner.getUniqueId().equals(player.getUniqueId())) {
+            debug(player, "bind skipped: target is not owned by the player");
             return false;
         }
 
@@ -44,18 +58,42 @@ public final class MarkCompanionMechanic implements SkillMechanic {
         PetCompanionStore.Species species;
         Material treat = player.getInventory().getItemInMainHand().getType();
         if (pet instanceof Wolf) {
-            if (treat != Material.BONE) return false;
+            if (treat != Material.BONE) {
+                debug(player, "bind skipped: wolf requires a bone in hand, held " + treat);
+                return false;
+            }
             species = PetCompanionStore.Species.WOLF;
         } else if (pet instanceof Horse) {
-            if (treat != Material.APPLE) return false;
+            if (treat != Material.APPLE) {
+                debug(player, "bind skipped: horse requires an apple in hand, held " + treat);
+                return false;
+            }
             species = PetCompanionStore.Species.HORSE;
         } else {
+            debug(player, "bind skipped: unsupported species " + pet.getClass().getSimpleName());
             return false;
         }
 
         interact.setCancelled(true);
         PetCompanionStore.markTamed(player.getUniqueId(), species);
         PetCompanionStore.setSnapshot(player.getUniqueId(), species, PetCompanionStore.CompanionSnapshot.capture(pet));
+        debug(player, "bound " + species + " companion ("
+                + pet.getUniqueId() + ") for " + player.getName());
         return true;
+    }
+
+    /**
+     * Logs a bind-path reason to the server console when {@code debug_logging}
+     * is enabled in the config, so a silent bind no-op is diagnosable.
+     *
+     * @param player the player attempting the bind
+     * @param message the failure/success reason
+     */
+    private static void debug(Player player, String message) {
+        io.github.chasehuegel.skilling.Skilling plugin =
+                io.github.chasehuegel.skilling.Skilling.getInstance();
+        if (plugin != null) {
+            plugin.debug("[mark_companion][" + player.getName() + "] " + message);
+        }
     }
 }

@@ -18,8 +18,9 @@ import java.util.UUID;
 
 /**
  * Summons (or recalls) a player's marked tamed companion to their side from any
- * distance, on a right-click of the air holding the companion's treat (a bone for
- * a wolf, an apple for a horse).
+ * distance, on a right-click of air or a block holding the companion's treat (a
+ * bone for a wolf, an apple for a horse). Both actions are accepted so a recall
+ * works even when the crosshair grazes a block while the treat is held.
  *
  * <p>This is the "snapshot + respawn" recall model: it never touches the original
  * pet's chunk, so it works when the pet is in an unloaded chunk or another
@@ -31,54 +32,102 @@ import java.util.UUID;
  *
  * <p>The {@code mob_type} parameter (wolf or horse) must match the held treat: a
  * bone summons a wolf and an apple summons a horse. A mismatched treat — which
- * happens when two sibling abilities share the {@code right_click_air} trigger —
+ * happens when two sibling abilities share the {@code right_click} trigger —
  * is a no-op ({@code false}), so the wrong sibling spends no cost. The species
  * must have been tamed and marked first; otherwise the call is a no-op.
  *
  * <p>Per the {@link SkillMechanic} return contract, {@code false} is returned when
- * the mechanic could not act (non-air event, no matching treat, not tamed/marked,
- * no snapshot), so the ability's treat + exhaustion cost is only consumed on a
- * genuine summon.
+ * the mechanic could not act (non-interact event, no matching treat, not
+ * tamed/marked, no snapshot), so the ability's treat + exhaustion cost is only
+ * consumed on a genuine summon.
  *
  * <p><b>YAML key:</b> {@code core:summon_companion}
  * <p><b>Required parameters:</b> {@code mob_type} (constant {@code wolf} or {@code horse})
+ * <p><b>Event:</b> {@link PlayerInteractEvent} with {@code RIGHT_CLICK_AIR} or
+ * {@code RIGHT_CLICK_BLOCK} (the {@code right_click} union trigger)
  */
 public final class SummonCompanionMechanic implements SkillMechanic {
 
     @Override
     public boolean execute(Player player, Map<String, Object> params, Event event) {
-        if (!(event instanceof PlayerInteractEvent interact)) return false;
-        if (interact.getAction() != Action.RIGHT_CLICK_AIR) return false;
+        if (!(event instanceof PlayerInteractEvent interact)) {
+            debug(player, "summon skipped: expected PlayerInteractEvent, got "
+                    + (event == null ? "null" : event.getClass().getSimpleName()));
+            return false;
+        }
+        if (interact.getAction() != Action.RIGHT_CLICK_AIR
+                && interact.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            debug(player, "summon skipped: expected RIGHT_CLICK_AIR or RIGHT_CLICK_BLOCK, got "
+                    + interact.getAction());
+            return false;
+        }
 
         PetCompanionStore.Species species = resolveSpecies(params, player);
-        if (species == null) return false;
+        if (species == null) {
+            debug(player, "summon skipped: species/treat mismatch; mob_type="
+                    + String.valueOf(params.get("mob_type")) + " held="
+                    + player.getInventory().getItemInMainHand().getType());
+            return false;
+        }
 
         UUID playerId = player.getUniqueId();
         boolean tamed = species == PetCompanionStore.Species.WOLF
                 ? PetCompanionStore.hasTamedWolf(playerId)
                 : PetCompanionStore.hasTamedHorse(playerId);
-        if (!tamed) return false;
+        if (!tamed) {
+            debug(player, "summon skipped: " + species + " has not been marked tamed");
+            return false;
+        }
 
         PetCompanionStore.CompanionSnapshot snapshot = PetCompanionStore.snapshot(playerId, species);
-        if (snapshot == null) return false;
+        if (snapshot == null) {
+            debug(player, "summon skipped: no bound snapshot for " + species);
+            return false;
+        }
+
+        // Only now that a genuine summon is confirmed, cancel the interact. This
+        // stops a food treat (an apple) from starting a vanilla eat animation on
+        // top of the ability's own cost, while leaving pet-interaction clicks
+        // (feeding/mounting the own pet) unbothered when the mechanic no-ops.
+        interact.setCancelled(true);
 
         // Despawn a currently-loaded bound copy so the fresh spawn is the only one.
         if (snapshot.boundUuid() != null) {
             org.bukkit.entity.Entity existing = Bukkit.getEntity(UUID.fromString(snapshot.boundUuid()));
             if (existing instanceof LivingEntity le && le.isValid()) {
+                debug(player, "summon despawned previous " + species + " copy " + existing.getUniqueId());
                 le.remove();
             }
         }
 
         Location spawn = safeSpawn(player);
-        if (spawn == null || spawn.getWorld() == null) return false;
+        if (spawn == null || spawn.getWorld() == null) {
+            debug(player, "summon skipped: no safe spawn location found");
+            return false;
+        }
 
         Class<? extends Ageable> clazz = PetCompanionStore.entityClass(species);
         Ageable pet = spawn.getWorld().spawn(spawn, clazz, CreatureSpawnEvent.SpawnReason.CUSTOM, false,
                 e -> tamedPet(e, player));
         PetCompanionStore.setSnapshot(playerId, species, PetCompanionStore.rebind(snapshot, pet.getUniqueId()));
         PetCompanionStore.apply(pet, snapshot);
+        debug(player, "summoned " + species + " companion " + pet.getUniqueId() + " for " + player.getName());
         return true;
+    }
+
+    /**
+     * Logs a summon-path reason to the server console when {@code debug_logging}
+     * is enabled in the config, so a silent summon no-op is diagnosable.
+     *
+     * @param player   the player attempting the summon
+     * @param message  the failure/success reason
+     */
+    private static void debug(Player player, String message) {
+        io.github.chasehuegel.skilling.Skilling plugin =
+                io.github.chasehuegel.skilling.Skilling.getInstance();
+        if (plugin != null) {
+            plugin.debug("[summon_companion][" + player.getName() + "] " + message);
+        }
     }
 
     /**
