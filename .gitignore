@@ -19,6 +19,9 @@
 *.tar.gz
 *.rar
 
+# Gradle wrapper jar is a tracked bootstrap component, not a build artifact.
+!gradle/wrapper/gradle-wrapper.jar
+
 # Bundled datapacks under src/main/resources/datapacks/*.zip are source content
 # that ships inside the plugin jar; un-ignore them so they are tracked.
 !src/main/resources/datapacks/
